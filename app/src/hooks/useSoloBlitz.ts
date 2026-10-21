@@ -24,6 +24,7 @@ import {
   noteQuestionAnswered,
 } from "@/lib/gameAnalytics";
 import type { Id } from "../../convex/_generated/dataModel";
+import type { BlitzResultData } from "@/components/shell/play/result/ModeResults";
 
 interface QuestionData {
   question: string;
@@ -65,7 +66,12 @@ export interface SoloBlitzState {
   onExpired: () => void;
 }
 
-export function useSoloBlitz(): SoloBlitzState {
+/**
+ * @param onFinish receives the server-confirmed run; the screen shows its
+ *                 result in place (VerveQ ONE P3.1 — this used to navigate to
+ *                 the v1 /blitz-results page).
+ */
+export function useSoloBlitz(onFinish: (result: BlitzResultData) => void): SoloBlitzState {
   const { t, i18n } = useTranslation("play");
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -87,6 +93,8 @@ export function useSoloBlitz(): SoloBlitzState {
 
   const sessionRef = useRef<Id<"blitzSessions"> | null>(null);
   const answerSubmitInFlight = useRef(false);
+  const onFinishRef = useRef(onFinish);
+  onFinishRef.current = onFinish;
 
   const { accountState } = useAuth();
   // Read through a ref, NOT as a dependency of the start effect below: that
@@ -116,14 +124,11 @@ export function useSoloBlitz(): SoloBlitzState {
       // idempotent per session, so neither can double-report. `result` stays
       // unset on purpose: Blitz scores a run, it has no win/loss.
       completeRun(sid, { score: res.score });
-      navigate("/blitz-results", {
-        state: {
-          score: res.score,
-          correctCount: res.correctCount,
-          wrongCount: res.wrongCount,
-          sport,
-          mode: "blitz" as const,
-        },
+      onFinishRef.current({
+        score: res.score,
+        correctCount: res.correctCount,
+        wrongCount: res.wrongCount,
+        sport,
       });
     };
     try {

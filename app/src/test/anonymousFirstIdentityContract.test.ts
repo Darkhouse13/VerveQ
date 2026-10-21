@@ -41,13 +41,16 @@ const SESSION_ROUTES = [
   "/v2/learn/run",
   "/v2/learn/review",
   "/v2/learn/mastery",
-  // The exit screens of those modes. A run that is playable anonymously but
-  // whose RESULT screen demands a username is a wall at the finish line — and
-  // the post-run claim prompt lives on exactly these two screens, so gating
-  // them above the identity tier makes the prompt unreachable by construction.
-  "/daily-results",
-  "/blitz-results",
+  // The exit screens of those modes used to be routes of their own
+  // (/daily-results, /blitz-results) and had to sit on this tier too: a run
+  // playable anonymously whose RESULT demanded a username was a wall at the
+  // finish line. Since VerveQ ONE P3.1 each result renders inside its mode's
+  // own screen — on the mode's tier by construction — and those paths are
+  // plain redirects (asserted below).
 ];
+
+/** The retired v1 result pages: redirects now, gated by nothing. */
+const RETIRED_RESULT_ROUTES = ["/results", "/daily-results", "/blitz-results"];
 
 /** Routes whose tier FR-1B deliberately did NOT move. */
 const UNCHANGED_TIERS: Array<[string, string]> = [
@@ -85,6 +88,15 @@ describe("FR-1B route tiers (source contract)", () => {
       expect(line, `${path} should not use the v1 username gate`).not.toContain(
         "UsernameRequiredRoute",
       );
+    }
+  });
+
+  it("keeps the retired result pages as ungated redirects, never a wall", () => {
+    for (const path of RETIRED_RESULT_ROUTES) {
+      const line = routeBlock(path);
+      expect(line, `${path} should redirect`).toContain("LegacyRedirect");
+      expect(line).not.toContain("UsernameRequiredRoute");
+      expect(line).not.toContain("ProtectedRoute");
     }
   });
 
@@ -216,17 +228,16 @@ describe("FR-1B claim prompt", () => {
   });
 
   it("promises a board only where one exists", () => {
-    // Daily has no public board of its own, so it must not pass `board`.
-    expect(read("../pages/DailyResultScreen.tsx")).toMatch(
-      /<ClaimNamePrompt source=/,
-    );
-    expect(read("../pages/DailyResultScreen.tsx")).not.toMatch(
-      /<ClaimNamePrompt[^>]*board=/,
-    );
-    // Blitz does, and its score row is already on file.
-    expect(read("../pages/BlitzResultScreen.tsx")).toMatch(
-      /<ClaimNamePrompt board="blitz"/,
-    );
+    // The solo modes' results live in one module (VerveQ ONE P3.1). The two
+    // dailies have no public board of their own, so they must not pass
+    // `board`; Blitz does, and its score row is already on file.
+    const results = read("../components/shell/play/result/ModeResults.tsx");
+    const prompts = results.match(/<ClaimNamePrompt[^>]*\/>/g) ?? [];
+    expect(prompts).toEqual([
+      '<ClaimNamePrompt source="daily-quiz" />',
+      '<ClaimNamePrompt source="daily-survival" />',
+      '<ClaimNamePrompt board="blitz" source="blitz" />',
+    ]);
   });
 
   /**

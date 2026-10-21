@@ -12,6 +12,11 @@ interface BlitzClockProps {
   onTick?: (remaining: number) => void;
 }
 
+/**
+ * Blitz's countdown — the run's one clock (VerveQ ONE P3.1). The last ten
+ * seconds pulse in the mode accent; red stays reserved for the -3s penalty,
+ * which is a wrong answer.
+ */
 export function BlitzClock({ endTimeMs, onExpired, penaltyFlash, onTick }: BlitzClockProps) {
   const [remaining, setRemaining] = useState(() =>
     Math.max(0, Math.ceil((endTimeMs - Date.now()) / 1000)),
@@ -45,14 +50,14 @@ export function BlitzClock({ endTimeMs, onExpired, penaltyFlash, onTick }: Blitz
   return (
     <div className="relative text-center">
       <p
-        className={`font-mono font-bold text-6xl transition-colors ${
-          isUrgent ? "text-destructive animate-pulse-urgent" : "text-foreground"
+        className={`font-mono font-bold text-score tabular-nums transition-colors ${
+          isUrgent ? "text-mode-accent animate-pulse-urgent motion-reduce:animate-none" : "text-foreground"
         }`}
       >
         {display}
       </p>
       {penaltyFlash && (
-        <span className="absolute inset-0 flex items-center justify-center font-mono font-bold text-2xl text-destructive animate-flash-red">
+        <span className="absolute inset-0 flex items-center justify-center font-mono font-bold text-title-lg text-verdict-wrong animate-flash-red">
           -3s
         </span>
       )}

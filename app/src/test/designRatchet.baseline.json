@@ -133,10 +133,6 @@
     "rawButton": 1,
     "roundedXl": 1
   },
-  "src/components/shell/onboarding/ClaimNamePrompt.tsx": {
-    "rawButton": 1,
-    "opacityText": 1
-  },
   "src/components/shell/onboarding/UpgradeAccountForm.tsx": {
     "textPx": 1,
     "opacityText": 1
@@ -147,11 +143,6 @@
   },
   "src/components/shell/play/PlayStage.tsx": {
     "fixedInset": 2
-  },
-  "src/components/shell/play/QuizPlayView.tsx": {
-    "rawButton": 1,
-    "transitionAll": 1,
-    "opacityText": 1
   },
   "src/components/shell/play/TierControl.tsx": {
     "textPx": 2,
@@ -264,17 +255,9 @@
     "hex": 9,
     "colorFn": 4
   },
-  "src/pages/BlitzResultScreen.tsx": {
-    "textPx": 1,
-    "opacityText": 1
-  },
   "src/pages/ChallengeScreen.tsx": {
     "textPx": 10,
     "rawButton": 4
-  },
-  "src/pages/DailyResultScreen.tsx": {
-    "textPx": 2,
-    "opacityText": 2
   },
   "src/pages/DifficultyScreen.tsx": {
     "rawButton": 1,
@@ -318,11 +301,6 @@
     "rawButton": 1,
     "transitionAll": 1,
     "opacityText": 2
-  },
-  "src/pages/ResultScreen.tsx": {
-    "textPx": 6,
-    "rawButton": 1,
-    "opacityText": 4
   },
   "src/pages/RivalsScreen.tsx": {
     "textPx": 1,
@@ -441,11 +419,6 @@
     "transitionAll": 1,
     "opacityText": 2
   },
-  "src/pages/shell/play/BlitzPlayScreen.tsx": {
-    "rawButton": 1,
-    "transitionAll": 1,
-    "opacityText": 1
-  },
   "src/pages/shell/play/CareerPathClassicGame.tsx": {
     "textPx": 1,
     "opacityText": 4
@@ -464,9 +437,6 @@
   },
   "src/pages/shell/play/MissingLettersPlayScreen.tsx": {
     "rawButton": 1
-  },
-  "src/pages/shell/play/SurvivalPlayScreen.tsx": {
-    "roundedXl": 1
   },
   "src/pages/shell/play/WhosOlderPlayScreen.tsx": {
     "rawButton": 1

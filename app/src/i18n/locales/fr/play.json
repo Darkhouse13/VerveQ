@@ -96,6 +96,8 @@
     "surnameAccepted": "NOM DE FAMILLE ACCEPTÉ : {{answer}}",
     "hiddenAnswerFound": "RÉPONSE CACHÉE TROUVÉE !",
     "plusOneLife": "+1 VIE",
+    "livesDetail_one": "{{count}} vie",
+    "livesDetail_other": "{{count}} vies",
     "failedToSubmit": "Échec de l'envoi de la réponse",
     "failedToGetHelp": "Échec de l'obtention de l'aide",
     "failedToSkip": "Échec du passage",
@@ -588,7 +590,58 @@
       "home": {
         "title": "D'autres jeux aujourd'hui",
         "body": "La suite du jour est sur l'accueil."
+      },
+      "quiz": {
+        "title": "Défi du jour",
+        "body": "10 questions. Un essai par jour."
+      },
+      "survival": {
+        "title": "Survie du jour",
+        "body": "Les mêmes 10 manches pour tous."
       }
+    },
+    "home": "Accueil",
+    "shareCopied": "Résultat copié. Colle-le où tu veux.",
+    "shareFailed": "Impossible de copier ton résultat.",
+    "playAgain": "Rejouer",
+    "details": "Détails",
+    "right": "Bonne réponse",
+    "wrong": "Mauvaise réponse",
+    "question": "Question {{n}}",
+    "seconds": "{{value}} s",
+    "pts": "{{score}} pts",
+    "pointsCaption": "Points",
+    "nextDailyIn": "Prochain défi dans {{time}}",
+    "rating": {
+      "up": "Classement +{{change}}",
+      "down": "Classement −{{change}}",
+      "same": "Classement inchangé",
+      "now": "désormais {{elo}}"
+    },
+    "eyebrow": {
+      "survival": "Partie terminée",
+      "dailyQuiz": "Défi du jour · {{date}}",
+      "dailyQuizWorldCup": "Défi Coupe du monde · {{date}}",
+      "dailySurvival": "Survie du jour · {{date}}",
+      "blitz": "60 secondes"
+    },
+    "line": {
+      "survival": "{{correct}} bonnes réponses · manche {{round}} atteinte",
+      "blitz": "{{correct}} bonnes · {{wrong}} mauvaises",
+      "forfeited": "Partie abandonnée"
+    },
+    "stat": {
+      "correct": "Bonnes réponses",
+      "wrong": "Mauvaises réponses",
+      "rounds": "Manche atteinte",
+      "accuracy": "Précision",
+      "avgTime": "Temps moyen",
+      "topic": "Thème"
+    },
+    "shareText": {
+      "quiz": "VerveQ Quiz — {{correct}}/{{total}} · {{score}} pts\n{{emoji}}\nTu crois pouvoir me battre ? {{url}}",
+      "survival": "VerveQ Survie — {{score}} pts · manche {{round}} atteinte\nTu crois pouvoir me battre ? {{url}}",
+      "blitz": "VerveQ Blitz — {{score}} pts en 60 secondes ({{correct}} bonnes réponses)\nTu crois pouvoir me battre ? {{url}}"
     }
   }
 }

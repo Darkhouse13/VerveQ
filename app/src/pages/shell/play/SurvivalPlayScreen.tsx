@@ -16,18 +16,35 @@
  * - one HELP button: 2 metadata clues, then letter-by-letter reveals;
  * - lives are only lost on committed wrong guesses (skips are free, budget 3);
  * - CASH OUT ends the run voluntarily and banks the score into ELO/results.
+ *
+ * VerveQ ONE P3.1: the run ends in place on the shared ResultScreen (it used
+ * to leave the shell for the v1 /results and /daily-results pages); every
+ * verdict lands in ONE fixed slot above the input (no banner + toast double);
+ * lime is only the Submit button — the initials wear the mode accent and Cash
+ * out is a secondary.
  */
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, type ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "convex/react";
 import { notify } from "@/lib/notify";
-import { NeoCard } from "@/components/neo/NeoCard";
+import { Check, Coins, Flame, Zap, X } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoInput } from "@/components/neo/NeoInput";
-import { NeoBadge } from "@/components/neo/NeoBadge";
 import { PlayStage } from "@/components/shell/play/PlayStage";
-import { MetricsPanel, AmbientStrip } from "@/components/shell/play/ambient";
+import { StageScore } from "@/components/shell/play/StageParts";
+import { MetricsPanel } from "@/components/shell/play/ambient";
+import {
+  DailySurvivalResult,
+  NextTodayFor,
+  SurvivalResult,
+  type DailySurvivalResultData,
+  type SurvivalResultData,
+} from "@/components/shell/play/result/ModeResults";
+import { useUtcMidnightCountdown } from "@/hooks/useUtcMidnightCountdown";
+import { cn } from "@/lib/utils";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
@@ -39,7 +56,6 @@ import {
 } from "@/lib/gameAnalytics";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
-import type { GameResultState } from "@/types/api";
 import { isAlreadyAttemptedError } from "@/lib/errors";
 import {
   Dialog,
@@ -86,7 +102,7 @@ function MaskedName({ maskedName }: { maskedName: string }) {
             ) : /\p{L}|\p{N}/u.test(char) ? (
               <div
                 key={ci}
-                className="neo-border rounded w-7 h-9 flex items-center justify-center bg-primary text-primary-foreground"
+                className="neo-border rounded w-7 h-9 flex items-center justify-center bg-mode-accent text-ink"
               >
                 <span className="font-heading font-bold text-sm">{char}</span>
               </div>
@@ -105,18 +121,74 @@ function MaskedName({ maskedName }: { maskedName: string }) {
   );
 }
 
-/** "h:mm" until the next UTC midnight — when the daily run re-rolls. */
-function dailyResetCountdown(): string {
-  const now = new Date();
-  const nextUtcMidnight = Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate() + 1,
+/**
+ * Daily, already spent: a clean "come back at midnight" card, never an error
+ * state — one attempt is the product rule, not a failure. The reset time is
+ * the same ticking countdown the daily result screens use, and the way on is
+ * the next unfinished daily.
+ */
+function PlayedToday({ onExit }: { onExit: () => void }) {
+  const { t } = useTranslation("play");
+  const time = useUtcMidnightCountdown();
+  return (
+    <PlayStage mode="daily-survival" title={t("survival.daily.title")} onExit={onExit} exitLabel={t("result.home")}>
+      <div className="flex flex-col gap-3 py-2">
+        <Card elevation="lifted" padding="lg" className="text-center">
+          <Check size={32} strokeWidth={3} className="mx-auto mb-3 text-mode-accent" aria-hidden="true" />
+          <h2 className="font-heading font-bold text-title mb-2">{t("survival.daily.playedTitle")}</h2>
+          <p className="text-body-sm text-muted-foreground tabular-nums">{t("survival.daily.playedBody", { time })}</p>
+        </Card>
+        <NextTodayFor from="survival" mode="daily-survival" />
+      </div>
+    </PlayStage>
   );
-  const ms = Math.max(0, nextUtcMidnight - now.getTime());
-  const h = Math.floor(ms / 3_600_000);
-  const m = Math.floor((ms % 3_600_000) / 60_000);
-  return `${h}:${String(m).padStart(2, "0")}`;
+}
+
+/** What the one verdict slot says after a guess. */
+type Verdict =
+  | { kind: "close"; message: string }
+  | { kind: "right"; answer: string; points: number; notes: string[] }
+  | { kind: "wrong"; answer: string };
+
+/**
+ * The verdict slot: one fixed-height line above the input, so nothing jumps
+ * and nothing doubles up as a toast. Green and red only for right and wrong;
+ * a close call is neutral (it costs nothing).
+ */
+function VerdictSlot({ verdict }: { verdict: Verdict | null }) {
+  const { t } = useTranslation("play");
+  let body: ReactNode = null;
+  if (verdict?.kind === "close") {
+    body = (
+      <Badge tone="neutral" shape="tag" size="md" className="normal-case text-body-sm">
+        {verdict.message}
+      </Badge>
+    );
+  } else if (verdict?.kind === "right") {
+    body = (
+      <div className="flex flex-col items-center gap-1">
+        <Badge tone="right" shape="tag" size="md" stamp className="normal-case text-body-sm animate-badge-land motion-reduce:animate-none">
+          <Check size={16} strokeWidth={3} aria-hidden="true" />
+          {t("survival.correctPoints", { answer: verdict.answer, points: verdict.points })}
+        </Badge>
+        {verdict.notes.length > 0 && (
+          <p className="text-meta font-bold text-muted-foreground">{verdict.notes.join(" · ")}</p>
+        )}
+      </div>
+    );
+  } else if (verdict?.kind === "wrong") {
+    body = (
+      <Badge tone="wrong" shape="tag" size="md" stamp className="normal-case text-body-sm animate-badge-land motion-reduce:animate-none">
+        <X size={16} strokeWidth={3} aria-hidden="true" />
+        {t("survival.wrong", { answer: verdict.answer })}
+      </Badge>
+    );
+  }
+  return (
+    <div className="mb-3 flex min-h-14 items-center justify-center text-center" aria-live="polite" data-testid="survival-verdict">
+      {body}
+    </div>
+  );
 }
 
 /**
@@ -125,7 +197,15 @@ function dailyResetCountdown(): string {
  * result lands in dailyAttempts (never ELO), one attempt per UTC day, and
  * leaving the tab forfeits outright.
  */
-export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean }) {
+function SurvivalRun({
+  daily,
+  onFinish,
+  onExit,
+}: {
+  daily: boolean;
+  onFinish: (result: SurvivalResultData | DailySurvivalResultData) => void;
+  onExit: () => void;
+}) {
   const { t } = useTranslation("play");
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -140,11 +220,7 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
   const [round, setRound] = useState(1);
   const [challenge, setChallenge] = useState<ChallengeData | null>(null);
   const [guess, setGuess] = useState("");
-  const [feedback, setFeedback] = useState<{
-    correct: boolean;
-    answer: string;
-    points: number;
-  } | null>(null);
+  const [verdict, setVerdict] = useState<Verdict | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   // Daily only: today's attempt is already spent (server-enforced).
@@ -175,9 +251,6 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
 
   // Close call state
   const [closeCallShake, setCloseCallShake] = useState(false);
-
-  // Earn-a-life animation
-  const [showEarnedLife, setShowEarnedLife] = useState(false);
 
   // Anti-cheat state: first offense is a warning (pot floored), repeats cost a life
   const [cheatModal, setCheatModal] = useState<"warning" | "penalty" | null>(
@@ -297,7 +370,7 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
   // Anti-cheat: warn first (pot floored), penalize repeats
   useAntiCheat(
     useCallback(() => {
-      if (!sessionId || !challenge) return;
+      if (!sessionId || !challenge || finished.current) return;
       penalizeTabSwitchMut({ sessionId, currentRound: round }).then((res) => {
         if (!res.penalized) return;
         setShakeKey((k) => k + 1);
@@ -305,7 +378,7 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
         if ("dailyForfeit" in res && res.dailyForfeit) {
           setCheatModal("penalty");
           notify.error(t("survival.daily.forfeited"), { duration: 4000 });
-          setTimeout(() => goToResults(0, round), 2000);
+          setTimeout(() => goToResults(0, round, true), 2000);
           return;
         }
         if (res.warning) {
@@ -324,27 +397,28 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
     { warningMessage: t("survival.tabSwitchWarning") },
   );
 
-  const goToResults = async (finalScore: number, finalRound: number) => {
+  const finished = useRef(false);
+  const goToResults = async (finalScore: number, finalRound: number, forfeited = false) => {
+    // One ending per run, however many paths race to it.
+    if (finished.current) return;
+    finished.current = true;
     // Every way this run can end funnels through here — lives gone, skip that
     // emptied the queue, anti-cheat forfeit, and CASH OUT. Cash out is a
     // voluntary end but still a completion, not an abandon: the player banked
     // a final score and the server closed the session, which is the opposite
-    // of walking out mid-round. Reported before the navigate below so the
-    // unmount that navigate triggers finds the run already ended; daily is
+    // of walking out mid-round. Reported before the result replaces this run
+    // (unmounting it), so the unmount finds the run already ended; daily is
     // included even though it never reaches completeSurvival.
     completeRun(sessionId, { score: finalScore });
-    // Daily runs land on the daily result surface (share copy included) and
-    // never call completeSurvival — the server rejects daily sessions there.
+    // Daily runs end on the daily result (share copy included) and never call
+    // completeSurvival — the server rejects daily sessions there.
     if (daily) {
-      navigate("/daily-results", {
-        state: {
-          score: finalScore,
-          total: finalRound,
-          correctCount: correctCountRef.current,
-          sport,
-          mode: "daily-survival",
-          shareString: dailyOutcomesRef.current.join("") || undefined,
-        },
+      onFinish({
+        score: finalScore,
+        rounds: finalRound,
+        correctCount: correctCountRef.current,
+        shareString: dailyOutcomesRef.current.join("") || undefined,
+        forfeited,
       });
       return;
     }
@@ -363,19 +437,16 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
         /* continue */
       }
     }
-    const state: GameResultState = {
+    onFinish({
       score: finalScore,
-      total: finalRound,
+      rounds: finalRound,
       correctCount: correctCountRef.current,
-      avgTime: 0,
       eloChange,
       newElo,
       sport,
-      mode: "survival",
       kFactor,
       kFactorLabel,
-    };
-    navigate("/results", { state });
+    });
   };
 
   const handleGuess = async () => {
@@ -391,12 +462,12 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
       if (res.closeCall) {
         setCloseCallShake(true);
         setTimeout(() => setCloseCallShake(false), 600);
-        notify.warning(
-          res.ambiguousSurname
+        setVerdict({
+          kind: "close",
+          message: res.ambiguousSurname
             ? t("survival.ambiguousSurname")
             : t("survival.closeCheckSpelling"),
-          { duration: 3000 },
-        );
+        });
         setSubmitting(false);
         return;
       }
@@ -405,11 +476,6 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
       // point a question is genuinely resolved. Counted before any goToResults
       // below, which reads the tally, so the last guess of a run still lands.
       noteQuestionAnswered(sessionId);
-      setFeedback({
-        correct: res.correct,
-        answer: res.correctAnswer ?? "",
-        points: res.pointsEarned,
-      });
       setLives(res.lives);
       setScore(res.score);
       setRound(res.round);
@@ -422,29 +488,17 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
         }
         setSpeedStreak(res.speedStreak ?? 0);
         setIsOnFire(res.isOnFire ?? false);
-        if (res.surnameMatch) {
-          notify.success(
-            t("survival.surnameAccepted", { answer: res.correctAnswer }),
-            { duration: 3000 },
-          );
-        } else if (res.typoAccepted) {
-          notify.warning(
-            t("survival.typoAccepted", { answer: res.correctAnswer }),
-            {
-              duration: 3000,
-            },
-          );
-        }
-        if (res.isHiddenAnswer) {
-          notify.success(t("survival.hiddenAnswerFound"), { duration: 4000 });
-        }
-        if (res.earnedLife) {
-          setShowEarnedLife(true);
-          setTimeout(() => setShowEarnedLife(false), 1500);
-          notify.success(t("survival.plusOneLife"), { duration: 3000 });
-        }
+        // How the guess was accepted, the hidden-answer bonus and an earned
+        // life ride in the verdict slot under the verdict — not as toasts.
+        const notes: string[] = [];
+        if (res.surnameMatch) notes.push(t("survival.surnameAccepted", { answer: res.correctAnswer }));
+        else if (res.typoAccepted) notes.push(t("survival.typoAccepted", { answer: res.correctAnswer }));
+        if (res.isHiddenAnswer) notes.push(t("survival.hiddenAnswerFound"));
+        if (res.earnedLife) notes.push(t("survival.plusOneLife"));
+        setVerdict({ kind: "right", answer: res.correctAnswer ?? "", points: res.pointsEarned, notes });
       } else {
         if (daily) dailyOutcomesRef.current.push("🟥");
+        setVerdict({ kind: "wrong", answer: res.correctAnswer ?? "" });
         setSpeedStreak(0);
         setIsOnFire(false);
       }
@@ -455,7 +509,7 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
         const next = res.nextChallenge;
         setTimeout(() => {
           applyChallenge(next);
-          setFeedback(null);
+          setVerdict(null);
         }, 1500);
       }
     } catch {
@@ -492,7 +546,7 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
       const res = await skipMut({ sessionId });
       if (daily) dailyOutcomesRef.current.push("⬜");
       setSkipsLeft(res.skipsLeft);
-      setFeedback(null);
+      setVerdict(null);
       setSpeedStreak(0);
       setIsOnFire(false);
       if (res.gameOver) {
@@ -519,15 +573,17 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
   };
 
   const metrics = { score, lives, streak: speedStreak };
+  const mode = daily ? "daily-survival" : "survival";
 
   if (loading) {
     return (
       <PlayStage
+        mode={mode}
         title={daily ? t("survival.daily.title") : t("survival.title")}
-        onExit={() => navigate(SHELL_ROUTES.home)}
+        onExit={onExit}
       >
         <div className="flex items-center justify-center py-16">
-          <p className="font-heading font-bold text-lg animate-pulse">
+          <p className="font-heading font-bold text-title-sm animate-pulse motion-reduce:animate-none">
             {t("survival.starting")}
           </p>
         </div>
@@ -535,35 +591,7 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
     );
   }
 
-  // Daily, already spent: a clean "come back at midnight" card, never an
-  // error state — one attempt is the product rule, not a failure.
-  if (playedToday) {
-    return (
-      <PlayStage
-        title={t("survival.daily.title")}
-        onExit={() => navigate(SHELL_ROUTES.home)}
-      >
-        <NeoCard shadow="lg" className="p-6 text-center max-w-sm mx-auto">
-          <p className="text-3xl mb-3" aria-hidden>
-            ✅
-          </p>
-          <h2 className="font-heading font-bold text-xl mb-2">
-            {t("survival.daily.playedTitle")}
-          </h2>
-          <p className="text-sm text-muted-foreground mb-5">
-            {t("survival.daily.playedBody", { time: dailyResetCountdown() })}
-          </p>
-          <NeoButton
-            variant="primary"
-            size="full"
-            onClick={() => navigate(SHELL_ROUTES.home)}
-          >
-            {t("survival.daily.backHome")}
-          </NeoButton>
-        </NeoCard>
-      </PlayStage>
-    );
-  }
+  if (playedToday) return <PlayedToday onExit={onExit} />;
 
   const initials = challenge?.initials.split("") || [];
 
@@ -575,9 +603,17 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
           ? t("survival.daily.round", { round })
           : t("survival.round", { round })
       }
-      onExit={() => navigate(SHELL_ROUTES.home)}
+      mode={mode}
+      onExit={onExit}
       exitLabel={t("survival.quit")}
-      strip={<AmbientStrip metrics={metrics} />}
+      score={
+        <StageScore
+          icon={<Zap size={16} strokeWidth={3} />}
+          value={score}
+          label={t("stage.scoreLabel", { value: score })}
+          detail={t("survival.livesDetail", { count: lives })}
+        />
+      }
       right={<MetricsPanel metrics={metrics} />}
     >
       <div
@@ -586,61 +622,44 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
       >
         {/* On-fire / streak banner — Survival's signature flair, kept in column. */}
         {speedStreak >= 2 && (
-          <div className="flex justify-center mb-4">
-            <div
-              className={`neo-border rounded px-3 py-1.5 ${isOnFire ? "bg-destructive text-destructive-foreground animate-pulse-urgent" : "bg-primary text-primary-foreground"}`}
+          <div className="flex justify-center mb-3">
+            <Badge
+              tone="mode"
+              shape="tag"
+              size="md"
+              className={cn(isOnFire && "animate-pulse-urgent motion-reduce:animate-none")}
             >
-              <span className="font-heading font-bold text-xs uppercase">
-                {isOnFire
-                  ? t("survival.onFire")
-                  : t("survival.streak", { count: speedStreak })}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Feedback banner */}
-        {feedback && (
-          <div
-            className={`neo-border rounded-lg p-3 mb-4 flex items-center gap-2 ${feedback.correct ? "bg-success text-success-foreground" : "bg-destructive text-destructive-foreground"}`}
-          >
-            <span className="font-heading font-bold text-sm">
-              {feedback.correct
-                ? t("survival.correctPoints", {
-                    answer: feedback.answer,
-                    points: feedback.points,
-                  })
-                : t("survival.wrong", { answer: feedback.answer })}
-            </span>
+              {isOnFire && <Flame size={14} strokeWidth={3} aria-hidden="true" />}
+              {isOnFire
+                ? t("survival.onFire")
+                : t("survival.streak", { count: speedStreak })}
+            </Badge>
           </div>
         )}
 
         {/* Initials + masked name card — panic state when 1 life */}
-        <NeoCard
-          shadow="lg"
-          className={`relative flex flex-col items-center py-8 mb-5 ${
-            lives === 1 ? "border-red-600 border-4 animate-pulse" : ""
-          }`}
-        >
-          {showEarnedLife && (
-            <span className="absolute top-2 left-1/2 -translate-x-1/2 text-success font-heading font-bold text-sm animate-float-up pointer-events-none">
-              {t("survival.plusOneLife")}
-            </span>
+        <Card
+          elevation="lifted"
+          className={cn(
+            "relative flex flex-col items-center py-6 mb-3",
+            // Last life: the card's edge pulses in the mode accent.
+            lives === 1 && "border-4 border-mode-accent animate-pulse motion-reduce:animate-none",
           )}
-          <p className="text-sm text-muted-foreground font-heading mb-4">
+        >
+          <p className="text-body-sm text-muted-foreground font-heading mb-3">
             {t("survival.whoHasInitials")}
           </p>
           <div className="flex gap-4 mb-2">
             {initials.map((letter, i) => (
               <div
                 key={i}
-                className="neo-border neo-shadow-lg rounded-xl w-20 h-20 flex items-center justify-center bg-primary text-primary-foreground"
+                className="neo-border neo-shadow-lg rounded-lg w-20 h-20 flex items-center justify-center bg-mode-accent text-ink"
               >
-                <span className="font-heading font-bold text-4xl">{letter}</span>
+                <span className="font-heading font-bold text-display">{letter}</span>
               </div>
             ))}
           </div>
-          <p className="text-xs text-muted-foreground font-body mb-4">
+          <p className="text-meta text-muted-foreground font-body mb-3">
             {t("survival.anyPlayerCounts")}
           </p>
 
@@ -650,37 +669,39 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
               Once visible it is labelled as the famous-match hint target. */}
           {helpStage > 0 && maskedName && (
             <div className="flex flex-col items-center">
-              <p className="text-xs text-muted-foreground font-heading uppercase mb-2">
+              <p className="font-mono text-eyebrow text-muted-foreground uppercase mb-2">
                 {t("survival.maskLabel")}
               </p>
               <MaskedName maskedName={maskedName} />
             </div>
           )}
 
+          {/* The round's pot: what a right answer is worth now (help shrinks
+              it). The round number is already in the header. */}
           <div className="flex items-center gap-3 mt-3">
-            <NeoBadge color={potValue < basePot ? "accent" : "success"} rotated>
+            <Badge tone="neutral" shape="tag" size="md" data-shrunk={potValue < basePot || undefined}>
+              <Coins size={14} strokeWidth={3} aria-hidden="true" />
               {t("survival.pot", { points: potValue })}
-            </NeoBadge>
-            <NeoBadge color="blue" rotated>
-              {t("survival.round", { round })}
-            </NeoBadge>
+            </Badge>
           </div>
-        </NeoCard>
+        </Card>
 
         {/* Clues from the help ladder — one caption states the target so the
             bare facts below don't read as random noise. */}
         {clues.length > 0 && (
-          <div className="space-y-2 mb-4">
-            <p className="text-xs text-muted-foreground font-body">
+          <div className="space-y-2 mb-3">
+            <p className="text-meta text-muted-foreground font-body">
               {t("survival.hintsTarget")}
             </p>
             {clues.map((h, i) => (
-              <NeoCard
+              <Card
                 key={i}
-                color={i === 0 ? "blue" : "accent"}
+                tone="paper"
+                padding="sm"
+                elevation="flat"
                 className="animate-slide-up"
               >
-                <p className="text-xs font-body">
+                <p className="text-body-sm font-body">
                   <strong>{t("survival.clueLabel", { number: i + 1 })}</strong>{" "}
                   {t(
                     `survival.hintBody.${h.key}`,
@@ -691,18 +712,20 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
                       : h.vars,
                   )}
                 </p>
-              </NeoCard>
+              </Card>
             ))}
           </div>
         )}
 
-        {/* Input — close call shake + panic glow */}
+        <VerdictSlot verdict={verdict} />
+
+        {/* Input — a close call shakes it */}
         <NeoInput
           placeholder={t("survival.inputPlaceholder")}
           value={guess}
           onChange={(e) => setGuess(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleGuess()}
-          className={`mb-4 ${isOnFire ? "on-fire-input" : ""} ${closeCallShake ? "border-yellow-400 border-4 animate-shake-horizontal" : ""}`}
+          className={cn("mb-3", closeCallShake && "border-4 border-foreground animate-shake-horizontal")}
         />
 
         {/* Submit */}
@@ -742,8 +765,9 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
               ? t("survival.skip", { count: skipsLeft })
               : t("survival.noSkipsLeft")}
           </NeoButton>
+          {/* Secondary: the screen's one lime action is Submit. */}
           <NeoButton
-            variant="accent"
+            variant="secondary"
             size="md"
             onClick={daily ? () => setConfirmCashOut(true) : handleCashOut}
             disabled={endingRun}
@@ -773,18 +797,14 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
         open={cheatModal !== null}
         onOpenChange={(open) => !open && setCheatModal(null)}
       >
-        <DialogContent
-          className={`neo-border neo-shadow-lg max-w-sm ${cheatModal === "warning" ? "bg-accent text-accent-foreground" : "bg-destructive text-destructive-foreground"}`}
-        >
+        <DialogContent className="neo-border neo-shadow-lg max-w-sm">
           <DialogHeader>
             <DialogTitle className="font-heading text-xl text-center">
               {cheatModal === "warning"
                 ? `⚠️ ${t("survival.tabSwitchCaughtTitle")} ⚠️`
                 : `\u{1F6A8} ${t("survival.cheatingDetected")} \u{1F6A8}`}
             </DialogTitle>
-            <DialogDescription
-              className={`text-center text-sm mt-2 ${cheatModal === "warning" ? "text-accent-foreground/90" : "text-destructive-foreground/90"}`}
-            >
+            <DialogDescription className="text-center text-body-sm mt-2">
               {cheatModal === "warning"
                 ? t("survival.tabSwitchWarningDescription")
                 : t("survival.cheatingDescription")}
@@ -802,4 +822,33 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
       </Dialog>
     </PlayStage>
   );
+}
+
+/**
+ * `daily` runs the shared Daily Survival instead of a ranked run (see
+ * SurvivalRun). The result replaces the run in place; "Play again" (ranked
+ * only — the daily is one attempt) mounts a fresh run, which starts a fresh
+ * server session.
+ */
+export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean }) {
+  const navigate = useNavigate();
+  const [result, setResult] = useState<SurvivalResultData | DailySurvivalResultData | null>(null);
+  const [run, setRun] = useState(0);
+  const exit = () => navigate(SHELL_ROUTES.home);
+
+  if (result) {
+    return daily ? (
+      <DailySurvivalResult result={result as DailySurvivalResultData} onExit={exit} />
+    ) : (
+      <SurvivalResult
+        result={result as SurvivalResultData}
+        onExit={exit}
+        onPlayAgain={() => {
+          setResult(null);
+          setRun((n) => n + 1);
+        }}
+      />
+    );
+  }
+  return <SurvivalRun key={run} daily={daily} onFinish={setResult} onExit={exit} />;
 }

@@ -3,20 +3,25 @@
  * on the v2 shell. It is driven entirely by the server-authoritative
  * `SoloQuizState` view-model, so any backend that fills that shape (regular solo
  * Quiz via `useSoloQuiz`, the Daily challenge via `useDailyQuiz`) reuses the
- * exact same layout — the answering column owns the question + options, the
- * ambient rail carries only score / timer / progress (content-blind by contract).
+ * exact same layout — the answering column owns the question + options; the
+ * StageFrame header carries the score (with the question clock under it) and
+ * the per-question verdict dots, and the desktop rail mirrors them
+ * (content-blind by contract).
  *
  * Presentation only: no grading, gating, or session logic lives here. The driving
  * hook owns all of that and the `onExit` behaviour (e.g. Daily forfeits on quit).
  */
 import { useTranslation } from "react-i18next";
-import { Check, X } from "lucide-react";
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoBadge } from "@/components/neo/NeoBadge";
+import { Star } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { QuestionImage } from "@/components/QuestionImage";
 import { ImageZoomModal } from "@/components/ImageZoomModal";
-import { PlayStage } from "@/components/shell/play/PlayStage";
-import { MetricsPanel, ProgressPanel, AmbientStrip } from "@/components/shell/play/ambient";
+import { PlayStage, type StageMode } from "@/components/shell/play/PlayStage";
+import { StageScore, StepDots } from "@/components/shell/play/StageParts";
+import { AnswerOption } from "@/components/shell/play/AnswerOption";
+import { answerState } from "@/components/shell/play/answerState";
+import { MetricsPanel, ProgressPanel } from "@/components/shell/play/ambient";
 import type { SoloQuizState } from "@/hooks/useSoloQuiz";
 
 const LETTERS = ["A", "B", "C", "D"];
@@ -25,6 +30,8 @@ interface QuizPlayViewProps {
   q: SoloQuizState;
   /** Header title (e.g. "Quiz", "Daily Challenge"). */
   title: string;
+  /** The frame's mode accent. */
+  mode: StageMode;
   /** Exit handler — the driving hook decides what quitting means. */
   onExit: () => void;
   exitLabel?: string;
@@ -32,27 +39,18 @@ interface QuizPlayViewProps {
   loadingLabel?: string;
 }
 
-export function QuizPlayView({ q, title, onExit, exitLabel, loadingLabel }: QuizPlayViewProps) {
+export function QuizPlayView({ q, title, mode, onExit, exitLabel, loadingLabel }: QuizPlayViewProps) {
   const { t } = useTranslation("play");
   const resolvedExitLabel = exitLabel ?? t("quizView.quit");
-  const optionStyle = (idx: number) => {
-    if (!q.revealed)
-      return q.selected === idx
-        ? "bg-primary text-primary-foreground"
-        : "bg-card text-card-foreground";
-    if (idx === q.correctIdx) return "bg-success text-success-foreground";
-    if (idx === q.selected) return "bg-destructive text-destructive-foreground";
-    return "bg-muted text-muted-foreground opacity-50";
-  };
 
   const metrics = { score: q.totalScore, seconds: q.timer };
   const progress = { current: q.questionNum, total: q.maxQuestions };
 
   if (q.loading && !q.question) {
     return (
-      <PlayStage title={title} onExit={onExit}>
+      <PlayStage mode={mode} title={title} onExit={onExit}>
         <div className="flex items-center justify-center py-16">
-          <p className="font-heading font-bold text-lg animate-pulse">
+          <p className="font-heading font-bold text-title-sm animate-pulse motion-reduce:animate-none">
             {loadingLabel ?? (q.isCameFirst ? t("quizView.loadingCameFirst") : t("quizView.loadingQuiz"))}
           </p>
         </div>
@@ -62,11 +60,28 @@ export function QuizPlayView({ q, title, onExit, exitLabel, loadingLabel }: Quiz
 
   return (
     <PlayStage
+      mode={mode}
       title={title}
       subtitle={t("quizView.questionProgress", { current: q.questionNum, total: q.maxQuestions })}
       onExit={onExit}
       exitLabel={resolvedExitLabel}
-      strip={<AmbientStrip metrics={metrics} progress={progress} />}
+      score={
+        <StageScore
+          icon={<Star size={16} strokeWidth={3} />}
+          value={q.totalScore}
+          label={t("stage.scoreLabel", { value: q.totalScore })}
+          // The question clock, as m:ss (the slot sets its line in caps).
+          detail={`${Math.floor(q.timer / 60)}:${String(q.timer % 60).padStart(2, "0")}`}
+        />
+      }
+      progress={
+        <StepDots
+          total={q.maxQuestions}
+          results={q.verdicts}
+          current={q.questionNum - 1}
+          label={t("stage.roundLabel", { current: q.questionNum, total: q.maxQuestions })}
+        />
+      }
       right={
         <>
           <MetricsPanel metrics={metrics} />
@@ -76,12 +91,12 @@ export function QuizPlayView({ q, title, onExit, exitLabel, loadingLabel }: Quiz
     >
       <div className="flex flex-col">
         <div className="flex justify-center mb-3">
-          <NeoBadge color="primary" rotated size="md">
+          <Badge tone="mode" shape="tag" size="md" stamp>
             {q.badgeLabel}
-          </NeoBadge>
+          </Badge>
         </div>
 
-        <NeoCard shadow="lg" className="mb-3">
+        <Card elevation="lifted" className="mb-3">
           {q.question?.imageUrl && (
             <div className="mb-3">
               <QuestionImage
@@ -91,41 +106,30 @@ export function QuizPlayView({ q, title, onExit, exitLabel, loadingLabel }: Quiz
               />
             </div>
           )}
-          <p className="font-heading font-bold text-xl leading-tight">
+          <p className="font-heading font-bold text-title-sm leading-tight">
             {q.question?.question}
           </p>
-        </NeoCard>
+        </Card>
 
-        <div className="space-y-2">
+        <div className="space-y-2" aria-live="polite">
           {q.question?.options.map((opt, idx) => (
-            <button
+            <AnswerOption
               key={idx}
-              type="button"
+              letter={LETTERS[idx]}
+              label={opt}
+              state={answerState(idx, q)}
               disabled={q.revealed || q.checking}
               onClick={() => q.onOption(idx)}
-              className={`w-full neo-border neo-shadow rounded-lg p-4 flex items-center gap-3 text-left transition-all cursor-pointer ${!q.revealed ? "active:neo-shadow-pressed" : ""} ${optionStyle(idx)}`}
-            >
-              <span className="neo-border rounded-full w-8 h-8 flex items-center justify-center font-heading font-bold text-xs bg-background text-foreground shrink-0">
-                {q.revealed && idx === q.correctIdx ? (
-                  <Check size={16} strokeWidth={3} />
-                ) : q.revealed && idx === q.selected ? (
-                  <X size={16} strokeWidth={3} />
-                ) : (
-                  LETTERS[idx]
-                )}
-              </span>
-              <span className="font-heading font-bold text-sm">{opt}</span>
-            </button>
+            />
           ))}
         </div>
 
+        {/* The explanation is reading matter, so it sits on the paper card;
+            the verdict itself is already on the options. */}
         {q.revealed && q.checkResult?.explanation && (
-          <NeoCard
-            color={q.checkResult.correct ? "success" : "default"}
-            className="mt-3 text-sm leading-snug"
-          >
+          <Card tone="paper" padding="sm" elevation="flat" className="mt-3 text-body-sm leading-snug">
             {q.checkResult.explanation}
-          </NeoCard>
+          </Card>
         )}
       </div>
 

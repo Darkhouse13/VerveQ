@@ -375,14 +375,19 @@ describe("ASAP bugfix contracts", () => {
     expect(source).toContain("setChecking(false)");
   });
 
-  it("blitz options show a neutral 'selected' state while checking, never red before grading", () => {
+  it("blitz options show a neutral 'pending' state while checking, never red before grading", () => {
     const v2Source = read("src/pages/shell/play/BlitzPlayScreen.tsx");
+    const state = read("src/components/shell/play/answerState.ts");
+    const option = read("src/components/shell/play/AnswerOption.tsx");
 
-    // The picked option (before reveal) is primary, not destructive.
-    // Whitespace-tolerant so indentation/line-endings don't matter.
-    expect(v2Source).toMatch(
-      /b\.selected === idx\s*\?\s*"bg-primary text-primary-foreground"/,
-    );
+    // Before the reveal the pick is "pending" — never the wrong state — and
+    // pending is flat and uncolored, so it reads as neither a verdict nor a
+    // lit button (VerveQ ONE P3.1).
+    expect(v2Source).toContain("state={answerState(idx, b)}");
+    expect(state).toContain('if (!revealed) return selected === idx ? "pending" : "idle";');
+    const pending = option.match(/pending: "([^"]+)"/)?.[1] ?? "";
+    expect(pending).toContain("shadow-none");
+    expect(pending).not.toMatch(/bg-(primary|action|lime|accent|destructive|verdict)/);
     expect(v2Source).toContain("disabled={b.revealed || b.checking}");
   });
 

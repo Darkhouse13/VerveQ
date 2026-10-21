@@ -6,7 +6,7 @@
  */
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, House, Type, Users } from "lucide-react";
+import { CalendarHeart, ChevronRight, House, Star, Type, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -71,6 +71,8 @@ export function ResultActions({ primary, next, secondary = [], note }: ResultAct
 const TILE = {
   older: { cls: "bg-electric-blue text-ink", Icon: Users },
   letters: { cls: "bg-hot-pink text-ink", Icon: Type },
+  quiz: { cls: "bg-yellow text-ink", Icon: Star },
+  survival: { cls: "bg-yellow text-ink", Icon: CalendarHeart },
   home: { cls: "bg-muted text-foreground", Icon: House },
 } as const;
 
