@@ -168,7 +168,8 @@ the whole CI gate.
 | `validateLearnSkillGraph.ts` | Learn skill-graph validation (`npm run learn:graph:validate`). |
 | `seedLearnContent.ts` | Learn content seeding. |
 | `smokeLearnFlow.ts` | Learn flow smoke checks. |
-| `renderHomeOgImage.ts` | Renders the home OG share image. |
+| `renderOgCards.mjs` | Renders the link-preview cards (`public/og/v2/*.png`: home, Who's Older, Missing Letters, THE WEEKEND, THE DRAW) on the ink brand; which paths carry which card lives in `seo/entries.mjs`. |
+| `designFloors.mjs` | Design floors report (`npm run design:floors -- <base-url>`): axe contrast, sub-12px text, sub-44px tap targets, primary action above the fold, at 390×664. |
 | `lib/deployTarget.ts` | Shared deployment-target resolution helper. |
 
 ## docs/ files

@@ -204,7 +204,91 @@ describe("canonical host consolidation", () => {
     const conf = read("../deploy/nginx.conf");
     expect(conf).toContain("absolute_redirect off;");
     expect(conf).toMatch(/location @spa\s*{[\s\S]*?return 404;/);
-    expect(conf).toMatch(/rewrite \^ \/app-shell\.html last;/);
+    expect(conf).toMatch(/rewrite \^ \$spa_shell last;/);
+    expect(conf).toMatch(/map \$uri \$spa_shell \{\s*default \/app-shell\.html;/);
+  });
+});
+
+/**
+ * Link-preview cards (VerveQ ONE P2.4). Previews never run the app, so the
+ * card a shared /older or /draw link shows is whatever HTML nginx returns for
+ * that path. This resolves each entry path the way nginx does — the
+ * `$spa_route` gate, then the `$spa_shell` map — and reads the generated file.
+ */
+describe("entry-path link previews", () => {
+  const conf = () => read("../deploy/nginx.conf");
+  const mapBlock = (name: string) => {
+    const m = conf().match(new RegExp(`map \\$uri \\$${name} \\{([\\s\\S]*?)\\n\\}`));
+    if (!m) throw new Error(`nginx map $${name} not found`);
+    const rules: Array<[RegExp, string]> = [];
+    let fallback = "";
+    for (const line of m[1].split("\n")) {
+      const t = line.trim().replace(/;$/, "");
+      if (!t || t.startsWith("#")) continue;
+      const [key, value] = t.split(/\s+/);
+      if (key === "default") fallback = value;
+      else rules.push([new RegExp(key.replace(/^~/, "")), value]);
+    }
+    return (uri: string) => rules.find(([re]) => re.test(uri))?.[1] ?? fallback;
+  };
+  const og = (h: string, prop: string) =>
+    pick(h, new RegExp(`<meta (?:property|name)="${prop.replace(/[.:]/g, "\\$&")}" content="(.*?)"`));
+
+  const ENTRY_EXPECT: Record<string, string> = {
+    "/older": "older",
+    "/whos-older": "older",
+    "/v2/whos-older": "older",
+    "/letters": "letters",
+    "/missing-letters": "letters",
+    "/v2/missing-letters": "letters",
+    "/weekend": "weekend",
+    "/v2/weekend": "weekend",
+    "/draw": "draw",
+  };
+
+  it("serves every entry path its own card", () => {
+    const spaRoute = mapBlock("spa_route");
+    const spaShell = mapBlock("spa_shell");
+    for (const [uri, id] of Object.entries(ENTRY_EXPECT)) {
+      expect(spaRoute(uri), `${uri} is not an SPA route in nginx`).toBe("1");
+      const file = spaShell(uri);
+      expect(file, uri).toBe(`/entry/${id}.html`);
+      const h = read(path.join(dist, file));
+      const image = `https://verveq.com/og/v2/${id}.png`;
+      expect(og(h, "og:image"), uri).toBe(image);
+      expect(og(h, "twitter:image"), uri).toBe(image);
+      expect(og(h, "og:title"), uri).toBeTruthy();
+      expect(og(h, "og:description"), uri).toBeTruthy();
+      expect(og(h, "twitter:card"), uri).toBe("summary_large_image");
+      expect(existsSync(`public/og/v2/${id}.png`), `${id}.png is not committed`).toBe(true);
+      // Still the app: noindex shell with the bundle, so the game boots.
+      expect(h, uri).toContain('<meta name="robots" content="noindex, follow" />');
+      expect(h, uri).toContain("/assets/index-test.js");
+      expect(h, uri).toContain('<div id="root"></div>');
+    }
+    // A trailing slash resolves the same way.
+    expect(spaShell("/older/")).toBe("/entry/older.html");
+  });
+
+  it("keeps the entry cards distinct and everything else on the default card", () => {
+    const spaShell = mapBlock("spa_shell");
+    const images = Object.values(ENTRY_EXPECT).map((id) => og(read(path.join(dist, `entry/${id}.html`)), "og:image"));
+    expect(new Set(images).size).toBe(4);
+    for (const uri of ["/compete", "/v2/daily", "/v2/weekend/squad", "/olderx", "/drawing"]) {
+      expect(spaShell(uri), uri).toBe("/app-shell.html");
+    }
+    const home = "https://verveq.com/og/v2/home.png";
+    expect(og(read(path.join(dist, "app-shell.html")), "og:image")).toBe(home);
+    expect(og(html("/"), "og:image")).toBe(home);
+    expect(existsSync("public/og/v2/home.png")).toBe(true);
+  });
+
+  it("retires the head-to-head default copy", () => {
+    for (const h of [read("index.html"), html("/"), read(path.join(dist, "app-shell.html"))]) {
+      expect(h).not.toContain("Settle it");
+      expect(h).not.toContain("/og/home.png");
+      expect(h).toContain("Can you beat it?");
+    }
   });
 });
 
