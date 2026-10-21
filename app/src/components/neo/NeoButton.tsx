@@ -1,52 +1,72 @@
-import { cva, type VariantProps } from "class-variance-authority";
-import { cn } from "@/lib/utils";
 import { forwardRef } from "react";
+import { cn } from "@/lib/utils";
+import { Button, type ButtonSize, type ButtonVariant } from "@/components/ui/button";
 
-const neoButtonVariants = cva(
-  "neo-border font-heading font-bold uppercase tracking-wide transition-all duration-100 active:neo-shadow-pressed cursor-pointer select-none inline-flex items-center justify-center gap-2",
-  {
-    variants: {
-      variant: {
-        primary: "bg-primary text-primary-foreground neo-shadow hover:brightness-110",
-        secondary: "bg-background text-foreground neo-shadow hover:bg-muted",
-        outline: "bg-transparent text-foreground neo-shadow hover:bg-muted",
-        success: "bg-success text-success-foreground neo-shadow hover:brightness-110",
-        danger: "bg-destructive text-destructive-foreground neo-shadow hover:brightness-110",
-        accent: "bg-accent text-accent-foreground neo-shadow hover:brightness-110",
-        blue: "bg-electric-blue text-electric-blue-foreground neo-shadow hover:brightness-110",
-        pink: "bg-hot-pink text-hot-pink-foreground neo-shadow hover:brightness-110",
-        yellow: "bg-yellow text-yellow-foreground neo-shadow hover:brightness-110",
-        ghost: "border-0 shadow-none text-foreground hover:bg-muted",
-      },
-      size: {
-        sm: "px-3 py-1.5 text-xs rounded-md",
-        md: "px-5 py-2.5 text-sm rounded-lg",
-        lg: "px-6 py-3.5 text-base rounded-lg",
-        xl: "px-8 py-4 text-lg rounded-lg",
-        full: "px-6 py-3.5 text-base rounded-lg w-full",
-      },
-    },
-    defaultVariants: {
-      variant: "primary",
-      size: "md",
-    },
-  }
-);
+/**
+ * Legacy variant → VerveQ ONE variant (P1.3).
+ *
+ *   primary, accent, success, yellow, pink → primary   (the colored fills
+ *                                                         collapse into THE
+ *                                                         action color)
+ *   blue                                   → secondary (every blue call site
+ *                                                         is the supporting
+ *                                                         action beside a
+ *                                                         primary: share, help,
+ *                                                         "play today" next to
+ *                                                         "play endless")
+ *   secondary, outline                     → secondary
+ *   danger                                 → danger
+ *   ghost                                  → ghost
+ *
+ * pink stays primary because its loudest use is Higher/Lower, where "lower"
+ * must weigh the same as "higher" (accent): demoting it would nudge the call.
+ */
+const VARIANT_MAP = {
+  primary: "primary",
+  accent: "primary",
+  success: "primary",
+  yellow: "primary",
+  pink: "primary",
+  blue: "secondary",
+  secondary: "secondary",
+  outline: "secondary",
+  danger: "danger",
+  ghost: "ghost",
+} as const satisfies Record<string, ButtonVariant>;
 
-interface NeoButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof neoButtonVariants> {}
+/** Legacy sizes: `xl` folds into `lg`; `full` is `lg` + block. */
+const SIZE_MAP = {
+  sm: "sm",
+  md: "md",
+  lg: "lg",
+  xl: "lg",
+  full: "lg",
+} as const satisfies Record<string, ButtonSize>;
 
-const NeoButton = forwardRef<HTMLButtonElement, NeoButtonProps>(
-  ({ className, variant, size, type = "button", ...props }, ref) => (
-    <button
-      ref={ref}
-      type={type}
-      className={cn(neoButtonVariants({ variant, size }), className)}
-      {...props}
-    />
-  )
-);
+export type NeoButtonVariant = keyof typeof VARIANT_MAP;
+export type NeoButtonSize = keyof typeof SIZE_MAP;
+
+interface NeoButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: NeoButtonVariant | null;
+  size?: NeoButtonSize | null;
+}
+
+/**
+ * @deprecated Use `Button` from `@/components/ui/button`. NeoButton is a thin
+ * alias kept so existing call sites pick up the VerveQ ONE look unchanged.
+ * It keeps the old all-caps labels (`uppercase tracking-wide`) until the copy
+ * is rewritten to sentence case and each call site moves to Button.
+ */
+const NeoButton = forwardRef<HTMLButtonElement, NeoButtonProps>(({ className, variant, size, ...props }, ref) => (
+  <Button
+    ref={ref}
+    variant={VARIANT_MAP[variant ?? "primary"]}
+    size={SIZE_MAP[size ?? "md"]}
+    block={size === "full"}
+    className={cn("uppercase tracking-wide", className)}
+    {...props}
+  />
+));
 NeoButton.displayName = "NeoButton";
 
-export { NeoButton, neoButtonVariants };
+export { NeoButton };

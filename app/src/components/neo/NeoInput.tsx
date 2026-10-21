@@ -1,20 +1,6 @@
-import { cn } from "@/lib/utils";
-import { forwardRef } from "react";
+import { Input } from "@/components/ui/input";
 
-type NeoInputProps = React.InputHTMLAttributes<HTMLInputElement>;
-
-const NeoInput = forwardRef<HTMLInputElement, NeoInputProps>(
-  ({ className, ...props }, ref) => (
-    <input
-      ref={ref}
-      className={cn(
-        "neo-border neo-shadow rounded-lg px-4 py-3 font-body text-base bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary w-full transition-all",
-        className
-      )}
-      {...props}
-    />
-  )
-);
-NeoInput.displayName = "NeoInput";
+/** @deprecated Use `Input` from `@/components/ui/input` — NeoInput is that component. */
+const NeoInput = Input;
 
 export { NeoInput };

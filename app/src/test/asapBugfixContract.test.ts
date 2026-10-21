@@ -251,7 +251,9 @@ describe("ASAP bugfix contracts", () => {
   });
 
   it("NeoButton defaults to type button so auth and game CTAs do not submit phantom forms", () => {
-    const source = read("src/components/neo/NeoButton.tsx");
+    // NeoButton is an alias over the ui Button since VerveQ ONE P1.3; the
+    // default lives there (rendered check: uiButtonContract.test.tsx).
+    const source = read("src/components/ui/button.tsx");
 
     expect(source).toContain('type = "button"');
     expect(source).toContain('type={type}');
