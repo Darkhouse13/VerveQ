@@ -23,7 +23,7 @@ import {
   noteQuestionAnswered,
 } from "@/lib/gameAnalytics";
 import type { Id } from "../../convex/_generated/dataModel";
-import type { GameResultState } from "@/types/api";
+import type { QuizResultData } from "@/components/shell/play/result/ModeResults";
 
 export const QUIZ_MAX_QUESTIONS = 10;
 const AUTO_ADVANCE_DELAY_MS = 2000;
@@ -67,6 +67,8 @@ export interface SoloQuizState {
   checking: boolean;
   correctIdx: number;
   checkResult: { correct: boolean; explanation?: string | null } | null;
+  /** Verdicts of the questions answered so far, in order (the progress dots). */
+  verdicts: boolean[];
   isCameFirst: boolean;
   badgeLabel: string;
   zoomImage: string | null;
@@ -74,7 +76,12 @@ export interface SoloQuizState {
   onOption: (idx: number) => void;
 }
 
-export function useSoloQuiz(): SoloQuizState {
+/**
+ * @param onFinish receives the scored run once the last answer is in; the
+ *                 screen shows its result in place (VerveQ ONE P3.1 — this
+ *                 used to navigate to the v1 /results page).
+ */
+export function useSoloQuiz(onFinish: (result: QuizResultData) => void): SoloQuizState {
   const { t, i18n } = useTranslation("play");
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -107,6 +114,8 @@ export function useSoloQuiz(): SoloQuizState {
 
   const answerSubmitInFlight = useRef(false);
   const autoAdvanceInFlight = useRef(false);
+  const onFinishRef = useRef(onFinish);
+  onFinishRef.current = onFinish;
   const autoAdvanceTimeoutRef = useRef<number | null>(null);
 
   const createSessionMut = useMutation(api.quizSessions.createSession);
@@ -183,8 +192,8 @@ export function useSoloQuiz(): SoloQuizState {
 
   // Leaving mid-quiz. Reads the session through a ref so the cleanup sees the
   // session that was live at unmount rather than the null captured on mount.
-  // abandonRun ignores runs that already ended, so reaching /results can never
-  // be re-reported as an abandon.
+  // abandonRun ignores runs that already ended, so the result screen (which
+  // unmounts this loop) can never be re-reported as an abandon.
   const liveSessionRef = useRef<Id<"quizSessions"> | null>(null);
   liveSessionRef.current = sessionId;
   useEffect(() => () => abandonRun(liveSessionRef.current), []);
@@ -295,7 +304,7 @@ export function useSoloQuiz(): SoloQuizState {
         // to the local totalScore — the score those players are actually shown.
         // No `result`: the quiz is scored, it has no win/loss.
         completeRun(sessionId, { score: serverScore });
-        const state: GameResultState = {
+        onFinishRef.current({
           score: serverScore,
           total: QUIZ_MAX_QUESTIONS,
           correctCount: serverCorrectCount,
@@ -303,13 +312,11 @@ export function useSoloQuiz(): SoloQuizState {
           eloChange,
           newElo,
           sport,
-          // GameResultState.mode has no `came_first`; it's a quiz variant.
-          mode: "quiz",
+          isCameFirst,
           kFactor,
           kFactorLabel,
-          scoreBreakdown,
-        };
-        navigate("/results", { state });
+          breakdown: scoreBreakdown,
+        });
       } else {
         setQuestionNum((n) => n + 1);
         if (sessionId) await fetchQuestion(sessionId);
@@ -329,7 +336,7 @@ export function useSoloQuiz(): SoloQuizState {
     times,
     totalScore,
     user,
-    navigate,
+    isCameFirst,
   ]);
 
   useEffect(() => {
@@ -366,6 +373,7 @@ export function useSoloQuiz(): SoloQuizState {
     checking,
     correctIdx,
     checkResult,
+    verdicts: scoreBreakdown.map((r) => r.correct),
     isCameFirst,
     badgeLabel: isCameFirst ? t("quiz.cameFirstBadge") : difficulty,
     zoomImage,

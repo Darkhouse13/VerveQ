@@ -99,6 +99,8 @@
     "surnameAccepted": "APELLIDO ACEPTADO: {{answer}}",
     "hiddenAnswerFound": "¡RESPUESTA OCULTA ENCONTRADA!",
     "plusOneLife": "+1 VIDA",
+    "livesDetail_one": "{{count}} vida",
+    "livesDetail_other": "{{count}} vidas",
     "failedToSubmit": "No se pudo enviar la respuesta",
     "failedToGetHelp": "No se pudo obtener ayuda",
     "failedToSkip": "No se pudo saltar",
@@ -620,7 +622,58 @@
       "home": {
         "title": "Más juegos hoy",
         "body": "El resto de hoy está en Inicio."
+      },
+      "quiz": {
+        "title": "Reto diario",
+        "body": "10 preguntas. Un intento al día."
+      },
+      "survival": {
+        "title": "Survival diario",
+        "body": "Las mismas 10 rondas para todos."
       }
+    },
+    "home": "Inicio",
+    "shareCopied": "Resultado copiado. Pégalo donde quieras.",
+    "shareFailed": "No se pudo copiar tu resultado.",
+    "playAgain": "Jugar otra vez",
+    "details": "Detalles",
+    "right": "Acierto",
+    "wrong": "Fallo",
+    "question": "Pregunta {{n}}",
+    "seconds": "{{value}} s",
+    "pts": "{{score}} pts",
+    "pointsCaption": "Puntos",
+    "nextDailyIn": "Siguiente diario en {{time}}",
+    "rating": {
+      "up": "Rating +{{change}}",
+      "down": "Rating −{{change}}",
+      "same": "Rating sin cambios",
+      "now": "ahora {{elo}}"
+    },
+    "eyebrow": {
+      "survival": "Fin de la partida",
+      "dailyQuiz": "Reto diario · {{date}}",
+      "dailyQuizWorldCup": "Diario del Mundial · {{date}}",
+      "dailySurvival": "Survival diario · {{date}}",
+      "blitz": "60 segundos"
+    },
+    "line": {
+      "survival": "{{correct}} aciertos · ronda {{round}} alcanzada",
+      "blitz": "{{correct}} aciertos · {{wrong}} fallos",
+      "forfeited": "Partida perdida"
+    },
+    "stat": {
+      "correct": "Aciertos",
+      "wrong": "Fallos",
+      "rounds": "Ronda alcanzada",
+      "accuracy": "Precisión",
+      "avgTime": "Tiempo medio",
+      "topic": "Tema"
+    },
+    "shareText": {
+      "quiz": "VerveQ Quiz — {{correct}}/{{total}} · {{score}} pts\n{{emoji}}\n¿Crees que me ganas? {{url}}",
+      "survival": "VerveQ Supervivencia — {{score}} pts · ronda {{round}} alcanzada\n¿Crees que me ganas? {{url}}",
+      "blitz": "VerveQ Blitz — {{score}} pts en 60 segundos ({{correct}} aciertos)\n¿Crees que me ganas? {{url}}"
     }
   }
 }

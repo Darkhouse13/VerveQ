@@ -9,8 +9,9 @@
  * one-attempt-per-day check (`getAttemptStatus`), and the STRICTER anti-cheat
  * (tab switch FORFEITS the attempt, it doesn't just end the session). The flow
  * uses the DAILY session (`dailyAttempts`), never a regular quiz session, and
- * none of the daily backend is touched. On completion it routes to the existing
- * `/daily-results` screen with the same state shape the live screen produced.
+ * none of the daily backend is touched. On completion it hands the scored run
+ * to `onFinish`, and the screen shows its result in place (VerveQ ONE P3.1 —
+ * this used to route to the v1 `/daily-results` page).
  */
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
@@ -31,6 +32,7 @@ import {
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import type { Id } from "../../convex/_generated/dataModel";
 import type { SoloQuizState } from "@/hooks/useSoloQuiz";
+import type { DailyQuizResultData } from "@/components/shell/play/result/ModeResults";
 
 const MAX_QUESTIONS = 10;
 const AUTO_ADVANCE_DELAY_MS = 2000;
@@ -51,7 +53,7 @@ export interface DailyQuizState extends SoloQuizState {
   forfeitAndExit: () => void;
 }
 
-export function useDailyQuiz(): DailyQuizState {
+export function useDailyQuiz(onFinish: (result: DailyQuizResultData) => void): DailyQuizState {
   const { t, i18n } = useTranslation("play");
   const navigate = useNavigate();
   // Resolved via the shared helper (URL ?sport= → saved preference → football)
@@ -88,6 +90,8 @@ export function useDailyQuiz(): DailyQuizState {
   const localAttemptSport = useRef<string | null>(null);
   const autoAdvanceInFlight = useRef(false);
   const autoAdvanceTimeoutRef = useRef<number | null>(null);
+  const onFinishRef = useRef(onFinish);
+  onFinishRef.current = onFinish;
 
   const getOrCreateChallengeMut = useMutation(api.dailyChallenge.getOrCreateChallenge);
   const startAttemptMut = useMutation(api.dailyChallenge.startAttempt);
@@ -287,24 +291,14 @@ export function useDailyQuiz(): DailyQuizState {
                   score: checkResult.score,
                 },
               ];
-        const shareEmojis = finalResults
-          .map((r) => {
-            if (!r.correct) return "🟥";
-            if (r.timeTaken <= 3) return "🟩";
-            return "🟨";
-          })
-          .join("");
-
-        navigate("/daily-results", {
-          state: {
-            score: totalScore,
-            total: MAX_QUESTIONS,
-            correctCount: finalResults.filter((r) => r.correct).length,
-            sport,
-            shareString: shareEmojis,
-            mode: "daily-quiz" as const,
-            scoreBreakdown: finalResults,
-          },
+        // The share grid (🟩 fast / 🟨 right / 🟥 wrong) is built from these
+        // rows on the result screen (answerGrid).
+        onFinishRef.current({
+          score: totalScore,
+          total: MAX_QUESTIONS,
+          correctCount: finalResults.filter((r) => r.correct).length,
+          sport,
+          breakdown: finalResults,
         });
       } else {
         setQuestionNum((n) => n + 1);
@@ -312,7 +306,7 @@ export function useDailyQuiz(): DailyQuizState {
     } finally {
       autoAdvanceInFlight.current = false;
     }
-  }, [attemptId, checkResult, completeAttemptMut, navigate, questionNum, results, revealed, sport, totalScore]);
+  }, [attemptId, checkResult, completeAttemptMut, questionNum, results, revealed, sport, totalScore]);
 
   useEffect(() => {
     if (!revealed) return;
@@ -372,6 +366,7 @@ export function useDailyQuiz(): DailyQuizState {
     checkResult: checkResult
       ? { correct: checkResult.correct, explanation: checkResult.explanation }
       : null,
+    verdicts: results.map((r) => r.correct),
     isCameFirst: false,
     badgeLabel: "Daily Challenge",
     zoomImage,

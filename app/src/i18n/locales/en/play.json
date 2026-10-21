@@ -99,6 +99,8 @@
     "surnameAccepted": "SURNAME ACCEPTED: {{answer}}",
     "hiddenAnswerFound": "HIDDEN ANSWER FOUND!",
     "plusOneLife": "+1 LIFE",
+    "livesDetail_one": "{{count}} life",
+    "livesDetail_other": "{{count}} lives",
     "failedToSubmit": "Failed to submit guess",
     "failedToGetHelp": "Failed to get help",
     "failedToSkip": "Failed to skip",
@@ -620,7 +622,58 @@
       "home": {
         "title": "More games today",
         "body": "See the rest of today on Home."
+      },
+      "quiz": {
+        "title": "Daily Challenge",
+        "body": "10 questions. One go a day."
+      },
+      "survival": {
+        "title": "Daily Survival",
+        "body": "Same 10 rounds for everyone."
       }
+    },
+    "home": "Home",
+    "shareCopied": "Result copied. Paste it anywhere.",
+    "shareFailed": "Couldn't copy your result.",
+    "playAgain": "Play again",
+    "details": "Details",
+    "right": "Right",
+    "wrong": "Wrong",
+    "question": "Question {{n}}",
+    "seconds": "{{value}} s",
+    "pts": "{{score}} pts",
+    "pointsCaption": "Points",
+    "nextDailyIn": "Next daily in {{time}}",
+    "rating": {
+      "up": "Rating +{{change}}",
+      "down": "Rating −{{change}}",
+      "same": "Rating unchanged",
+      "now": "now {{elo}}"
+    },
+    "eyebrow": {
+      "survival": "Run over",
+      "dailyQuiz": "Daily Challenge · {{date}}",
+      "dailyQuizWorldCup": "World Cup Daily · {{date}}",
+      "dailySurvival": "Daily Survival · {{date}}",
+      "blitz": "60 seconds"
+    },
+    "line": {
+      "survival": "{{correct}} right · reached round {{round}}",
+      "blitz": "{{correct}} right · {{wrong}} wrong",
+      "forfeited": "Run forfeited"
+    },
+    "stat": {
+      "correct": "Right",
+      "wrong": "Wrong",
+      "rounds": "Reached round",
+      "accuracy": "Accuracy",
+      "avgTime": "Average time",
+      "topic": "Topic"
+    },
+    "shareText": {
+      "quiz": "VerveQ Quiz — {{correct}}/{{total}} · {{score}} pts\n{{emoji}}\nThink you can beat me? {{url}}",
+      "survival": "VerveQ Survival — {{score}} pts · reached round {{round}}\nThink you can beat me? {{url}}",
+      "blitz": "VerveQ Blitz — {{score}} pts in 60 seconds ({{correct}} right)\nThink you can beat me? {{url}}"
     }
   }
 }
