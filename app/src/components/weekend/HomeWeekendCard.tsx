@@ -88,14 +88,17 @@ export function HomeWeekendCard() {
 
         {/* Action column */}
         <div className="md:w-[300px] md:shrink-0 flex flex-col gap-2">
-          <NeoButton
-            variant="accent"
-            size="full"
-            onClick={enter}
-            data-testid="weekend-cta-play"
-          >
-            {tr("weekend.homePlay", "Play now")}
-          </NeoButton>
+          {/* The card is ink, so its action takes the ink theme's lime. */}
+          <div className="theme-ink">
+            <NeoButton
+              variant="primary"
+              size="full"
+              onClick={enter}
+              data-testid="weekend-cta-play"
+            >
+              {tr("weekend.homePlay", "Play now")}
+            </NeoButton>
+          </div>
           <p className="font-mono text-[10.5px] uppercase text-background/60">
             {tr("weekend.homeNote", "Budget squad or crew draft — fresh board every weekend.")}
           </p>

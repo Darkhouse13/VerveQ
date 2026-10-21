@@ -201,7 +201,7 @@ export function LobbyView({
 
         <div className="space-y-2.5">
           <NeoButton
-            variant={me?.ready ? "success" : "primary"}
+            variant={me?.ready ? "secondary" : "primary"}
             size="full"
             onClick={handleReady}
           >
@@ -503,7 +503,7 @@ export function RoundBreakView({
       )}
 
       <NeoButton
-        variant={me?.ready ? "success" : "primary"}
+        variant={me?.ready ? "secondary" : "primary"}
         size="full"
         disabled={!me || me.ready}
         onClick={() => void handleReady()}
