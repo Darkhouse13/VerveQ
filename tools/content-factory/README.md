@@ -111,9 +111,12 @@ which other promos share the process. Calling a noise-using synth before any
   animation and ship in the MP4; a trending *song* is still added in-app for
   distribution and to dodge licensing.
 - **English only** — broadest TikTok football audience.
-- **Cream ground, ink, brand accents only** — variants rotate *within* the
-  brand, never outside it. Brand tokens live in `src/theme.ts`, mirrored from
-  `app/src/index.css`. If the app palette changes, update both.
+- **Ink ground, lime action, brand accents only** — the live lab and WEEKEND
+  reels run on ink `#121212` with lime `#C6FF1A`, and the app is moving to
+  the same ground (owner-approved "VerveQ ONE" plan, 2026-10-21). Variants
+  rotate *within* the brand, never outside it. Brand tokens live in
+  `src/theme.ts`, mirrored from `app/src/index.css`; if the app palette
+  changes, update both (a shared token export is planned).
 
 ## Hero brand promos (`npm run promo`)
 

@@ -118,12 +118,12 @@ export VITE_CONVEX_SITE_URL=https://different-lynx-153.convex.site
 ./deploy/build-and-run.sh
 ```
 
-> **`VITE_DRAW_ENABLED` is intentionally absent above.** THE DRAW is dark: the
-> flag is dev-only (`app/.env.local`), so `/draw` does not exist in the prod
-> bundle. It is a double gate — even with the flag on, `drawSettings.enabled`
-> (or tester membership) is checked server-side on every draw function, so the
-> flag alone opens nothing. Both gates stay until the Home ticket links the
-> mode. To run it locally:
+> **THE DRAW is LIVE on prod.** `VITE_DRAW_ENABLED=true` is exported in the
+> host CI wrapper, not in the snippet above, so `/draw` ships in the prod
+> bundle and Home links to it. The server gate (`drawSettings.enabled`, or
+> tester membership) still applies to every draw function. Prod build flags
+> live in that wrapper: check it, not this file, for what is on. To run the
+> mode locally:
 >
 > ```bash
 > cd app

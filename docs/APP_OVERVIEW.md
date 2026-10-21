@@ -824,27 +824,28 @@ signed-out visitor). Source of truth for both tables is
 
 ## Design System
 
-VerveQ uses a **neo-brutalism** design language characterized by:
+> **Being unified (Oct 2026).** The owner approved the "VerveQ ONE" plan on
+> 2026-10-21: one ink `#121212` ground for the whole app with cream as a
+> reading card, one lime action color `#C6FF1A`, ink text on every colored
+> fill, Space Grotesk + JetBrains Mono only, one SVG brand mark, and one set
+> of primitives under `components/ui`. Until that lands, this section
+> describes what ships today.
 
-- **Thick black borders** on all interactive elements
-- **Bold drop shadows** that shift on press (active state feedback)
-- **Vibrant color palette:**
-  - Primary (brand blue)
-  - Success (green — correct answers, football)
-  - Accent (yellow/orange — tennis)
-  - Destructive (red — wrong answers, hard mode)
-  - Blue, Pink (secondary actions)
-- **Typography:** Bold uppercase headings, clean body text, monospace for scores
-- **Mobile-first responsive layout** with max-width constraint
+VerveQ uses a **neo-brutalist** look: 2px borders, hard 4px offset shadows,
+8px radius. Tokens are HSL CSS variables in `app/src/index.css`, re-skinned
+per surface by a wrapper class:
 
-**Custom components (neo/ prefix):**
-- `NeoButton` — 9 variants, 5 sizes, press animation
-- `NeoCard` — 7 color options, active state with ring + scale
-- `NeoBadge` — Status pills with optional rotation
-- `NeoInput` — Styled text input with focus ring
-- `NeoAvatar` — Circle with generated initials
-- `NeoLogo` — "VQ" brand mark
-- `BottomNav` — Fixed bottom navigation (Home, Ranks, Challenge, Profile)
+- `:root` — cream ground, orange primary `hsl(25 100% 50%)` (hubs, quizzes)
+- `.theme-weekend` — near-black ground, lime (THE WEEKEND)
+- `.theme-older`, `.theme-letters` — ink ground, lime (the daily games;
+  Letters runs a desaturated variant)
+- `.theme-learn` — warm cream (Learn)
+- `.theme-draw` / `.draw-surface-dark` — THE DRAW (`components/draw/draw.css`)
+
+Fonts: Space Grotesk (headings), Inter (body), JetBrains Mono (numbers).
+
+**Primitives (`components/neo/`):** `NeoButton` (11 variants, 4 sizes),
+`NeoCard`, `NeoBadge`, `NeoInput`, `NeoAvatar`, `NeoLogo` (PNG "VQ" mark).
 
 ---
 
