@@ -8,7 +8,7 @@
  * Every list is framed as "in VerveQ's database": the pages are honest about
  * being a curated set, not an exhaustive register of every player ever.
  */
-import { breadcrumbLd, cta, esc, faqLd, faqSection, linkGrid, listJoin, slugify, ORIGIN } from "../lib.mjs";
+import { breadcrumbLd, clubStop, cta, esc, faqLd, faqSection, linkGrid, listJoin, slugify, ORIGIN } from "../lib.mjs";
 import { loadPlayers } from "../data.mjs";
 
 const HOME = { name: "VerveQ", path: "/" };
@@ -332,7 +332,7 @@ function renderPathQuiz(list) {
   return list
     .map(
       (cp, i) => `<div class="seo-q"><h3>Player ${i + 1} <span class="seo-note">(${esc(cp.difficulty ?? "medium")})</span></h3>
-<div class="seo-path">${cp.clubs.map((c) => `<span class="seo-club">${esc(c)}</span>`).join('<span class="seo-arrow">→</span>')}</div>
+<div class="seo-path">${cp.clubs.map((c) => clubStop(c)).join('<span class="seo-arrow">→</span>')}</div>
 <details class="seo-reveal"><summary>Reveal the player</summary><p><strong>${esc(cp.answerName)}</strong></p></details></div>`,
     )
     .join("\n");

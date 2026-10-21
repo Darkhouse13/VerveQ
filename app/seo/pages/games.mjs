@@ -7,6 +7,7 @@
  * and an FAQ as server-rendered HTML.
  */
 import {
+  clubStop,
   cta,
   esc,
   faqLd,
@@ -73,7 +74,7 @@ function careerPathSample(ctx) {
   return picks
     .map(
       (p, i) => `<div class="seo-q"><h3>Player ${i + 1} <span class="seo-note">(${esc(p.difficulty)})</span></h3>
-<div class="seo-path">${p.clubs.map((c) => `<span class="seo-club">${esc(c)}</span>`).join('<span class="seo-arrow">→</span>')}</div>
+<div class="seo-path">${p.clubs.map((c) => clubStop(c)).join('<span class="seo-arrow">→</span>')}</div>
 <details class="seo-reveal"><summary>Reveal the player</summary><p><strong>${esc(p.answerName)}</strong></p></details></div>`,
     )
     .join("\n");

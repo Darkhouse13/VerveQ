@@ -7,7 +7,7 @@
  * Copy is written for each language's search phrasing ("quiz foot", "grille
  * foot", "adivina el futbolista"), not translated word for word.
  */
-import { cta, esc, faqLd, faqSection, breadcrumbLd, linkGrid, ORIGIN } from "../lib.mjs";
+import { clubStop, cta, esc, faqLd, faqSection, breadcrumbLd, linkGrid, ORIGIN } from "../lib.mjs";
 
 /** key -> path per language. x-default is the English page. */
 export const LANG_GROUPS = {
@@ -116,7 +116,7 @@ export function buildIntlGamePages(ctx) {
   const out = [];
   const cp = ctx.careerSamples
     .map(
-      (p, i) => `<div class="seo-q"><h3>#${i + 1}</h3><div class="seo-path">${p.clubs.map((c) => `<span class="seo-club">${esc(c)}</span>`).join('<span class="seo-arrow">→</span>')}</div>
+      (p, i) => `<div class="seo-q"><h3>#${i + 1}</h3><div class="seo-path">${p.clubs.map((c) => clubStop(c, "{{LOAN}}")).join('<span class="seo-arrow">→</span>')}</div>
 <details class="seo-reveal"><summary>{{REVEAL}}</summary><p><strong>${esc(p.answerName)}</strong></p></details></div>`,
     )
     .join("\n");
@@ -158,7 +158,7 @@ ${cta("/v2/daily?ref=seo_daily_fr", "Jouer au quiz du jour")}
 ${cta("/v2/career-path?ref=seo_career_fr", "Jouer au parcours carrière")}
 <p class="seo-note">${UI.fr.free}</p></div>
 <h2>Essaie maintenant</h2>
-${cp.replace(/\{\{REVEAL\}\}/g, "Voir le joueur")}
+${cp.replace(/\{\{REVEAL\}\}/g, "Voir le joueur").replace(/\{\{LOAN\}\}/g, "prêt")}
 <h2>Les règles</h2>
 <ul>
 <li><strong>Tout le parcours est affiché d'emblée.</strong> Lis, réfléchis, tape le nom.</li>
@@ -333,7 +333,7 @@ ${cta("/v2/daily?ref=seo_daily_es", "Jugar el quiz de hoy")}
 ${cta("/v2/career-path?ref=seo_career_es", "Jugar a adivinar el jugador")}
 <p class="seo-note">${UI.es.free}</p></div>
 <h2>Pruébalo ahora</h2>
-${cp.replace(/\{\{REVEAL\}\}/g, "Ver el jugador")}
+${cp.replace(/\{\{REVEAL\}\}/g, "Ver el jugador").replace(/\{\{LOAN\}\}/g, "cedido")}
 <h2>Reglas</h2>
 <ul>
 <li><strong>Toda la trayectoria desde el principio.</strong> Lee, piensa y escribe.</li>

@@ -25,6 +25,22 @@ export function esc(value) {
     .replace(/"/g, "&quot;");
 }
 
+/**
+ * One stop on a career path. Entries are club-name strings, or
+ * `{ name, loan: true }` for a loan spell (about half the paths carry one);
+ * passing the object straight to `esc()` printed "[object Object]".
+ * `loanLabel` is the visible word for a loan in the page's language.
+ */
+export function clubStop(entry, loanLabel = "loan") {
+  if (entry && typeof entry === "object") {
+    const name = esc(entry.name);
+    return entry.loan
+      ? `<span class="seo-club">${name} <span class="seo-loan">${esc(loanLabel)}</span></span>`
+      : `<span class="seo-club">${name}</span>`;
+  }
+  return `<span class="seo-club">${esc(entry)}</span>`;
+}
+
 /** Lowercase ASCII slug: "Atlético Madrid" -> "atletico-madrid". */
 export function slugify(value) {
   return String(value)
@@ -255,6 +271,7 @@ html,body{margin:0;background:#FFF7F0}
 #seo th,#seo td{text-align:left;padding:8px 10px;border-bottom:1px solid #ddd;vertical-align:top}
 #seo th{background:var(--ink);color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-weight:600}
 #seo .seo-path{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}
+#seo .seo-loan{font-family:var(--mono,monospace);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;opacity:.7}
 #seo .seo-club{border:2px solid var(--ink);border-radius:8px;background:#fff;padding:3px 9px;font-weight:600;font-size:14px}
 #seo .seo-arrow{color:var(--muted)}
 #seo .seo-q{border:2px solid var(--ink);border-radius:12px;background:#fff;padding:14px 16px;margin:0 0 14px}
