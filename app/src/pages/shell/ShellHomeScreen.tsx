@@ -1,59 +1,64 @@
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, type ReactNode } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "convex/react";
-import {
-  Brain,
-  CalendarHeart,
-  Crown,
-  Flame,
-  Hammer,
-  Hourglass,
-  Type,
-  Lock,
-  Route,
-  Star,
-  Swords,
-  UserRound,
-  Users,
-} from "lucide-react";
+import { ChevronDown, Flame, Radio, Send, Users, UserRound } from "lucide-react";
 import { NeoAvatar } from "@/components/neo/NeoAvatar";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { BrandMark } from "@/components/ui/BrandMark";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { ModeTile } from "@/components/ui/mode-tile";
 import { HomeDrawCard } from "@/components/draw/HomeDrawCard";
-import { HomeWeekendCard } from "@/components/weekend/HomeWeekendCard";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
-import { RANKED_CAPABILITIES, tierFromElo, tierProgress } from "@/lib/rankedLadder";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePreferredDailySport } from "@/hooks/usePreferredDailySport";
 import { getTodayUTC, isWorldCupEditionActive } from "../../../convex/lib/daily";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
+import {
+  COMPETE_KNOWLEDGE_TILES,
+  PLAY_FEATURED_KEYS,
+  PLAY_MORE_KEYS,
+  PLAY_TODAY_KEYS,
+  tilesByKeys,
+} from "./competeModeTiles";
 
 /**
- * v2 unified Home (VerveQ ONE P2.5), on the ink ground like every route.
+ * PLAY — the first tab (VerveQ ONE decision 10), on the ink ground.
  *
- * TODAY LEADS, FOR EVERYONE (owner decision 10). Most new players arrive from
- * an Instagram reel into Who's Older or Missing Letters, play, and tap HOME.
- * What they need there is the next daily — so the four dailies (Who's Older,
- * Missing Letters, Daily Challenge, Daily Survival) are the first thing on the
- * screen, each with today's state when the server knows it. THE WEEKEND hero
- * and THE DRAW card follow; then Career Path, COMPETE, the hooks strip and the
- * ladder. Until 2026-10 THE WEEKEND led unconditionally and pushed the dailies
- * to the second screen on a phone, at exactly the moment we wanted a second
- * game played.
+ * Play replaced BOTH Home and Compete. The two screens offered the same games
+ * twice (12 of Compete's 15 entries were already on Home), so a player had two
+ * catalogues and no idea which one was "the" place to start. Now there is one,
+ * in four sections (membership lives in competeModeTiles.ts):
+ *
+ *   TODAY       Who's Older, Missing Letters, Daily Challenge, Daily Survival,
+ *               each with today's state when the server knows it; THE DRAW
+ *               ("Today's Draw") joins as its own card when its gates allow.
+ *               Most new players arrive from an Instagram reel into one of the
+ *               dailies, play, and tap PLAY: what they need is the next daily.
+ *   FEATURED    Career Path — the most-played mode on the app.
+ *   WITH FRIENDS one "Challenge a friend" entry: send a link (Duels) or open a
+ *               live room (Arena). They were two tiles for one intent.
+ *   MORE GAMES  collapsed: Quiz and Survival (with a "Ranked" chip), VerveGrid,
+ *               Higher or Lower, Blitz, Knowledge Quiz, Which Came First.
+ *               Opens on `#more` — every old /compete link lands that way.
+ *
+ * What left: THE WEEKEND card (it has its own tab now), the COMPETE pillar and
+ * the ladder card (the Ranks tab), and The Forge (Profile → Labs, decision 11).
  *
  * Every mode is offered through one ModeTile on its decision-12 accent.
- * Desktop is a never-scroll grid; mobile is a scrolling column in the same DOM
- * order, so both breakpoints render one tree.
+ * Desktop never scrolls at 1440×900 with More games closed (height budget:
+ * measure main's maxBottom before adding anything); mobile is a scrolling
+ * column in the same DOM order, so both breakpoints render one tree.
  *
  * Presentational + navigational only. Every number on screen is server-read
- * (profile, daily attempts, the daily games' getToday, season) and
- * honesty-gated: a state the server hasn't confirmed is absent, never guessed.
+ * (profile, daily attempts, the daily games' getToday) and honesty-gated: a
+ * state the server hasn't confirmed is absent, never guessed.
  */
 
 /** "h:mm" until the next UTC midnight — when the dailies re-roll. */
@@ -82,8 +87,20 @@ function correctCount(results: unknown): { correct: number; total: number } | nu
 /** Optional support nudge — small, unobtrusive, never shown during play. */
 const COFFEE_URL = "https://buymeacoffee.com/verveq";
 
+/** The `#anchor` that opens More games (old /compete links redirect with it). */
+const MORE_HASH = "#more";
+
+/** Stable hooks for the contracts and the journey spec, one per Today tile. */
+const TODAY_TEST_IDS: Record<string, string> = {
+  whosOlder: "home-whos-older-card",
+  missingLetters: "home-missing-letters-card",
+  daily: "home-daily-card",
+  dailySurvival: "home-daily-survival-card",
+};
+
 export default function ShellHomeScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const { user, hasUsername, accountState } = useAuth();
   // Any server identity with a username — anonymous (username-only) or full —
@@ -97,9 +114,7 @@ export default function ShellHomeScreen() {
   const hasSession = accountState !== "loggedOut" && accountState !== "loading";
   // The header tells the truth about who you are (consistent with Settings):
   //  - no session            → Sign in (back to the password screen);
-  //  - session, no username  → a "Guest" chip to the account chooser — this
-  //                            used to be a "P" avatar for a "Player" that
-  //                            does not exist;
+  //  - session, no username  → a "Guest" chip to the account chooser;
   //  - a username            → the avatar, to Profile.
   const showSignIn = accountState === "loggedOut";
   const showGuest = accountState === "needsUsername";
@@ -120,25 +135,20 @@ export default function ShellHomeScreen() {
   const whosOlderToday = useQuery(api.whosOlder.getToday, hasSession ? {} : "skip");
   // Missing Letters — the twin of the reel the feed runs twice a day.
   const missingLettersToday = useQuery(api.missingLetters.getToday, hasSession ? {} : "skip");
-  const season = useQuery(
-    api.seasonManager.getCurrentSeason,
-    hasUsername ? {} : "skip",
-  );
-  // True position on the live ranked board (football·quiz, same scope as the
-  // Ranks screen). Only fetched once the profile confirms ranked eligibility.
-  const globalRank = useQuery(
-    api.leaderboards.getGlobalRank,
-    RANKED_CAPABILITIES.globalRank && profile?.rankedEligible && userId
-      ? { userId, sport: "football", mode: "quiz" }
-      : "skip",
-  );
+
+  // More games is collapsed by default; `#more` (every old /compete link)
+  // opens it. Local state after that — the hash is an entry, not a binding.
+  const [moreOpen, setMoreOpen] = useState(location.hash === MORE_HASH);
+  // Arriving on `#more`, bring the opened catalogue into view: that is what
+  // the link promised (the Compete grid used to BE the whole screen).
+  useEffect(() => {
+    if (location.hash === MORE_HASH) {
+      document.getElementById("home-more")?.scrollIntoView?.({ block: "start" });
+    }
+  }, [location.hash]);
 
   const displayName = user?.username || "Player";
   const streak = profile?.stats.currentStreak ?? 0;
-  // Ranked standing only when the server says the user is ranked-eligible;
-  // username-only users get the locked ladder card, never a baseline ELO.
-  const elo = profile?.rankedEligible ? Math.round(profile.eloRating) : null;
-  const progress = elo != null ? tierProgress(elo) : null;
 
   // ── TODAY: each tile's state, only when the server confirms it ──
   const dailyQuizDone = dailyStatus?.completed === true;
@@ -182,7 +192,7 @@ export default function ShellHomeScreen() {
         {run > 0 && (
           <span className="inline-flex items-center gap-0.5" title={t("home.stats.streak")}>
             {parts.length > 0 && <span aria-hidden>·</span>}
-            <Flame size={11} strokeWidth={3} aria-hidden />
+            <Flame size={12} strokeWidth={3} aria-hidden />
             {run}
           </span>
         )}
@@ -190,9 +200,26 @@ export default function ShellHomeScreen() {
     );
   };
 
+  // Window shared with the backend's themed question pool (lib/daily.ts), so
+  // the tile renames itself exactly while the WC edition is being served.
   const dailyIsWorldCup = isWorldCupEditionActive(dailySport, getTodayUTC());
-  const seasonNumber =
-    typeof season?.seasonNumber === "number" ? season.seasonNumber : null;
+
+  const todayStatus: Record<string, ReactNode> = {
+    whosOlder: dailyGameStatus(whosOlderToday),
+    missingLetters: dailyGameStatus(missingLettersToday),
+    daily: dailyQuizStatus,
+    dailySurvival: dailySurvivalStatusText,
+  };
+  // The daily quiz follows the user's preferred subject; every other tile
+  // carries football (the only live sport).
+  const targetFor = (key: string, to: (sport: string) => string) =>
+    to(key === "daily" ? dailySport : "football");
+  const nameFor = (key: string) =>
+    key === "daily" && dailyIsWorldCup ? t("modes.daily.worldCupName") : t(`modes.${key}.name`);
+
+  const today = tilesByKeys(PLAY_TODAY_KEYS);
+  const featured = tilesByKeys(PLAY_FEATURED_KEYS);
+  const more = [...tilesByKeys(PLAY_MORE_KEYS), ...COMPETE_KNOWLEDGE_TILES];
 
   return (
     <ShellLayout>
@@ -223,7 +250,7 @@ export default function ShellHomeScreen() {
                 size="sm"
                 title={t("settings.notSignedIn")}
                 onClick={() =>
-                  navigate(`${SHELL_ROUTES.account}?next=${encodeURIComponent(SHELL_ROUTES.home)}`)
+                  navigate(`${SHELL_ROUTES.account}?next=${encodeURIComponent(SHELL_ROUTES.play)}`)
                 }
                 data-testid="home-guest-chip"
               >
@@ -258,255 +285,156 @@ export default function ShellHomeScreen() {
             </Eyebrow>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {/* WHO'S OLDER? — the format behind most of the account's reel
-                reach, as a daily with endless unlocked after it. */}
-            <ModeTile
-              mode="blue"
-              icon={Hourglass}
-              name={t("modes.whosOlder.name")}
-              line={t("modes.whosOlder.desc")}
-              status={dailyGameStatus(whosOlderToday)}
-              onClick={() => navigate(SHELL_ROUTES.whosOlderPlay)}
-              className="min-h-[132px]"
-              data-testid="home-whos-older-card"
-            />
-            {/* MISSING LETTERS — the reel format that holds most of the feed's
-                daily slots, as a daily + endless. */}
-            <ModeTile
-              mode="pink"
-              icon={Type}
-              name={t("modes.missingLetters.name")}
-              line={t("modes.missingLetters.desc")}
-              status={dailyGameStatus(missingLettersToday)}
-              onClick={() => navigate(SHELL_ROUTES.missingLettersPlay)}
-              className="min-h-[132px]"
-              data-testid="home-missing-letters-card"
-            />
-            {/* Window shared with the backend's themed question pool
-                (lib/daily.ts), so the tile renames itself exactly while the
-                WC edition is being served. */}
-            <ModeTile
-              mode="yellow"
-              icon={Star}
-              name={dailyIsWorldCup ? t("modes.daily.worldCupName") : t("modes.daily.name")}
-              line={t("modes.daily.desc")}
-              status={dailyQuizStatus}
-              onClick={() => navigate(`${SHELL_ROUTES.dailyPlay}?sport=${dailySport}`)}
-              className="min-h-[132px]"
-              data-testid="home-daily-card"
-            />
-            <ModeTile
-              mode="yellow"
-              icon={CalendarHeart}
-              name={t("modes.dailySurvival.name")}
-              line={t("modes.dailySurvival.desc")}
-              status={dailySurvivalStatusText}
-              onClick={() => navigate("/v2/daily-survival")}
-              className="min-h-[132px]"
-              data-testid="home-daily-survival-card"
-            />
+            {today.map((tile) => (
+              <ModeTile
+                key={tile.key}
+                mode={tile.color}
+                icon={tile.icon}
+                name={nameFor(tile.key)}
+                line={t(`modes.${tile.key}.desc`)}
+                status={todayStatus[tile.key]}
+                onClick={() => navigate(targetFor(tile.key, tile.to))}
+                className="min-h-[132px]"
+                data-testid={TODAY_TEST_IDS[tile.key]}
+              />
+            ))}
           </div>
+          {/* TODAY'S DRAW (Ticket H) joins Today: it is a daily board too.
+              Self-gating (build flag + server gate, both silent), and its
+              absence leaves no trace in the column. */}
+          <HomeDrawCard />
         </section>
 
-        {/* THE WEEKEND entry card (FW-GO) + THE DRAW home card (Ticket H),
-            AFTER Today (owner decision 10 reversed "THE WEEKEND leads Home
-            unconditionally"). Side by side from md up; the Draw card is
-            self-gating, so without it THE WEEKEND takes the full row. The
-            `?w=1` param stays a no-op for order. */}
-        <div className="shrink-0 flex flex-col md:flex-row md:items-stretch md:gap-4">
-          <HomeWeekendCard />
-          <HomeDrawCard />
-        </div>
-
-        {/* One tree, two breakpoints: mobile stacks in DOM order; desktop is a
-            never-scroll grid — Career Path · COMPETE · ladder over the hooks
-            strip. Height budget: everything stays above a 900px viewport at
-            1440 wide (measure maxBottom before adding anything here). */}
-        <div className="flex flex-col gap-3 md:grid md:grid-cols-[3fr_3fr_4fr] md:grid-rows-[auto_auto] md:gap-3 md:content-start">
-          {/* CAREER PATH — the most-played mode on the app (73 people in 45
-              days, 10.6 completions each, ~34s a run): a short, repeatable
-              habit, which is exactly what Home should be able to start. */}
-          <ModeTile
-            mode="orange"
-            elevation="lifted"
-            icon={Route}
-            name={t("modes.careerPath.name")}
-            line={t("modes.careerPath.desc")}
-            onClick={() => navigate(`${SHELL_ROUTES.careerPathPlay}?sport=football`)}
-            className="md:col-start-1 md:row-start-1 min-h-[120px]"
-            data-testid="home-career-path-card"
-          />
-
-          {/* COMPETE pillar — duplicated by persistent navigation (the bottom
-              bar on mobile, the top bar on desktop), so it is a plain surface,
-              not a fill: the accents belong to modes. */}
-          <Card
-            interactive
-            elevation="lifted"
-            onClick={() => navigate(SHELL_ROUTES.compete)}
-            className="p-4 md:p-5 flex flex-col min-h-0 overflow-hidden md:col-start-2 md:row-start-1"
-          >
-            <div className="flex items-start justify-between">
-              <NeoBadge color="yellow">{t("home.pillars.competeChip")}</NeoBadge>
-              <span aria-hidden className="text-title leading-none">
-                ⚡
-              </span>
-            </div>
-            <p className="font-heading font-bold uppercase text-title-lg leading-none mt-auto pt-3">
-              {t("home.pillars.competeTitle")}
-            </p>
-            <p className="text-body-sm text-muted-foreground mt-1.5 max-w-[280px] md:max-w-none">
-              {t("home.pillars.competeBody")}
-            </p>
-            <div className="flex flex-wrap items-center gap-2 mt-3">
-              <NeoBadge color="muted">
-                {elo != null
-                  ? t("home.pillars.rankChip", {
-                      tier: t(`ranks.tiers.${tierFromElo(elo)}`),
-                    })
-                  : t("home.stats.unranked")}
-              </NeoBadge>
-            </div>
-          </Card>
-
-          {/* Daily hooks */}
-          <div className="flex flex-col gap-2 min-h-0 md:col-span-3 md:row-start-2">
-            <Eyebrow className="font-bold">
-              <span className="md:hidden">{t("home.hooks.eyebrowShort")}</span>
-              <span className="hidden md:inline">{t("home.hooks.eyebrow")}</span>
+        {/* Featured · With friends · More games. Mobile stacks in DOM order;
+            desktop sets the three side by side, and the opened catalogue
+            spans the row beneath them. */}
+        <div className="flex flex-col gap-4 md:grid md:grid-cols-3 md:gap-x-3 md:gap-y-3 md:content-start">
+          {/* FEATURED — Career Path, the most-played mode on the app (73
+              people in 45 days, 10.6 completions each, ~34s a run): a short,
+              repeatable habit, which is exactly what Play should start. */}
+          <section className="flex flex-col gap-2" aria-labelledby="home-featured">
+            <Eyebrow id="home-featured" className="font-bold">
+              {t("home.featured.eyebrow")}
             </Eyebrow>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {/* Ordered by measured demand over 45 days (organic sessions
-                  only): Quiz 20 people, Duels 14, Arena 10. THE FORGE (7 people
-                  in 45 days) rides at the end, on a plain surface: it is a
-                  tool, not a mode with an accent. */}
+            {featured.map((tile) => (
               <ModeTile
-                mode="orange"
-                icon={Brain}
-                name={t("modes.quiz.name")}
-                line={t("home.hooks.quizSub")}
-                onClick={() => navigate("/difficulty?sport=football&mode=quiz&target=v2")}
-                className="p-3.5"
+                key={tile.key}
+                mode={tile.color}
+                elevation="lifted"
+                icon={tile.icon}
+                name={t(`modes.${tile.key}.name`)}
+                line={t(`modes.${tile.key}.desc`)}
+                onClick={() => navigate(targetFor(tile.key, tile.to))}
+                className="min-h-[120px] md:flex-1"
+                data-testid="home-career-path-card"
               />
-              <ModeTile
-                mode="pink"
-                icon={Users}
-                name={t("modes.duel.name")}
-                line={t("modes.duel.desc")}
-                onClick={() => navigate(SHELL_ROUTES.duels)}
-                className="p-3.5"
-              />
-              <ModeTile
-                mode="pink"
-                icon={Swords}
-                name={t("modes.arena.name")}
-                line={t("modes.arena.desc")}
-                onClick={() => navigate(SHELL_ROUTES.arena)}
-                className="p-3.5"
-              />
-              <ModeTile
-                mode="surface"
-                icon={Hammer}
-                name={t("forge.title")}
-                line={t("forge.subtitle")}
-                onClick={() => navigate(SHELL_ROUTES.forge)}
-                className="p-3.5"
-              />
-            </div>
-          </div>
+            ))}
+          </section>
 
-          {/* The ladder — a raised surface with the gold ranked accents. */}
-          <Card
-            interactive
-            elevation="lifted"
-            onClick={() => navigate(SHELL_ROUTES.ranks)}
-            className="p-[18px] flex flex-col min-h-0 overflow-hidden md:col-start-3 md:row-start-1"
-          >
-            <div className="flex items-center justify-between gap-2">
-              <Eyebrow as="span" className="font-bold text-yellow">
-                {t("ranks.ladder")}
-              </Eyebrow>
-              <NeoBadge color="yellow">
-                {seasonNumber != null
-                  ? t("ranks.seasonChip", { n: seasonNumber })
-                  : t("ranks.rankedChip")}
-              </NeoBadge>
-            </div>
+          {/* WITH FRIENDS — Duels and Arena were two tiles for one intent.
+              One entry, two ways in: send a link (a duel, played whenever) or
+              open a live room (Arena, everyone at once). */}
+          <section className="flex flex-col gap-2" aria-labelledby="home-friends">
+            <Eyebrow id="home-friends" className="font-bold">
+              {t("home.friends.eyebrow")}
+            </Eyebrow>
+            <Card
+              elevation="raised"
+              padding="md"
+              className="bg-hot-pink text-ink on-fill flex flex-col gap-1.5 md:flex-1"
+              data-testid="home-friends-card"
+            >
+              <Users size={24} strokeWidth={2.5} className="shrink-0" aria-hidden />
+              <p className="font-heading text-title-sm font-bold leading-tight mt-auto">
+                {t("home.friends.title")}
+              </p>
+              <p className="text-meta leading-snug text-muted-foreground">
+                {t("home.friends.line")}
+              </p>
+              <div className="grid grid-cols-2 gap-2 mt-1.5">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => navigate(SHELL_ROUTES.duels)}
+                  data-testid="home-friends-link"
+                >
+                  <Send size={16} strokeWidth={2.5} aria-hidden />
+                  {t("home.friends.link")}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => navigate(SHELL_ROUTES.arena)}
+                  data-testid="home-friends-room"
+                >
+                  <Radio size={16} strokeWidth={2.5} aria-hidden />
+                  {t("home.friends.room")}
+                </Button>
+              </div>
+            </Card>
+          </section>
 
-            {elo != null && progress ? (
-              <>
-                <div className="flex items-center gap-3 mt-3">
-                  <div
-                    className="neo-border w-[50px] h-[50px] shrink-0 rounded-lg -rotate-6 grid place-items-center"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, hsl(var(--yellow)), hsl(var(--orange)))",
-                    }}
-                  >
-                    <Crown size={26} strokeWidth={2.5} className="text-ink" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-heading font-bold text-title-lg leading-none capitalize">
-                      {t(`ranks.tiers.${progress.tier}`)}
-                    </p>
-                    <p className="font-mono text-meta text-yellow mt-1">
-                      {progress.next
-                        ? t("ranks.progressTo", {
-                            elo,
-                            next: progress.nextThreshold,
-                            tier: t(`ranks.tiers.${progress.next}`),
-                          })
-                        : t("ranks.topTier")}
-                    </p>
-                  </div>
-                </div>
-                <div className="h-3 neo-border rounded-full mt-3 overflow-hidden">
-                  <div
-                    className="h-full bg-yellow"
-                    style={{ width: `${Math.round(progress.pct * 100)}%` }}
-                  />
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="flex items-center gap-3 mt-3">
-                  <div className="neo-border bg-muted w-[50px] h-[50px] shrink-0 rounded-lg -rotate-6 grid place-items-center">
-                    <Lock size={24} strokeWidth={2.5} className="text-muted-foreground" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-heading font-bold text-title-lg leading-none">
-                      {t("ranks.locked.title")}
-                    </p>
-                    <p className="font-mono text-meta text-yellow mt-1">
-                      {t("ranks.locked.chip")}
-                    </p>
-                  </div>
-                </div>
-                <div className="h-3 neo-border rounded-full mt-3 overflow-hidden" />
-              </>
-            )}
-
-            <div className="flex items-center justify-between mt-auto pt-3">
-              <span className="flex items-baseline gap-1.5 font-mono text-meta text-muted-foreground">
-                {typeof globalRank?.rank === "number" && (
-                  <span className="text-yellow">
-                    #{globalRank.rank.toLocaleString()} ·
-                  </span>
-                )}
-                <span>{t("ranks.eloRating")}</span>
-                <span>{elo != null ? elo : "—"}</span>
+          {/* MORE GAMES — collapsed by default. The closed row names what is
+              inside, so nothing is hidden behind a bare "more". */}
+          <section className="flex flex-col gap-2" aria-labelledby="home-more">
+            <Eyebrow id="home-more" className="font-bold">
+              {t("home.more.eyebrow")}
+            </Eyebrow>
+            <Card
+              interactive
+              elevation="raised"
+              padding="md"
+              aria-expanded={moreOpen}
+              aria-controls="home-more-games"
+              onClick={() => setMoreOpen((open) => !open)}
+              className="flex items-center gap-3 md:flex-1"
+              data-testid="home-more-toggle"
+            >
+              <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span className="font-heading text-title-sm font-bold leading-tight">
+                  {t("home.more.title", { count: more.length })}
+                </span>
+                <span className="text-meta text-muted-foreground line-clamp-2">
+                  {more.map((tile) => t(`modes.${tile.key}.name`)).join(" · ")}
+                </span>
               </span>
-              <span className="font-heading font-bold text-meta uppercase text-yellow">
-                {t("home.ranksCard.view")} →
-              </span>
+              <ChevronDown
+                size={22}
+                strokeWidth={2.5}
+                aria-hidden
+                className={cn("shrink-0 transition-transform duration-ui", moreOpen && "rotate-180")}
+              />
+            </Card>
+          </section>
+
+          {moreOpen && (
+            <div
+              id="home-more-games"
+              className="grid grid-cols-2 md:grid-cols-4 gap-3 md:col-span-3"
+              data-testid="home-more-games"
+            >
+              {more.map((tile) => (
+                <ModeTile
+                  key={tile.key}
+                  mode={tile.color}
+                  icon={tile.icon}
+                  name={t(`modes.${tile.key}.name`)}
+                  line={t(`modes.${tile.key}.desc`)}
+                  // Ranked-ness is the tile's own flag (it writes ELO), never
+                  // a key list here.
+                  status={tile.ranked ? t("ranks.rankedChip") : null}
+                  onClick={() => navigate(targetFor(tile.key, tile.to))}
+                  className="min-h-[132px]"
+                />
+              ))}
             </div>
-          </Card>
+          )}
         </div>
 
-        {/* Support nudge — a small line at the foot of home; on mobile it sits
-            below the content in the scroll column, on desktop it pins under the
-            never-scroll grid. Links out to Buy Me a Coffee (new tab). */}
-        <p className="shrink-0 text-center text-meta text-muted-foreground pt-3 pb-1">
+        {/* Support nudge — a small line at the foot of Play; on mobile it sits
+            below the content in the scroll column, on desktop it pins under
+            the grid. Links out to Buy Me a Coffee (new tab). */}
+        <p className="shrink-0 text-center text-meta text-muted-foreground pt-4 pb-1">
           {t("home.supportCoffeePrefix")}{" "}
           <a
             href={COFFEE_URL}

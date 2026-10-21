@@ -1,26 +1,12 @@
 import { cn } from "@/lib/utils";
-import { Home, Swords, Trophy, User } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { BrandMark } from "@/components/ui/BrandMark";
-
-interface NavTab {
-  path: string;
-  /** Matches the active state for nested routes (e.g. /compete/*). */
-  match: string;
-  labelKey: string;
-  icon: LucideIcon;
-}
-
-const TABS: NavTab[] = [
-  { path: SHELL_ROUTES.home, match: SHELL_ROUTES.home, labelKey: "nav.home", icon: Home },
-  { path: SHELL_ROUTES.compete, match: "/compete", labelKey: "nav.compete", icon: Swords },
-  { path: SHELL_ROUTES.ranks, match: SHELL_ROUTES.ranks, labelKey: "nav.ranks", icon: Trophy },
-  { path: SHELL_ROUTES.profile, match: SHELL_ROUTES.profile, labelKey: "nav.profile", icon: User },
-];
+import { track } from "@/lib/analytics";
+import { readColdSource } from "@/lib/coldSession";
+import { SHELL_TABS, activeTabKey, type ShellTab } from "@/lib/shellTabs";
 
 function useTabs() {
   const { t } = useTranslation();
@@ -36,18 +22,25 @@ function useTabs() {
     setPendingPath(null);
   }, [location.pathname]);
 
-  const isCurrent = (tab: NavTab) =>
-    tab.match === SHELL_ROUTES.home
-      ? location.pathname === SHELL_ROUTES.home
-      : location.pathname === tab.match ||
-        location.pathname.startsWith(tab.match + "/");
-  const isActive = (tab: NavTab) =>
+  const isCurrent = (tab: ShellTab) => activeTabKey(location.pathname) === tab.key;
+  const isActive = (tab: ShellTab) =>
     pendingPath !== null ? tab.path === pendingPath : isCurrent(tab);
-  const go = (tab: NavTab) => {
-    if (!isCurrent(tab)) setPendingPath(tab.path);
+  const go = (tab: ShellTab) => {
+    if (!isCurrent(tab)) {
+      setPendingPath(tab.path);
+      // The Weekend tab is the mode's entry point now that Play carries no
+      // Weekend card, so it reports the same funnel event the card did (a
+      // real tap, per ANALYTICS.md), with its own placement.
+      if (tab.key === "weekend") {
+        track("weekend_entry_clicked", {
+          source: readColdSource() ?? "nav_tab",
+          placement: "nav_tab",
+        });
+      }
+    }
     navigate(tab.path);
   };
-  return { t, tabs: TABS, isActive, go };
+  return { t, tabs: SHELL_TABS, isActive, go };
 }
 
 /**
@@ -95,7 +88,8 @@ export function ShellNav() {
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] bg-[hsl(75_100%_55%)] rounded-b-full" />
               )}
               <tab.icon size={22} strokeWidth={2.5} />
-              <span className="text-[10px] font-heading font-bold uppercase">
+              {/* 12px: the floor for any text (design floors); 10px failed it. */}
+              <span className="text-eyebrow tracking-normal font-heading font-bold uppercase">
                 {t(tab.labelKey)}
               </span>
             </button>
@@ -115,7 +109,7 @@ export function ShellTopNav() {
     <nav className="hidden md:block shrink-0 border-b-[3px] border-border bg-background">
       <div className="mx-auto w-full max-w-6xl flex items-center gap-2 px-8 py-3">
         <button
-          onClick={() => navigate(SHELL_ROUTES.home)}
+          onClick={() => navigate(SHELL_ROUTES.play)}
           className="mr-4 cursor-pointer rounded-lg"
         >
           <BrandMark variant="lockup" size="md" />

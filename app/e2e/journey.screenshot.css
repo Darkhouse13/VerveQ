@@ -1,0 +1,22 @@
+/*
+ * journey.spec.ts screenshot style (Playwright `stylePath`): the dailies serve
+ * new players every day, so names, scores and countdowns would make every
+ * pixel baseline fail by tomorrow. Text is painted transparent and pictures
+ * hidden; what is compared is the layout, the grounds, the fills and the
+ * borders — the structure the journey is guarding. Words are checked by the
+ * spec's own assertions, not by pixels.
+ */
+*,
+*::before,
+*::after {
+  color: transparent !important;
+  caret-color: transparent !important;
+  text-shadow: none !important;
+}
+::placeholder {
+  color: transparent !important;
+}
+img,
+svg image {
+  visibility: hidden !important;
+}

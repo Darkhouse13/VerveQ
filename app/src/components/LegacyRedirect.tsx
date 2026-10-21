@@ -8,14 +8,19 @@ import { Navigate, useLocation, useParams } from "react-router-dom";
  * `to` may carry default query params (e.g. `?sport=football`); params on the
  * incoming URL are preserved and win over the defaults, so in-flow navigations
  * like `/quiz?sport=…&difficulty=…` keep their intent across the redirect.
+ *
+ * `to` may also carry a default `#anchor`; an anchor on the incoming URL wins
+ * over it, the same rule as the params (decision 10: `/compete#x` → `/v2#x`).
  */
 export function LegacyRedirect({ to }: { to: string }) {
   const location = useLocation();
-  const [path, defaults] = to.split("?");
+  const [beforeHash, defaultHash] = to.split("#");
+  const [path, defaults] = beforeHash.split("?");
   const params = new URLSearchParams(defaults ?? "");
   new URLSearchParams(location.search).forEach((value, key) => params.set(key, value));
   const search = params.toString();
-  return <Navigate to={search ? `${path}?${search}` : path} replace />;
+  const hash = location.hash || (defaultHash ? `#${defaultHash}` : "");
+  return <Navigate to={`${path}${search ? `?${search}` : ""}${hash}`} replace />;
 }
 
 /** Legacy arena invite links: `/arena/:code` carries its lobby code into the

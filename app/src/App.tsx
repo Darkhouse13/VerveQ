@@ -1,5 +1,5 @@
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ConvexReactClient } from "convex/react";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { Suspense, type ReactNode } from "react";
@@ -47,10 +47,9 @@ import {
 } from "./components/shell/ShellRouteGuards";
 
 // The unified shell. Lazy so each screen stays out of the main bundle.
+// ShellHomeScreen is the PLAY tab (decision 10): it replaced both Home and the
+// Compete mode grid, whose screen was removed — /compete now redirects here.
 const ShellHomeScreen = lazyWithRetry(() => import("./pages/shell/ShellHomeScreen"));
-// With Sport→Football the only live path, /compete lands directly on the mode
-// grid (the old category/sport chooser screens were removed).
-const CompeteModeGridScreen = lazyWithRetry(() => import("./pages/shell/CompeteModeGridScreen"));
 const RanksScreen = lazyWithRetry(() => import("./pages/shell/RanksScreen"));
 const ShellProfileScreen = lazyWithRetry(() => import("./pages/shell/ShellProfileScreen"));
 const SettingsScreen = lazyWithRetry(() => import("./pages/shell/SettingsScreen"));
@@ -58,7 +57,6 @@ const AccountChoiceScreen = lazyWithRetry(() => import("./pages/shell/AccountCho
 const WelcomeScreen = lazyWithRetry(() => import("./pages/shell/WelcomeScreen"));
 const UpgradeScreen = lazyWithRetry(() => import("./pages/shell/UpgradeScreen"));
 const ArenaHubScreen = lazyWithRetry(() => import("./pages/shell/ArenaHubScreen"));
-const ShellLeaderboardScreen = lazyWithRetry(() => import("./pages/shell/ShellLeaderboardScreen"));
 
 // Public legal pages — flag-independent (app-store / launch necessities).
 const PrivacyScreen = lazyWithRetry(() => import("./pages/legal/PrivacyScreen"));
@@ -180,7 +178,7 @@ const AppRoutes = () => (
                 </ProtectedRoute>
               }
             />
-            <Route path="/sport-select" element={<LegacyRedirect to="/compete" />} />
+            <Route path="/sport-select" element={<LegacyRedirect to="/v2#more" />} />
             {/* The difficulty picker is PURE CLIENT STATE: it reads query params
                 and navigates — it calls no Convex function and needs no
                 identity (see pages/DifficultyScreen). It used to sit behind the
@@ -293,17 +291,20 @@ const AppRoutes = () => (
             <Route path="/v2/welcome" element={<ShellGate><WelcomeScreen /></ShellGate>} />
             {/* Anonymous + username -> full account upgrade. Carries ?next=. */}
             <Route path="/v2/upgrade" element={<ShellGate><UpgradeScreen /></ShellGate>} />
-            {/* Compete lands DIRECTLY on the (football) mode grid — the category
-                and sport steps are collapsed while Sport/Football is the only
-                live path. The old step URLs redirect so deep links keep working
-                and reintroducing a category/sport step later is cheap. */}
-            <Route path="/compete" element={<ShellGate><CompeteModeGridScreen /></ShellGate>} />
-            <Route path="/compete/sport" element={<ShellGate><Navigate to="/compete" replace /></ShellGate>} />
-            <Route path="/compete/sport/:sport" element={<ShellGate><Navigate to="/compete" replace /></ShellGate>} />
-            {/* Shell-native Ranks + Profile (v2 designs). Ranks is open to all
-                (username-only sees the locked ranked pitch); Profile needs a
-                server identity, so it mirrors the casual-mode gate. */}
+            {/* Compete merged into Play (decision 10): every Compete URL lands
+                on Play with the More games catalogue open (#more) — that is
+                where the modes the grid listed now live. Params and an
+                incoming #anchor survive (LegacyRedirect). SEO pages and old
+                links still point at /compete, so these stay registered. */}
+            <Route path="/compete" element={<LegacyRedirect to="/v2#more" />} />
+            <Route path="/compete/sport" element={<LegacyRedirect to="/v2#more" />} />
+            <Route path="/compete/sport/:sport" element={<LegacyRedirect to="/v2#more" />} />
+            {/* Ranks (decision 10): ONE screen, Ladder | Leaderboard segments,
+                each with its own URL so old links open the right one. Open to
+                all (username-only sees the locked ranked pitch); Profile needs
+                a server identity, so it mirrors the casual-mode gate. */}
             <Route path="/v2/ranks" element={<ShellGate><RanksScreen /></ShellGate>} />
+            <Route path="/v2/leaderboard" element={<ShellGate><RanksScreen /></ShellGate>} />
             <Route
               path="/v2/profile"
               element={
@@ -378,10 +379,6 @@ const AppRoutes = () => (
                   </FullAccountRoute>
                 </ShellGate>
               }
-            />
-            <Route
-              path="/v2/leaderboard"
-              element={<ShellGate><ShellLeaderboardScreen /></ShellGate>}
             />
             <Route
               path="/v2/rivals"

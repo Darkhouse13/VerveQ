@@ -291,7 +291,7 @@ Guess the player from the chronological list of clubs he played for (e.g., Barce
 **Current runtime layer:** In-bundle dataset `app/convex/data/football_career_paths.json` (no DB content table; sessions live in `careerPathSessions`).
 
 **How it works:**
-1. Player launches the mode from the Compete grid (no difficulty picker; rounds mix easy/medium/hard by weight)
+1. Player launches the mode from Play's Featured tile (no difficulty picker; rounds mix easy/medium/hard by weight)
 2. The full club path is shown up front; the round is worth 1,000 points
 3. The player types a name — there is deliberately NO autocomplete; server-side fuzzy matching absorbs typos instead, with a tolerance that scales with the length of the player's name (1–3 edits)
 4. A near-miss ("close call") costs 10% of the score but not a guess
@@ -757,15 +757,16 @@ signed-out visitor). Source of truth for both tables is
 | `/` | `ColdEntryScreen` when signed out; otherwise redirects to shell home. `LoginScreen` only with an explicit `?mode=` / `?from=` auth intent |
 | `/v2/welcome` | `UsernameOnlyOnboarding` — the onboarding card |
 | `/v2/upgrade` | `UpgradeAccountForm` — username-only → full account |
-| `/v2/account`, `/v2/profile`, `/v2/settings` | Account, profile, settings |
-| `/compete`, `/compete/sport`, `/compete/sport/:sport` | Compete category → sport → mode grid |
+| `/v2` | **Play** tab (VerveQ ONE decision 10): Today · Featured · With friends · More games. The nav is four tabs — Play · Weekend · Ranks · Profile |
+| `/v2/account`, `/v2/profile`, `/v2/settings` | Account, profile (with **Labs**: Learn, and The Forge when eligible — decision 11), settings |
+| `/compete`, `/compete/sport`, `/compete/sport/:sport` | Redirect to `/v2#more` (Compete merged into Play; params and an incoming `#anchor` survive) |
 | `/v2/quiz`, `/v2/survival`, `/v2/blitz` | Ranked modes (`FullAccountRoute`) |
 | `/v2/daily`, `/v2/daily-survival` | Daily Quiz, Daily Survival |
 | `/v2/higher-lower`, `/v2/verve-grid`, `/v2/career-path` | Casual curated modes |
 | `/v2/arena`, `/v2/arena/:code` | Arena hub; lobby by code (onboards inline — no guard, so an invite link never drops its code) |
 | `/v2/duels`, `/v2/duels/history`, `/v2/rivals` | Duels + rivalries |
 | `/v2/learn`, `/v2/learn/run`, `/v2/learn/mastery`, `/v2/learn/review` | Learn |
-| `/v2/leaderboard`, `/v2/ranks` | Leaderboard, Ranks |
+| `/v2/ranks`, `/v2/leaderboard` | **Ranks** tab — one screen, Ladder \| Leaderboard segments (each URL opens its segment); links to `/v2/weekend/leaderboard` |
 | `/v2/forge` | The Forge |
 | `/play` | Off-platform short link (promo endcards, social bios) |
 

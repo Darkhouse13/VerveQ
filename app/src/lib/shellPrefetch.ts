@@ -7,7 +7,8 @@
 
 const TAB_SCREEN_IMPORTS: Array<() => Promise<unknown>> = [
   () => import("@/pages/shell/ShellHomeScreen"),
-  () => import("@/pages/shell/CompeteModeGridScreen"),
+  // The four tabs of decision 10: Play · Weekend · Ranks · Profile.
+  () => import("@/pages/shell/weekend/WeekendHubScreen"),
   () => import("@/pages/shell/RanksScreen"),
   () => import("@/pages/shell/ShellProfileScreen"),
 ];

@@ -433,6 +433,10 @@ describe("HomeDrawCard — no layout shift for non-draw users", () => {
     convexMock.client.mutation.mockReset();
   });
 
+  // Snapshot re-accepted for VerveQ ONE decisions 10/11 (2026-10): Home is the
+  // PLAY tab now — four tabs (Play · Weekend · Ranks · Profile), Today →
+  // Featured → With friends → More games, no Weekend card, no ladder card, no
+  // Forge. The Draw card sits inside Today; with it absent, nothing remains.
   it("flag off: Home renders unchanged (snapshot) and fires no draw query", async () => {
     flagsMock.draw = false;
     const { container } = renderHome();

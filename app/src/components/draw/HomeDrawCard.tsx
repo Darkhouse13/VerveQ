@@ -1,5 +1,6 @@
 /**
- * THE DRAW × Home — Ticket H. Hero card at the TOP of the v2 Home, in the
+ * THE DRAW × Play — Ticket H. "Today's Draw": the card closes the TODAY
+ * section of the Play tab (VerveQ ONE decision 10), in the
  * house neo-brutalist idiom, with three states:
  *
  *   - UNPLAYED:    "TODAY'S BOARD #N" + the 5-fixture gauntlet strip (names +
@@ -88,10 +89,10 @@ export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewP
         : "See result";
   return (
     // The bottom spacing lives on the card's own root so its absence leaves
-    // no trace in the Home column. From md up it shares a row with THE
-    // WEEKEND card. Decision 12: a lime OUTLINE on the raised surface, never
-    // a fill (it used to be the orange primary, which is lime on ink).
-    <div className="shrink-0 pb-3 md:flex-[2] md:min-w-0" data-testid="home-draw-card">
+    // no trace in the Play column. Decision 12: a lime OUTLINE on the raised
+    // surface, never a fill (it used to be the orange primary, which is lime
+    // on ink).
+    <div className="shrink-0 pb-3 md:min-w-0" data-testid="home-draw-card">
       <Card elevation="lifted" padding="md" className="!border-lime h-full flex flex-col gap-3">
         <div className="flex items-center justify-between gap-2">
           <p className="font-mono text-eyebrow font-bold uppercase text-lime">
@@ -107,28 +108,29 @@ export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewP
 
         {today.playState === "unplayed" && (
           <>
-            {/* From md up the card shares a row with THE WEEKEND, and the
-                eyebrow already names the board: the headline drops out there
-                to keep Home inside its height budget. */}
+            {/* From md up the eyebrow already names the board: the headline
+                drops out there to keep Play inside its height budget. */}
             <p className="font-heading font-bold uppercase text-title-lg leading-none md:hidden">
               Today's board #{today.boardNumber}
             </p>
             {/* Design contract: the whole gauntlet (names + thresholds) is
-                visible before the first pick. */}
-            <div className="flex gap-1.5" data-testid="home-draw-strip">
+                visible before the first pick. Names are 12px like every text
+                (design floors; they were 8px and truncated), so a phone sets
+                the five fixtures on two rows instead of squeezing one. */}
+            <div className="grid grid-cols-3 md:grid-cols-5 gap-1.5" data-testid="home-draw-strip">
               {today.fixtures.map((fixture) => {
                 const { label, Icon } = archetypeMeta(fixture.archetypeId);
                 return (
                   <div
                     key={fixture.index}
-                    className="neo-border rounded-md bg-background text-foreground flex-1 min-w-0 flex flex-col items-center gap-0.5 px-1 py-1.5"
+                    className="neo-border rounded-md bg-background text-foreground min-w-0 flex flex-col items-center gap-0.5 px-1 py-1.5"
                     data-testid={`home-draw-fixture-${fixture.index}`}
                   >
                     <span className="flex items-center gap-0.5">
                       <Icon size={11} strokeWidth={2.5} />
                       {fixture.isBoss && <Crown size={10} strokeWidth={2.5} />}
                     </span>
-                    <span className="font-heading font-bold text-[8px] leading-none tracking-wide truncate max-w-full">
+                    <span className="font-heading font-bold text-eyebrow leading-none tracking-normal uppercase truncate max-w-full">
                       {label}
                     </span>
                     <span className="font-mono font-bold text-xs leading-none">

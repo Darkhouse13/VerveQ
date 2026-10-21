@@ -1,12 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "convex/react";
-import { Lock, Share2, Crown, Settings } from "lucide-react";
+import { BookOpen, Crown, Hammer, Lock, Settings, Share2 } from "lucide-react";
 import { notify } from "@/lib/notify";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { ShellLayout } from "@/components/shell/ShellLayout";
+import { Eyebrow } from "@/components/ui/eyebrow";
+import { ModeTile } from "@/components/ui/mode-tile";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -30,6 +32,12 @@ import type { Id } from "../../../convex/_generated/dataModel";
  * The rich ranked fields the design depicts (divisions, RP, global rank) are
  * driven by RANKED_CAPABILITIES and render honest placeholders until the
  * ranked backend ships — nothing is fabricated client-side.
+ *
+ * LABS (decision 11): the two surfaces that are tools rather than games live
+ * here, off Play — Learn (21 hand-authored ladders, 0 players in 45 days) and
+ * The Forge (7 players; Gold, 1500+ ELO). The Forge shows only when the
+ * server says this account may enter it (forge.canAccess), so nobody is
+ * offered a locked door.
  */
 
 const sportLabels: Record<string, string> = {
@@ -101,6 +109,11 @@ export default function ShellProfileScreen() {
       ? { userId, sport: "football", mode: "quiz" }
       : "skip",
   );
+
+  // The Forge's own gate (Gold tier, full account) — asked only for full
+  // accounts; anything but an explicit `allowed` keeps the tile hidden.
+  const forgeAccess = useQuery(api.forge.canAccess, isFullAccount ? {} : "skip");
+  const showForge = forgeAccess?.allowed === true;
 
   const guest = isUsernameOnly;
   const handle = username ?? user?.username ?? "";
@@ -490,6 +503,34 @@ export default function ShellProfileScreen() {
       </NeoCard>
     );
 
+  const labs = (
+    <section className="flex flex-col gap-2.5 md:shrink-0" aria-labelledby="profile-labs">
+      <Eyebrow id="profile-labs" className="font-bold">
+        {t("profile.labs")}
+      </Eyebrow>
+      <div className={showForge ? "grid grid-cols-2 gap-2.5" : "grid grid-cols-1"}>
+        <ModeTile
+          mode="surface"
+          icon={BookOpen}
+          name={t("home.pillars.learnTitle")}
+          line={t("profile.labsLearnLine")}
+          onClick={() => navigate(SHELL_ROUTES.learn)}
+          data-testid="profile-labs-learn"
+        />
+        {showForge && (
+          <ModeTile
+            mode="surface"
+            icon={Hammer}
+            name={t("forge.title")}
+            line={t("forge.subtitle")}
+            onClick={() => navigate(SHELL_ROUTES.forge)}
+            data-testid="profile-labs-forge"
+          />
+        )}
+      </div>
+    </section>
+  );
+
   return (
     <ShellLayout
       title={t("profile.title")}
@@ -528,6 +569,7 @@ export default function ShellProfileScreen() {
           <div className="flex flex-col gap-4 min-h-0 overflow-y-auto">
             {activityCard}
             {seasonsCard}
+            {labs}
           </div>
         </div>
       </div>
@@ -540,6 +582,7 @@ export default function ShellProfileScreen() {
         {badgeGrid}
         {activityCard}
         {seasonsCard}
+        {labs}
       </div>
     </ShellLayout>
   );

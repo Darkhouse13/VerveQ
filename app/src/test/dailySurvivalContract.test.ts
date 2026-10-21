@@ -113,22 +113,20 @@ describe("Daily Survival contract", () => {
     }
   });
 
-  it("is actually rendered on the Compete grid, not just present in tile data", () => {
+  it("is actually rendered on Play's TODAY, not just present in tile data", () => {
     // Regression pin: the tile existed in COMPETE_MODE_TILES while the screen
     // rendered from its own key lists, so the mode shipped with no visible
     // entry point. The screen must look the tile up AND print its copy.
     //
-    // CR-1 moved it into the TODAY section and made the copy generic, so the
-    // pin now follows that path: the key is in the rendered TODAY list, that
-    // list is resolved through the real tile config, and the row prints the
-    // tile's own i18n copy.
-    const screen = readFileSync(
-      "src/pages/shell/CompeteModeGridScreen.tsx",
-      "utf8",
-    );
-    expect(screen).toMatch(/TODAY_KEYS\s*=\s*\[[^\]]*"dailySurvival"/);
-    expect(screen).toContain("tilesByKeys(TODAY_KEYS)");
-    expect(screen).toContain("modes.${m.key}.name");
+    // Decision 10 merged Home and Compete into Play, so the pin follows the
+    // one TODAY list: the key is in PLAY_TODAY_KEYS, the Play screen resolves
+    // that list through the real tile config, and each tile prints its own
+    // i18n copy.
+    const tiles = readFileSync("src/pages/shell/competeModeTiles.ts", "utf8");
+    const screen = readFileSync("src/pages/shell/ShellHomeScreen.tsx", "utf8");
+    expect(tiles).toMatch(/PLAY_TODAY_KEYS\s*=\s*\[[^\]]*"dailySurvival"/);
+    expect(screen).toContain("tilesByKeys(PLAY_TODAY_KEYS)");
+    expect(screen).toContain("modes.${tile.key}.desc");
   });
 
   // FR-1B: identity tier, not username tier. Daily Survival never writes ELO

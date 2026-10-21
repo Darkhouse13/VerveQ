@@ -1,9 +1,16 @@
 /**
- * Canonical paths for the v2 shell. The Compete flow uses the literal
- * `/compete/...` paths from the design brief; Home and Ranks are namespaced
- * under `/v2` (the legacy `/home` and `/ranks` URLs redirect here).
+ * Canonical paths for the v2 shell. Everything is namespaced under `/v2`
+ * (the legacy `/home`, `/ranks` and `/compete` URLs redirect here).
+ *
+ * NAVIGATION (VerveQ ONE decision 10): four tabs — Play · Weekend · Ranks ·
+ * Profile. Play (`/v2`) replaced BOTH Home and Compete, whose catalogues
+ * duplicated each other; Ranks is one screen with a Ladder | Leaderboard
+ * segment, reachable at both `ranks` and `leaderboard`.
  */
 export const SHELL_ROUTES = {
+  /** The Play tab (decision 10): Today, Featured, With friends, More games. */
+  play: "/v2",
+  /** Historical name for `play`, kept because every game exits "home". */
   home: "/v2",
   /**
    * Account chooser for logged-out visitors hitting a gated surface: sign in,
@@ -16,15 +23,21 @@ export const SHELL_ROUTES = {
   /** Anonymous + username -> full account upgrade. Accepts ?next=. */
   upgrade: "/v2/upgrade",
   /**
-   * Compete lands DIRECTLY on the (football) mode grid. The category and sport
-   * steps are collapsed while Sport→Football is the only live path; their
-   * screens are parked in pages/shell/ and the step URLs below redirect here.
+   * DEPRECATED alias of `play` (decision 10 merged Compete into Play). Kept so
+   * screens that still say "back to compete" land on Play directly instead of
+   * taking the `/compete` redirect hop. The `/compete`, `/compete/sport` and
+   * `/compete/sport/:sport` URLs stay registered as redirects to Play (see
+   * SHELL_ROUTE_PATTERNS) — SEO pages and old links point at them.
    */
-  compete: "/compete",
-  /** Legacy step URL — redirects to `compete`. Kept for cheap reintroduction. */
-  competeSport: "/compete/sport",
-  /** `/compete/sport/:sport` — legacy step URL, redirects to `compete`. */
-  competeSportGrid: (sport: string) => `/compete/sport/${sport}`,
+  compete: "/v2",
+  /**
+   * DEPRECATED: the old step URLs' builders, for game screens whose "other
+   * modes" button used to open the Compete grid. They now open Play with the
+   * More games catalogue expanded (`#more`), which is where those modes live.
+   */
+  competeSport: "/v2#more",
+  competeSportGrid: (_sport: string) => "/v2#more",
+  /** Ranks, Ladder segment (decision 10). */
   ranks: "/v2/ranks",
   /**
    * Contained legacy surfaces — the existing screens embedded in the shell
@@ -44,6 +57,7 @@ export const SHELL_ROUTES = {
   /** Full list of finished duels; the Duels page shows only the latest few. */
   duelHistory: "/v2/duels/history",
   forge: "/v2/forge",
+  /** Ranks, Leaderboard segment (decision 10) — same screen as `ranks`. */
   leaderboard: "/v2/leaderboard",
   rivals: "/v2/rivals",
   /** `/v2/rivals/:opponentUserId` */
@@ -67,6 +81,8 @@ export const SHELL_ROUTES = {
   verveGridPlay: "/v2/verve-grid",
   /** Daily Challenge (quiz) on the shell — reuses QuizPlayView via the DAILY session. */
   dailyPlay: "/v2/daily",
+  /** DAILY SURVIVAL — the shared one-attempt run (Reveal Ladder engine). */
+  dailySurvival: "/v2/daily-survival",
   /** WHO'S OLDER? — today's shared ten pairs, then endless. */
   whosOlderPlay: "/v2/whos-older",
   /** MISSING LETTERS — today's shared ten boards, then endless. */
@@ -107,10 +123,12 @@ export const SHELL_ROUTES = {
 /** Route patterns registered in App.tsx (params un-filled). */
 export const SHELL_ROUTE_PATTERNS = {
   home: "/v2",
+  /** Legacy Compete URLs — redirects to Play (decision 10), never screens. */
   compete: "/compete",
   competeSport: "/compete/sport",
   competeSportGrid: "/compete/sport/:sport",
   ranks: "/v2/ranks",
+  leaderboard: "/v2/leaderboard",
   settings: "/v2/settings",
   learn: "/v2/learn",
   learnRun: "/v2/learn/run",
@@ -123,6 +141,7 @@ export const SHELL_ROUTE_PATTERNS = {
   careerPathPlay: "/v2/career-path",
   verveGridPlay: "/v2/verve-grid",
   dailyPlay: "/v2/daily",
+  dailySurvival: "/v2/daily-survival",
   arena: "/v2/arena",
   arenaPlay: "/v2/arena/:code",
   weekend: "/v2/weekend",

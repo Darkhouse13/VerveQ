@@ -153,7 +153,6 @@ describe("who am i stays removed", () => {
       "src/App.tsx",
       "src/lib/shellRoutes.ts",
       "src/pages/shell/competeModeTiles.ts",
-      "src/pages/shell/CompeteModeGridScreen.tsx",
       "src/pages/shell/ShellHomeScreen.tsx",
     ]) {
       const source = read(file);

@@ -1,14 +1,18 @@
 /**
- * Onboarded-home contract: after username-only onboarding the v2 home must
- * read the session — carry the user's identity (avatar), load their real
- * stats, show an honest locked ladder ("—", not a baseline 1200) for ranked
- * standing, and never show the SIGN IN affordance.
+ * Onboarded-home contract: after username-only onboarding the PLAY tab (the
+ * v2 home; VerveQ ONE decision 10 merged Home and Compete into it) must read
+ * the session — carry the user's identity (avatar), load their real stats,
+ * never render a baseline 1200 as a ranked standing, and never show the SIGN
+ * IN affordance.
  *
  * The QA bug had two roots, both locked here:
  *  - the stats query keyed off the guest flag, so anonymous+username users
  *    (and their casual plays) never loaded — now keyed off `hasUsername`;
  *  - `profile.get` returned the 1200 ELO baseline for ranked-INELIGIBLE users,
- *    which the home rendered as a ranked standing.
+ *    which the home rendered as a ranked standing. Decision 10 moved the
+ *    ladder card off Play altogether (the standing lives on the Ranks tab,
+ *    whose own locked state carries the honesty rule now), so Play renders no
+ *    ELO for anyone.
  */
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
@@ -100,14 +104,13 @@ describe("onboarded home (username-only session)", () => {
       typeof args === "object" && args !== null && (args as { userId?: string }).userId === "u1",
     )).toBe(true);
 
-    // Ranked standing stays honest: the ladder card renders its locked state
-    // ("—", never the baseline 1200 as if it were a ranked standing).
-    expect(screen.getByText("ranks.locked.title")).toBeTruthy();
-    expect(screen.getByText("—")).toBeTruthy();
+    // No ranked standing on Play (decision 10: the ladder card moved to the
+    // Ranks tab), so the baseline 1200 has nowhere to masquerade as one.
     expect(screen.queryByText("1200")).toBeNull();
+    expect(screen.queryByText("ranks.locked.title")).toBeNull();
   });
 
-  it("shows the ranked ELO for a ranked-eligible full account", () => {
+  it("a full account's ELO stays on Ranks; Play carries the streak", () => {
     authMock.value = {
       user: { _id: "u2", username: "ada" },
       hasUsername: true,
@@ -120,15 +123,15 @@ describe("onboarded home (username-only session)", () => {
       eloRating: 1542,
       rankedEligible: true,
       totalPlays: 31,
-      stats: { ...usernameOnlyProfile.stats, totalGames: 20 },
+      stats: { ...usernameOnlyProfile.stats, totalGames: 20, currentStreak: 4 },
     };
     renderHome();
 
-    // The ladder card shows the real ELO and tier progress, not a locked slot.
-    expect(screen.getByText("1542")).toBeTruthy();
-    expect(screen.getByText("ranks.progressTo")).toBeTruthy();
-    expect(screen.queryByText("ranks.locked.title")).toBeNull();
-    expect(screen.queryByText("—")).toBeNull();
+    // Decision 10: one place for the ladder (the Ranks tab), so Play shows
+    // neither the ELO nor the tier progress — only the server-read streak.
+    expect(screen.queryByText("1542")).toBeNull();
+    expect(screen.queryByText("ranks.progressTo")).toBeNull();
+    expect(screen.getByTitle("home.stats.streak").textContent).toContain("4");
   });
 
   it("skips the stats query and shows SIGN IN only when logged out", () => {
@@ -154,17 +157,25 @@ describe("onboarded home (username-only session)", () => {
     expect(queryMock.calls.some(([, args]) => typeof args === "object" && args !== null)).toBe(true);
   });
 
-  it("puts TODAY first: the four dailies render before THE WEEKEND card", () => {
+  // Decision 10: Today · Featured · With friends · More games, in that
+  // order. THE WEEKEND card left Play for its own tab.
+  it("puts TODAY first, then Featured, With friends and More games", () => {
     authMock.value = usernameOnlyAuth;
     const { container } = renderHome();
     const html = container.innerHTML;
+    const at = (id: string) => html.indexOf(`data-testid="${id}"`);
     const today = [
       "home-whos-older-card",
       "home-missing-letters-card",
       "home-daily-card",
       "home-daily-survival-card",
-    ].map((id) => html.indexOf(`data-testid="${id}"`));
-    const weekend = html.indexOf('data-testid="home-weekend-card"');
-    expect(today.every((i) => i >= 0 && i < weekend)).toBe(true);
+    ].map(at);
+    const order = ["home-career-path-card", "home-friends-card", "home-more-toggle"].map(at);
+    expect(today.every((i) => i >= 0 && i < order[0])).toBe(true);
+    expect(order.every((i) => i >= 0)).toBe(true);
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+    expect(at("home-weekend-card")).toBe(-1);
+    // More games is collapsed until asked for.
+    expect(at("home-more-games")).toBe(-1);
   });
 });

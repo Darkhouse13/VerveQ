@@ -1,12 +1,17 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "convex/react";
-import { Crown, Lock } from "lucide-react";
+import { CalendarRange, ChevronRight, Crown, Lock } from "lucide-react";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoButton } from "@/components/neo/NeoButton";
+import { Button } from "@/components/ui/button";
+import { Segmented } from "@/components/ui/segmented";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
+import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics";
 import { RANKED_MODE_TILES } from "./competeModeTiles";
+import { LeaderboardBoard } from "./ShellLeaderboardScreen";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   RANKED_CAPABILITIES,
@@ -19,15 +24,23 @@ import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 
 /**
- * v2 Ranks — the competitive ladder's dark "premium" space (replaces the
- * placeholder screen).
+ * RANKS — one name, one screen (VerveQ ONE decision 10).
  *
- *  - Hero: your real flat ELO + coarse tier + in-tier progress (full account),
- *    or the locked pitch (username-only / signed-out).
- *  - Ladder: Bronze → Platinum staircase with the REAL tier thresholds from
- *    convex/lib/elo.ts; your tier highlighted for full accounts.
- *  - Leaderboard: the real football·quiz ELO board, your row pinned when the
- *    server can place you in it.
+ * The app used to call the same idea three things on three screens: "The
+ * Ranks" (this screen), "The ladder" (a Home card) and "Leaderboard" (its own
+ * route). Now it is the Ranks tab, with a Segmented control:
+ *
+ *  - LADDER (`/v2/ranks`): your real flat ELO + coarse tier + in-tier
+ *    progress (full account) or the locked pitch (username-only / signed-out),
+ *    beside the Bronze → Platinum staircase with the REAL tier thresholds from
+ *    convex/lib/elo.ts.
+ *  - LEADERBOARD (`/v2/leaderboard`): the full boards — ranked Quiz/Survival
+ *    ELO with seasons, and the all-time Blitz high scores.
+ *
+ * Each segment has its own URL so old links and shares open the right one;
+ * switching segments replaces the entry (a toggle, not a page). THE WEEKEND's
+ * gameweek table is a different competition with its own screen, linked from
+ * the header so it is one tap from here.
  *
  * The ranked system the design depicts is driven by RANKED_CAPABILITIES —
  * global rank is live (leaderboards.getGlobalRank); divisions, RP, promotion
@@ -38,21 +51,16 @@ import type { Id } from "../../../convex/_generated/dataModel";
 /** The one live ranked board today (indexed by ELO server-side). */
 const BOARD_SPORT = "football";
 const BOARD_MODE = "quiz";
-const BOARD_SIZE = 5;
+
+type Segment = "ladder" | "leaderboard";
 
 /**
- * "Play ranked" lands straight in the ranked mode (Quiz today) rather than the
- * generic Compete grid — reusing the tile's OWN deep-link builder so this route
- * can't drift from the grid. Falls back to the grid if no ranked mode exists.
+ * "Play ranked" lands straight in the ranked mode (Quiz today) — reusing the
+ * tile's OWN deep-link builder so this route can't drift from the catalogue.
+ * Falls back to Play if no ranked mode exists.
  */
 const PLAY_RANKED_TO =
-  RANKED_MODE_TILES[0]?.to(BOARD_SPORT) ?? SHELL_ROUTES.compete;
-
-const MEDALS: Record<number, string> = {
-  1: "#E2B23A",
-  2: "#C9CFD6",
-  3: "#B07A43",
-};
+  RANKED_MODE_TILES[0]?.to(BOARD_SPORT) ?? SHELL_ROUTES.play;
 
 const HERO_BG = "linear-gradient(150deg, #2a2823, #1a1916)";
 
@@ -66,6 +74,82 @@ function DivisionStrip() {
 
 export default function RanksScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { t } = useTranslation();
+  const segment: Segment =
+    location.pathname === SHELL_ROUTES.leaderboard ? "leaderboard" : "ladder";
+
+  const seasonQuery = useQuery(api.seasonManager.getCurrentSeason);
+  const seasonNumber = seasonQuery?.seasonNumber ?? null;
+
+  const segmentPath: Record<Segment, string> = {
+    ladder: SHELL_ROUTES.ranks,
+    leaderboard: SHELL_ROUTES.leaderboard,
+  };
+
+  return (
+    <ShellLayout
+      theme="theme-ink"
+      title={t("ranks.title")}
+      subtitle={
+        seasonNumber != null
+          ? t("ranks.eyebrowSeason", { n: seasonNumber })
+          : t("ranks.eyebrow")
+      }
+      headerRight={
+        // THE WEEKEND's table — a different competition (budget squads, one
+        // gameweek), so it keeps its own screen; this is its door from Ranks.
+        // Decision 12: THE WEEKEND wears the lime outline, never a fill.
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => {
+            track("weekend_entry_clicked", { source: "ranks", placement: "ranks_table" });
+            navigate(SHELL_ROUTES.weekendLeaderboard);
+          }}
+          data-testid="ranks-weekend-table"
+          className="!border-lime text-lime gap-1.5 px-3 uppercase"
+        >
+          <CalendarRange size={16} strokeWidth={2.5} aria-hidden />
+          {t("ranks.weekendTable")}
+          <ChevronRight size={16} strokeWidth={2.5} aria-hidden className="hidden md:block" />
+        </Button>
+      }
+    >
+      <div
+        className={cn(
+          "flex flex-col gap-4",
+          // From md up the leaderboard's chase list scrolls inside a fixed
+          // frame; everything else is a column that scrolls with `main`.
+          segment === "leaderboard" ? "min-h-full md:h-full md:min-h-0" : "min-h-full",
+        )}
+      >
+        <Segmented<Segment>
+          aria-label={t("ranks.segmentsAria")}
+          block
+          className="shrink-0 md:w-auto md:max-w-sm md:self-start"
+          value={segment}
+          onChange={(next) => navigate(segmentPath[next], { replace: true })}
+          options={[
+            { value: "ladder", label: t("ranks.segments.ladder") },
+            { value: "leaderboard", label: t("ranks.segments.leaderboard") },
+          ]}
+        />
+        {segment === "ladder" ? (
+          <LadderSegment />
+        ) : (
+          <div className="flex flex-col md:flex-1 md:min-h-0" data-testid="ranks-leaderboard">
+            <LeaderboardBoard />
+          </div>
+        )}
+      </div>
+    </ShellLayout>
+  );
+}
+
+/** The Ladder segment: your standing (or the locked pitch) + the staircase. */
+function LadderSegment() {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const { user, isFullAccount, isUsernameOnly, accountState } = useAuth();
 
@@ -75,15 +159,8 @@ export default function RanksScreen() {
       : undefined;
   const profile = useQuery(api.profile.get, userId ? { userId } : "skip");
   const currentSeason = useQuery(api.seasonManager.getCurrentSeason);
-  // Fetch deeper than we render so a mid-table player can still be pinned with
-  // a real rank within the board's depth.
-  const board = useQuery(api.leaderboards.getLeaderboard, {
-    sport: BOARD_SPORT,
-    mode: BOARD_MODE,
-    limit: 50,
-  });
-  // True board position past the display depth — same ordering/eligibility as
-  // the board itself (leaderboards.getGlobalRank shares the computation).
+  // True board position — same ordering/eligibility as the leaderboard
+  // (leaderboards.getGlobalRank shares the computation).
   const globalRank = useQuery(
     api.leaderboards.getGlobalRank,
     RANKED_CAPABILITIES.globalRank && userId
@@ -101,21 +178,14 @@ export default function RanksScreen() {
     ? Math.max(0, Math.ceil((currentSeason.endDate - Date.now()) / 86400000))
     : null;
 
-  // While the profile is in flight the page still paints (header, ladder,
-  // board) — only the hero's numbers wait, so a slow connection sees the
-  // screen immediately instead of a full-screen spinner. The hero shows a
-  // pulse placeholder rather than flashing "Unranked" at a ranked player.
+  // While the profile is in flight the page still paints — only the hero's
+  // numbers wait, so a slow connection sees the screen immediately instead of
+  // a full-screen spinner, and never a flashed "Unranked" at a ranked player.
   const profileLoading = settling || (isFullAccount && profile === undefined);
 
   const elo = isFullAccount && profile ? Math.round(profile.eloRating) : null;
   const myTier: TierKey | null = elo != null ? tierFromElo(elo) : null;
   const progress = elo != null ? tierProgress(elo) : null;
-
-  const entries = (board?.entries ?? []).slice(0, BOARD_SIZE);
-  const myEntry = userId
-    ? (board?.entries ?? []).find((e) => e.userId === userId)
-    : undefined;
-  const myPinned = myEntry && !entries.some((e) => e.userId === myEntry.userId);
 
   /* ---------- hero: your standing / locked pitch ---------- */
 
@@ -129,29 +199,29 @@ export default function RanksScreen() {
 
   const hero = locked ? (
     <div
-      className="neo-border rounded-lg p-5 flex flex-col gap-3.5 md:flex-1 md:min-h-0"
+      className="neo-border rounded-lg p-5 flex flex-col gap-3.5"
       style={{ background: HERO_BG }}
     >
       <div className="flex items-center justify-between gap-2">
         {seasonChip}
         <NeoBadge color="yellow">
-          <Lock size={11} strokeWidth={3} className="mr-1" />
+          <Lock size={12} strokeWidth={3} className="mr-1" />
           {t("ranks.locked.chip")}
         </NeoBadge>
       </div>
-      <div className="neo-border rounded-xl w-[72px] h-[72px] md:w-[84px] md:h-[84px] -rotate-6 flex items-center justify-center bg-muted">
+      <div className="neo-border rounded-lg w-[72px] h-[72px] md:w-[84px] md:h-[84px] -rotate-6 flex items-center justify-center bg-muted">
         <Lock size={32} strokeWidth={2.5} className="text-muted-foreground" />
       </div>
       <div>
-        <p className="font-heading font-bold text-[28px] md:text-[32px] leading-none">
+        <p className="font-heading font-bold text-title-lg leading-none">
           {t("ranks.locked.title")}
         </p>
-        <p className="text-[13px] text-muted-foreground mt-2.5 max-w-[360px]">
+        <p className="text-meta text-muted-foreground mt-2.5 max-w-[360px]">
           {t("ranks.locked.body")}
         </p>
       </div>
       <div className="border-2 border-dashed border-muted rounded-lg px-3.5 py-2.5">
-        <span className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
+        <span className="font-mono text-eyebrow uppercase text-muted-foreground">
           {t("ranks.locked.slot")}
         </span>
       </div>
@@ -170,7 +240,7 @@ export default function RanksScreen() {
         <NeoButton
           variant="outline"
           size="full"
-          onClick={() => navigate(SHELL_ROUTES.compete)}
+          onClick={() => navigate(SHELL_ROUTES.play)}
         >
           {t("ranks.locked.keepCasual")}
         </NeoButton>
@@ -178,12 +248,12 @@ export default function RanksScreen() {
     </div>
   ) : (
     <div
-      className="neo-border rounded-lg p-5 flex flex-col gap-3.5 md:flex-1 md:min-h-0"
+      className="neo-border rounded-lg p-5 flex flex-col gap-3.5"
       style={{ background: HERO_BG }}
     >
       <div className="flex items-center justify-between gap-2">
         {seasonChip}
-        <span className="font-mono text-[10.5px] uppercase tracking-widest text-muted-foreground">
+        <span className="font-mono text-eyebrow uppercase text-muted-foreground">
           {seasonDaysLeft != null
             ? t("ranks.endsIn", { days: seasonDaysLeft })
             : t("ranks.seasonDatesSoon")}
@@ -195,63 +265,63 @@ export default function RanksScreen() {
             Loading…
           </p>
         ) : (
-        <>
-        <div className="flex items-center gap-4">
-          <div
-            className="neo-border rounded-xl w-[72px] h-[72px] md:w-[84px] md:h-[84px] shrink-0 -rotate-6 flex items-center justify-center"
-            style={{ background: myTier ? TIERS.find((x) => x.key === myTier)?.color : undefined }}
-          >
-            <Crown size={36} strokeWidth={2.5} className="text-ink" />
-          </div>
-          <div className="min-w-0">
-            <p className="font-heading font-bold text-[32px] md:text-[40px] leading-none">
-              {myTier ? t(`ranks.tiers.${myTier}`) : t("ranks.unranked")}
-            </p>
-            <p className="font-mono text-[11px] text-yellow mt-1.5 uppercase">
-              {RANKED_CAPABILITIES.globalRank
-                ? globalRank
-                  ? t("ranks.globalRankOf", {
-                      rank: globalRank.rank.toLocaleString(),
-                      total: globalRank.total.toLocaleString(),
-                    })
-                  : globalRank === null
-                    ? t("ranks.globalRankUnplaced")
-                    : "…"
-                : t("ranks.globalRankSoon")}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-baseline gap-2.5">
-          <span className="font-heading font-bold text-[44px] md:text-[54px] leading-none tabular-nums">
-            {elo?.toLocaleString()}
-          </span>
-          <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-            {t("ranks.eloRating")}
-          </span>
-        </div>
-        {progress && (
-          <div>
-            <div className="h-3.5 rounded-full border-2 border-foreground overflow-hidden">
+          <>
+            <div className="flex items-center gap-4">
               <div
-                className="h-full"
-                style={{
-                  width: `${Math.round(progress.pct * 100)}%`,
-                  background: "linear-gradient(90deg, hsl(var(--yellow)), hsl(var(--primary)))",
-                }}
-              />
+                className="neo-border rounded-lg w-[72px] h-[72px] md:w-[84px] md:h-[84px] shrink-0 -rotate-6 flex items-center justify-center"
+                style={{ background: myTier ? TIERS.find((x) => x.key === myTier)?.color : undefined }}
+              >
+                <Crown size={36} strokeWidth={2.5} className="text-ink" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-heading font-bold text-title-lg md:text-display leading-none">
+                  {myTier ? t(`ranks.tiers.${myTier}`) : t("ranks.unranked")}
+                </p>
+                <p className="font-mono text-eyebrow text-yellow mt-1.5 uppercase">
+                  {RANKED_CAPABILITIES.globalRank
+                    ? globalRank
+                      ? t("ranks.globalRankOf", {
+                          rank: globalRank.rank.toLocaleString(),
+                          total: globalRank.total.toLocaleString(),
+                        })
+                      : globalRank === null
+                        ? t("ranks.globalRankUnplaced")
+                        : "…"
+                    : t("ranks.globalRankSoon")}
+                </p>
+              </div>
             </div>
-            <p className="font-mono text-[10.5px] text-muted-foreground mt-1.5 uppercase">
-              {progress.next
-                ? t("ranks.progressTo", {
-                    elo: elo?.toLocaleString(),
-                    next: progress.nextThreshold?.toLocaleString(),
-                    tier: t(`ranks.tiers.${progress.next}`),
-                  })
-                : t("ranks.topTier")}
-            </p>
-          </div>
-        )}
-        </>
+            <div className="flex items-baseline gap-2.5">
+              <span className="font-heading font-bold text-display leading-none tabular-nums">
+                {elo?.toLocaleString()}
+              </span>
+              <span className="font-mono text-eyebrow font-bold uppercase text-muted-foreground">
+                {t("ranks.eloRating")}
+              </span>
+            </div>
+            {progress && (
+              <div>
+                <div className="h-3.5 rounded-full border-2 border-foreground overflow-hidden">
+                  <div
+                    className="h-full"
+                    style={{
+                      width: `${Math.round(progress.pct * 100)}%`,
+                      background: "linear-gradient(90deg, hsl(var(--yellow)), hsl(var(--primary)))",
+                    }}
+                  />
+                </div>
+                <p className="font-mono text-eyebrow text-muted-foreground mt-1.5 uppercase">
+                  {progress.next
+                    ? t("ranks.progressTo", {
+                        elo: elo?.toLocaleString(),
+                        next: progress.nextThreshold?.toLocaleString(),
+                        tier: t(`ranks.tiers.${progress.next}`),
+                      })
+                    : t("ranks.topTier")}
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
       {/* Parked ranked features — explicit placeholders, never numbers. */}
@@ -261,7 +331,7 @@ export default function RanksScreen() {
             key={label}
             className="border-2 border-dashed border-muted rounded-lg min-h-[52px] flex items-center justify-center px-2.5 py-2"
           >
-            <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground text-center">
+            <span className="font-mono text-eyebrow uppercase text-muted-foreground text-center">
               {label}
             </span>
           </div>
@@ -277,12 +347,12 @@ export default function RanksScreen() {
 
   const ladderTiers = [...TIERS].reverse(); // top (Platinum) first
   const ladder = (
-    <div className="flex flex-col gap-2.5 md:gap-3 md:min-h-0 md:h-full">
-      <div className="flex items-center justify-between">
-        <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+    <div className="flex flex-col gap-2.5 md:gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <span className="font-mono text-eyebrow font-bold uppercase text-muted-foreground">
           {t("ranks.ladder")}
         </span>
-        <span className="font-mono text-[10px] uppercase text-muted-foreground">
+        <span className="font-mono text-eyebrow uppercase text-muted-foreground text-right">
           {t("ranks.ladderHint")}
         </span>
       </div>
@@ -299,15 +369,13 @@ export default function RanksScreen() {
         return (
           <div
             key={tier.key}
-            className={
-              `rounded-lg flex flex-col justify-center md:flex-1 md:min-h-0 ${indents[i] ?? "ml-0"} ` +
-              (isMe
-                ? "border-[3px] border-yellow bg-muted px-4 py-3.5"
-                : "border-2 border-muted bg-card/30 px-3.5 py-3")
-            }
-            style={{
-              boxShadow: isMe ? "6px 6px 0 rgba(226, 178, 58, .25)" : undefined,
-            }}
+            className={cn(
+              "rounded-lg flex flex-col justify-center",
+              indents[i] ?? "ml-0",
+              isMe
+                ? "border-[3px] border-yellow bg-muted px-4 py-3.5 neo-shadow"
+                : "border-2 border-muted bg-card/30 px-3.5 py-3",
+            )}
           >
             <div className="flex items-center gap-3">
               <div
@@ -318,16 +386,16 @@ export default function RanksScreen() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-heading font-bold text-lg md:text-xl leading-none">
+                  <span className="font-heading font-bold text-title-sm md:text-title leading-none">
                     {t(`ranks.tiers.${tier.key}`)}
                   </span>
                   {isMe && <NeoBadge color="yellow">{t("ranks.youAreHere")}</NeoBadge>}
                 </div>
                 <p
-                  className={
-                    "font-mono text-[9.5px] uppercase tracking-wide mt-1 " +
-                    (isMe ? "text-yellow" : "text-muted-foreground")
-                  }
+                  className={cn(
+                    "font-mono text-eyebrow uppercase mt-1",
+                    isMe ? "text-yellow" : "text-muted-foreground",
+                  )}
                 >
                   {tier.max == null
                     ? t("ranks.tierRangeTop", { min: tier.min.toLocaleString() })
@@ -356,136 +424,14 @@ export default function RanksScreen() {
     </div>
   );
 
-  /* ---------- leaderboard preview (real football·quiz board) ---------- */
-
-  const boardCard = (
-    <div className="border-2 border-muted rounded-lg bg-card/30 flex flex-col md:flex-1 md:min-h-0 overflow-hidden">
-      <div className="flex items-center justify-between px-4 pt-3 pb-2.5">
-        <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-          {t("ranks.board")}
-        </span>
-        <span className="font-mono text-[10px] uppercase text-muted-foreground">
-          {t("ranks.boardScope")}
-        </span>
-      </div>
-      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-        {entries.length === 0 ? (
-          <div className="border-t-2 border-muted px-4 py-6 text-center">
-            <span className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
-              {t("ranks.boardEmpty")}
-            </span>
-          </div>
-        ) : (
-          entries.map((p) => {
-            const isYou = userId != null && p.userId === userId;
-            return (
-              <div
-                key={p.userId}
-                className={
-                  "border-t-2 px-4 py-2.5 flex items-center gap-3 md:flex-1 md:min-h-0 " +
-                  (isYou ? "border-yellow bg-muted" : "border-muted")
-                }
-              >
-                <span
-                  className="w-[26px] h-[26px] rounded-full shrink-0 border-2 flex items-center justify-center font-heading font-bold text-xs"
-                  style={{
-                    borderColor: MEDALS[p.rank] ?? "hsl(var(--muted))",
-                    background: MEDALS[p.rank] ?? "transparent",
-                    color: MEDALS[p.rank] ? "#0E0D0B" : undefined,
-                  }}
-                >
-                  {p.rank}
-                </span>
-                <span className="font-heading font-bold text-sm flex-1 min-w-0 truncate">
-                  {p.username}
-                  {isYou && (
-                    <span className="font-mono text-[9.5px] text-yellow ml-1.5">
-                      {t("ranks.boardYou").toUpperCase()}
-                    </span>
-                  )}
-                </span>
-                <span className="font-mono text-[11.5px] font-bold text-muted-foreground">
-                  {Math.round(p.elo_rating ?? 0).toLocaleString()}
-                </span>
-              </div>
-            );
-          })
-        )}
-      </div>
-      {(myPinned || locked) && (
-        <p className="font-mono text-center text-[11px] text-muted-foreground tracking-[.4em] py-0.5">
-          ···
-        </p>
-      )}
-      {locked ? (
-        <div className="border-t-2 border-dashed border-muted px-4 py-2.5 flex items-center gap-3">
-          <span className="w-[26px] h-[26px] rounded-full border-2 border-dashed border-muted flex items-center justify-center font-mono text-[11px] text-muted-foreground shrink-0">
-            ?
-          </span>
-          <span className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
-            {t("ranks.boardLockedRow")}
-          </span>
-        </div>
-      ) : (
-        myPinned &&
-        myEntry && (
-          <div className="border-t-[3px] border-yellow bg-muted px-4 py-2.5 flex items-center gap-3">
-            <span className="font-mono text-[10.5px] font-bold text-yellow shrink-0">
-              #{myEntry.rank}
-            </span>
-            <span className="font-heading font-bold text-sm flex-1 min-w-0 truncate">
-              {myEntry.username}
-              <span className="font-mono text-[9.5px] text-yellow ml-1.5">
-                {t("ranks.boardYou").toUpperCase()}
-              </span>
-            </span>
-            <span className="font-mono text-[11.5px] font-bold">
-              {Math.round(myEntry.elo_rating ?? 0).toLocaleString()}
-            </span>
-          </div>
-        )
-      )}
-      <div className="border-t-2 border-muted p-3">
-        <NeoButton
-          variant="outline"
-          size="full"
-          className="shadow-none"
-          onClick={() => navigate(SHELL_ROUTES.leaderboard)}
-        >
-          {t("ranks.fullBoard")}
-        </NeoButton>
-      </div>
-    </div>
-  );
-
-  /* ---------- screen ---------- */
-
+  // Desktop — hero | ladder, top-aligned; mobile — stacked, scrolls.
   return (
-    <ShellLayout
-      theme="theme-ink"
-      title={t("ranks.title")}
-      subtitle={
-        seasonNumber != null
-          ? t("ranks.eyebrowSeason", { n: seasonNumber })
-          : t("ranks.eyebrow")
-      }
-      back
-      onBack={() => navigate(SHELL_ROUTES.home)}
-      headerRight={<NeoBadge color="muted">{t("ranks.boardScope")}</NeoBadge>}
+    <div
+      className="flex flex-col gap-4 md:grid md:grid-cols-[1fr_1.4fr] md:gap-6 md:items-start"
+      data-testid="ranks-ladder"
     >
-      {/* Desktop — never-scroll, hero | ladder | board */}
-      <div className="hidden md:grid md:grid-cols-[1.05fr_1.35fr_1fr] md:gap-4 md:min-h-0 md:items-start">
-        <div className="flex flex-col min-h-0">{hero}</div>
-        <div className="min-h-0">{ladder}</div>
-        <div className="flex flex-col min-h-0">{boardCard}</div>
-      </div>
-
-      {/* Mobile — stacked, scrolls */}
-      <div className="flex flex-col gap-4 md:hidden">
-        {hero}
-        {ladder}
-        {boardCard}
-      </div>
-    </ShellLayout>
+      {hero}
+      {ladder}
+    </div>
   );
 }

@@ -42,6 +42,23 @@ function renderAlias(entry: string, path: string, to: string) {
   );
 }
 
+function FullProbe() {
+  const loc = useLocation();
+  return <div data-testid="full">{`${loc.pathname}${loc.search}${loc.hash}`}</div>;
+}
+
+function renderAliasFull(entry: string, path: string, to: string) {
+  return render(
+    <MemoryRouter initialEntries={[entry]}>
+      <Routes>
+        <Route path={path} element={<LegacyRedirect to={to} />} />
+        <Route path="*" element={<div data-testid="destination" />} />
+      </Routes>
+      <FullProbe />
+    </MemoryRouter>,
+  );
+}
+
 describe("LegacyRedirect behavior", () => {
   it("forwards to the v2 surface with default params", () => {
     renderAlias("/daily", "/daily", "/v2/daily?sport=football");
@@ -61,6 +78,16 @@ describe("LegacyRedirect behavior", () => {
     expect(dest.startsWith("/v2/quiz?")).toBe(true);
     expect(dest).toContain("difficulty=hard");
     expect(dest).toContain("sport=football");
+  });
+
+  // Decision 10: `/compete#x` → `/v2#x` — an incoming anchor survives and
+  // wins over the alias's default one.
+  it("carries the anchor: the incoming one wins, else the alias's default", () => {
+    const { unmount } = renderAliasFull("/compete#today", "/compete", "/v2#more");
+    expect(screen.getByTestId("full").textContent).toBe("/v2#today");
+    unmount();
+    renderAliasFull("/compete?ref=seo", "/compete", "/v2#more");
+    expect(screen.getByTestId("full").textContent).toBe("/v2?ref=seo#more");
   });
 
   it("v1 arena invite links keep their lobby code", () => {
@@ -107,7 +134,11 @@ const EXPECTED_ALIASES: Array<[path: string, target: string]> = [
   ["/learn/geography", "/v2/learn"],
   ["/learn/geography/:nodeId", "/v2/learn"],
   ["/learn/prototype", "/v2/learn"],
-  ["/sport-select", "/compete"],
+  // Decision 10: Compete merged into Play; the catalogue opens on #more.
+  ["/sport-select", "/v2#more"],
+  ["/compete", "/v2#more"],
+  ["/compete/sport", "/v2#more"],
+  ["/compete/sport/:sport", "/v2#more"],
   ["/duels/history", "/v2/duels/history"],
 ];
 
@@ -128,6 +159,14 @@ describe("App.tsx deep-link wiring (source contract)", () => {
     expect(appSource).toMatch(
       /path="\/arena\/:code" element=\{<LegacyArenaCodeRedirect \/>\}/,
     );
+  });
+
+  // Decision 10: Ranks is one screen with a Ladder | Leaderboard segment;
+  // both URLs stay and open it on the right segment.
+  it("routes /v2/ranks and /v2/leaderboard to the one Ranks screen", () => {
+    expect(appSource).toContain('path="/v2/ranks" element={<ShellGate><RanksScreen /></ShellGate>}');
+    expect(appSource).toContain('path="/v2/leaderboard" element={<ShellGate><RanksScreen /></ShellGate>}');
+    expect(appSource).not.toContain("ShellLeaderboardScreen");
   });
 
   it("registers the v2 arena hub and legal pages", () => {

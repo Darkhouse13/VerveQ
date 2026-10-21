@@ -16,6 +16,8 @@
     "share": "Partager"
   },
   "nav": {
+    "weekend": "Weekend",
+    "play": "Jouer",
     "home": "Accueil",
     "compete": "Affronter",
     "ranks": "Classement",
@@ -60,6 +62,20 @@
     "guestNote": "Le mode invité ne demande qu'un pseudo — sans e-mail, sans mot de passe. Tu peux passer à un compte complet quand tu veux."
   },
   "home": {
+    "more": {
+      "eyebrow": "Plus de jeux",
+      "title": "{{count}} autres jeux"
+    },
+    "friends": {
+      "eyebrow": "Entre amis",
+      "title": "Défie un ami",
+      "line": "Envoie un lien, ou ouvre une salle en direct",
+      "link": "Envoyer un lien",
+      "room": "Salle en direct"
+    },
+    "featured": {
+      "eyebrow": "À la une"
+    },
     "pillars": {
       "competeTitle": "Affronter",
       "competeChip": "Classé",
@@ -151,7 +167,13 @@
     }
   },
   "ranks": {
-    "title": "Le Classement",
+    "weekendTable": "Tableau Weekend",
+    "segments": {
+      "ladder": "Échelle",
+      "leaderboard": "Tableau"
+    },
+    "segmentsAria": "Vue du classement",
+    "title": "Classement",
     "eyebrow": "Échelle compétitive",
     "eyebrowSeason": "Échelle compétitive · Saison {{n}}",
     "seasonChip": "Saison {{n}}",
@@ -201,6 +223,8 @@
     }
   },
   "profile": {
+    "labsLearnLine": "Géographie, histoire et sciences, pas à pas",
+    "labs": "Labs",
     "title": "Profil",
     "language": "Langue",
     "eyebrow": "Ton vestiaire",

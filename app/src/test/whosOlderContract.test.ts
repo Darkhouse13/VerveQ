@@ -99,10 +99,14 @@ describe("Who's Older wiring", () => {
     expect(view).toContain("session.rounds.slice(0, session.current)");
   });
 
-  it("is reachable from Home, Compete TODAY and the caption short link", () => {
+  it("is reachable from Play's TODAY (decision 10) and the caption short link", () => {
     expect(read("src/App.tsx")).toContain('path="/v2/whos-older"');
-    expect(read("src/pages/shell/ShellHomeScreen.tsx")).toContain("SHELL_ROUTES.whosOlderPlay");
-    expect(read("src/pages/shell/CompeteModeGridScreen.tsx")).toMatch(/TODAY_KEYS\s*=\s*\[[^\]]*"whosOlder"/);
+    // Decision 10 merged Home and Compete into Play: one TODAY list, in the
+    // catalogue module, rendered by the Play screen.
+    const tiles = read("src/pages/shell/competeModeTiles.ts");
+    expect(tiles).toMatch(/PLAY_TODAY_KEYS\s*=\s*\[[^\]]*"whosOlder"/);
+    expect(tiles).toMatch(/key: "whosOlder",[^\n]*SHELL_ROUTES\.whosOlderPlay/);
+    expect(read("src/pages/shell/ShellHomeScreen.tsx")).toContain("tilesByKeys(PLAY_TODAY_KEYS)");
     expect(read("../deploy/nginx.conf")).toMatch(/\|older\|whos-older\|/);
     expect(whosOlderShortLinkTarget("")).toBe("/v2/whos-older?ref=older");
     expect(whosOlderShortLinkTarget("?ref=ig_bio")).toBe("/v2/whos-older?ref=ig_bio");

@@ -152,13 +152,14 @@ surface under it fires nothing at all.
 
 | Event | Fires when | Properties |
 | --- | --- | --- |
-| `weekend_entry_clicked` | the PLAY NOW CTA is pressed (Home entry card) or the Compete hero card is tapped | `source`, `placement` (`home_card` \| `compete_hero`) |
+| `weekend_entry_clicked` | the WEEKEND nav tab is tapped from another tab (VerveQ ONE decision 10, 2026-10), or Ranks' "Weekend table" button is pressed. Historical: the Home entry card's PLAY NOW CTA and the Compete hero card, both retired with decision 10 | `source`, `placement` (`nav_tab` \| `ranks_table`; historical `home_card` \| `compete_hero`) |
 | `weekend_squad_created` | `fantasySquads.createSquad` **resolves** — the budget squad row exists | `gw_number`, `entry` (`builder` \| `hub`) |
 | `weekend_crew_created` | `fantasyDraftRooms.createCrew` **resolves** | — |
 | `weekend_crew_joined` | `fantasyDraftRooms.joinCrew` **resolves** | — |
 
 `source` keeps the waitlist funnel's vocabulary: `utm_source ?? ref` read from
-the URL at mount (`readColdSource`), else the literal `home_card`. The same
+the URL (`readColdSource`, at the tap for the nav tab), else the literal
+placement (`nav_tab`; `ranks` for the Ranks button; historically `home_card`). The same
 fallback caveat as the retired funnel applies — the literal means *the absence
 of an attributed source*, and the `/weekend` short link (which now lands on
 the hub, `lib/weekendDeepLink`) is what keeps promo traffic attributed.

@@ -16,6 +16,8 @@
     "share": "Compartir"
   },
   "nav": {
+    "weekend": "Weekend",
+    "play": "Jugar",
     "home": "Inicio",
     "compete": "Competir",
     "ranks": "Rangos",
@@ -60,6 +62,20 @@
     "guestNote": "Jugar como invitado solo requiere un nombre de usuario: sin correo, sin contraseña. Puedes pasar a una cuenta completa cuando quieras."
   },
   "home": {
+    "more": {
+      "eyebrow": "Más juegos",
+      "title": "{{count}} juegos más"
+    },
+    "friends": {
+      "eyebrow": "Con amigos",
+      "title": "Reta a un amigo",
+      "line": "Envía un enlace o abre una sala en vivo",
+      "link": "Enviar enlace",
+      "room": "Sala en vivo"
+    },
+    "featured": {
+      "eyebrow": "Destacado"
+    },
     "pillars": {
       "competeTitle": "Competir",
       "competeChip": "Clasificatorio",
@@ -151,7 +167,13 @@
     }
   },
   "ranks": {
-    "title": "Los Rangos",
+    "weekendTable": "Tabla Weekend",
+    "segments": {
+      "ladder": "Escalera",
+      "leaderboard": "Clasificación"
+    },
+    "segmentsAria": "Vista de rangos",
+    "title": "Rangos",
     "eyebrow": "Escalera competitiva",
     "eyebrowSeason": "Escalera competitiva · Temporada {{n}}",
     "seasonChip": "Temporada {{n}}",
@@ -201,6 +223,8 @@
     }
   },
   "profile": {
+    "labsLearnLine": "Geografía, historia y ciencia, paso a paso",
+    "labs": "Labs",
     "title": "Perfil",
     "language": "Idioma",
     "eyebrow": "Tu vestuario",

@@ -146,11 +146,15 @@ describe("Missing Letters wiring", () => {
     expect(view).toContain("session.rounds.slice(0, session.current)");
   });
 
-  it("is reachable from Home, Compete TODAY and the caption short links", () => {
+  it("is reachable from Play's TODAY (decision 10) and the caption short links", () => {
     expect(read("src/App.tsx")).toContain('path="/v2/missing-letters"');
     expect(read("src/App.tsx")).toContain('path="/letters"');
-    expect(read("src/pages/shell/ShellHomeScreen.tsx")).toContain("SHELL_ROUTES.missingLettersPlay");
-    expect(read("src/pages/shell/CompeteModeGridScreen.tsx")).toMatch(/TODAY_KEYS\s*=\s*\[[^\]]*"missingLetters"/);
+    // Decision 10 merged Home and Compete into Play: one TODAY list, in the
+    // catalogue module, rendered by the Play screen.
+    const tiles = read("src/pages/shell/competeModeTiles.ts");
+    expect(tiles).toMatch(/PLAY_TODAY_KEYS\s*=\s*\[[^\]]*"missingLetters"/);
+    expect(tiles).toMatch(/key: "missingLetters",[^\n]*SHELL_ROUTES\.missingLettersPlay/);
+    expect(read("src/pages/shell/ShellHomeScreen.tsx")).toContain("tilesByKeys(PLAY_TODAY_KEYS)");
     expect(read("../deploy/nginx.conf")).toMatch(/\|letters\|missing-letters\|/);
     expect(missingLettersShortLinkTarget("")).toBe("/v2/missing-letters?ref=letters");
     expect(missingLettersShortLinkTarget("?ref=ig_bio")).toBe("/v2/missing-letters?ref=ig_bio");

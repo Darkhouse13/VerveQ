@@ -74,7 +74,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
             class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-heading font-bold text-sm uppercase tracking-wide transition-all cursor-pointer active:opacity-60 neo-border neo-shadow bg-card text-lime"
           >
             <svg
-              class="lucide lucide-house"
+              class="lucide lucide-gamepad2"
               fill="none"
               height="18"
               stroke="currentColor"
@@ -85,20 +85,41 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
               width="18"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <path
-                d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"
+              <line
+                x1="6"
+                x2="10"
+                y1="11"
+                y2="11"
+              />
+              <line
+                x1="8"
+                x2="8"
+                y1="9"
+                y2="13"
+              />
+              <line
+                x1="15"
+                x2="15.01"
+                y1="12"
+                y2="12"
+              />
+              <line
+                x1="18"
+                x2="18.01"
+                y1="10"
+                y2="10"
               />
               <path
-                d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+                d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"
               />
             </svg>
-            nav.home
+            nav.play
           </button>
           <button
             class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-heading font-bold text-sm uppercase tracking-wide transition-all cursor-pointer active:opacity-60 text-muted-foreground hover:bg-muted"
           >
             <svg
-              class="lucide lucide-swords"
+              class="lucide lucide-calendar-range"
               fill="none"
               height="18"
               stroke="currentColor"
@@ -109,50 +130,36 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
               width="18"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <polyline
-                points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"
+              <rect
+                height="18"
+                rx="2"
+                width="18"
+                x="3"
+                y="4"
               />
-              <line
-                x1="13"
-                x2="19"
-                y1="19"
-                y2="13"
+              <path
+                d="M16 2v4"
               />
-              <line
-                x1="16"
-                x2="20"
-                y1="16"
-                y2="20"
+              <path
+                d="M3 10h18"
               />
-              <line
-                x1="19"
-                x2="21"
-                y1="21"
-                y2="19"
+              <path
+                d="M8 2v4"
               />
-              <polyline
-                points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"
+              <path
+                d="M17 14h-6"
               />
-              <line
-                x1="5"
-                x2="9"
-                y1="14"
-                y2="18"
+              <path
+                d="M13 18H7"
               />
-              <line
-                x1="7"
-                x2="4"
-                y1="17"
-                y2="20"
+              <path
+                d="M7 14h.01"
               />
-              <line
-                x1="3"
-                x2="5"
-                y1="19"
-                y2="21"
+              <path
+                d="M17 18h.01"
               />
             </svg>
-            nav.compete
+            nav.weekend
           </button>
           <button
             class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-heading font-bold text-sm uppercase tracking-wide transition-all cursor-pointer active:opacity-60 text-muted-foreground hover:bg-muted"
@@ -423,7 +430,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
               >
                 <svg
                   aria-hidden="true"
-                  class="lucide lucide-star shrink-0"
+                  class="lucide lucide-timer shrink-0"
                   fill="none"
                   height="24"
                   stroke="currentColor"
@@ -434,8 +441,22 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
                   width="24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path
-                    d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"
+                  <line
+                    x1="10"
+                    x2="14"
+                    y1="2"
+                    y2="2"
+                  />
+                  <line
+                    x1="12"
+                    x2="15"
+                    y1="14"
+                    y2="11"
+                  />
+                  <circle
+                    cx="12"
+                    cy="14"
+                    r="8"
                   />
                 </svg>
                 <span
@@ -502,564 +523,242 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
             </div>
           </section>
           <div
-            class="shrink-0 flex flex-col md:flex-row md:items-stretch md:gap-4"
+            class="flex flex-col gap-4 md:grid md:grid-cols-3 md:gap-x-3 md:gap-y-3 md:content-start"
           >
-            <div
-              class="shrink-0 pb-3 md:flex-[3] md:min-w-0"
-              data-testid="home-weekend-card"
-            >
-              <div
-                class="neo-border !border-lime neo-shadow-lg rounded-lg bg-card text-card-foreground p-4 md:p-5 h-full flex flex-col md:flex-row md:items-center gap-4 md:gap-5"
-              >
-                <div
-                  class="min-w-0 md:flex-1"
-                >
-                  <p
-                    class="font-mono text-eyebrow font-bold uppercase text-lime flex items-center gap-1.5"
-                  >
-                    <svg
-                      aria-hidden="true"
-                      class="lucide lucide-calendar-range"
-                      fill="none"
-                      height="12"
-                      stroke="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="3"
-                      viewBox="0 0 24 24"
-                      width="12"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <rect
-                        height="18"
-                        rx="2"
-                        width="18"
-                        x="3"
-                        y="4"
-                      />
-                      <path
-                        d="M16 2v4"
-                      />
-                      <path
-                        d="M3 10h18"
-                      />
-                      <path
-                        d="M8 2v4"
-                      />
-                      <path
-                        d="M17 14h-6"
-                      />
-                      <path
-                        d="M13 18H7"
-                      />
-                      <path
-                        d="M7 14h.01"
-                      />
-                      <path
-                        d="M17 18h.01"
-                      />
-                    </svg>
-                    New mode · Live now
-                  </p>
-                  <p
-                    class="font-heading font-bold uppercase leading-none text-[34px] md:text-display mt-1.5"
-                  >
-                    The Weekend
-                  </p>
-                  <p
-                    class="font-heading font-bold text-body md:text-title-sm leading-tight mt-2"
-                  >
-                    Draft the whole European football weekend.
-                  </p>
-                  <ul
-                    class="mt-3 flex flex-col gap-1.5 md:hidden"
-                  >
-                    <li
-                      class="font-mono text-eyebrow uppercase text-muted-foreground flex gap-2"
-                    >
-                      <span
-                        aria-hidden="true"
-                        class="text-lime"
-                      >
-                        ■
-                      </span>
-                      <span>
-                        Eight leagues, one squad
-                      </span>
-                    </li>
-                    <li
-                      class="font-mono text-eyebrow uppercase text-muted-foreground flex gap-2"
-                    >
-                      <span
-                        aria-hidden="true"
-                        class="text-lime"
-                      >
-                        ■
-                      </span>
-                      <span>
-                        The crowd rates the players, not an algorithm
-                      </span>
-                    </li>
-                    <li
-                      class="font-mono text-eyebrow uppercase text-muted-foreground flex gap-2"
-                    >
-                      <span
-                        aria-hidden="true"
-                        class="text-lime"
-                      >
-                        ■
-                      </span>
-                      <span>
-                        Fresh draft every week, no season-long grind
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-                <div
-                  class="md:w-[240px] md:shrink-0 flex flex-col gap-2"
-                >
-                  <button
-                    class="relative inline-flex select-none items-center justify-center gap-2 rounded-lg font-heading font-bold transition duration-press neo-border bg-primary text-primary-foreground min-h-14 px-6 py-3 text-body w-full cursor-pointer neo-shadow enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm hover:brightness-105 uppercase tracking-wide"
-                    data-testid="weekend-cta-play"
-                    type="button"
-                  >
-                    Play now
-                  </button>
-                  <p
-                    class="font-mono text-eyebrow uppercase text-muted-foreground"
-                  >
-                    Budget squad or crew draft — fresh board every weekend.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div
-            class="flex flex-col gap-3 md:grid md:grid-cols-[3fr_3fr_4fr] md:grid-rows-[auto_auto] md:gap-3 md:content-start"
-          >
-            <button
-              class="neo-border rounded-lg neo-shadow-lg p-4 w-full text-left cursor-pointer transition duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-orange text-ink on-fill flex flex-col gap-1.5 md:col-start-1 md:row-start-1 min-h-[120px]"
-              data-testid="home-career-path-card"
-              type="button"
-            >
-              <svg
-                aria-hidden="true"
-                class="lucide lucide-route shrink-0"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2.5"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <circle
-                  cx="6"
-                  cy="19"
-                  r="3"
-                />
-                <path
-                  d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"
-                />
-                <circle
-                  cx="18"
-                  cy="5"
-                  r="3"
-                />
-              </svg>
-              <span
-                class="mt-auto flex min-w-0 flex-col gap-1"
-              >
-                <span
-                  class="font-heading text-title-sm font-bold leading-tight"
-                >
-                  modes.careerPath.name
-                </span>
-                <span
-                  class="text-meta leading-snug text-muted-foreground"
-                >
-                  modes.careerPath.desc
-                </span>
-              </span>
-            </button>
-            <button
-              class="neo-border rounded-lg bg-card text-card-foreground neo-shadow-lg w-full text-left cursor-pointer transition duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed p-4 md:p-5 flex flex-col min-h-0 overflow-hidden md:col-start-2 md:row-start-1"
-              type="button"
-            >
-              <div
-                class="flex items-start justify-between"
-              >
-                <span
-                  class="neo-border neo-shadow-sm inline-flex items-center gap-1 font-heading font-bold uppercase bg-yellow text-yellow-foreground px-2.5 py-0.5 text-eyebrow rounded-full"
-                >
-                  home.pillars.competeChip
-                </span>
-                <span
-                  aria-hidden="true"
-                  class="text-title leading-none"
-                >
-                  ⚡
-                </span>
-              </div>
-              <p
-                class="font-heading font-bold uppercase text-title-lg leading-none mt-auto pt-3"
-              >
-                home.pillars.competeTitle
-              </p>
-              <p
-                class="text-body-sm text-muted-foreground mt-1.5 max-w-[280px] md:max-w-none"
-              >
-                home.pillars.competeBody
-              </p>
-              <div
-                class="flex flex-wrap items-center gap-2 mt-3"
-              >
-                <span
-                  class="neo-border neo-shadow-sm inline-flex items-center gap-1 font-heading font-bold uppercase bg-muted text-muted-foreground px-2.5 py-0.5 text-eyebrow rounded-full"
-                >
-                  home.stats.unranked
-                </span>
-              </div>
-            </button>
-            <div
-              class="flex flex-col gap-2 min-h-0 md:col-span-3 md:row-start-2"
+            <section
+              aria-labelledby="home-featured"
+              class="flex flex-col gap-2"
             >
               <p
                 class="font-mono text-eyebrow uppercase text-muted-foreground font-bold"
+                id="home-featured"
               >
-                <span
-                  class="md:hidden"
+                home.featured.eyebrow
+              </p>
+              <button
+                class="neo-border rounded-lg neo-shadow-lg p-4 w-full text-left cursor-pointer transition duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-orange text-ink on-fill flex flex-col gap-1.5 min-h-[120px] md:flex-1"
+                data-testid="home-career-path-card"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-route shrink-0"
+                  fill="none"
+                  height="24"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2.5"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  home.hooks.eyebrowShort
-                </span>
+                  <circle
+                    cx="6"
+                    cy="19"
+                    r="3"
+                  />
+                  <path
+                    d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"
+                  />
+                  <circle
+                    cx="18"
+                    cy="5"
+                    r="3"
+                  />
+                </svg>
                 <span
-                  class="hidden md:inline"
+                  class="mt-auto flex min-w-0 flex-col gap-1"
                 >
-                  home.hooks.eyebrow
+                  <span
+                    class="font-heading text-title-sm font-bold leading-tight"
+                  >
+                    modes.careerPath.name
+                  </span>
+                  <span
+                    class="text-meta leading-snug text-muted-foreground"
+                  >
+                    modes.careerPath.desc
+                  </span>
                 </span>
+              </button>
+            </section>
+            <section
+              aria-labelledby="home-friends"
+              class="flex flex-col gap-2"
+            >
+              <p
+                class="font-mono text-eyebrow uppercase text-muted-foreground font-bold"
+                id="home-friends"
+              >
+                home.friends.eyebrow
               </p>
               <div
-                class="grid grid-cols-2 md:grid-cols-4 gap-3"
+                class="neo-border rounded-lg neo-shadow p-4 bg-hot-pink text-ink on-fill flex flex-col gap-1.5 md:flex-1"
+                data-testid="home-friends-card"
               >
-                <button
-                  class="neo-border rounded-lg neo-shadow w-full text-left cursor-pointer transition duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-orange text-ink on-fill flex flex-col gap-1.5 p-3.5"
-                  type="button"
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-users shrink-0"
+                  fill="none"
+                  height="24"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2.5"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  <svg
-                    aria-hidden="true"
-                    class="lucide lucide-brain shrink-0"
-                    fill="none"
-                    height="24"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2.5"
-                    viewBox="0 0 24 24"
-                    width="24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"
-                    />
-                    <path
-                      d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"
-                    />
-                    <path
-                      d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"
-                    />
-                    <path
-                      d="M17.599 6.5a3 3 0 0 0 .399-1.375"
-                    />
-                    <path
-                      d="M6.003 5.125A3 3 0 0 0 6.401 6.5"
-                    />
-                    <path
-                      d="M3.477 10.896a4 4 0 0 1 .585-.396"
-                    />
-                    <path
-                      d="M19.938 10.5a4 4 0 0 1 .585.396"
-                    />
-                    <path
-                      d="M6 18a4 4 0 0 1-1.967-.516"
-                    />
-                    <path
-                      d="M19.967 17.484A4 4 0 0 1 18 18"
-                    />
-                  </svg>
-                  <span
-                    class="mt-auto flex min-w-0 flex-col gap-1"
-                  >
-                    <span
-                      class="font-heading text-title-sm font-bold leading-tight"
-                    >
-                      modes.quiz.name
-                    </span>
-                    <span
-                      class="text-meta leading-snug text-muted-foreground"
-                    >
-                      home.hooks.quizSub
-                    </span>
-                  </span>
-                </button>
-                <button
-                  class="neo-border rounded-lg neo-shadow w-full text-left cursor-pointer transition duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-hot-pink text-ink on-fill flex flex-col gap-1.5 p-3.5"
-                  type="button"
+                  <path
+                    d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"
+                  />
+                  <circle
+                    cx="9"
+                    cy="7"
+                    r="4"
+                  />
+                  <path
+                    d="M22 21v-2a4 4 0 0 0-3-3.87"
+                  />
+                  <path
+                    d="M16 3.13a4 4 0 0 1 0 7.75"
+                  />
+                </svg>
+                <p
+                  class="font-heading text-title-sm font-bold leading-tight mt-auto"
                 >
-                  <svg
-                    aria-hidden="true"
-                    class="lucide lucide-users shrink-0"
-                    fill="none"
-                    height="24"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2.5"
-                    viewBox="0 0 24 24"
-                    width="24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"
-                    />
-                    <circle
-                      cx="9"
-                      cy="7"
-                      r="4"
-                    />
-                    <path
-                      d="M22 21v-2a4 4 0 0 0-3-3.87"
-                    />
-                    <path
-                      d="M16 3.13a4 4 0 0 1 0 7.75"
-                    />
-                  </svg>
-                  <span
-                    class="mt-auto flex min-w-0 flex-col gap-1"
-                  >
-                    <span
-                      class="font-heading text-title-sm font-bold leading-tight"
-                    >
-                      modes.duel.name
-                    </span>
-                    <span
-                      class="text-meta leading-snug text-muted-foreground"
-                    >
-                      modes.duel.desc
-                    </span>
-                  </span>
-                </button>
-                <button
-                  class="neo-border rounded-lg neo-shadow w-full text-left cursor-pointer transition duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-hot-pink text-ink on-fill flex flex-col gap-1.5 p-3.5"
-                  type="button"
+                  home.friends.title
+                </p>
+                <p
+                  class="text-meta leading-snug text-muted-foreground"
                 >
-                  <svg
-                    aria-hidden="true"
-                    class="lucide lucide-swords shrink-0"
-                    fill="none"
-                    height="24"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2.5"
-                    viewBox="0 0 24 24"
-                    width="24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <polyline
-                      points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"
-                    />
-                    <line
-                      x1="13"
-                      x2="19"
-                      y1="19"
-                      y2="13"
-                    />
-                    <line
-                      x1="16"
-                      x2="20"
-                      y1="16"
-                      y2="20"
-                    />
-                    <line
-                      x1="19"
-                      x2="21"
-                      y1="21"
-                      y2="19"
-                    />
-                    <polyline
-                      points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"
-                    />
-                    <line
-                      x1="5"
-                      x2="9"
-                      y1="14"
-                      y2="18"
-                    />
-                    <line
-                      x1="7"
-                      x2="4"
-                      y1="17"
-                      y2="20"
-                    />
-                    <line
-                      x1="3"
-                      x2="5"
-                      y1="19"
-                      y2="21"
-                    />
-                  </svg>
-                  <span
-                    class="mt-auto flex min-w-0 flex-col gap-1"
-                  >
-                    <span
-                      class="font-heading text-title-sm font-bold leading-tight"
-                    >
-                      modes.arena.name
-                    </span>
-                    <span
-                      class="text-meta leading-snug text-muted-foreground"
-                    >
-                      modes.arena.desc
-                    </span>
-                  </span>
-                </button>
-                <button
-                  class="neo-border rounded-lg neo-shadow w-full text-left cursor-pointer transition duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-card text-card-foreground flex flex-col gap-1.5 p-3.5"
-                  type="button"
+                  home.friends.line
+                </p>
+                <div
+                  class="grid grid-cols-2 gap-2 mt-1.5"
                 >
-                  <svg
-                    aria-hidden="true"
-                    class="lucide lucide-hammer shrink-0"
-                    fill="none"
-                    height="24"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2.5"
-                    viewBox="0 0 24 24"
-                    width="24"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <button
+                    class="relative inline-flex select-none items-center justify-center gap-2 rounded-lg font-heading font-bold transition duration-press neo-border bg-card text-card-foreground min-h-11 px-4 py-2 text-body-sm cursor-pointer neo-shadow enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm hover:bg-muted"
+                    data-testid="home-friends-link"
+                    type="button"
                   >
-                    <path
-                      d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"
-                    />
-                    <path
-                      d="m18 15 4-4"
-                    />
-                    <path
-                      d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"
-                    />
-                  </svg>
-                  <span
-                    class="mt-auto flex min-w-0 flex-col gap-1"
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-send"
+                      fill="none"
+                      height="16"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2.5"
+                      viewBox="0 0 24 24"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"
+                      />
+                      <path
+                        d="m21.854 2.147-10.94 10.939"
+                      />
+                    </svg>
+                    home.friends.link
+                  </button>
+                  <button
+                    class="relative inline-flex select-none items-center justify-center gap-2 rounded-lg font-heading font-bold transition duration-press neo-border bg-card text-card-foreground min-h-11 px-4 py-2 text-body-sm cursor-pointer neo-shadow enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm hover:bg-muted"
+                    data-testid="home-friends-room"
+                    type="button"
                   >
-                    <span
-                      class="font-heading text-title-sm font-bold leading-tight"
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-radio"
+                      fill="none"
+                      height="16"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2.5"
+                      viewBox="0 0 24 24"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
                     >
-                      forge.title
-                    </span>
-                    <span
-                      class="text-meta leading-snug text-muted-foreground"
-                    >
-                      forge.subtitle
-                    </span>
-                  </span>
-                </button>
+                      <path
+                        d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"
+                      />
+                      <path
+                        d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"
+                      />
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="2"
+                      />
+                      <path
+                        d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"
+                      />
+                      <path
+                        d="M19.1 4.9C23 8.8 23 15.1 19.1 19"
+                      />
+                    </svg>
+                    home.friends.room
+                  </button>
+                </div>
               </div>
-            </div>
-            <button
-              class="neo-border rounded-lg bg-card text-card-foreground neo-shadow-lg w-full text-left cursor-pointer transition duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed p-[18px] flex flex-col min-h-0 overflow-hidden md:col-start-3 md:row-start-1"
-              type="button"
+            </section>
+            <section
+              aria-labelledby="home-more"
+              class="flex flex-col gap-2"
             >
-              <div
-                class="flex items-center justify-between gap-2"
+              <p
+                class="font-mono text-eyebrow uppercase text-muted-foreground font-bold"
+                id="home-more"
+              >
+                home.more.eyebrow
+              </p>
+              <button
+                aria-controls="home-more-games"
+                aria-expanded="false"
+                class="neo-border rounded-lg bg-card text-card-foreground neo-shadow p-4 w-full text-left cursor-pointer transition duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed flex items-center gap-3 md:flex-1"
+                data-testid="home-more-toggle"
+                type="button"
               >
                 <span
-                  class="font-mono text-eyebrow uppercase font-bold text-yellow"
+                  class="flex min-w-0 flex-1 flex-col gap-0.5"
                 >
-                  ranks.ladder
-                </span>
-                <span
-                  class="neo-border neo-shadow-sm inline-flex items-center gap-1 font-heading font-bold uppercase bg-yellow text-yellow-foreground px-2.5 py-0.5 text-eyebrow rounded-full"
-                >
-                  ranks.rankedChip
-                </span>
-              </div>
-              <div
-                class="flex items-center gap-3 mt-3"
-              >
-                <div
-                  class="neo-border bg-muted w-[50px] h-[50px] shrink-0 rounded-lg -rotate-6 grid place-items-center"
-                >
-                  <svg
-                    class="lucide lucide-lock text-muted-foreground"
-                    fill="none"
-                    height="24"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2.5"
-                    viewBox="0 0 24 24"
-                    width="24"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <span
+                    class="font-heading text-title-sm font-bold leading-tight"
                   >
-                    <rect
-                      height="11"
-                      rx="2"
-                      ry="2"
-                      width="18"
-                      x="3"
-                      y="11"
-                    />
-                    <path
-                      d="M7 11V7a5 5 0 0 1 10 0v4"
-                    />
-                  </svg>
-                </div>
-                <div
-                  class="min-w-0"
-                >
-                  <p
-                    class="font-heading font-bold text-title-lg leading-none"
-                  >
-                    ranks.locked.title
-                  </p>
-                  <p
-                    class="font-mono text-meta text-yellow mt-1"
-                  >
-                    ranks.locked.chip
-                  </p>
-                </div>
-              </div>
-              <div
-                class="h-3 neo-border rounded-full mt-3 overflow-hidden"
-              />
-              <div
-                class="flex items-center justify-between mt-auto pt-3"
-              >
-                <span
-                  class="flex items-baseline gap-1.5 font-mono text-meta text-muted-foreground"
-                >
-                  <span>
-                    ranks.eloRating
+                    home.more.title
                   </span>
-                  <span>
-                    —
+                  <span
+                    class="text-meta text-muted-foreground line-clamp-2"
+                  >
+                    modes.quiz.name · modes.survival.name · modes.verveGrid.name · modes.higherLower.name · modes.blitz.name · modes.knowledgeQuiz.name · modes.cameFirst.name
                   </span>
                 </span>
-                <span
-                  class="font-heading font-bold text-meta uppercase text-yellow"
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-chevron-down shrink-0 transition-transform duration-ui"
+                  fill="none"
+                  height="22"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2.5"
+                  viewBox="0 0 24 24"
+                  width="22"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  home.ranksCard.view
-                   →
-                </span>
-              </div>
-            </button>
+                  <path
+                    d="m6 9 6 6 6-6"
+                  />
+                </svg>
+              </button>
+            </section>
           </div>
           <p
-            class="shrink-0 text-center text-meta text-muted-foreground pt-3 pb-1"
+            class="shrink-0 text-center text-meta text-muted-foreground pt-4 pb-1"
           >
             home.supportCoffeePrefix
              
@@ -1088,7 +787,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
             class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] bg-[hsl(75_100%_55%)] rounded-b-full"
           />
           <svg
-            class="lucide lucide-house"
+            class="lucide lucide-gamepad2"
             fill="none"
             height="22"
             stroke="currentColor"
@@ -1099,24 +798,45 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
             width="22"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <path
-              d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"
+            <line
+              x1="6"
+              x2="10"
+              y1="11"
+              y2="11"
+            />
+            <line
+              x1="8"
+              x2="8"
+              y1="9"
+              y2="13"
+            />
+            <line
+              x1="15"
+              x2="15.01"
+              y1="12"
+              y2="12"
+            />
+            <line
+              x1="18"
+              x2="18.01"
+              y1="10"
+              y2="10"
             />
             <path
-              d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+              d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"
             />
           </svg>
           <span
-            class="text-[10px] font-heading font-bold uppercase"
+            class="text-eyebrow tracking-normal font-heading font-bold uppercase"
           >
-            nav.home
+            nav.play
           </span>
         </button>
         <button
           class="flex-1 flex flex-col items-center gap-0.5 pt-2.5 transition-colors relative cursor-pointer active:opacity-60 text-[hsl(30_100%_97%/0.6)]"
         >
           <svg
-            class="lucide lucide-swords"
+            class="lucide lucide-calendar-range"
             fill="none"
             height="22"
             stroke="currentColor"
@@ -1127,53 +847,39 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
             width="22"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <polyline
-              points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"
+            <rect
+              height="18"
+              rx="2"
+              width="18"
+              x="3"
+              y="4"
             />
-            <line
-              x1="13"
-              x2="19"
-              y1="19"
-              y2="13"
+            <path
+              d="M16 2v4"
             />
-            <line
-              x1="16"
-              x2="20"
-              y1="16"
-              y2="20"
+            <path
+              d="M3 10h18"
             />
-            <line
-              x1="19"
-              x2="21"
-              y1="21"
-              y2="19"
+            <path
+              d="M8 2v4"
             />
-            <polyline
-              points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"
+            <path
+              d="M17 14h-6"
             />
-            <line
-              x1="5"
-              x2="9"
-              y1="14"
-              y2="18"
+            <path
+              d="M13 18H7"
             />
-            <line
-              x1="7"
-              x2="4"
-              y1="17"
-              y2="20"
+            <path
+              d="M7 14h.01"
             />
-            <line
-              x1="3"
-              x2="5"
-              y1="19"
-              y2="21"
+            <path
+              d="M17 18h.01"
             />
           </svg>
           <span
-            class="text-[10px] font-heading font-bold uppercase"
+            class="text-eyebrow tracking-normal font-heading font-bold uppercase"
           >
-            nav.compete
+            nav.weekend
           </span>
         </button>
         <button
@@ -1211,7 +917,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
             />
           </svg>
           <span
-            class="text-[10px] font-heading font-bold uppercase"
+            class="text-eyebrow tracking-normal font-heading font-bold uppercase"
           >
             nav.ranks
           </span>
@@ -1241,7 +947,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
             />
           </svg>
           <span
-            class="text-[10px] font-heading font-bold uppercase"
+            class="text-eyebrow tracking-normal font-heading font-bold uppercase"
           >
             nav.profile
           </span>

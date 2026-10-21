@@ -16,6 +16,8 @@
     "share": "Share"
   },
   "nav": {
+    "weekend": "Weekend",
+    "play": "Play",
     "home": "Home",
     "compete": "Compete",
     "ranks": "Ranks",
@@ -60,6 +62,20 @@
     "guestNote": "Guest play just needs a username — no email, no password. You can upgrade to a full account any time."
   },
   "home": {
+    "more": {
+      "eyebrow": "More games",
+      "title": "{{count}} more games"
+    },
+    "friends": {
+      "eyebrow": "With friends",
+      "title": "Challenge a friend",
+      "line": "Send a link, or open a live room",
+      "link": "Send a link",
+      "room": "Live room"
+    },
+    "featured": {
+      "eyebrow": "Featured"
+    },
     "pillars": {
       "competeTitle": "Compete",
       "competeChip": "Ranked",
@@ -151,7 +167,13 @@
     }
   },
   "ranks": {
-    "title": "The Ranks",
+    "weekendTable": "Weekend table",
+    "segments": {
+      "ladder": "Ladder",
+      "leaderboard": "Leaderboard"
+    },
+    "segmentsAria": "Ranks view",
+    "title": "Ranks",
     "eyebrow": "Competitive ladder",
     "eyebrowSeason": "Competitive ladder · Season {{n}}",
     "seasonChip": "Season {{n}}",
@@ -201,6 +223,8 @@
     }
   },
   "profile": {
+    "labsLearnLine": "Geography, history & science, step by step",
+    "labs": "Labs",
     "title": "Profile",
     "language": "Language",
     "eyebrow": "Your locker",

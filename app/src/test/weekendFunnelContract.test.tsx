@@ -11,13 +11,16 @@
  *     short-link traffic is never bucketed as direct; incoming utm_* params
  *     survive untouched.
  *
- *  2. Home order: TODAY leads, THE WEEKEND follows (owner decision 10,
- *     VerveQ ONE), then THE DRAW. Old `?w=1` links cannot reorder anything —
- *     the param outlives the link that minted it, so it must stay a no-op.
+ *  2. THE WEEKEND has its own TAB (VerveQ ONE decision 10: Play · Weekend ·
+ *     Ranks · Profile). The tab is the mode's entry point everywhere the
+ *     shell nav shows — mobile bar and desktop top strip — and it reports the
+ *     funnel's `weekend_entry_clicked` (placement `nav_tab`) on a real tap.
+ *     It renders with no server read behind it: the launched mode's entry
+ *     point cannot be gated off by a backend hiccup.
  *
- *  3. The Home entry card renders in both orders without any server read —
- *     the launched mode's entry point cannot be gated off by a backend
- *     hiccup.
+ *  3. Play carries no Weekend card any more (the tab replaced it — two doors
+ *     to one place was the duplication decision 10 removed). TODAY leads Play
+ *     and THE DRAW joins it; old `?w=1` links still cannot reorder anything.
  */
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { render, act } from "@testing-library/react";
@@ -137,7 +140,7 @@ describe("/weekend?start=budget (WKND-ENTRY: paid direct-to-builder)", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 2. Home card order — TODAY leads, THE WEEKEND follows, ?w=1 changes nothing
+// 2. The Weekend tab · 3. Play order (TODAY leads, no Weekend card, ?w=1 inert)
 // ---------------------------------------------------------------------------
 
 const authMock = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
@@ -175,6 +178,7 @@ vi.mock("@/lib/analytics", () => ({
 vi.mock("@/lib/coldSession", () => ({ readColdSource: () => undefined }));
 
 import ShellHomeScreen from "@/pages/shell/ShellHomeScreen";
+import { ShellNav, ShellTopNav } from "@/components/shell/ShellNav";
 
 /** Minimal server-shaped Draw payload — just enough for the card to render,
  *  so there are two hero cards whose ORDER can be asserted. The Draw card's
@@ -225,9 +229,52 @@ afterEach(() => {
   window.history.replaceState({}, "", "/");
 });
 
-describe("Home card order", () => {
-  /** DOM position of the Today row and the two hero cards, or -1 when absent. */
-  async function renderHomeAt(path: string) {
+describe("THE WEEKEND tab (decision 10)", () => {
+  function renderNav(Nav: typeof ShellNav, at = "/v2") {
+    return render(
+      <MemoryRouter initialEntries={[at]}>
+        <Routes>
+          <Route path="*" element={<Nav />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+  }
+
+  it.each([
+    ["mobile bar", ShellNav],
+    ["desktop strip", ShellTopNav],
+  ] as const)("the %s offers exactly Play · Weekend · Ranks · Profile", (_name, Nav) => {
+    const { container } = renderNav(Nav);
+    const labels = [...container.querySelectorAll("nav button")]
+      .map((b) => b.textContent)
+      .filter((label) => label !== "VerveQ");
+    expect(labels).toEqual(["nav.play", "nav.weekend", "nav.ranks", "nav.profile"]);
+  });
+
+  it("tapping Weekend fires weekend_entry_clicked with the nav_tab placement", async () => {
+    const { getByText } = renderNav(ShellNav);
+    await act(async () => {
+      getByText("nav.weekend").closest("button")!.click();
+    });
+    expect(trackMock.calls).toEqual([
+      ["weekend_entry_clicked", { source: "nav_tab", placement: "nav_tab" }],
+    ]);
+  });
+
+  it("stays lit across the hub's sub-screens and fires nothing when already there", async () => {
+    const { getByText } = renderNav(ShellNav, SHELL_ROUTES.weekendSquad);
+    const tab = getByText("nav.weekend").closest("button")!;
+    expect(tab.className).toContain("text-[hsl(75_100%_55%)]");
+    await act(async () => {
+      tab.click();
+    });
+    expect(trackMock.calls).toEqual([]);
+  });
+});
+
+describe("Play order", () => {
+  /** DOM position of the Today row and the Draw card, or -1 when absent. */
+  async function renderPlayAt(path: string) {
     const { container } = render(
       <MemoryRouter initialEntries={[path]}>
         <Routes>
@@ -241,39 +288,30 @@ describe("Home card order", () => {
       today: html.indexOf('data-testid="home-whos-older-card"'),
       weekend: html.indexOf('data-testid="home-weekend-card"'),
       draw: html.indexOf('data-testid="home-draw-card"'),
+      featured: html.indexOf('data-testid="home-career-path-card"'),
     };
   }
 
-  // TODAY LEADS HOME, THE WEEKEND FOLLOWS. This pair used to pin "THE WEEKEND
-  // leads Home unconditionally" (2026-08: the most revisited surface, the
-  // destination of every converting ad). Owner decision 10 (VerveQ ONE,
-  // 2026-10) reverses it: most new players now arrive from an Instagram reel
-  // into Who's Older or Missing Letters and tap HOME, and with the WEEKEND
-  // hero and the Draw card on top the dailies sat on the second screen at
-  // exactly the moment we want a second game played. So the daily row comes
-  // first for everyone, the WEEKEND hero second, THE DRAW after it. The
-  // `?w=1` case stays as a REGRESSION GUARD: old short links still carry the
-  // param, and it must not be able to reorder anything.
-  it("leads with TODAY, then the WEEKEND card, then THE DRAW", async () => {
-    const { today, weekend, draw } = await renderHomeAt("/v2");
+  // TODAY LEADS PLAY. This pair used to pin "THE WEEKEND leads Home
+  // unconditionally" (2026-08: the most revisited surface, the destination of
+  // every converting ad); owner decision 10 (VerveQ ONE, 2026-10) put the
+  // dailies first, and then gave THE WEEKEND its own tab, so the Play card is
+  // gone. THE DRAW joins Today ("Today's Draw"), ahead of Featured. The `?w=1`
+  // case stays as a REGRESSION GUARD: old short links still carry the param,
+  // and it must not be able to reorder anything.
+  it("leads with TODAY, THE DRAW joins it, and no Weekend card remains", async () => {
+    const { today, weekend, draw, featured } = await renderPlayAt("/v2");
     expect(today).toBeGreaterThanOrEqual(0);
-    expect(weekend).toBeGreaterThanOrEqual(0);
-    expect(draw).toBeGreaterThanOrEqual(0);
-    expect(today).toBeLessThan(weekend);
-    expect(weekend).toBeLessThan(draw);
+    expect(draw).toBeGreaterThan(today);
+    expect(featured).toBeGreaterThan(draw);
+    expect(weekend).toBe(-1);
   });
 
   it("keeps the same order on a ?w=1 visit (old links are a no-op for order)", async () => {
-    const { today, weekend, draw } = await renderHomeAt("/v2?w=1");
+    const { today, weekend, draw, featured } = await renderPlayAt("/v2?w=1");
     expect(today).toBeGreaterThanOrEqual(0);
-    expect(today).toBeLessThan(weekend);
-    expect(weekend).toBeLessThan(draw);
-  });
-
-  it("renders the WEEKEND entry card with no server read behind it", async () => {
-    // Every query resolves null (see the mock) — the launched mode's entry
-    // point must render regardless.
-    const { weekend } = await renderHomeAt("/v2");
-    expect(weekend).toBeGreaterThanOrEqual(0);
+    expect(draw).toBeGreaterThan(today);
+    expect(featured).toBeGreaterThan(draw);
+    expect(weekend).toBe(-1);
   });
 });
