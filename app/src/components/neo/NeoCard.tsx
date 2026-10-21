@@ -1,5 +1,6 @@
-import { cn } from "@/lib/utils";
 import { forwardRef } from "react";
+import { cn } from "@/lib/utils";
+import { Card, type CardElevation } from "@/components/ui/card";
 
 type NeoCardCommonProps = {
   active?: boolean;
@@ -18,8 +19,14 @@ type NeoCardButtonProps = NeoCardCommonProps &
 
 type NeoCardProps = NeoCardDivProps | NeoCardButtonProps;
 
-const colorMap = {
-  default: "bg-card text-card-foreground",
+/*
+ * Legacy colored fills. Card's tones are roles (default/paper/inverse/mode);
+ * these fills carry meaning at their call sites (a red warning, a green
+ * result), so they ride on top of the default tone until each call site picks
+ * a role. Ink text on every fill.
+ */
+const LEGACY_FILL = {
+  default: "",
   primary: "bg-primary text-primary-foreground",
   accent: "bg-accent text-accent-foreground",
   blue: "bg-electric-blue text-electric-blue-foreground",
@@ -27,48 +34,38 @@ const colorMap = {
   yellow: "bg-yellow text-yellow-foreground",
   success: "bg-success text-success-foreground",
   destructive: "bg-destructive text-destructive-foreground",
+} as const;
+
+const ELEVATION: Record<NonNullable<NeoCardCommonProps["shadow"]>, CardElevation> = {
+  default: "raised",
+  lg: "lifted",
+  none: "flat",
 };
 
-const shadowMap = {
-  default: "neo-shadow",
-  lg: "neo-shadow-lg",
-  none: "",
-};
-
-const baseClasses = "neo-border rounded-lg p-4 transition-all";
-
+/**
+ * @deprecated Use `Card` from `@/components/ui/card` (`tone`, `elevation`,
+ * `padding`, `interactive`). NeoCard is a thin alias: `shadow` → elevation,
+ * `color` → a legacy fill, `onClick` → an interactive (button-element) card.
+ */
 const NeoCard = forwardRef<HTMLDivElement | HTMLButtonElement, NeoCardProps>(
-  ({ className, active, color = "default", shadow = "default", children, ...props }, ref) => {
-    const computed = cn(
-      baseClasses,
-      colorMap[color],
-      shadowMap[shadow],
-      active && "ring-2 ring-primary scale-[1.02]",
-      className,
-    );
+  ({ className, active, color = "default", shadow = "default", ...props }, ref) => {
+    const classes = cn(LEGACY_FILL[color], active && "ring-2 ring-primary scale-[1.02]", className);
+    const elevation = ELEVATION[shadow];
 
     if ("onClick" in props && props.onClick !== undefined) {
-      const { type = "button", ...rest } = props as NeoCardButtonProps;
       return (
-        <button
-          ref={ref as React.Ref<HTMLButtonElement>}
-          type={type}
-          className={cn(
-            computed,
-            "text-left w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-          )}
-          {...rest}
-        >
-          {children}
-        </button>
+        <Card
+          ref={ref}
+          interactive
+          elevation={elevation}
+          className={classes}
+          {...(props as Omit<NeoCardButtonProps, keyof NeoCardCommonProps>)}
+        />
       );
     }
 
-    return (
-      <div ref={ref as React.Ref<HTMLDivElement>} className={computed} {...(props as NeoCardDivProps)}>
-        {children}
-      </div>
-    );
+    const { onClick: _onClick, ...divProps } = props as NeoCardDivProps;
+    return <Card ref={ref} elevation={elevation} className={classes} {...divProps} />;
   },
 );
 NeoCard.displayName = "NeoCard";

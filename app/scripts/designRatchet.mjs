@@ -51,6 +51,14 @@ export const PATTERNS = {
   trackingArbitrary: /\btracking-\[/g,
 };
 
+/**
+ * Patterns that are the point of a primitive, not a departure from it: the
+ * ui primitives ARE the Button / IconButton / Dialog, so their own <button>
+ * and Radix imports are not counted. Everything else still is.
+ */
+const PRIMITIVE_DIR = "src/components/ui/";
+const PRIMITIVE_EXEMPT = new Set(["rawButton", "radixDialog"]);
+
 const EXTS = new Set([".ts", ".tsx", ".css"]);
 // Tests, generated code and the token sources themselves are out of scope.
 const SKIP_DIRS = new Set(["test", "node_modules"]);
@@ -73,13 +81,16 @@ export function countAll() {
   const result = {};
   for (const file of walk(SRC_ROOT, []).sort()) {
     const text = readFileSync(file, "utf8");
+    const rel = path.relative(APP_ROOT, file).split(path.sep).join("/");
+    const isPrimitive = rel.startsWith(PRIMITIVE_DIR);
     const counts = {};
     for (const [name, re] of Object.entries(PATTERNS)) {
+      if (isPrimitive && PRIMITIVE_EXEMPT.has(name)) continue;
       const n = (text.match(re) ?? []).length;
       if (n > 0) counts[name] = n;
     }
     if (Object.keys(counts).length > 0) {
-      result[path.relative(APP_ROOT, file).split(path.sep).join("/")] = counts;
+      result[rel] = counts;
     }
   }
   return result;
