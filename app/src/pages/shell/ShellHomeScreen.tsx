@@ -19,6 +19,7 @@ import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoAvatar } from "@/components/neo/NeoAvatar";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoButton } from "@/components/neo/NeoButton";
+import { BrandMark } from "@/components/ui/BrandMark";
 import { HomeDrawCard } from "@/components/draw/HomeDrawCard";
 import { HomeWeekendCard } from "@/components/weekend/HomeWeekendCard";
 import { ShellLayout } from "@/components/shell/ShellLayout";
@@ -147,19 +148,11 @@ export default function ShellHomeScreen() {
   return (
     <ShellLayout>
       <div className="min-h-full md:min-h-0 flex flex-col">
-        {/* Brand bar — V mark + wordmark left, streak + identity right */}
-        <div className="flex items-center justify-between pt-4 pb-3 md:pt-5 md:pb-4 shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div
-              aria-hidden
-              className="neo-border w-8 h-8 md:w-10 md:h-10 rounded-lg bg-foreground text-background grid place-items-center font-heading font-black text-lg md:text-xl -rotate-[4deg]"
-            >
-              V
-            </div>
-            <span className="font-heading font-black text-xl md:text-2xl tracking-tight">
-              Verve<span className="text-primary">Q</span>
-            </span>
-          </div>
+        {/* Brand bar — lockup left, streak + identity right. From md up the
+            desktop top nav already carries the lockup, so it drops out here
+            (one logo per screen) and the row keeps streak + identity. */}
+        <div className="flex items-center justify-between md:justify-end pt-4 pb-3 md:pt-5 md:pb-4 shrink-0">
+          <BrandMark variant="lockup" size="md" className="md:hidden" />
           <div className="flex items-center gap-2">
             {streak > 0 && (
               <NeoBadge color="yellow" title={t("home.stats.streak")}>

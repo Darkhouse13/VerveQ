@@ -93,6 +93,10 @@ export default {
         display: ["40px", { lineHeight: "44px" }],
         score: ["64px", { lineHeight: "64px" }],
       },
+      // The VERVEQ wordmark's wide tracking (components/ui/BrandMark).
+      letterSpacing: {
+        brand: "0.18em",
+      },
       // Named layers. Every overlay sat on z-50 before; sheets, toasts and
       // flashes now stack in a known order.
       zIndex: {

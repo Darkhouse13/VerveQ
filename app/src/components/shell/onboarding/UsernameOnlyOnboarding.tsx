@@ -25,7 +25,7 @@ import { Loader2 } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoInput } from "@/components/neo/NeoInput";
-import { NeoLogo } from "@/components/neo/NeoLogo";
+import { BrandMark } from "@/components/ui/BrandMark";
 import { useAuth, AuthError } from "@/contexts/AuthContext";
 import { track } from "@/lib/analytics";
 import { getEntrySource } from "@/lib/entrySource";
@@ -166,7 +166,7 @@ export function UsernameOnlyOnboarding({
     <div className="w-full max-w-sm mx-auto">
       <NeoCard shadow="lg" className="p-6">
         <div className="flex flex-col items-center text-center gap-3 mb-5">
-          <NeoLogo size="md" />
+          <BrandMark variant="mark" size="lg" />
           <div>
             <h1 className="text-2xl font-heading font-bold tracking-tight">
               {headingText}

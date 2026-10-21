@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next";
 import { Loader2, LogIn, UserPlus, Zap } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
-import { NeoLogo } from "@/components/neo/NeoLogo";
+import { BrandMark } from "@/components/ui/BrandMark";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useAuth } from "@/contexts/AuthContext";
@@ -52,7 +52,7 @@ export default function AccountChoiceScreen() {
       <div className="w-full max-w-sm mx-auto">
         <NeoCard shadow="lg" className="p-6">
           <div className="flex justify-center mb-4">
-            <NeoLogo size="sm" />
+            <BrandMark variant="mark" size="md" />
           </div>
           <h1 className="text-2xl font-heading font-bold text-center mb-2">
             {t("account.title")}
