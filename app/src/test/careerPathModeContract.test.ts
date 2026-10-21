@@ -215,7 +215,7 @@ describe("10 Path Challenge contract", () => {
   });
 
   it("makes the revealed player the result card's strongest readable line", () => {
-    expect(screen).toContain('font-heading text-2xl font-bold leading-tight');
+    expect(screen).toContain('font-heading text-title font-bold leading-tight');
     expect(screen).toContain('t("careerPath.itWas", { name: result.answerName })');
   });
 

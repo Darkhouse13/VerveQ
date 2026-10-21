@@ -9,7 +9,9 @@ import { cn } from "@/lib/utils";
 /**
  * One dot per round: right/wrong once played (the verdict colors — the only
  * place green and red appear), a ringed dot for the round on screen, hollow
- * for the rest. Decorative; `label` names the progress for screen readers.
+ * for the rest. A `null` result is a round played whose verdict this screen
+ * does not know (a multiplayer round): a plain filled dot. Decorative; `label`
+ * names the progress for screen readers.
  */
 export function StepDots({
   total,
@@ -18,8 +20,8 @@ export function StepDots({
   label,
 }: {
   total: number;
-  /** Verdicts of the rounds played so far, in order. */
-  results: ReadonlyArray<boolean>;
+  /** Verdicts of the rounds played so far, in order (`null`: played, verdict unknown). */
+  results: ReadonlyArray<boolean | null>;
   /** Index of the round on screen. */
   current: number;
   label?: string;
@@ -37,9 +39,11 @@ export function StepDots({
                 ? "bg-verdict-right border-verdict-right"
                 : done === false
                   ? "bg-verdict-wrong border-verdict-wrong"
-                  : i === current
-                    ? "border-foreground bg-foreground/30 scale-125"
-                    : "border-foreground/40",
+                  : done === null
+                    ? "bg-foreground/60 border-foreground/60"
+                    : i === current
+                      ? "border-foreground bg-foreground/30 scale-125"
+                      : "border-foreground/40",
             )}
           />
         );

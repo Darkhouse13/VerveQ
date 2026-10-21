@@ -20,18 +20,22 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "convex/react";
 import { useTranslation } from "react-i18next";
 import { notify } from "@/lib/notify";
-import { User, AlertTriangle, Share2, Shirt } from "lucide-react";
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { NeoInput } from "@/components/neo/NeoInput";
-import { NeoBadge } from "@/components/neo/NeoBadge";
+import { User, AlertTriangle, Star } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { PlayStage } from "@/components/shell/play/PlayStage";
-import { MetricsPanel, AmbientStrip } from "@/components/shell/play/ambient";
+import { StageScore, StepDots, TierBadge } from "@/components/shell/play/StageParts";
+import { VerdictBadge, VerdictSlot } from "@/components/shell/play/StageSignals";
+import { CareerPathClassicResult, ClubPath } from "@/components/shell/play/careerPath/CareerPathParts";
+import { MetricsPanel } from "@/components/shell/play/ambient";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
+import { cn } from "@/lib/utils";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
-import { clubsForDisplay, type CareerPathClub } from "../../../../convex/lib/careerPathClubs";
+import type { CareerPathClub } from "../../../../convex/lib/careerPathClubs";
 import { getOrCreateCareerPathGuestToken } from "@/lib/careerPathGuest";
 import {
   getOrCreateColdSessionToken,
@@ -109,6 +113,9 @@ export default function CareerPathClassicGame() {
     "unsupported" | "start_failed" | null
   >(null);
   const [closeCallShake, setCloseCallShake] = useState(false);
+  // The verdict slot's last line: a close call (fix the spelling) or a miss
+  // with the guesses left. Wrong guesses land here, never in a toast.
+  const [notice, setNotice] = useState<{ kind: "close" } | { kind: "miss"; left: number } | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -184,6 +191,7 @@ export default function CareerPathClassicGame() {
       setGameOver(false);
       setResult(null);
       setCloseCallShake(false);
+      setNotice(null);
     } catch (err) {
       console.error("Failed to start challenge:", err);
       setSessionId(null);
@@ -271,6 +279,7 @@ export default function CareerPathClassicGame() {
 
       if (res.closeCall) {
         setScore(res.score);
+        setNotice({ kind: "close" });
         setCloseCallShake(true);
         setTimeout(() => setCloseCallShake(false), 600);
         setSubmitting(false);
@@ -289,17 +298,14 @@ export default function CareerPathClassicGame() {
           score: res.score,
         });
         setGuess("");
+        setNotice(null);
         setGameOver(true);
       } else {
         setGuess("");
-        notify.error(
-          t("careerPath.wrongGuessesLeft", {
-            count: Math.max(
-              0,
-              (res.maxGuesses ?? maxGuesses) - (res.wrongGuessCount ?? wrongGuessCount),
-            ),
-          }),
-        );
+        setNotice({
+          kind: "miss",
+          left: Math.max(0, (res.maxGuesses ?? maxGuesses) - (res.wrongGuessCount ?? wrongGuessCount)),
+        });
         inputRef.current?.focus();
       }
     } catch (err) {
@@ -313,12 +319,13 @@ export default function CareerPathClassicGame() {
   // list is question content and never leaves the answering column.
   const guessesRemaining = Math.max(0, maxGuesses - wrongGuessCount);
   const metrics = { score, lives: guessesRemaining };
+  const exit = () => navigate(SHELL_ROUTES.home);
 
   if (loading) {
     return (
-      <PlayStage title="Career Path" onExit={() => navigate(SHELL_ROUTES.home)}>
+      <PlayStage mode="career-path" title="Career Path" onExit={exit} exitLabel={t("careerPath.quit")}>
         <div className="flex items-center justify-center py-16">
-          <p className="font-heading font-bold text-lg animate-pulse">{t("careerPath.loading")}</p>
+          <p className="font-heading font-bold text-title-sm animate-pulse motion-reduce:animate-none">{t("careerPath.loading")}</p>
         </div>
       </PlayStage>
     );
@@ -326,15 +333,15 @@ export default function CareerPathClassicGame() {
 
   if (startupState) {
     return (
-      <PlayStage title="Career Path" onExit={() => navigate(SHELL_ROUTES.home)} exitLabel={t("careerPath.quit")}>
+      <PlayStage mode="career-path" title="Career Path" onExit={exit} exitLabel={t("careerPath.quit")}>
         <div className="flex flex-col items-center justify-center py-10">
-          <NeoCard color="accent" className="w-full text-center py-8 px-6">
-            <p className="font-heading font-bold text-2xl">
+          <Card elevation="lifted" padding="lg" className="w-full text-center">
+            <p className="font-heading font-bold text-title">
               {startupState === "unsupported"
                 ? t("careerPath.unsupportedTitle")
                 : t("careerPath.startFailedTitle")}
             </p>
-            <p className="font-body text-sm mt-3 text-muted-foreground leading-relaxed">
+            <p className="font-body text-body-sm mt-3 text-muted-foreground leading-relaxed">
               {startupState === "unsupported"
                 ? t("careerPath.unsupportedMessage")
                 : t("careerPath.startFailedMessage")}
@@ -342,199 +349,167 @@ export default function CareerPathClassicGame() {
 
             <div className="mt-6 grid grid-cols-1 gap-3">
               {startupState === "unsupported" ? (
-                <NeoButton
+                <Button
                   variant="primary"
                   size="lg"
                   onClick={() => navigate(`${SHELL_ROUTES.careerPathPlay}?sport=football`)}
                 >
                   {t("careerPath.playFootball")}
-                </NeoButton>
+                </Button>
               ) : (
-                <NeoButton variant="primary" size="lg" onClick={startGame}>
+                <Button variant="primary" size="lg" onClick={startGame}>
                   {t("careerPath.tryAgain")}
-                </NeoButton>
+                </Button>
               )}
-              <NeoButton
+              <Button
                 variant="secondary"
                 size="lg"
                 onClick={() => navigate(SHELL_ROUTES.competeSportGrid(sport))}
               >
                 {t("careerPath.backToCompete")}
-              </NeoButton>
+              </Button>
             </div>
-          </NeoCard>
+          </Card>
         </div>
+      </PlayStage>
+    );
+  }
+
+  // The finished path: the shared result screen.
+  if (gameOver && result) {
+    return (
+      <PlayStage
+        mode="career-path"
+        title="Career Path"
+        subtitle={t("careerPath.classicModeTitle")}
+        onExit={exit}
+        exitLabel={t("careerPath.quit")}
+        right={<MetricsPanel metrics={metrics} />}
+      >
+        <CareerPathClassicResult
+          correct={result.correct}
+          typoAccepted={result.typoAccepted}
+          answerName={result.answerName}
+          score={result.score}
+          onShare={() => void handleShare()}
+          onNext={startGame}
+          // Guests played with zero friction — invite (never force) an account.
+          onAccount={
+            hasUsername
+              ? undefined
+              : () =>
+                  navigate(
+                    `${SHELL_ROUTES.account}?next=${encodeURIComponent(
+                      `${SHELL_ROUTES.careerPathPlay}?sport=football`,
+                    )}`,
+                  )
+          }
+        />
       </PlayStage>
     );
   }
 
   return (
     <PlayStage
+      mode="career-path"
       title="Career Path"
-      subtitle={t("careerPath.subtitle")}
-      onExit={() => navigate(SHELL_ROUTES.home)}
+      subtitle={t("careerPath.classicModeTitle")}
+      onExit={exit}
       exitLabel={t("careerPath.quit")}
-      strip={<AmbientStrip metrics={metrics} />}
+      score={
+        <StageScore
+          icon={<Star size={16} strokeWidth={3} />}
+          value={score}
+          label={t("stage.scoreLabel", { value: score })}
+        />
+      }
+      // The guesses, as the one progress row: a red dot per miss.
+      progress={
+        <StepDots
+          total={maxGuesses}
+          results={guessHistory.filter((g) => !g.correct).map(() => false)}
+          current={wrongGuessCount}
+          label={t("careerPath.guessMeta", { wrong: wrongGuessCount, max: maxGuesses })}
+        />
+      }
       right={<MetricsPanel metrics={metrics} />}
     >
       <div className="flex flex-col">
-        {/* Meta framing (difficulty / guesses) — not question content. */}
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <NeoBadge
-            color={difficulty === "easy" ? "success" : difficulty === "medium" ? "accent" : "pink"}
-            size="md"
-          >
-            {difficulty}
-          </NeoBadge>
-          <p className="text-xs text-muted-foreground">
-            {t("careerPath.guessMeta", { wrong: wrongGuessCount, max: maxGuesses })}
-          </p>
-        </div>
+        {/* Meta framing (difficulty) — not question content. */}
+        {difficulty && (
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <TierBadge
+              label={t(`careerPath.tiers.${difficulty}`, { defaultValue: difficulty })}
+              level={TIER_LEVEL[difficulty] ?? 0}
+            />
+            <p className="font-heading font-bold uppercase text-body-sm tracking-tight text-right">
+              {t("careerPath.subtitle")}
+            </p>
+          </div>
+        )}
 
         {/* The career path — QUESTION CONTENT, owns the column. */}
-        <NeoCard color="blue" className="animate-slide-up">
-          <p className="font-heading font-bold text-xs mb-3">{t("careerPath.clubsHeading")}</p>
-          <div className="space-y-2">
-            {clubsForDisplay(clubs).map((row, i) =>
-              row.kind === "gap" ? (
-                <div key={`gap-${i}`} className="flex items-center gap-3">
-                  <div className="neo-border rounded-full bg-background w-8 h-8 flex items-center justify-center shrink-0">
-                    <span className="font-mono font-bold text-sm text-muted-foreground">⋯</span>
-                  </div>
-                  <p className="font-body text-xs text-muted-foreground">
-                    {t("careerPath.moreClubs", { count: row.hidden })}
-                  </p>
-                </div>
-              ) : (
-                <div key={`${row.name}-${row.position}`} className="flex items-center gap-3">
-                  <div className="neo-border rounded-full bg-background w-8 h-8 flex items-center justify-center shrink-0">
-                    <span className="font-mono font-bold text-sm text-foreground">{row.position}</span>
-                  </div>
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Shirt size={14} className="shrink-0 opacity-70" />
-                    <p className="font-heading font-bold text-sm truncate">{row.name}</p>
-                    {row.loan && (
-                      <NeoBadge color="yellow" size="sm" className="shrink-0">
-                        {t("careerPath.loan")}
-                      </NeoBadge>
-                    )}
-                  </div>
-                </div>
-              ),
-            )}
-          </div>
-        </NeoCard>
+        <ClubPath clubs={clubs} />
 
-        {/* Action area */}
-        {!gameOver && (
-          <div className="mt-5 space-y-3">
-            {closeCallShake && (
-              <div className="neo-border rounded-lg bg-accent p-3 flex items-center gap-2 animate-shake-horizontal">
-                <AlertTriangle size={16} />
-                <p className="font-heading font-bold text-xs">{t("careerPath.closeTryAgain")}</p>
-              </div>
-            )}
-
-            {guessHistory.length > 0 && (
-              <NeoCard color="default" className="p-3">
-                <p className="font-heading font-bold text-xs mb-2">{t("careerPath.previousGuesses")}</p>
-                <div className="space-y-1">
-                  {guessHistory.map((item, index) => (
-                    <div
-                      key={`${item.guessName}-${index}`}
-                      className="flex items-center justify-between gap-2 neo-border rounded-md bg-background px-2 py-1"
-                    >
-                      <p className="font-heading font-bold text-xs truncate line-through opacity-70">
-                        {item.guessName}
-                      </p>
-                      <p className="font-mono text-[10px]">
-                        {t("careerPath.points", { score: item.scoreAfter })}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </NeoCard>
-            )}
-
-            {/* Guess input — free text only, NO player suggestions (the server's
-                typo budget does the forgiving, not an autocomplete). */}
-            <NeoInput
-              ref={inputRef}
-              placeholder={t("careerPath.guessPlaceholder")}
-              value={guess}
-              onChange={(e) => setGuess(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSubmitGuess()}
-              className={closeCallShake ? "animate-shake-horizontal" : ""}
-            />
-            <p className="text-xs text-muted-foreground font-body">{t("careerPath.typoHint")}</p>
-
-            <NeoButton
-              variant="primary"
-              size="lg"
-              onClick={handleSubmitGuess}
-              disabled={!trimmedGuess || submitting}
-              className="w-full"
+        {/* The verdict row: a close call or a miss lands here. */}
+        <VerdictSlot className="mt-3" testId="career-path-verdict-slot">
+          {notice?.kind === "close" ? (
+            <Badge
+              tone="neutral"
+              shape="tag"
+              size="md"
+              className={cn("text-body-sm normal-case", closeCallShake && "animate-shake-horizontal")}
             >
-              <User size={16} className="mr-1" />
-              {submitting ? t("careerPath.checking") : t("careerPath.guess")}
-            </NeoButton>
-          </div>
-        )}
+              <AlertTriangle size={16} aria-hidden="true" />
+              {t("careerPath.closeTryAgain")}
+            </Badge>
+          ) : notice?.kind === "miss" ? (
+            <VerdictBadge right={false} testId="career-path-miss">
+              {t("careerPath.wrongGuessesLeft", { count: notice.left })}
+            </VerdictBadge>
+          ) : null}
+        </VerdictSlot>
 
-        {/* Result */}
-        {gameOver && result && (
-          <div className="mt-5 space-y-3 animate-slide-up">
-            <NeoCard color={result.correct ? "success" : "destructive"} className="text-center py-5">
-              <p className="font-heading font-bold text-xl">
-                {result.correct ? t("careerPath.resultCorrect") : t("careerPath.resultWrong")}
-              </p>
-              {result.correct && result.typoAccepted && (
-                <p className="font-body text-xs mt-1 opacity-80">{t("careerPath.typoAccepted")}</p>
-              )}
-              {result.answerName && (
-                <p className="font-body text-sm mt-1 opacity-90">
-                  {t("careerPath.itWas", { name: result.answerName })}
-                </p>
-              )}
-              <p className="font-mono font-bold text-3xl mt-2">{result.score}</p>
-              <p className="text-xs opacity-80 mt-1">{t("careerPath.pointsEarned")}</p>
-            </NeoCard>
-            <NeoButton variant="accent" size="lg" className="w-full" onClick={() => void handleShare()}>
-              <Share2 size={17} /> {t("careerPath.shareResult")}
-            </NeoButton>
-            {/* Guests played with zero friction — invite (never force) an account. */}
-            {!hasUsername && (
-              <NeoCard color="default" className="text-center py-3 px-4">
-                <p className="font-body text-xs text-muted-foreground">
-                  {t("careerPath.guestNudge")}
-                </p>
-                <NeoButton
-                  variant="secondary"
-                  size="sm"
-                  className="mt-2"
-                  onClick={() =>
-                    navigate(
-                      `${SHELL_ROUTES.account}?next=${encodeURIComponent(
-                        `${SHELL_ROUTES.careerPathPlay}?sport=football`,
-                      )}`,
-                    )
-                  }
-                >
-                  {t("careerPath.guestNudgeCta")}
-                </NeoButton>
-              </NeoCard>
-            )}
-            <div className="grid grid-cols-2 gap-3">
-              <NeoButton variant="primary" size="lg" onClick={startGame}>
-                {t("careerPath.nextPlayer")}
-              </NeoButton>
-              <NeoButton variant="secondary" size="lg" onClick={() => navigate(SHELL_ROUTES.home)}>
-                {t("careerPath.home")}
-              </NeoButton>
+        <div className="space-y-3">
+          {guessHistory.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2" aria-label={t("careerPath.previousGuesses")}>
+              {guessHistory.map((item, index) => (
+                <Badge key={`${item.guessName}-${index}`} tone="muted" className="normal-case">
+                  <span className="line-through">{item.guessName}</span>
+                </Badge>
+              ))}
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Guess input — free text only, NO player suggestions (the server's
+              typo budget does the forgiving, not an autocomplete). */}
+          <Input
+            ref={inputRef}
+            placeholder={t("careerPath.guessPlaceholder")}
+            value={guess}
+            onChange={(e) => setGuess(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSubmitGuess()}
+            className={closeCallShake ? "animate-shake-horizontal" : ""}
+            data-testid="career-path-input"
+          />
+          <p className="text-meta text-muted-foreground font-body">{t("careerPath.typoHint")}</p>
+
+          <Button
+            variant="primary"
+            size="lg"
+            block
+            onClick={handleSubmitGuess}
+            disabled={!trimmedGuess || submitting}
+            data-testid="career-path-guess"
+          >
+            <User size={16} aria-hidden="true" />
+            {submitting ? t("careerPath.checking") : t("careerPath.guess")}
+          </Button>
+        </div>
       </div>
     </PlayStage>
   );
 }
+
+/** The served difficulty, as the four-pip tier tag. */
+const TIER_LEVEL: Record<string, 0 | 1 | 2 | 3> = { easy: 0, medium: 1, hard: 2, impossible: 3 };

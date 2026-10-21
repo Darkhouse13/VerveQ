@@ -1,11 +1,16 @@
 /**
  * GridBoard — the 3×3 VerveGrid board (the answering centerpiece, NOT ambient).
  *
- * It owns the PROMPT: the row × column criteria headers. Empty cells are
- * tappable and open the search sheet; filled cells show the player's OWN pick
- * (correct → name + difficulty + points; wrong → muted name). At game over,
- * untouched cells render as hidden "MISSED" tiles — the correct answer is never
- * revealed (the client never receives the answer pool).
+ * It owns the PROMPT: the row × column criteria headers. Each header is a
+ * neutral monogram tile plus the criterion's name (initials only — never a
+ * club crest). Empty cells are tappable and open the search sheet; filled
+ * cells show the player's OWN pick (right → ✓, name, rarity, points; wrong →
+ * ✕ and the muted name). At game over, untouched cells render as hidden
+ * "missed" tiles — the correct answer is never revealed (the client never
+ * receives the answer pool).
+ *
+ * Green and red appear only as the verdict marks; the Grid accent (orange)
+ * marks the corner and the rare-pick tier. No text under 12px.
  */
 import { Check, Plus, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -42,66 +47,48 @@ function Cell({
   const isEmpty = !cell || cell.correct === undefined;
   const style = difficultyStyle(cell?.rarityTier);
 
-  // Game over + untouched → MISSED. Never reveals the answer.
+  // Game over + untouched → missed. Never reveals the answer.
   if (isEmpty && gameOver) {
     return (
-      <div
-        className="bg-card flex flex-col items-center justify-center gap-1 min-h-0 overflow-hidden"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(45deg, hsl(var(--muted)) 0 8px, transparent 8px 16px)",
-        }}
-      >
-        <span className={cn("font-heading text-muted-foreground", compact ? "text-xl" : "text-2xl")}>
+      <div className="bg-muted flex flex-col items-center justify-center gap-1 min-h-0 overflow-hidden text-muted-foreground" data-cell="missed">
+        <span className="font-heading text-title-sm leading-none" aria-hidden="true">
           —
         </span>
-        <span className="font-mono font-bold tracking-wider text-destructive" style={{ fontSize: compact ? 7 : 9 }}>
-          {t("grid.missed")}
-        </span>
+        <span className="font-mono text-eyebrow uppercase">{t("grid.missed")}</span>
       </div>
     );
   }
 
   if (isCorrect) {
     return (
-      <div className={cn("relative bg-background text-foreground flex flex-col min-h-0 overflow-hidden", compact ? "p-1.5" : "p-2")}>
-        {/* status check — small corner indicator so the name owns the full cell width */}
-        <div
+      <div
+        className={cn("relative bg-background text-foreground flex flex-col min-h-0 overflow-hidden", compact ? "p-1.5" : "p-2")}
+        data-cell="right"
+      >
+        {/* The verdict mark — a small corner check so the name owns the width. */}
+        <span
           className={cn(
-            "neo-border rounded-md bg-success text-success-foreground grid place-items-center shrink-0 absolute top-1 right-1 z-10",
+            "absolute top-1 right-1 z-raised grid place-items-center rounded-md neo-border bg-verdict-right text-ink",
             compact ? "w-5 h-5" : "w-6 h-6",
           )}
+          aria-hidden="true"
         >
-          <Check size={compact ? 11 : 14} strokeWidth={3} />
-        </div>
-        {/* player name — primary content: full width, up to 2 lines, whitespace-only wrap
-            (no break-words → never splits mid-word; line-clamp ellipsizes only past 2 lines) */}
+          <Check size={compact ? 12 : 14} strokeWidth={3.5} />
+        </span>
+        {/* The name: full width, up to 2 lines, whitespace-only wrap. */}
         <div className="flex-1 flex flex-col justify-center min-h-0">
-          <p
-            className={cn(
-              "font-heading font-bold leading-tight line-clamp-2",
-              compact ? "text-[11px] pr-5" : "text-[13px] pr-6",
-            )}
-          >
+          <p className={cn("font-heading font-bold leading-tight line-clamp-2", compact ? "text-meta pr-5" : "text-body-sm pr-6")}>
             {cell.guessedPlayerName}
           </p>
-          <p className="font-mono text-muted-foreground mt-0.5" style={{ fontSize: compact ? 8 : 10 }}>
-            {t("grid.lockedIn")}
-          </p>
         </div>
-        {/* rarity badge + points reflowed beneath the name, pinned low to use the cell height */}
-        <div className="flex items-center gap-1.5 pt-1 flex-wrap">
+        {/* rarity + points, pinned low */}
+        <div className="flex items-center gap-1 pt-1 flex-wrap">
           {style && (
-            <span
-              className={cn("neo-border rounded-full font-mono font-bold tracking-wide", style.badgeClass)}
-              style={{ fontSize: compact ? 7.5 : 9, padding: compact ? "1px 5px" : "2px 7px" }}
-            >
+            <span className={cn("neo-border rounded-full px-1.5 font-mono font-bold text-eyebrow tracking-normal leading-tight", style.badgeClass)}>
               {style.label}
             </span>
           )}
-          <span className="font-mono font-bold" style={{ fontSize: compact ? 9 : 11 }}>
-            {cell.points ?? 0}p
-          </span>
+          <span className="font-mono font-bold text-eyebrow tracking-normal">{cell.points ?? 0}p</span>
         </div>
       </div>
     );
@@ -114,9 +101,12 @@ function Cell({
           "bg-muted flex flex-col items-center justify-center gap-1 min-h-0 text-center overflow-hidden",
           shaking && "animate-shake-horizontal",
         )}
+        data-cell="wrong"
       >
-        <X size={compact ? 14 : 18} strokeWidth={3} className="text-destructive" />
-        <p className="font-body text-muted-foreground leading-tight px-1 truncate max-w-full" style={{ fontSize: compact ? 8 : 9.5 }}>
+        <span className="grid h-6 w-6 place-items-center rounded-full bg-verdict-wrong text-ink" aria-hidden="true">
+          <X size={14} strokeWidth={3.5} />
+        </span>
+        <p className="font-body text-eyebrow tracking-normal text-muted-foreground leading-tight px-1 line-clamp-2 max-w-full">
           {cell?.guessedPlayerName}
         </p>
       </div>
@@ -129,33 +119,55 @@ function Cell({
       type="button"
       onClick={onPick}
       className={cn(
-        "bg-card hover:bg-muted/60 active:bg-muted flex flex-col items-center justify-center w-full h-full min-h-0 overflow-hidden transition-colors cursor-pointer",
+        "bg-card hover:bg-muted active:bg-muted flex flex-col items-center justify-center w-full h-full min-h-0 overflow-hidden transition-colors duration-ui cursor-pointer",
         compact ? "gap-1" : "gap-1.5",
         shaking && "animate-shake-horizontal",
       )}
+      data-cell="empty"
     >
       <span
         className={cn(
-          "rounded-lg border-[2.5px] border-dashed border-muted-foreground/60 grid place-items-center text-muted-foreground",
+          "rounded-lg border-2 border-dashed border-muted-foreground grid place-items-center text-muted-foreground",
           compact ? "w-7 h-7" : "w-9 h-9",
         )}
+        aria-hidden="true"
       >
         <Plus size={compact ? 16 : 20} strokeWidth={3} />
       </span>
-      <span className="font-mono uppercase tracking-wider text-muted-foreground" style={{ fontSize: compact ? 7.5 : 9 }}>
-        {t("grid.tapToPick")}
-      </span>
+      <span className="font-mono text-eyebrow tracking-normal text-muted-foreground">{t("grid.tapToPick")}</span>
     </button>
   );
 }
 
+/** A criterion header: a neutral monogram tile and the name, readable. */
+function AxisHeader({ label, compact, axis }: { label: string; compact?: boolean; axis: "row" | "col" }) {
+  return (
+    <div className="bg-background flex flex-col items-center justify-center text-center gap-1 px-1 overflow-hidden" data-axis={axis}>
+      <span
+        className={cn(
+          "grid place-items-center rounded-md neo-border bg-muted text-foreground font-mono font-bold text-eyebrow tracking-normal shrink-0",
+          compact ? "w-6 h-6" : "w-8 h-8",
+        )}
+        aria-hidden="true"
+      >
+        {monogram(label)}
+      </span>
+      <p className={cn("font-heading font-bold leading-tight line-clamp-2 break-words hyphens-auto max-w-full", compact ? "text-eyebrow tracking-normal" : "text-meta")}>
+        {label}
+      </p>
+    </div>
+  );
+}
+
 export function GridBoard({ rows, cols, cells, gameOver, shakeCellIndex, onPick, compact }: GridBoardProps) {
-  const headerCol = compact ? "minmax(52px, 0.6fr)" : "minmax(68px, 0.62fr)";
-  const headerRow = compact ? "minmax(42px, 0.5fr)" : "minmax(52px, 0.55fr)";
+  // Header tracks wide enough for a 12px club name on two lines.
+  const headerCol = compact ? "minmax(72px, 0.85fr)" : "minmax(88px, 0.75fr)";
+  const headerRow = compact ? "minmax(58px, 0.65fr)" : "minmax(68px, 0.6fr)";
 
   return (
     <div
-      className="neo-border neo-shadow-lg rounded-xl overflow-hidden w-full"
+      className="neo-border neo-shadow-lg rounded-lg overflow-hidden w-full"
+      data-testid="grid-board"
       style={{
         display: "grid",
         // minmax(0,1fr) lets columns shrink below their content's min width so the
@@ -173,47 +185,17 @@ export function GridBoard({ rows, cols, cells, gameOver, shakeCellIndex, onPick,
       }}
     >
       {/* corner mark */}
-      <div className="bg-card text-card-foreground flex flex-col items-center justify-center gap-0.5">
-        <span className="font-heading text-yellow" style={{ fontSize: compact ? 16 : 22 }}>
-          ▦
-        </span>
-        <span className="font-mono tracking-wider opacity-60" style={{ fontSize: compact ? 6 : 7.5 }}>
-          3×3
-        </span>
+      <div className="bg-card text-mode-accent grid place-items-center" aria-hidden="true">
+        <span className={cn("font-heading leading-none", compact ? "text-title-sm" : "text-title")}>▦</span>
       </div>
 
-      {/* column headers */}
       {cols.map((col, ci) => (
-        <div
-          key={`col-${ci}`}
-          className="bg-background flex flex-col items-center justify-center text-center gap-1 px-1 overflow-hidden"
-        >
-          <span
-            className="neo-border rounded-md bg-electric-blue text-electric-blue-foreground grid place-items-center font-heading font-bold shrink-0 -rotate-3"
-            style={{ width: compact ? 24 : 30, height: compact ? 24 : 30, fontSize: compact ? 8 : 10 }}
-          >
-            {monogram(col.label)}
-          </span>
-          <p className="font-heading font-bold leading-none" style={{ fontSize: compact ? 9.5 : 12 }}>
-            {col.label}
-          </p>
-        </div>
+        <AxisHeader key={`col-${ci}`} label={col.label} compact={compact} axis="col" />
       ))}
 
-      {/* rows */}
       {rows.map((row, ri) => (
         <div key={`row-${ri}`} style={{ display: "contents" }}>
-          <div className="bg-background flex flex-col items-center justify-center text-center gap-1 px-1 overflow-hidden">
-            <span
-              className="neo-border rounded-md bg-hot-pink text-hot-pink-foreground grid place-items-center font-heading font-bold shrink-0 rotate-3"
-              style={{ width: compact ? 24 : 30, height: compact ? 24 : 30, fontSize: compact ? 8 : 10 }}
-            >
-              {monogram(row.label)}
-            </span>
-            <p className="font-heading font-bold leading-tight" style={{ fontSize: compact ? 9 : 11 }}>
-              {row.label}
-            </p>
-          </div>
+          <AxisHeader label={row.label} compact={compact} axis="row" />
           {cols.map((_, ci) => {
             const cellIndex = ri * 3 + ci;
             return (

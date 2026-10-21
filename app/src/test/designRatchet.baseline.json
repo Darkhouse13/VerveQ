@@ -178,34 +178,17 @@
     "roundedXl": 1
   },
   "src/components/shell/play/ambient/grid/GridRunPanel.tsx": {
-    "textPx": 8,
+    "textPx": 7,
     "roundedXl": 2,
     "opacityText": 2
   },
-  "src/components/shell/play/ambient/grid/GridStrip.tsx": {
-    "textPx": 1,
-    "opacityText": 1
-  },
   "src/components/shell/play/grid/GridBoard.tsx": {
-    "textPx": 2,
-    "rawButton": 1,
-    "roundedXl": 1,
-    "opacityText": 1
-  },
-  "src/components/shell/play/grid/GridEndOverlay.tsx": {
-    "textPx": 4,
-    "rawButton": 3,
-    "opacityText": 2
+    "rawButton": 1
   },
   "src/components/shell/play/grid/GridSearchSheet.tsx": {
-    "textPx": 4,
+    "textPx": 3,
     "rawButton": 1,
     "opacityText": 1
-  },
-  "src/components/shell/play/grid/GridStage.tsx": {
-    "textPx": 2,
-    "rawButton": 1,
-    "fixedInset": 2
   },
   "src/components/ui/overlay.tsx": {
     "fixedInset": 1
@@ -329,9 +312,9 @@
     "rawButton": 4
   },
   "src/pages/arena/ArenaRoomViews.tsx": {
-    "textPx": 32,
-    "opacityText": 8,
-    "trackingArbitrary": 5
+    "textPx": 11,
+    "opacityText": 2,
+    "trackingArbitrary": 1
   },
   "src/pages/arena/CreateArenaModal.tsx": {
     "textPx": 6,
@@ -435,32 +418,10 @@
     "transitionAll": 1,
     "opacityText": 1
   },
-  "src/pages/shell/play/ArenaPlayScreen.tsx": {
-    "textPx": 9,
-    "rawButton": 2,
-    "transitionAll": 1,
-    "opacityText": 2
-  },
   "src/pages/shell/play/BlitzPlayScreen.tsx": {
     "rawButton": 1,
     "transitionAll": 1,
     "opacityText": 1
-  },
-  "src/pages/shell/play/CareerPathClassicGame.tsx": {
-    "textPx": 1,
-    "opacityText": 4
-  },
-  "src/pages/shell/play/CareerPathLadderGame.tsx": {
-    "textPx": 1,
-    "opacityText": 2
-  },
-  "src/pages/shell/play/CareerPathPlayScreen.tsx": {
-    "opacityText": 2
-  },
-  "src/pages/shell/play/HigherLowerPlayScreen.tsx": {
-    "textPx": 2,
-    "transitionAll": 1,
-    "opacityText": 2
   },
   "src/pages/shell/play/MissingLettersPlayScreen.tsx": {
     "rawButton": 1

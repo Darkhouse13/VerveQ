@@ -23,6 +23,11 @@ import { friendlyError } from "@/lib/errors";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
+import { Card } from "@/components/ui/card";
+import { ResultDetails, ResultScreen } from "@/components/shell/play/result/ResultScreen";
+import { HeroPill, ResultHero } from "@/components/shell/play/result/ResultHero";
+import { ResultActions } from "@/components/shell/play/result/ResultActions";
+import { cn } from "@/lib/utils";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import type { FunctionReturnType } from "convex/server";
@@ -546,12 +551,12 @@ export function FinalView({
 
   if (summary === undefined) {
     return (
-      <NeoCard shadow="lg" className="text-center py-10">
-        <Trophy size={24} strokeWidth={2.5} className="mx-auto mb-2 opacity-60" />
-        <p className="font-heading font-bold text-sm animate-pulse">
+      <Card elevation="lifted" className="text-center py-10">
+        <Trophy size={24} strokeWidth={2.5} className="mx-auto mb-2 text-muted-foreground" aria-hidden="true" />
+        <p className="font-heading font-bold text-body-sm animate-pulse motion-reduce:animate-none">
           Tallying the final podium…
         </p>
-      </NeoCard>
+      </Card>
     );
   }
 
@@ -576,6 +581,21 @@ export function FinalView({
   );
 }
 
+/** Rematch, in its three states — the result screen's next action. */
+function rematchAction(room: Room, rematching: boolean, onRematch: () => void) {
+  return {
+    label: room.rematchArenaCode
+      ? "Join rematch lobby"
+      : rematching
+        ? "Building lobby…"
+        : "Rematch, same crew",
+    icon: <RotateCcw size={18} aria-hidden="true" />,
+    onClick: onRematch,
+    disabled: rematching,
+    testId: "arena-rematch",
+  };
+}
+
 function FinalUnavailable({
   room,
   rematching,
@@ -586,46 +606,35 @@ function FinalUnavailable({
   onRematch: () => void;
 }) {
   return (
-    <div className="space-y-5">
-      <NeoCard shadow="lg" className="text-center py-8">
-        <Trophy size={24} strokeWidth={2.5} className="mx-auto mb-3 opacity-60" />
-        <p className="font-heading font-bold text-base">
-          Final results unavailable
-        </p>
-        <p className="text-xs text-muted-foreground mt-2 max-w-xs mx-auto">
-          We couldn&apos;t load the podium for this arena yet. Try again from the
-          rematch — or head back and rejoin.
-        </p>
-      </NeoCard>
-      <div className="space-y-2.5">
-        <NeoButton
-          variant="primary"
-          size="full"
-          disabled={rematching}
-          onClick={onRematch}
-        >
-          <RotateCcw size={16} strokeWidth={3} />
-          {room.rematchArenaCode
-            ? "Join rematch lobby"
-            : rematching
-              ? "Building lobby…"
-              : "Rematch — same crew"}
-        </NeoButton>
-        <NeoButton
-          variant="secondary"
-          size="full"
-          onClick={() => {
-            void shareArenaLink(room.code).then((res) => {
-              if (res === "copied") notify.success("Link copied");
-              if (res === "failed") notify.error("Could not share");
-            });
+    <ResultScreen
+      testId="arena-result"
+      hero={
+        <Card elevation="lifted" padding="lg" className="text-center">
+          <Trophy size={24} strokeWidth={2.5} className="mx-auto mb-3 text-muted-foreground" aria-hidden="true" />
+          <p className="font-heading font-bold text-body">Final results unavailable</p>
+          <p className="text-meta text-muted-foreground mt-2 max-w-xs mx-auto">
+            We couldn&apos;t load the podium for this arena yet. Try again from the
+            rematch, or head back and rejoin.
+          </p>
+        </Card>
+      }
+      actions={
+        <ResultActions
+          primary={{
+            label: "Share arena",
+            icon: <Share2 size={18} aria-hidden="true" />,
+            onClick: () => {
+              void shareArenaLink(room.code).then((res) => {
+                if (res === "copied") notify.success("Link copied");
+                if (res === "failed") notify.error("Could not share");
+              });
+            },
+            testId: "arena-share",
           }}
-        >
-          <Share2 size={16} strokeWidth={3} />
-          Share arena
-        </NeoButton>
-      </div>
-    </div>
+          secondary={[rematchAction(room, rematching, onRematch)]}
+        />
+      }
+    />
   );
 }
 
@@ -663,6 +672,12 @@ function formatAvgMsCompact(avgMs: number | null | undefined) {
   return `${seconds.toFixed(2)}s`;
 }
 
+/**
+ * The arena's end on the shared ResultScreen (VerveQ ONE P3.2): your score
+ * (your team's, in 2v2) as the hero with your finishing place, the winner on
+ * the status line, ONE lime Share, the rematch as the next action, and the
+ * awards + full standings folded underneath.
+ */
 function FinalSummaryView({
   room,
   summary,
@@ -718,129 +733,68 @@ function FinalSummaryView({
   const modeLabel = arenaModeVerboseLabel(summary.mode);
   const subTitle = `${room.config.rounds}R×${room.config.perRound}Q · ${summary.totalQuestions}Q`;
 
+  // Your place: your team's in 2v2, your own otherwise.
+  const myScore = summary.isTeamMode ? myTeamRow?.totalScore ?? 0 : meAsPlayer?.totalScore ?? 0;
+  const myRank = summary.isTeamMode ? myTeamRow?.rank : meAsPlayer?.rank;
+  const field = summary.isTeamMode ? summary.rankings.teams.length : summary.rankings.players.length;
+  const won = myRank === 1;
+  const winnerLine = summary.isTeamMode
+    ? topTeam
+      ? `${topTeam.label} wins with ${topTeam.totalScore}`
+      : "No score recorded"
+    : topPlayer
+      ? `${topPlayer.nameSnapshot} wins with ${topPlayer.totalScore}`
+      : "No score recorded";
+
   return (
-    <div className="space-y-5">
-      <FinalHero
-        summary={summary}
-        topPlayer={topPlayer}
-        topTeam={topTeam}
-        playerStatsById={playerStatsById}
-      />
-
-      <FinalAwards summary={summary} />
-
-      <FinalStandingsCard
-        summary={summary}
-        userId={userId}
-        playerStatsById={playerStatsById}
-        modeLabel={modeLabel}
-        subTitle={subTitle}
-      />
-
-      <div className="space-y-2.5">
-        <NeoButton
-          variant="primary"
-          size="full"
-          disabled={rematching}
-          onClick={onRematch}
+    <ResultScreen
+      testId="arena-result"
+      hero={
+        <ResultHero
+          eyebrow={`Arena ${room.code} · Final`}
+          score={myScore}
+          caption={summary.isTeamMode ? "Your team" : "Your score"}
+          testId="arena-result-hero"
         >
-          <RotateCcw size={16} strokeWidth={3} />
-          {room.rematchArenaCode
-            ? "Join rematch lobby"
-            : rematching
-              ? "Building lobby…"
-              : "Rematch — same crew"}
-        </NeoButton>
-        <NeoButton variant="secondary" size="full" onClick={handleShareCard}>
-          <Share2 size={16} strokeWidth={3} />
-          Share result
-        </NeoButton>
-      </div>
-    </div>
-  );
-}
-
-function FinalHero({
-  summary,
-  topPlayer,
-  topTeam,
-  playerStatsById,
-}: {
-  summary: ArenaSummary;
-  topPlayer: ArenaSummary["rankings"]["players"][number] | null;
-  topTeam: ArenaSummary["rankings"]["teams"][number] | null;
-  playerStatsById: Map<Id<"users">, ArenaSummaryPlayerStats>;
-}) {
-  if (summary.isTeamMode) {
-    if (!topTeam) {
-      return <FinalHeroEmpty />;
-    }
-    const memberNames = topTeam.playerIds
-      .map((id) => playerStatsById.get(id)?.nameSnapshot ?? "Player")
-      .join(" + ");
-    return (
-      <NeoCard
-        color="primary"
-        shadow="lg"
-        className="text-center py-7 px-5"
-      >
-        <Trophy
-          size={28}
-          strokeWidth={2.5}
-          className="mx-auto mb-2"
+          {myRank != null && (
+            <HeroPill testId="arena-result-rank">
+              {won ? "You win" : `#${myRank} of ${field}`}
+            </HeroPill>
+          )}
+        </ResultHero>
+      }
+      status={
+        <p className="flex items-center justify-center gap-1.5 text-center text-body-sm font-bold" data-testid="arena-result-winner">
+          <Crown size={16} className="text-mode-accent" aria-hidden="true" />
+          {winnerLine}
+        </p>
+      }
+      actions={
+        <ResultActions
+          primary={{
+            label: "Share result",
+            icon: <Share2 size={18} aria-hidden="true" />,
+            onClick: () => void handleShareCard(),
+            testId: "arena-share",
+          }}
+          secondary={[rematchAction(room, rematching, onRematch)]}
         />
-        <p className="text-[10px] font-heading font-bold uppercase tracking-[0.3em] opacity-90">
-          Winning team
-        </p>
-        <p className="font-heading font-bold text-3xl mt-1 leading-tight break-words">
-          {topTeam.label}
-        </p>
-        <p className="font-mono font-bold text-5xl mt-3">
-          {topTeam.totalScore}
-        </p>
-        <p className="text-[11px] font-mono mt-2 opacity-90">
-          {memberNames}
-        </p>
-      </NeoCard>
-    );
-  }
-
-  if (!topPlayer) {
-    return <FinalHeroEmpty />;
-  }
-  return (
-    <NeoCard
-      color="primary"
-      shadow="lg"
-      className="text-center py-7 px-5"
-    >
-      <Trophy size={28} strokeWidth={2.5} className="mx-auto mb-2" />
-      <p className="text-[10px] font-heading font-bold uppercase tracking-[0.3em] opacity-90">
-        Champion
-      </p>
-      <p className="font-heading font-bold text-3xl mt-1 leading-tight break-words">
-        {topPlayer.nameSnapshot}
-      </p>
-      <p className="font-mono font-bold text-5xl mt-3">
-        {topPlayer.totalScore}
-      </p>
-      <p className="text-[11px] font-mono mt-2 opacity-90">
-        {summary.rankings.players.length} player
-        {summary.rankings.players.length === 1 ? "" : "s"}
-      </p>
-    </NeoCard>
-  );
-}
-
-function FinalHeroEmpty() {
-  return (
-    <NeoCard color="primary" shadow="lg" className="text-center py-7 px-5">
-      <Trophy size={28} strokeWidth={2.5} className="mx-auto mb-2" />
-      <p className="text-[10px] font-heading font-bold uppercase tracking-[0.3em] opacity-90">
-        Final
-      </p>
-      <p className="font-heading font-bold text-2xl mt-1">No score recorded</p>
-    </NeoCard>
+      }
+      details={
+        <ResultDetails summary="Final standings" testId="arena-result-standings">
+          <div className="space-y-3 pt-1">
+            <FinalAwards summary={summary} />
+            <FinalStandingsCard
+              summary={summary}
+              userId={userId}
+              playerStatsById={playerStatsById}
+              modeLabel={modeLabel}
+              subTitle={subTitle}
+            />
+          </div>
+        </ResultDetails>
+      }
+    />
   );
 }
 
@@ -867,52 +821,31 @@ function FinalAwards({ summary }: { summary: ArenaSummary }) {
 
   return (
     <div className="grid grid-cols-3 gap-2">
-      <AwardChip
-        color="success"
-        label="Fastest"
-        names={fastestNames}
-        stat={fastestStat}
-      />
-      <AwardChip
-        color="blue"
-        label="Accuracy"
-        names={sharpshooterNames}
-        stat={sharpshooterStat}
-      />
-      <AwardChip
-        color="pink"
-        label="Hot Streak"
-        names={hotStreakNames}
-        stat={hotStreakStat}
-      />
+      <AwardChip label="Fastest" names={fastestNames} stat={fastestStat} />
+      <AwardChip label="Accuracy" names={sharpshooterNames} stat={sharpshooterStat} />
+      <AwardChip label="Hot streak" names={hotStreakNames} stat={hotStreakStat} />
     </div>
   );
 }
 
+/** One superlative: a neutral tile — colour is not spent on awards. */
 function AwardChip({
-  color,
   label,
   names,
   stat,
 }: {
-  color: "success" | "blue" | "pink";
   label: string;
   names: string;
   stat: string;
 }) {
   return (
-    <NeoCard color={color} className="py-3 px-3 text-center">
-      <p className="text-[9px] font-heading font-bold uppercase tracking-[0.2em] opacity-90">
-        {label}
-      </p>
-      <p className="font-mono font-bold text-base mt-1 leading-tight">{stat}</p>
-      <p
-        className="text-[10px] font-heading font-bold mt-1 leading-tight break-words"
-        title={names}
-      >
+    <Card elevation="flat" padding="sm" className="text-center">
+      <p className="font-mono text-eyebrow uppercase text-muted-foreground">{label}</p>
+      <p className="font-mono font-bold text-body mt-1 leading-tight">{stat}</p>
+      <p className="text-eyebrow font-heading font-bold mt-1 leading-tight break-words" title={names}>
         {names}
       </p>
-    </NeoCard>
+    </Card>
   );
 }
 
@@ -934,15 +867,10 @@ function FinalStandingsCard({
     : summary.rankings.players[0]?.totalScore ?? null;
 
   return (
-    <NeoCard className="py-4">
-      <div className="flex items-baseline justify-between gap-2 mb-3">
-        <p className="font-heading font-bold uppercase text-sm tracking-wide">
-          Final Standings
-        </p>
-        <p className="font-mono text-[10px] uppercase text-muted-foreground">
-          {modeLabel} · {subTitle}
-        </p>
-      </div>
+    <div>
+      <p className="mb-2 font-mono text-eyebrow uppercase text-muted-foreground">
+        {modeLabel} · {subTitle}
+      </p>
 
       <StandingsHeader />
 
@@ -951,28 +879,18 @@ function FinalStandingsCard({
           ? renderTeamStandings(summary, userId, playerStatsById, topScore)
           : renderSoloStandings(summary, userId, playerStatsById, topScore)}
       </div>
-    </NeoCard>
+    </div>
   );
 }
 
 function StandingsHeader() {
   return (
-    <div className="grid grid-cols-[28px_1fr_56px_44px_56px] items-center gap-2 px-2 pb-1 mb-1 border-b-[2px] border-border">
-      <span className="text-[9px] font-heading font-bold uppercase tracking-wide">
-        #
-      </span>
-      <span className="text-[9px] font-heading font-bold uppercase tracking-wide">
-        Player
-      </span>
-      <span className="text-[9px] font-heading font-bold uppercase tracking-wide text-right">
-        Score
-      </span>
-      <span className="text-[9px] font-heading font-bold uppercase tracking-wide text-right">
-        Acc
-      </span>
-      <span className="text-[9px] font-heading font-bold uppercase tracking-wide text-right">
-        Avg
-      </span>
+    <div className="grid grid-cols-[28px_1fr_56px_44px_56px] items-center gap-2 px-2 pb-1 mb-1 border-b-2 border-border font-mono text-eyebrow uppercase text-muted-foreground">
+      <span>#</span>
+      <span>Player</span>
+      <span className="text-right">Score</span>
+      <span className="text-right">Acc</span>
+      <span className="text-right">Avg</span>
     </div>
   );
 }
@@ -991,7 +909,6 @@ function renderSoloStandings(
       <StandingsRow
         key={String(row.userId)}
         rankBadge={String(row.rank).padStart(2, "0")}
-        rankColor="default"
         name={row.nameSnapshot}
         score={row.totalScore}
         acc={formatAccuracy(stats)}
@@ -1038,7 +955,6 @@ function renderTeamStandings(
         <StandingsRow
           key={String(member.userId)}
           rankBadge={String(playerCounter).padStart(2, "0")}
-          rankColor="default"
           name={member.nameSnapshot}
           score={member.totalScore}
           acc={formatAccuracy(member)}
@@ -1068,19 +984,20 @@ function TeamHeaderRow({
 }) {
   return (
     <div
-      className={`grid grid-cols-[36px_1fr_56px_44px_56px] items-center gap-2 px-2 py-2 rounded-md neo-border ${
-        isWinner ? "bg-primary text-primary-foreground" : "bg-muted"
-      }`}
+      className={cn(
+        "grid grid-cols-[36px_1fr_56px_44px_56px] items-center gap-2 px-2 py-2 rounded-md neo-border",
+        isWinner ? "bg-mode-accent text-ink" : "bg-muted",
+      )}
     >
-      <span className="font-mono font-bold text-[10px] text-center neo-border rounded bg-background text-foreground px-1 py-0.5">
+      <span className="font-mono font-bold text-eyebrow tracking-normal text-center neo-border rounded bg-background text-foreground px-1 py-0.5">
         {teamMarker}
       </span>
-      <span className="font-heading font-bold text-sm truncate uppercase tracking-wide">
+      <span className="font-heading font-bold text-body-sm truncate uppercase">
         {label}
       </span>
-      <span className="font-mono font-bold text-sm text-right">{score}</span>
-      <span className="font-mono text-[10px] text-right opacity-70">team</span>
-      <span className="font-mono text-[10px] text-right opacity-70">·</span>
+      <span className="font-mono font-bold text-body-sm text-right">{score}</span>
+      <span className="font-mono text-eyebrow tracking-normal text-right">team</span>
+      <span className="font-mono text-eyebrow tracking-normal text-right">·</span>
     </div>
   );
 }
@@ -1097,7 +1014,6 @@ function StandingsRow({
   indented,
 }: {
   rankBadge: string;
-  rankColor: "default";
   name: string;
   score: number;
   acc: string;
@@ -1107,36 +1023,25 @@ function StandingsRow({
   left: boolean;
   indented?: boolean;
 }) {
-  const highlight = isWinner
-    ? "bg-primary text-primary-foreground"
-    : isMe
-      ? "bg-accent text-accent-foreground"
-      : "";
   return (
     <div
-      className={`grid grid-cols-[28px_1fr_56px_44px_56px] items-center gap-2 px-2 py-2 rounded-md ${highlight} ${
-        indented ? "pl-3" : ""
-      }`}
+      className={cn(
+        "grid grid-cols-[28px_1fr_56px_44px_56px] items-center gap-2 px-2 py-2 rounded-md",
+        isWinner ? "bg-mode-accent text-ink" : isMe && "bg-muted",
+        indented && "pl-3",
+      )}
     >
-      <span className="font-mono font-bold text-[11px] text-center">
-        {rankBadge}
+      <span className="font-mono font-bold text-eyebrow tracking-normal text-center">
+        {isWinner ? <Crown size={14} className="mx-auto" aria-label="Winner" /> : rankBadge}
       </span>
-      <span className="font-heading font-bold text-sm truncate inline-flex items-center gap-1.5">
+      <span className="font-heading font-bold text-body-sm truncate inline-flex items-center gap-1.5">
         <span className="truncate">{name}</span>
-        {isMe && (
-          <span className="text-[9px] font-mono uppercase opacity-70">
-            you
-          </span>
-        )}
-        {left && (
-          <span className="text-[9px] font-mono uppercase opacity-70">
-            left
-          </span>
-        )}
+        {isMe && <span className="font-mono text-eyebrow uppercase">you</span>}
+        {left && <span className="font-mono text-eyebrow uppercase">left</span>}
       </span>
-      <span className="font-mono font-bold text-sm text-right">{score}</span>
-      <span className="font-mono text-[11px] text-right">{acc}</span>
-      <span className="font-mono text-[11px] text-right">{avg}</span>
+      <span className="font-mono font-bold text-body-sm text-right">{score}</span>
+      <span className="font-mono text-eyebrow tracking-normal text-right">{acc}</span>
+      <span className="font-mono text-eyebrow tracking-normal text-right">{avg}</span>
     </div>
   );
 }
