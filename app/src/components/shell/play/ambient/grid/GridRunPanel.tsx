@@ -26,9 +26,9 @@ function Stat({
       className={cn(
         "neo-border rounded-lg px-2 py-2.5 text-center flex-1 min-w-0",
         tone === "alert"
-          ? "bg-destructive text-destructive-foreground"
+          ? "bg-foreground text-background"
           : tone === "highlight"
-            ? "bg-accent text-accent-foreground"
+            ? "bg-mode-accent text-ink"
             : "bg-card text-card-foreground",
       )}
     >
@@ -42,8 +42,8 @@ function Stat({
 }
 
 const LEGEND: { id: string; labelKey: string; dot: string; worth: number }[] = [
-  { id: "rare", labelKey: "ambient.tierRare", dot: "bg-hot-pink", worth: 3 },
-  { id: "uncommon", labelKey: "ambient.tierUncommon", dot: "bg-electric-blue", worth: 2 },
+  { id: "rare", labelKey: "ambient.tierRare", dot: "bg-mode-accent", worth: 3 },
+  { id: "uncommon", labelKey: "ambient.tierUncommon", dot: "bg-card", worth: 2 },
   { id: "common", labelKey: "ambient.tierCommon", dot: "bg-muted", worth: 1 },
 ];
 
@@ -63,7 +63,7 @@ export function GridRunPanel({
           <p className="text-[10px] font-heading font-bold uppercase tracking-wide text-muted-foreground">
             {t("ambient.yourRun")}
           </p>
-          <span className="neo-border rounded-full bg-yellow text-yellow-foreground px-2 py-0.5 font-mono font-bold text-[9px]">
+          <span className="neo-border rounded-full bg-card text-card-foreground px-2 py-0.5 font-mono font-bold text-eyebrow tracking-normal">
             {stats.correctCount}/{stats.totalCells} ✓
           </span>
         </div>

@@ -15,13 +15,20 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "convex/react";
 import { useTranslation } from "react-i18next";
 import { notify } from "@/lib/notify";
-import { TrendingUp, TrendingDown } from "lucide-react";
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { NeoBadge } from "@/components/neo/NeoBadge";
+import { Check, RotateCcw, Share2, Star, TrendingDown, TrendingUp, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { PlayStage } from "@/components/shell/play/PlayStage";
-import { MetricsPanel, AmbientStrip } from "@/components/shell/play/ambient";
+import { StageScore } from "@/components/shell/play/StageParts";
+import { RevealedAnswer, VerdictBadge, VerdictSlot } from "@/components/shell/play/StageSignals";
+import { ResultScreen } from "@/components/shell/play/result/ResultScreen";
+import { HeroPill, ResultHero } from "@/components/shell/play/result/ResultHero";
+import { ResultActions } from "@/components/shell/play/result/ResultActions";
+import { MetricsPanel } from "@/components/shell/play/ambient";
+import { buildHigherLowerSharePayload, shareResult } from "@/lib/gameShare";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
+import { cn } from "@/lib/utils";
 import { parseDifficulty, type Difficulty } from "@/lib/difficulty";
 import { TierControl } from "@/components/shell/play/TierControl";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
@@ -322,12 +329,27 @@ export default function HigherLowerPlayScreen() {
   const displayLabel = contextLabel || context;
 
   const metrics = { score, streak };
+  const exit = () => navigate(SHELL_ROUTES.home);
+
+  const handleShare = async () => {
+    const outcome = await shareResult(buildHigherLowerSharePayload(t("higherLower.shareText", { score })));
+    if (outcome === "copied") notify.success(t("result.shareCopied"));
+    if (outcome === "failed") notify.error(t("result.shareFailed"));
+  };
+
+  const scoreSlot = (
+    <StageScore
+      icon={<Star size={16} strokeWidth={3} />}
+      value={score}
+      label={t("stage.scoreLabel", { value: score })}
+    />
+  );
 
   if (loading) {
     return (
-      <PlayStage title={t("higherLower.title")} onExit={() => navigate(SHELL_ROUTES.home)}>
+      <PlayStage mode="higher-lower" title={t("higherLower.title")} onExit={exit} exitLabel={t("higherLower.quit")}>
         <div className="flex items-center justify-center py-16">
-          <p className="font-heading font-bold text-lg animate-pulse">{t("higherLower.loading")}</p>
+          <p className="font-heading font-bold text-title-sm animate-pulse motion-reduce:animate-none">{t("higherLower.loading")}</p>
         </div>
       </PlayStage>
     );
@@ -335,19 +357,15 @@ export default function HigherLowerPlayScreen() {
 
   if (startupState) {
     return (
-      <PlayStage
-        title={t("higherLower.title")}
-        onExit={() => navigate(SHELL_ROUTES.home)}
-        exitLabel={t("higherLower.quit")}
-      >
+      <PlayStage mode="higher-lower" title={t("higherLower.title")} onExit={exit} exitLabel={t("higherLower.quit")}>
         <div className="flex flex-col items-center justify-center py-10">
-          <NeoCard color="primary" shadow="lg" className="w-full text-center py-8 px-5">
-            <p className="font-heading font-bold text-2xl">
+          <Card elevation="lifted" padding="lg" className="w-full text-center">
+            <p className="font-heading font-bold text-title">
               {startupState === "unsupported"
                 ? t("higherLower.unsupportedTitle")
                 : t("higherLower.startFailedTitle")}
             </p>
-            <p className="text-sm text-muted-foreground mt-3">
+            <p className="text-body-sm text-muted-foreground mt-3">
               {startupState === "unsupported"
                 ? t("higherLower.unsupportedMessage")
                 : t("higherLower.startFailedMessage")}
@@ -355,28 +373,51 @@ export default function HigherLowerPlayScreen() {
 
             <div className="grid grid-cols-1 gap-3 mt-6">
               {startupState === "unsupported" ? (
-                <NeoButton
+                <Button
                   variant="primary"
                   size="lg"
                   onClick={() => navigate("/difficulty?sport=football&mode=higher-lower")}
                 >
                   {t("higherLower.playFootball")}
-                </NeoButton>
+                </Button>
               ) : (
-                <NeoButton variant="primary" size="lg" onClick={startGame}>
+                <Button variant="primary" size="lg" onClick={startGame}>
                   {t("higherLower.tryAgain")}
-                </NeoButton>
+                </Button>
               )}
-              <NeoButton
+              <Button
                 variant="secondary"
                 size="lg"
                 onClick={() => navigate(SHELL_ROUTES.competeSportGrid(sport))}
               >
                 {t("higherLower.backToCompete")}
-              </NeoButton>
+              </Button>
             </div>
-          </NeoCard>
+          </Card>
         </div>
+      </PlayStage>
+    );
+  }
+
+  // The run is over: the shared result screen. It mounts 1.2s after the
+  // losing call (see handleGuess), so the tap that ended the run can never
+  // land on its buttons.
+  if (gameOver) {
+    return (
+      <PlayStage
+        mode="higher-lower"
+        title={t("higherLower.title")}
+        subtitle={t("higherLower.subtitle")}
+        onExit={exit}
+        exitLabel={t("higherLower.quit")}
+        right={<MetricsPanel metrics={metrics} />}
+      >
+        <HigherLowerResult
+          score={score}
+          poolExhausted={endReason === "pool_exhausted"}
+          onShare={() => void handleShare()}
+          onPlayAgain={startGame}
+        />
       </PlayStage>
     );
   }
@@ -386,25 +427,74 @@ export default function HigherLowerPlayScreen() {
   // the first decision.
   const preRun = !gameOver && score === 0 && streak === 0 && !feedback;
 
+  // Leaving with points on the board ends the run.
+  const exitConfirm =
+    score > 0
+      ? {
+          title: t("stage.quitRun.title"),
+          description: t("stage.quitRun.body", { count: score }),
+          confirmLabel: t("stage.quitRun.confirm"),
+          cancelLabel: t("stage.quitRun.cancel"),
+        }
+      : undefined;
+
+  const playerCard = (side: "a" | "b") => {
+    const isB = side === "b";
+    const name = isB ? playerBName : playerAName;
+    const photo = isB ? playerBPhoto : playerAPhoto;
+    return (
+      <Card
+        elevation="raised"
+        padding="none"
+        data-testid={`higher-lower-card-${side}`}
+        className={cn(
+          "flex-1 min-h-0 flex flex-col items-center justify-center text-center overflow-hidden py-2",
+          "transition-[border-color,transform] duration-ui motion-reduce:transition-none",
+          isB && shakeB && "animate-shake-horizontal",
+          isB && slideIn && "animate-slide-up",
+          isB && feedback && (feedback.correct ? "!border-4 !border-verdict-right" : "!border-4 !border-verdict-wrong"),
+        )}
+      >
+        {photo && (
+          <img
+            src={photo}
+            alt={name}
+            className="aspect-square h-[12dvh] max-h-[6rem] w-auto min-h-0 rounded-full neo-border object-cover mb-1.5"
+          />
+        )}
+        <p className="font-heading font-bold text-title-sm truncate w-full px-3 shrink-0">{name}</p>
+        <div className="mt-1 shrink-0 min-h-11 flex items-center">
+          {!isB ? (
+            <span className="font-mono font-bold text-display leading-none tabular-nums">{playerAValue}</span>
+          ) : feedback ? (
+            // The truth, revealed in the verdict green whatever the call was.
+            <RevealedAnswer className="font-mono text-display leading-none tabular-nums">{feedback.value}</RevealedAnswer>
+          ) : (
+            <span className="font-mono font-bold text-display leading-none text-mode-accent">?</span>
+          )}
+        </div>
+      </Card>
+    );
+  };
+
   return (
     <PlayStage
+      mode="higher-lower"
       title={t("higherLower.title")}
       subtitle={t("higherLower.subtitle")}
-      onExit={() => navigate(SHELL_ROUTES.home)}
+      onExit={exit}
       exitLabel={t("higherLower.quit")}
-      strip={<AmbientStrip metrics={metrics} />}
+      exitConfirm={exitConfirm}
+      score={scoreSlot}
       right={<MetricsPanel metrics={metrics} />}
     >
       {/* Fit-to-viewport column: the mode-local header and the binary-call
-          buttons are pinned (shrink-0); the two team panels flex to share the
+          buttons are pinned (shrink-0); the two player cards flex to share the
           leftover height so both values + the buttons stay on one phone screen
           without scrolling. The PlayStage shell already locks the page at
           100dvh and hands this column a bounded height (h-full resolves
           against it); a scroll fallback remains for extreme/short viewports. */}
       <div className="flex flex-col h-full">
-        {/* Stat context — collapsed to one line (league · season · stat). The
-            shell's top bar already frames the "Who has more?" question, so the
-            body just names the stat; the badge colour encodes team vs player. */}
         {/* Pre-run only: once a call has been made the tier is locked for the
             run (the server already dealt this pool at that ceiling). */}
         {preRun && (
@@ -416,129 +506,122 @@ export default function HigherLowerPlayScreen() {
           />
         )}
 
-        <div className="shrink-0 flex flex-wrap items-center justify-center gap-1.5 text-center mb-2">
-          <NeoBadge color="yellow" size="sm">{displayLabel}</NeoBadge>
-          {seasonDisplay && (
-            <NeoBadge color="muted" size="sm">{seasonDisplay}</NeoBadge>
-          )}
-          <NeoBadge color={entityType === "team" ? "accent" : "pink"} size="sm">
-            {formatStatKey(statKey)}
-          </NeoBadge>
+        {/* Stat context — one line (league · season · stat). Neutral tags; the
+            mode accent marks the stat being compared. */}
+        <div className="shrink-0 flex flex-wrap items-center justify-center gap-1.5 text-center mb-3">
+          <Badge tone="neutral" className="normal-case">{displayLabel}</Badge>
+          {seasonDisplay && <Badge tone="muted">{seasonDisplay}</Badge>}
+          <Badge tone="mode" data-entity={entityType}>{formatStatKey(statKey)}</Badge>
         </div>
 
-        {/* Team panels — flex-1 min-h-0 so they shrink to fit; each panel
-            shares the leftover height. min-h-0 is required or the panels won't
-            shrink below their content and the column overflows. */}
-        <div className="flex-1 min-h-0 flex flex-col gap-1.5">
-          {/* Player A — value shown */}
-          <NeoCard
-            color="success"
-            shadow="lg"
-            className="flex-1 min-h-0 flex flex-col items-center justify-center text-center overflow-hidden py-2"
-          >
-            {playerAPhoto && (
-              <img
-                src={playerAPhoto}
-                alt={playerAName}
-                className="aspect-square h-[12dvh] max-h-[6rem] w-auto min-h-0 rounded-full neo-border object-cover mb-1.5"
-              />
-            )}
-            <p className="font-heading font-bold text-lg truncate w-full px-3 shrink-0">{playerAName}</p>
-            <p className="font-mono font-bold text-4xl leading-none mt-0.5 shrink-0">{playerAValue}</p>
-          </NeoCard>
-
-          {/* VS divider */}
-          <div className="shrink-0 flex items-center justify-center">
-            <div className="neo-border rounded-full bg-background px-3 py-0.5 font-heading font-bold text-xs">
-              VS
-            </div>
-          </div>
-
-          {/* Player B — value hidden until guess */}
-          <NeoCard
-            shadow="lg"
-            className={`flex-1 min-h-0 flex flex-col items-center justify-center text-center overflow-hidden py-2 transition-all ${
-              shakeB ? "animate-shake-horizontal" : ""
-            } ${slideIn ? "animate-slide-up" : ""} ${
-              feedback
-                ? feedback.correct
-                  ? "bg-success text-success-foreground"
-                  : "bg-destructive text-destructive-foreground"
-                : "bg-electric-blue text-electric-blue-foreground"
-            }`}
-          >
-            {playerBPhoto && (
-              <img
-                src={playerBPhoto}
-                alt={playerBName}
-                className="aspect-square h-[12dvh] max-h-[6rem] w-auto min-h-0 rounded-full neo-border object-cover mb-1.5"
-              />
-            )}
-            <p className="font-heading font-bold text-lg truncate w-full px-3 shrink-0">{playerBName}</p>
-            <p className="font-mono font-bold text-4xl leading-none mt-0.5 shrink-0">{feedback ? feedback.value : "?"}</p>
-          </NeoCard>
-        </div>
-
-        {/* Action buttons — the binary call, docked at the bottom (shrink-0)
-            so they're always on screen. */}
-        {!gameOver && !feedback && (
-          <div className="shrink-0 grid grid-cols-2 gap-3 mt-3">
-            <NeoButton
-              variant="accent"
-              size="lg"
-              onPointerDownCapture={(event) => {
-                if (animating || gameOver || guessInFlight.current) return;
-                event.preventDefault();
-                void handleGuess("higher");
-              }}
-              onClick={() => handleGuess("higher")}
-              disabled={animating}
-            >
-              <TrendingUp size={20} className="mr-1" />
-              {pendingGuess === "higher" ? t("higherLower.checking") : t("higherLower.higher")}
-            </NeoButton>
-            <NeoButton
-              variant="pink"
-              size="lg"
-              onPointerDownCapture={(event) => {
-                if (animating || gameOver || guessInFlight.current) return;
-                event.preventDefault();
-                void handleGuess("lower");
-              }}
-              onClick={() => handleGuess("lower")}
-              disabled={animating}
-            >
-              <TrendingDown size={20} className="mr-1" />
-              {pendingGuess === "lower" ? t("higherLower.checking") : t("higherLower.lower")}
-            </NeoButton>
-          </div>
-        )}
-
-        {/* Game over — docked (shrink-0) so the final score + actions stay on
-            screen; the panels above flex to absorb the remaining height. */}
-        {gameOver && (
-          <div className="shrink-0 mt-3 space-y-2 animate-slide-up">
-            <NeoCard color="primary" className="text-center py-3">
-              <p className="font-heading font-bold text-lg">{t("higherLower.gameOver")}</p>
-              <p className="font-mono font-bold text-3xl leading-none mt-0.5">{score}</p>
-              <p className="text-[10px] opacity-80 mt-0.5">{t("higherLower.finalScore")}</p>
-              {endReason === "pool_exhausted" && (
-                <p className="text-[10px] opacity-80 mt-1">
-                  {t("higherLower.poolExhausted")}
-                </p>
+        {/* Two neutral cards — colour carries no meaning until the verdict. */}
+        <div className="relative flex-1 min-h-0 flex flex-col gap-4">
+          {playerCard("a")}
+          {playerCard("b")}
+          {/* The VS hinge on the seam; it becomes the verdict on reveal. */}
+          <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-raised">
+            <div
+              key={feedback ? "verdict" : "vs"}
+              className={cn(
+                "grid place-items-center h-12 w-12 rounded-full neo-border neo-shadow font-heading font-bold text-body-sm",
+                feedback && "animate-badge-land motion-reduce:animate-none",
+                !feedback
+                  ? "bg-paper text-paper-foreground"
+                  : feedback.correct
+                    ? "bg-verdict-right text-ink"
+                    : "bg-verdict-wrong text-ink",
               )}
-            </NeoCard>
-            <div className="grid grid-cols-2 gap-3">
-              <NeoButton variant="primary" size="lg" onClick={startGame}>
-                {t("higherLower.playAgain")}
-              </NeoButton>
-              <NeoButton variant="secondary" size="lg" onClick={() => navigate(SHELL_ROUTES.home)}>
-                {t("higherLower.home")}
-              </NeoButton>
+            >
+              {!feedback ? "VS" : feedback.correct ? <Check size={24} strokeWidth={4} /> : <X size={24} strokeWidth={4} />}
             </div>
           </div>
-        )}
+        </div>
+
+        {/* The verdict row, then the binary call — two equal secondary
+            buttons: neither direction is the "main" answer. */}
+        <VerdictSlot className="mt-2" testId="higher-lower-verdict">
+          {feedback && (
+            <VerdictBadge right={feedback.correct}>
+              {feedback.correct ? t("higherLower.correct") : t("higherLower.wrong")}
+            </VerdictBadge>
+          )}
+        </VerdictSlot>
+        <div className="shrink-0 grid grid-cols-2 gap-3">
+          <Button
+            variant="secondary"
+            size="lg"
+            onPointerDownCapture={(event) => {
+              if (animating || gameOver || guessInFlight.current) return;
+              event.preventDefault();
+              void handleGuess("higher");
+            }}
+            onClick={() => handleGuess("higher")}
+            disabled={animating}
+            data-testid="higher-lower-higher"
+          >
+            <TrendingUp size={20} aria-hidden="true" />
+            {pendingGuess === "higher" ? t("higherLower.checking") : t("higherLower.higher")}
+          </Button>
+          <Button
+            variant="secondary"
+            size="lg"
+            onPointerDownCapture={(event) => {
+              if (animating || gameOver || guessInFlight.current) return;
+              event.preventDefault();
+              void handleGuess("lower");
+            }}
+            onClick={() => handleGuess("lower")}
+            disabled={animating}
+            data-testid="higher-lower-lower"
+          >
+            <TrendingDown size={20} aria-hidden="true" />
+            {pendingGuess === "lower" ? t("higherLower.checking") : t("higherLower.lower")}
+          </Button>
+        </div>
       </div>
     </PlayStage>
+  );
+}
+
+/** The Higher or Lower end screen on the shared ResultScreen. */
+export function HigherLowerResult({
+  score,
+  poolExhausted,
+  onShare,
+  onPlayAgain,
+}: {
+  score: number;
+  poolExhausted: boolean;
+  onShare: () => void;
+  onPlayAgain: () => void;
+}) {
+  const { t } = useTranslation("play");
+  return (
+    <ResultScreen
+      testId="higher-lower-result"
+      hero={
+        <ResultHero eyebrow={t("higherLower.gameOver")} score={score} caption={t("higherLower.finalScore")}>
+          {poolExhausted && <HeroPill>{t("higherLower.poolExhausted")}</HeroPill>}
+        </ResultHero>
+      }
+      actions={
+        <ResultActions
+          primary={{
+            label: t("dailyShare.cta"),
+            icon: <Share2 size={18} aria-hidden="true" />,
+            onClick: onShare,
+            testId: "higher-lower-share",
+          }}
+          secondary={[
+            {
+              label: t("higherLower.playAgain"),
+              icon: <RotateCcw size={18} aria-hidden="true" />,
+              onClick: onPlayAgain,
+              testId: "higher-lower-play-again",
+            },
+          ]}
+        />
+      }
+    />
   );
 }

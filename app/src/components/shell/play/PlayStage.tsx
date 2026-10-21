@@ -35,6 +35,10 @@ import { ExitButton, type ExitConfirm } from "@/components/ui/icon-button";
 export type StageMode =
   | "whos-older"
   | "missing-letters"
+  | "career-path"
+  | "grid"
+  | "higher-lower"
+  | "arena"
   | "quiz"
   | "survival"
   | "daily-quiz"
@@ -45,6 +49,10 @@ export type StageMode =
 const MODE_ACCENT: Record<StageMode, string> = {
   "whos-older": "var(--electric-blue)",
   "missing-letters": "var(--hot-pink)",
+  "career-path": "var(--orange)",
+  grid: "var(--orange)",
+  "higher-lower": "var(--electric-blue)",
+  arena: "var(--hot-pink)",
   // The open-ended solo modes wear orange; the once-a-day and against-the-
   // clock ones wear yellow (the Today tiles' color).
   quiz: "var(--orange)",

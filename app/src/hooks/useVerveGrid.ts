@@ -84,6 +84,14 @@ export interface GridSearchResult {
  */
 export type GridStartupState = "unsupported" | "start_failed";
 
+/** The last graded pick, for the board's verdict row. */
+export interface GridVerdict {
+  cellIndex: number;
+  name: string;
+  correct: boolean;
+  points?: number;
+}
+
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   return new Promise((resolve, reject) => {
     const timeoutId = window.setTimeout(
@@ -141,6 +149,10 @@ export interface VerveGridViewModel {
   minChars: number;
   shakeCellIndex: number | null;
   submitting: boolean;
+  /** The last graded pick (null until one lands, and after a new grid). */
+  lastVerdict: GridVerdict | null;
+  /** Every graded pick's verdict, in the order they were made. */
+  guessResults: boolean[];
 
   // Actions
   startGame: () => void;
@@ -176,6 +188,8 @@ export function useVerveGrid(sport: string, difficulty: Difficulty): VerveGridVi
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [shakeCellIndex, setShakeCellIndex] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [lastVerdict, setLastVerdict] = useState<GridVerdict | null>(null);
+  const [guessResults, setGuessResults] = useState<boolean[]>([]);
 
   useEffect(() => {
     const t = window.setTimeout(() => setDebouncedQuery(searchQuery), 300);
@@ -234,6 +248,8 @@ export function useVerveGrid(sport: string, difficulty: Difficulty): VerveGridVi
       setSearchOpen(false);
       setActiveCellIndex(null);
       setSearchQuery("");
+      setLastVerdict(null);
+      setGuessResults([]);
     } catch (err) {
       console.error("Failed to start grid session:", err);
       setSessionId(null);
@@ -349,10 +365,18 @@ export function useVerveGrid(sport: string, difficulty: Difficulty): VerveGridVi
           setCorrectCount(result.correctCount);
         }
 
+        // The verdict lands in the board's verdict row — a wrong pick is a
+        // game event, not a system error, so it is never a toast.
+        setLastVerdict({
+          cellIndex,
+          name: player.name,
+          correct: result.correct,
+          points: result.correct ? cells[cellIndex]?.points : undefined,
+        });
+        setGuessResults((prev) => [...prev, result.correct]);
         if (!result.correct) {
           setShakeCellIndex(cellIndex);
           setTimeout(() => setShakeCellIndex(null), 600);
-          notify.error(t("verveGrid.notAMatch"));
         }
 
         if ("gameOver" in result && result.gameOver) {
@@ -367,7 +391,7 @@ export function useVerveGrid(sport: string, difficulty: Difficulty): VerveGridVi
         setSubmitting(false);
       }
     },
-    [sessionId, submitting, submitGuessMut, t],
+    [sessionId, submitting, submitGuessMut, t, cells],
   );
 
   const filledCount = useMemo(
@@ -450,6 +474,8 @@ export function useVerveGrid(sport: string, difficulty: Difficulty): VerveGridVi
     minChars: GRID_SEARCH_MIN_CHARS,
     shakeCellIndex,
     submitting,
+    lastVerdict,
+    guessResults,
     startGame,
     openCell,
     closeSheet,
