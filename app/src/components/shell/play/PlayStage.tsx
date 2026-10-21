@@ -32,12 +32,16 @@ import { BrandMark } from "@/components/ui/BrandMark";
 import { ExitButton, type ExitConfirm } from "@/components/ui/icon-button";
 
 /** Modes whose frame carries a mode accent (`--mode-accent`). */
-export type StageMode = "whos-older" | "missing-letters";
+export type StageMode = "whos-older" | "missing-letters" | "career-path" | "grid" | "higher-lower" | "arena";
 
 /** The color token each mode is identified by. */
 const MODE_ACCENT: Record<StageMode, string> = {
   "whos-older": "var(--electric-blue)",
   "missing-letters": "var(--hot-pink)",
+  "career-path": "var(--orange)",
+  grid: "var(--orange)",
+  "higher-lower": "var(--electric-blue)",
+  arena: "var(--hot-pink)",
 };
 
 /** The reel's 6% lime diagonal hatch, scaled from its 1080px frame to a phone. */

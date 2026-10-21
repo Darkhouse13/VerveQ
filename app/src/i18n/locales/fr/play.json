@@ -59,6 +59,9 @@
     "tabSwitchWarning": "Ne change pas d'onglet — ta partie va se terminer",
     "higher": "Plus",
     "lower": "Moins",
+    "correct": "Correct",
+    "wrong": "Faux",
+    "shareText": "J'ai marqué {{score}} au Plus ou Moins de VerveQ ⚽\nTu fais mieux ?",
     "checking": "Vérification...",
     "gameOver": "Partie terminée !",
     "finalScore": "Score final",
@@ -168,6 +171,12 @@
     "ladderModeMeta": "10 parcours · 30 s chacun",
     "advertisedBadge": "Vu dans les reels",
     "changeMode": "Changer de mode",
+    "quitLadder": {
+      "title": "Quitter le défi ?",
+      "body": "Tu es au parcours {{round}} sur 10. Cette partie s'arrête ici.",
+      "confirm": "Quitter",
+      "cancel": "Continuer"
+    },
     "loadingLadder": "Chargement du parcours {{round}} sur 10…",
     "ladderRoundSubtitle": "Défi 10 Parcours · {{round}}/{{total}}",
     "ladderProgressLabel": "Progression du défi Parcours de carrière",
@@ -266,6 +275,13 @@
     "onboardSubmit": "Rejoindre l'arène",
     "joinFailed": "Impossible de rejoindre cette arène. Vérifie le code et réessaie.",
     "leaveFailed": "Impossible de quitter",
+    "quit": "Quitter",
+    "quitConfirm": {
+      "title": "Quitter cette arène ?",
+      "body": "Tu sortiras de la partie en cours.",
+      "confirm": "Quitter",
+      "cancel": "Continuer"
+    },
     "rematchReady": "Salon de revanche prêt",
     "rematchFailed": "Échec de la revanche",
     "linkCopied": "Lien copié",
@@ -308,6 +324,20 @@
   },
   "grid": {
     "leave": "Quitter",
+    "quit": "Quitter",
+    "quitConfirm": {
+      "title": "Quitter cette grille ?",
+      "body": "Tes choix jusqu'ici ne compteront pas.",
+      "confirm": "Quitter",
+      "cancel": "Continuer"
+    },
+    "verdictRight": "{{name}} est valide",
+    "verdictWrong": "{{name}} ne colle pas",
+    "guessesLabel_one": "{{count}} essai restant",
+    "guessesLabel_other": "{{count}} essais restants",
+    "pointsTotal": "{{points}} points",
+    "seeResult": "Voir le résultat",
+    "shareText": "J'ai rempli {{correct}}/{{total}} sur la VerveGrid de VerveQ ⚽ ({{points}} points)\n{{board}}\nTu fais mieux ?",
     "missed": "MANQUÉ",
     "lockedIn": "validé",
     "tapToPick": "Touche pour choisir",
@@ -319,7 +349,7 @@
     "cells": "Cases",
     "newGrid": "Nouvelle grille",
     "home": "Accueil",
-    "reviewBoard": "Revoir le tableau ↑",
+    "reviewBoard": "Revoir le tableau",
     "noAnswersRevealed": "Les cases manquées restent cachées — aucune réponse révélée.",
     "fillThisSquare": "Remplis cette case",
     "close": "Fermer",
@@ -576,6 +606,8 @@
     "nextToday": "Ensuite aujourd'hui",
     "answers": "Tes réponses",
     "squares": "{{score}} bonnes réponses sur {{total}}",
+    "shareCopied": "Résultat copié. Envoie-le à un ami !",
+    "shareFailed": "Impossible de partager le résultat. Réessaie.",
     "next": {
       "older": {
         "title": "Qui est le plus âgé ?",

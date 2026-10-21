@@ -73,7 +73,7 @@ export function GridSearchSheet({
             <SheetClose label={t("grid.close")} />
           </div>
           <div className="flex items-center gap-2 mt-2">
-            <span className="neo-border rounded-md bg-electric-blue text-electric-blue-foreground grid place-items-center font-heading font-bold w-7 h-7 text-[10px] -rotate-3 shrink-0">
+            <span className="neo-border rounded-md bg-muted text-foreground grid place-items-center font-mono font-bold w-7 h-7 text-eyebrow tracking-normal shrink-0" aria-hidden="true">
               {monogram(criteria.colLabel)}
             </span>
             <SheetTitle className="text-base md:text-lg leading-tight">

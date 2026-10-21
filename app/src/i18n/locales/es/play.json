@@ -59,6 +59,9 @@
     "tabSwitchWarning": "No cambies de pestaña — tu racha terminará",
     "higher": "Más",
     "lower": "Menos",
+    "correct": "Correcto",
+    "wrong": "Incorrecto",
+    "shareText": "Hice {{score}} puntos en Más o Menos de VerveQ ⚽\n¿Puedes superarme?",
     "checking": "Comprobando...",
     "gameOver": "¡Fin del juego!",
     "finalScore": "Puntuación final",
@@ -168,6 +171,12 @@
     "ladderModeMeta": "10 trayectorias · 30 s cada una",
     "advertisedBadge": "De nuestros reels",
     "changeMode": "Cambiar modo",
+    "quitLadder": {
+      "title": "¿Dejar el reto?",
+      "body": "Vas por la trayectoria {{round}} de 10. Esta partida termina aquí.",
+      "confirm": "Salir",
+      "cancel": "Seguir jugando"
+    },
     "loadingLadder": "Cargando trayectoria {{round}} de 10…",
     "ladderRoundSubtitle": "Reto de 10 Trayectorias · {{round}}/{{total}}",
     "ladderProgressLabel": "Progreso del reto de trayectorias",
@@ -266,6 +275,13 @@
     "onboardSubmit": "Únete a la arena",
     "joinFailed": "No se pudo unir a esta arena. Comprueba el código e inténtalo de nuevo.",
     "leaveFailed": "No se pudo salir",
+    "quit": "Salir",
+    "quitConfirm": {
+      "title": "¿Salir de esta arena?",
+      "body": "Abandonarás la partida en curso.",
+      "confirm": "Salir",
+      "cancel": "Seguir jugando"
+    },
     "rematchReady": "Sala de revancha lista",
     "rematchFailed": "La revancha falló",
     "linkCopied": "Enlace copiado",
@@ -308,6 +324,20 @@
   },
   "grid": {
     "leave": "Salir",
+    "quit": "Salir",
+    "quitConfirm": {
+      "title": "¿Dejar esta cuadrícula?",
+      "body": "Tus elecciones hasta ahora no contarán.",
+      "confirm": "Salir",
+      "cancel": "Seguir jugando"
+    },
+    "verdictRight": "{{name}} vale",
+    "verdictWrong": "{{name}} no encaja",
+    "guessesLabel_one": "Queda {{count}} intento",
+    "guessesLabel_other": "Quedan {{count}} intentos",
+    "pointsTotal": "{{points}} puntos",
+    "seeResult": "Ver resultado",
+    "shareText": "Completé {{correct}}/{{total}} en la VerveGrid de VerveQ ⚽ ({{points}} puntos)\n{{board}}\n¿Puedes superarme?",
     "missed": "FALLADO",
     "lockedIn": "bloqueado",
     "tapToPick": "Toca para elegir",
@@ -319,7 +349,7 @@
     "cells": "Casillas",
     "newGrid": "Nueva cuadrícula",
     "home": "Inicio",
-    "reviewBoard": "Revisar tablero ↑",
+    "reviewBoard": "Revisar tablero",
     "noAnswersRevealed": "Las casillas falladas quedan ocultas — no se revelan respuestas.",
     "fillThisSquare": "Rellena esta casilla",
     "close": "Cerrar",
@@ -576,6 +606,8 @@
     "nextToday": "Siguiente hoy",
     "answers": "Tus respuestas",
     "squares": "{{score}} de {{total}} acertadas",
+    "shareCopied": "Resultado copiado. ¡Envíaselo a un amigo!",
+    "shareFailed": "No se pudo compartir el resultado. Inténtalo de nuevo.",
     "next": {
       "older": {
         "title": "¿Quién es mayor?",

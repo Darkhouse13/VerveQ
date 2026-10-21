@@ -24,14 +24,14 @@ import {
 } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery } from "convex/react";
-import { ArrowRight, Share2 } from "lucide-react";
+import { ArrowRight, Share2, Star } from "lucide-react";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "react-i18next";
 
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { NeoBadge } from "@/components/neo/NeoBadge";
-import { NeoInput } from "@/components/neo/NeoInput";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { QuestionImage } from "@/components/QuestionImage";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "../../../../convex/_generated/api";
@@ -49,13 +49,15 @@ import {
   useTick,
 } from "@/lib/arena";
 import { PlayStage } from "@/components/shell/play/PlayStage";
+import { StageScore, StepDots } from "@/components/shell/play/StageParts";
+import { RevealedAnswer, StageTimer, VerdictBadge } from "@/components/shell/play/StageSignals";
+import { cn } from "@/lib/utils";
 import { UsernameOnlyOnboarding } from "@/components/shell/onboarding/UsernameOnlyOnboarding";
 import {
   RosterPanel,
   StandingsPanel,
   MetricsPanel,
   ProgressPanel,
-  AmbientStrip,
 } from "@/components/shell/play/ambient";
 import type {
   RosterEntry,
@@ -330,9 +332,8 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
     </>
   ) : undefined;
 
-  const strip = isInGame ? (
-    <AmbientStrip metrics={metrics} progress={progress} rosterCount={active.length} />
-  ) : undefined;
+  const timer =
+    seconds !== undefined && timeFraction !== undefined ? { seconds, fraction: timeFraction } : null;
 
   let center: ReactNode;
   switch (phase) {
@@ -343,7 +344,7 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
       center = <CountdownView room={room} />;
       break;
     case "question":
-      center = <ArenaQuestionColumn room={room} userId={userId} />;
+      center = <ArenaQuestionColumn room={room} userId={userId} timer={timer} />;
       break;
     case "reveal":
       center = <ArenaRevealColumn room={room} userId={userId} />;
@@ -358,27 +359,59 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
       center = <CenteredMessage>{t("arena.loading")}</CenteredMessage>;
   }
 
+  // Mid-game, leaving drops you out of a game the others are still playing.
+  const midGame = phase === "countdown" || phase === "question" || phase === "reveal" || phase === "round_break";
+  const exitConfirm = midGame
+    ? {
+        title: t("arena.quitConfirm.title"),
+        description: t("arena.quitConfirm.body"),
+        confirmLabel: t("arena.quitConfirm.confirm"),
+        cancelLabel: t("arena.quitConfirm.cancel"),
+      }
+    : undefined;
+
   return (
     <PlayStage
+      mode="arena"
       title={room.code}
-      subtitle={`${arenaModeLabel(room.mode)} · ${t(`arena.phase.${PHASE_LABEL_KEY[phase]}`)}`}
+      subtitle={`${arenaModeLabel(room.mode)} · ${
+        isInGame ? progress.roundLabel : t(`arena.phase.${PHASE_LABEL_KEY[phase]}`)
+      }`}
       onExit={() => void handleLeave()}
+      exitLabel={t("arena.quit")}
       exitDisabled={leaving}
+      exitConfirm={exitConfirm}
+      score={
+        isInGame ? (
+          <StageScore
+            icon={<Star size={16} strokeWidth={3} />}
+            value={me.totalScore}
+            label={t("stage.scoreLabel", { value: me.totalScore })}
+          />
+        ) : undefined
+      }
+      // One progress row: this round's questions. Others' answers stay
+      // withheld, so played questions are plain dots, not verdicts.
+      progress={
+        isInGame ? (
+          <StepDots
+            total={room.config.perRound}
+            results={Array.from({ length: room.currentQuestionIndex }, () => null)}
+            current={room.currentQuestionIndex}
+            label={`${progress.roundLabel} · ${progress.current}/${progress.total}`}
+          />
+        ) : undefined
+      }
       headerRight={
         phase === "lobby" ? (
-          <button
-            type="button"
-            onClick={() => void handleShare()}
-            className="neo-border neo-shadow rounded-lg px-3 py-2 bg-electric-blue text-electric-blue-foreground cursor-pointer active:neo-shadow-pressed inline-flex items-center gap-1.5"
-          >
-            <Share2 size={14} strokeWidth={3} />
-            <span className="text-[10px] font-heading font-bold uppercase">{t("arena.share")}</span>
-          </button>
+          <Button variant="secondary" size="sm" onClick={() => void handleShare()} data-testid="arena-lobby-share">
+            <Share2 size={16} strokeWidth={3} aria-hidden="true" />
+            {t("arena.share")}
+          </Button>
         ) : undefined
       }
       left={left}
       right={right}
-      strip={strip}
       // The lobby has no ambient rails and owns its own desktop grid, so it
       // takes the wide column to use the viewport and fit laptop heights.
       wide={phase === "lobby"}
@@ -390,7 +423,15 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
 
 // ───────────────────────── QUESTION (answering column only) ─────────────────────────
 
-function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users"> | undefined }) {
+function ArenaQuestionColumn({
+  room,
+  userId,
+  timer,
+}: {
+  room: Room;
+  userId: Id<"users"> | undefined;
+  timer: { seconds: number; fraction: number } | null;
+}) {
   const { t } = useTranslation("play");
   const submitAnswer = useMutation(api.challengeArenas.submitAnswer);
   const question = room.currentQuestion;
@@ -414,11 +455,22 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
     }
   }, [qKey]);
 
+  const timerRow = timer ? (
+    <StageTimer
+      seconds={timer.seconds}
+      fraction={timer.fraction}
+      label={t("ambient.seconds", { seconds: timer.seconds })}
+    />
+  ) : null;
+
   if (!question) {
     return (
-      <NeoCard className="text-center py-8">
-        <p className="font-heading font-bold animate-pulse">{t("arena.loadingQuestion")}</p>
-      </NeoCard>
+      <div className="space-y-3">
+        {timerRow}
+        <Card className="text-center py-8">
+          <p className="font-heading font-bold animate-pulse motion-reduce:animate-none">{t("arena.loadingQuestion")}</p>
+        </Card>
+      </div>
     );
   }
 
@@ -481,32 +533,33 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
 
   return (
     <div className="space-y-3">
+      {timerRow}
       {isLogoText ? (
-        <NeoCard shadow="lg" className="text-center">
+        <Card elevation="lifted" className="text-center">
           {question.imageUrl && <QuestionImage imageUrl={question.imageUrl} alt={t("arena.logoImageAlt")} />}
-        </NeoCard>
+        </Card>
       ) : isCameFirst ? (
-        <NeoCard shadow="lg" className="text-center">
-          <p className="text-[10px] font-heading uppercase text-muted-foreground mb-1">
+        <Card elevation="lifted" className="text-center">
+          <p className="font-mono text-eyebrow uppercase text-muted-foreground mb-1">
             {t("arena.whichCameFirst")}
           </p>
-          <p className="font-heading font-bold text-lg leading-tight">{question.question}</p>
-        </NeoCard>
+          <p className="font-heading font-bold text-title-sm leading-tight">{question.question}</p>
+        </Card>
       ) : (
-        <NeoCard shadow="lg">
+        <Card elevation="lifted">
           {isLogo && (
             <div className="mb-3">
               <QuestionImage imageUrl={question.imageUrl} alt={t("arena.questionImageAlt", { question: question.question })} />
             </div>
           )}
-          <p className="font-heading font-bold text-lg leading-tight">{question.question}</p>
-        </NeoCard>
+          <p className="font-heading font-bold text-title-sm leading-tight">{question.question}</p>
+        </Card>
       )}
 
       {isLogoText ? (
         <form onSubmit={(event) => void handleLogoSubmit(event)} className="space-y-2">
           <div className="flex gap-2">
-            <NeoInput
+            <Input
               ref={logoInputRef}
               value={locked ? (myAnswered ?? "") : logoGuess}
               onChange={(event) => {
@@ -522,30 +575,29 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
               autoFocus
               placeholder={t("arena.logoPlaceholder")}
               aria-label={t("arena.logoAriaLabel")}
-              className="min-w-0 flex-1 py-3 font-heading font-bold"
+              className="min-w-0 flex-1 font-heading font-bold"
             />
-            <NeoButton
+            <Button
               type="submit"
               variant="primary"
               size="md"
               disabled={locked || submitting || !logoGuess.trim()}
-              className="shrink-0 px-4 py-3 disabled:opacity-60"
+              className="shrink-0 px-4"
               aria-label={t("arena.submitGuess")}
             >
-              <ArrowRight size={18} strokeWidth={3} />
-            </NeoButton>
+              <ArrowRight size={18} strokeWidth={3} aria-hidden="true" />
+            </Button>
           </div>
-          <div className="min-h-[18px] text-center text-[11px] font-heading font-bold uppercase tracking-wide">
+          {/* The verdict row for a typed guess. */}
+          <div className="min-h-11 flex items-center justify-center text-center" aria-live="polite">
             {locked ? (
-              <span className="text-success">{t("arena.gotIt")}</span>
+              <VerdictBadge right>{t("arena.gotIt")}</VerdictBadge>
             ) : logoFeedback === "close" ? (
-              <span className="text-accent">{t("arena.feedbackClose")}</span>
+              <span className="font-heading font-bold text-body-sm">{t("arena.feedbackClose")}</span>
             ) : logoFeedback === "wrong" ? (
-              <span className="text-destructive">{t("arena.feedbackWrong")}</span>
+              <VerdictBadge right={false}>{t("arena.feedbackWrong")}</VerdictBadge>
             ) : (
-              <span className="text-muted-foreground normal-case">
-                {t("arena.logoHint")}
-              </span>
+              <span className="text-meta text-muted-foreground">{t("arena.logoHint")}</span>
             )}
           </div>
         </form>
@@ -555,32 +607,34 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
             const value = optionValues[idx] ?? opt;
             const isPicked = selected === value;
             return (
-              <button
+              // A picked option takes the Arena accent — it is a choice, not
+              // a verdict, so it is never green until the reveal.
+              <Card
                 key={value}
-                type="button"
+                interactive
+                padding="md"
                 disabled={locked || submitting}
                 onClick={() => void handleSelect(value)}
-                className={`w-full neo-border neo-shadow rounded-lg p-4 flex items-center gap-3 text-left cursor-pointer transition-all ${
-                  locked && isPicked
-                    ? "bg-success text-success-foreground"
-                    : isPicked
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-card text-card-foreground"
-                } ${!locked ? "active:neo-shadow-pressed" : ""}`}
+                aria-pressed={isPicked}
+                className={cn(
+                  "flex items-center gap-3",
+                  isPicked ? "bg-mode-accent text-ink" : !locked && "hover:bg-muted",
+                  locked && !isPicked && "text-muted-foreground",
+                )}
               >
                 {!isCameFirst && (
-                  <span className="neo-border rounded-full w-8 h-8 flex items-center justify-center font-heading font-bold text-xs bg-background text-foreground shrink-0">
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full neo-border bg-background text-foreground font-mono font-bold text-body-sm">
                     {letters[idx]}
                   </span>
                 )}
-                <span className="font-heading font-bold text-sm">{opt}</span>
-              </button>
+                <span className="font-heading font-bold text-body-sm">{opt}</span>
+              </Card>
             );
           })}
         </div>
       )}
 
-      <p className="text-center text-[11px] text-muted-foreground">
+      <p className="text-center text-meta text-muted-foreground">
         {locked ? t("arena.lockedWaiting") : isLogoText ? "" : t("arena.tapToLock")}
       </p>
     </div>
@@ -594,9 +648,9 @@ function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> |
   const question = room.currentQuestion;
   if (!question) {
     return (
-      <NeoCard className="text-center py-8">
-        <p className="font-heading font-bold animate-pulse">{t("arena.loadingReveal")}</p>
-      </NeoCard>
+      <Card className="text-center py-8">
+        <p className="font-heading font-bold animate-pulse motion-reduce:animate-none">{t("arena.loadingReveal")}</p>
+      </Card>
     );
   }
 
@@ -613,6 +667,7 @@ function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> |
   const correctAnswerLabel = correctAnswer
     ? localizeArenaAnswer(question, correctAnswer)
     : null;
+  const mine = userId ? room.revealAnswers.find((r) => r.userId === userId) : undefined;
 
   // Everyone's picks, banter-ordered: scorers first (fastest on top), then
   // wrong picks, then misses. My row is highlighted instead of a separate
@@ -632,8 +687,8 @@ function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> |
 
   return (
     <div className="space-y-3">
-      <NeoCard shadow="lg">
-        <p className="text-[10px] font-heading uppercase text-muted-foreground mb-1">
+      <Card elevation="lifted">
+        <p className="font-mono text-eyebrow uppercase text-muted-foreground mb-1">
           {arenaCategoryEmoji(question.category)} {arenaCategoryLabel(question.category)}
         </p>
         {question.imageUrl && (
@@ -642,18 +697,27 @@ function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> |
           </div>
         )}
         {!isLogoText && (
-          <p className="font-heading font-bold text-base leading-snug">{questionText}</p>
+          <p className="font-heading font-bold text-body leading-snug">{questionText}</p>
         )}
-        {correctAnswerLabel && (
-          <div className="mt-3 neo-border rounded-lg bg-success text-success-foreground px-3 py-2">
-            <p className="text-[10px] font-heading uppercase mb-0.5">{t("arena.correct")}</p>
-            <p className="font-heading font-bold text-sm">{correctAnswerLabel}</p>
-          </div>
-        )}
-      </NeoCard>
+        {/* The verdict row: your ✓/✕, then the right answer in green. */}
+        <div className="mt-3 flex flex-wrap items-center gap-2" aria-live="polite">
+          {mine ? (
+            <VerdictBadge right={mine.correct}>{mine.correct ? t("arena.correct") : t("arena.wrong")}</VerdictBadge>
+          ) : (
+            <Badge tone="muted" shape="tag" size="md">
+              {t("arena.missed")}
+            </Badge>
+          )}
+          {correctAnswerLabel && (
+            <RevealedAnswer className="text-body-sm">
+              {correctAnswerLabel}
+            </RevealedAnswer>
+          )}
+        </div>
+      </Card>
 
-      <NeoCard className="p-0 overflow-hidden">
-        <p className="text-[10px] font-heading font-bold uppercase tracking-wide px-3 pt-2.5 pb-1.5">
+      <Card padding="none" className="overflow-hidden">
+        <p className="font-mono text-eyebrow uppercase text-muted-foreground px-3 pt-2.5 pb-1.5">
           {t("arena.roundAnswers")}
         </p>
         <div className="max-h-[26dvh] overflow-y-auto scrollbar-none">
@@ -662,32 +726,27 @@ function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> |
             return (
               <div
                 key={String(player.userId)}
-                className={`border-t-2 border-border px-3 py-2 flex items-center gap-2.5 ${
-                  isMe ? "bg-primary text-primary-foreground" : ""
-                }`}
+                className={cn("border-t-2 border-border px-3 py-2 flex items-center gap-2.5", isMe && "bg-muted")}
               >
                 <div className="min-w-0 flex-1">
-                  <p className="font-heading font-bold text-xs truncate">
+                  <p className="font-heading font-bold text-body-sm truncate">
                     {player.nameSnapshot}
                     {isMe && t("arena.youSuffix")}
                   </p>
-                  <p className={`text-[10px] font-mono truncate ${isMe ? "opacity-90" : "opacity-70"}`}>
+                  <p className="text-eyebrow tracking-normal font-mono truncate text-muted-foreground">
                     {a?.answer ? localizeArenaAnswer(question, a.answer) : "—"}
                   </p>
                 </div>
-                <NeoBadge
-                  color={!a ? "muted" : a.correct ? "success" : "destructive"}
-                  size="sm"
-                >
+                <Badge tone={!a ? "muted" : a.correct ? "right" : "wrong"}>
                   {!a ? t("arena.missed") : a.correct ? t("arena.pointsGained", { points: a.points }) : t("arena.wrong")}
-                </NeoBadge>
+                </Badge>
               </div>
             );
           })}
         </div>
-      </NeoCard>
+      </Card>
 
-      <p className="text-center text-[11px] text-muted-foreground">{t("arena.nextUp")}</p>
+      <p className="text-center text-meta text-muted-foreground">{t("arena.nextUp")}</p>
     </div>
   );
 }
