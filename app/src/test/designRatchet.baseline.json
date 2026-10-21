@@ -2,20 +2,6 @@
   "src/App.tsx": {
     "fixedInset": 1
   },
-  "src/components/CountdownOverlay.tsx": {
-    "fixedInset": 1
-  },
-  "src/components/DailyBanner.tsx": {
-    "roundedXl": 1,
-    "opacityText": 1
-  },
-  "src/components/DecayWarningBanner.tsx": {
-    "roundedXl": 1
-  },
-  "src/components/ExitGameButton.tsx": {
-    "rawButton": 1,
-    "transitionAll": 1
-  },
   "src/components/ImageDropzone.tsx": {
     "textPx": 1,
     "rawButton": 1,
@@ -30,9 +16,6 @@
   },
   "src/components/RoundResult.tsx": {
     "fixedInset": 1
-  },
-  "src/components/SeasonBanner.tsx": {
-    "roundedXl": 1
   },
   "src/components/draw/CardDetailSheet.tsx": {
     "textPx": 2
@@ -370,31 +353,10 @@
     "textPx": 1,
     "opacityText": 1
   },
-  "src/pages/BlitzScreen.tsx": {
-    "rawButton": 1,
-    "toast": 2,
-    "transitionAll": 1,
-    "opacityText": 1
-  },
-  "src/pages/ChallengeArenaScreen.tsx": {
-    "textPx": 54,
-    "rawButton": 7,
-    "toast": 20,
-    "fixedInset": 1,
-    "transitionAll": 1,
-    "opacityText": 13,
-    "trackingArbitrary": 6
-  },
   "src/pages/ChallengeScreen.tsx": {
     "textPx": 10,
     "rawButton": 4,
     "toast": 1
-  },
-  "src/pages/DailyQuizScreen.tsx": {
-    "rawButton": 1,
-    "toast": 5,
-    "transitionAll": 1,
-    "opacityText": 1
   },
   "src/pages/DailyResultScreen.tsx": {
     "textPx": 2,
@@ -435,32 +397,6 @@
     "toast": 10,
     "transitionAll": 7
   },
-  "src/pages/HigherLowerScreen.tsx": {
-    "toast": 1,
-    "transitionAll": 1,
-    "fontBlack": 1,
-    "opacityText": 2
-  },
-  "src/pages/HomeScreen.tsx": {
-    "textPx": 3,
-    "roundedXl": 9,
-    "opacityText": 14
-  },
-  "src/pages/LeaderboardScreen.tsx": {
-    "textPx": 1,
-    "rawButton": 1,
-    "transitionAll": 1
-  },
-  "src/pages/LearnNodePickerScreen.tsx": {
-    "transitionAll": 1,
-    "opacityText": 1
-  },
-  "src/pages/LearnPrototypeScreen.tsx": {
-    "textPx": 1,
-    "rawButton": 1,
-    "transitionAll": 1,
-    "opacityText": 1
-  },
   "src/pages/LoginScreen.tsx": {
     "rawButton": 5,
     "toast": 2
@@ -475,18 +411,6 @@
     "transitionAll": 1,
     "opacityText": 2
   },
-  "src/pages/ProfileScreen.tsx": {
-    "textPx": 3,
-    "toast": 2,
-    "transitionAll": 1,
-    "opacityText": 2
-  },
-  "src/pages/QuizScreen.tsx": {
-    "rawButton": 1,
-    "toast": 4,
-    "transitionAll": 1,
-    "opacityText": 1
-  },
   "src/pages/ResultScreen.tsx": {
     "textPx": 6,
     "rawButton": 1,
@@ -498,20 +422,11 @@
     "rawButton": 4,
     "toast": 3
   },
-  "src/pages/SportSelectScreen.tsx": {
-    "rawButton": 2,
-    "roundedXl": 1,
-    "transitionAll": 3
-  },
-  "src/pages/SurvivalScreen.tsx": {
-    "toast": 10,
-    "roundedXl": 1
-  },
-  "src/pages/VerveGridScreen.tsx": {
-    "textPx": 6,
-    "toast": 2,
-    "roundedXl": 1,
-    "transitionAll": 1
+  "src/pages/arena/ArenaRoomViews.tsx": {
+    "textPx": 32,
+    "toast": 13,
+    "opacityText": 8,
+    "trackingArbitrary": 5
   },
   "src/pages/arena/CreateArenaModal.tsx": {
     "textPx": 6,
