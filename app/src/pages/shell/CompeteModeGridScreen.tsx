@@ -1,9 +1,10 @@
 import { useNavigate, useParams, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoBadge } from "@/components/neo/NeoBadge";
+import { Eyebrow } from "@/components/ui/eyebrow";
+import { ModeTile as ModeTileButton } from "@/components/ui/mode-tile";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { usePreferredDailySport } from "@/hooks/usePreferredDailySport";
@@ -72,12 +73,6 @@ const TODAY_KEYS = ["daily", "dailySurvival", "whosOlder", "missingLetters"];
 // every grid tile on the surface is exactly this tall.
 const TILE_MIN_H = "min-h-[150px]";
 
-// ONE icon chip spec, derived from the majority variant on the old surface
-// (p-2.5 at 3 of 4 sites, size 24 at 3 of 4). `rounded-lg` is the --radius
-// token: this surface no longer uses the off-token rounded-xl/2xl.
-const CHIP = "neo-border rounded-lg bg-background w-fit p-2.5 shrink-0";
-const CHIP_ICON = 24;
-
 function tilesByKeys(keys: string[]): ModeTile[] {
   return keys
     .map((k) => COMPETE_MODE_TILES.find((t) => t.key === k))
@@ -88,12 +83,8 @@ function tilesByKeys(keys: string[]): ModeTile[] {
 function SectionLabel({ children, hint }: { children: string; hint?: string }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-foreground">
-        {children}
-      </p>
-      {hint && (
-        <p className="text-[11px] leading-tight text-muted-foreground">{hint}</p>
-      )}
+      <Eyebrow className="font-bold text-foreground">{children}</Eyebrow>
+      {hint && <p className="text-meta leading-tight text-muted-foreground">{hint}</p>}
     </div>
   );
 }
@@ -285,7 +276,7 @@ export default function CompeteModeGridScreen() {
             type="button"
             onClick={() => navigate(SHELL_ROUTES.learn)}
             data-testid="compete-learn-link"
-            className="text-xs text-muted-foreground text-center px-4 underline underline-offset-4 hover:text-foreground transition-colors"
+            className="text-meta text-muted-foreground text-center px-4 underline underline-offset-4 hover:text-foreground transition-colors"
           >
             {t("compete.categoryHint")}
           </button>
@@ -296,10 +287,10 @@ export default function CompeteModeGridScreen() {
 }
 
 /**
- * A 2-col grid tile: icon chip top-left, title + one-line description anchored
- * bottom. One spec for every grid section — the old `large` variant gave Arena
- * and Duels a 176px box whose middle was empty, so it is gone; equal heights
- * come from `TILE_MIN_H` plus the grid's default stretch.
+ * A 2-col grid tile: the shared ModeTile on the mode's decision-12 accent —
+ * icon top-left, title + one-line description anchored bottom. One spec for
+ * every grid section; equal heights come from `TILE_MIN_H` plus the grid's
+ * default stretch.
  */
 function ModeTileCard({
   tile,
@@ -312,31 +303,21 @@ function ModeTileCard({
 }) {
   const { t } = useTranslation();
   return (
-    <NeoCard
-      color={tile.color}
-      shadow="default"
-      className={cn("flex flex-col cursor-pointer", TILE_MIN_H)}
+    <ModeTileButton
+      mode={tile.color}
+      icon={tile.icon}
+      name={t(`modes.${tile.key}.name`)}
+      line={t(`modes.${tile.key}.desc`)}
       onClick={() => onPick(tile.to(sport))}
-    >
-      <div className={CHIP}>
-        <tile.icon size={CHIP_ICON} strokeWidth={2.5} className="text-foreground" />
-      </div>
-      <div className="mt-auto pt-3">
-        <p className="font-heading font-bold text-sm md:text-base leading-tight">
-          {t(`modes.${tile.key}.name`)}
-        </p>
-        <p className="text-[11px] md:text-xs opacity-80 leading-tight mt-0.5">
-          {t(`modes.${tile.key}.desc`)}
-        </p>
-      </div>
-    </NeoCard>
+      className={TILE_MIN_H}
+    />
   );
 }
 
 /**
- * A full-width row card — the TODAY tier. Icon chip, title + description, and a
- * chevron. Takes its copy pre-resolved because the daily quiz swaps to World
- * Cup strings inside its themed window.
+ * A full-width row card — the MOST PLAYED and TODAY tiers. Icon, title +
+ * description, and a chevron. Takes its copy pre-resolved because the daily
+ * quiz swaps to World Cup strings inside its themed window.
  */
 function RowModeCard({
   tile,
@@ -350,32 +331,21 @@ function RowModeCard({
   onPick: () => void;
 }) {
   return (
-    <NeoCard
-      color={tile.color}
-      shadow="default"
-      className="flex items-center gap-3.5 cursor-pointer"
+    <ModeTileButton
+      layout="row"
+      mode={tile.color}
+      icon={tile.icon}
+      name={title}
+      line={desc}
       onClick={onPick}
-    >
-      <div className={CHIP}>
-        <tile.icon size={CHIP_ICON} strokeWidth={2.5} className="text-foreground" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-heading font-bold text-base md:text-lg leading-tight">
-          {title}
-        </p>
-        <p className="text-[11px] md:text-xs opacity-80 leading-tight mt-0.5">
-          {desc}
-        </p>
-      </div>
-      <ChevronRight size={20} strokeWidth={2.5} className="opacity-70 shrink-0" />
-    </NeoCard>
+    />
   );
 }
 
 /**
- * The ranked tier: a dark "prestige" row in the Profile rank-card family
- * (`bg-foreground` + gold accents), carrying the "counts toward your ELO" pill,
- * so ranked modes read as visibly distinct from — and above — the rest of the
+ * The ranked tier: a raised "prestige" row in the Profile rank-card family —
+ * a gold icon chip and the "counts toward your ELO" pill on the surface, so
+ * ranked modes read as visibly distinct from (and above) the colored
  * catalogue. Its offset shadow is one step larger than the tiles' (`lg` vs
  * `default`) to sit it forward in the hierarchy.
  */
@@ -392,24 +362,24 @@ function RankedModeCard({
   return (
     <NeoCard
       shadow="lg"
-      className="bg-foreground text-background flex items-center gap-3.5 cursor-pointer"
+      className="flex items-center gap-3.5 cursor-pointer"
       onClick={() => onPick(tile.to(sport))}
     >
-      {/* Gold icon chip with a light border — the same treatment as the Profile
-          rank card's tier chip, so the two ranked surfaces read as one family. */}
-      <div className={cn(CHIP, "border-background bg-yellow")}>
-        <tile.icon size={CHIP_ICON} strokeWidth={2.5} className="text-foreground" />
+      {/* Gold icon chip — the same treatment as the Profile rank card's tier
+          chip, so the two ranked surfaces read as one family. */}
+      <div className="neo-border rounded-lg bg-yellow text-ink w-fit p-2.5 shrink-0">
+        <tile.icon size={24} strokeWidth={2.5} />
       </div>
       <div className="flex-1 min-w-0">
         {/* Neo pill, text only — uppercase/mono treatment comes from NeoBadge;
             no emoji or icon (off-brand for the neo-brutalist system). */}
-        <NeoBadge color="yellow" className="border-background mb-1.5 whitespace-nowrap">
+        <NeoBadge color="yellow" className="mb-1.5 whitespace-nowrap">
           {t("compete.rankedBadge")}
         </NeoBadge>
-        <p className="font-heading font-bold text-2xl leading-none text-background">
+        <p className="font-heading font-bold text-title-lg leading-none">
           {t(`modes.${tile.key}.name`)}
         </p>
-        <p className="text-[11px] md:text-xs text-background/70 leading-tight mt-1.5">
+        <p className="text-meta text-muted-foreground leading-tight mt-1.5">
           {t(`modes.${tile.key}.desc`)}
         </p>
       </div>

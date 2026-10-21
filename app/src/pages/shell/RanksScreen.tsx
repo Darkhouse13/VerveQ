@@ -201,7 +201,7 @@ export default function RanksScreen() {
             className="neo-border rounded-xl w-[72px] h-[72px] md:w-[84px] md:h-[84px] shrink-0 -rotate-6 flex items-center justify-center"
             style={{ background: myTier ? TIERS.find((x) => x.key === myTier)?.color : undefined }}
           >
-            <Crown size={36} strokeWidth={2.5} className="text-black/80" />
+            <Crown size={36} strokeWidth={2.5} className="text-ink" />
           </div>
           <div className="min-w-0">
             <p className="font-heading font-bold text-[32px] md:text-[40px] leading-none">
@@ -314,7 +314,7 @@ export default function RanksScreen() {
                 className="neo-border rounded-lg shrink-0 -rotate-6 flex items-center justify-center w-10 h-10 md:w-12 md:h-12"
                 style={{ background: tier.color }}
               >
-                <Crown size={20} strokeWidth={2.5} className="text-black/80" />
+                <Crown size={20} strokeWidth={2.5} className="text-ink" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">

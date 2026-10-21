@@ -268,7 +268,13 @@ export default function ShellLeaderboardScreen() {
                     </p>
                     <div
                       className={`neo-border neo-shadow rounded-t-lg w-full mt-1.5 flex items-start justify-center ${
-                        first ? "h-16 bg-yellow" : p.rank === 2 ? "h-11 bg-muted" : "h-8 bg-accent"
+                        first
+                          ? "h-16 bg-yellow text-ink"
+                          : p.rank === 2
+                            ? "h-11 bg-muted"
+                            : // Bronze steps take the orange accent: a lime
+                              // step was a lime fill (R4) and read as an action.
+                              "h-8 bg-orange text-ink"
                       }`}
                     >
                       <span className="font-heading font-bold text-xl leading-none pt-1.5">{p.rank}</span>
@@ -338,7 +344,7 @@ export default function ShellLeaderboardScreen() {
               </div>
               {/* My standing, pinned under the list when I'm ranked. */}
               {myRow && (
-                <div className="shrink-0 border-t-[3px] border-border bg-foreground text-background flex items-center gap-2.5 px-3.5 py-2">
+                <div className="shrink-0 border-t-[3px] border-border bg-muted text-foreground flex items-center gap-2.5 px-3.5 py-2">
                   <span className="font-mono font-bold text-sm w-7 text-right shrink-0">{myRow.rank}</span>
                   <p className="font-heading font-bold text-sm flex-1 min-w-0 truncate">
                     {t("leaderboard.you", { defaultValue: "You" })}

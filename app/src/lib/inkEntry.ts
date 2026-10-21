@@ -1,6 +1,8 @@
 /**
- * Entry routes that run on the ink ground — where reel traffic lands. Kept in
- * step with the inline boot script in index.html (same paths).
+ * Reel entry routes — where reel traffic lands. Every route runs on the ink
+ * ground now (VerveQ ONE decision 1; index.html boots ink everywhere), so this
+ * no longer picks the palette: it picks the card-shaped InkLoader over the
+ * spinner, and the language prompt's reel behaviour.
  */
 const INK_ENTRY = /^\/(older|whos-older|letters|missing-letters|draw|weekend)(\/|$)|^\/v2\/(whos-older|missing-letters|weekend)(\/|$)/;
 

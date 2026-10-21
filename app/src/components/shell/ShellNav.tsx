@@ -130,7 +130,10 @@ export function ShellTopNav() {
                 className={cn(
                   "inline-flex items-center gap-2 px-4 py-2 rounded-lg font-heading font-bold text-sm uppercase tracking-wide transition-all cursor-pointer active:opacity-60",
                   active
-                    ? "neo-border neo-shadow bg-primary text-primary-foreground"
+                    ? // A raised tab with lime words, like the mobile bar's
+                      // lime label: a lime FILL here would compete with the
+                      // screen's one action (R4).
+                      "neo-border neo-shadow bg-card text-lime"
                     : "text-muted-foreground hover:bg-muted",
                 )}
               >

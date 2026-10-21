@@ -161,7 +161,7 @@ export default function ShellProfileScreen() {
             {guest ? (
               <NeoBadge color="yellow">{t("profile.usernameOnly")}</NeoBadge>
             ) : (
-              <NeoBadge color="muted" className="bg-foreground text-background">
+              <NeoBadge color="muted">
                 {t("profile.fullAccount")}
               </NeoBadge>
             )}
@@ -219,7 +219,7 @@ export default function ShellProfileScreen() {
   ) : (
     <NeoCard
       shadow="lg"
-      className="bg-foreground text-background flex flex-col gap-3.5 md:flex-1 md:min-h-fit md:justify-between cursor-pointer"
+      className="flex flex-col gap-3.5 md:flex-1 md:min-h-fit md:justify-between cursor-pointer"
       onClick={() => navigate(SHELL_ROUTES.ranks)}
     >
       <div className="flex items-center justify-between gap-2">
@@ -229,7 +229,7 @@ export default function ShellProfileScreen() {
             : t("profile.ranked")}
         </span>
         {tierKey && (
-          <NeoBadge color="yellow" className="border-background">
+          <NeoBadge color="yellow">
             {t(`ranks.tiers.${tierKey}`)}
           </NeoBadge>
         )}
@@ -237,10 +237,10 @@ export default function ShellProfileScreen() {
       <div className="flex flex-col gap-3.5 my-auto">
         <div className="flex items-center gap-3.5">
           <div
-            className="neo-border rounded-xl w-14 h-14 shrink-0 -rotate-6 flex items-center justify-center border-background"
+            className="neo-border rounded-xl w-14 h-14 shrink-0 -rotate-6 flex items-center justify-center"
             style={{ background: tierKey ? tierColors[tierKey] : undefined }}
           >
-            <Crown size={28} strokeWidth={2.5} className="text-foreground" />
+            <Crown size={28} strokeWidth={2.5} className="text-ink" />
           </div>
           <div>
             <p className="font-heading font-bold text-[27px] leading-none">
@@ -250,26 +250,26 @@ export default function ShellProfileScreen() {
               {elo?.toLocaleString()} ELO
               {RANKED_CAPABILITIES.globalRank ? (
                 globalRank ? (
-                  <span className="text-background/60">
+                  <span className="text-muted-foreground">
                     {" "}
                     · {t("ranks.globalRankShort", { rank: globalRank.rank.toLocaleString() })}
                   </span>
                 ) : null
               ) : (
-                <span className="text-background/60"> · {t("ranks.globalRankSoon")}</span>
+                <span className="text-muted-foreground"> · {t("ranks.globalRankSoon")}</span>
               )}
             </p>
           </div>
         </div>
         {progress && (
           <div>
-            <div className="h-3 rounded-full border-2 border-background overflow-hidden">
+            <div className="h-3 rounded-full border-2 border-border overflow-hidden">
               <div
                 className="h-full bg-yellow"
                 style={{ width: `${Math.round(progress.pct * 100)}%` }}
               />
             </div>
-            <p className="font-mono text-[10.5px] text-background/60 mt-1.5 uppercase">
+            <p className="font-mono text-[10.5px] text-muted-foreground mt-1.5 uppercase">
               {progress.next
                 ? t("ranks.progressTo", {
                     elo: elo?.toLocaleString(),
@@ -280,15 +280,15 @@ export default function ShellProfileScreen() {
             </p>
           </div>
         )}
-        <p className="font-mono text-[10.5px] text-background/60 border-t-2 border-background/20 pt-2.5 uppercase">
+        <p className="font-mono text-[10.5px] text-muted-foreground border-t-2 border-border/20 pt-2.5 uppercase">
           {t("ranks.allTimeRecord")} ·{" "}
-          <b className="text-background">
+          <b className="text-foreground">
             {wins}W — {losses}L
           </b>
         </p>
       </div>
       <div className="flex items-center justify-between">
-        <span className="font-mono text-[10.5px] text-background/60 uppercase">
+        <span className="font-mono text-[10.5px] text-muted-foreground uppercase">
           {seasonDaysLeft != null
             ? t("ranks.endsInShort", { days: seasonDaysLeft })
             : t("ranks.seasonDatesSoon")}
@@ -507,7 +507,7 @@ export default function ShellProfileScreen() {
             <Settings size={18} strokeWidth={2.5} />
           </button>
           {handle && (
-            <NeoBadge color="muted" className="bg-foreground text-background">
+            <NeoBadge color="muted">
               @{handle}
             </NeoBadge>
           )}

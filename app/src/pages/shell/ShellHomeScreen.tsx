@@ -13,13 +13,16 @@ import {
   Route,
   Star,
   Swords,
+  UserRound,
   Users,
 } from "lucide-react";
-import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoAvatar } from "@/components/neo/NeoAvatar";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { BrandMark } from "@/components/ui/BrandMark";
+import { Card } from "@/components/ui/card";
+import { Eyebrow } from "@/components/ui/eyebrow";
+import { ModeTile } from "@/components/ui/mode-tile";
 import { HomeDrawCard } from "@/components/draw/HomeDrawCard";
 import { HomeWeekendCard } from "@/components/weekend/HomeWeekendCard";
 import { ShellLayout } from "@/components/shell/ShellLayout";
@@ -32,20 +35,28 @@ import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 
 /**
- * v2 unified Home — rebuilt around the DAILY SLATE (2026-07 strategy cut):
- * TODAY's games (Daily Quiz, Daily Survival, Who's Older, Missing Letters) lead beside COMPETE, then the
- * hooks strip (Duels/Arena/Quiz), the dark ladder card and the Forge. The
- * Learn pillar is parked — its routes stay live at /v2/learn, but the home no
- * longer advertises it (general knowledge is off-thesis for a football app).
+ * v2 unified Home (VerveQ ONE P2.5), on the ink ground like every route.
+ *
+ * TODAY LEADS, FOR EVERYONE (owner decision 10). Most new players arrive from
+ * an Instagram reel into Who's Older or Missing Letters, play, and tap HOME.
+ * What they need there is the next daily — so the four dailies (Who's Older,
+ * Missing Letters, Daily Challenge, Daily Survival) are the first thing on the
+ * screen, each with today's state when the server knows it. THE WEEKEND hero
+ * and THE DRAW card follow; then Career Path, COMPETE, the hooks strip and the
+ * ladder. Until 2026-10 THE WEEKEND led unconditionally and pushed the dailies
+ * to the second screen on a phone, at exactly the moment we wanted a second
+ * game played.
+ *
+ * Every mode is offered through one ModeTile on its decision-12 accent.
  * Desktop is a never-scroll grid; mobile is a scrolling column in the same DOM
  * order, so both breakpoints render one tree.
  *
  * Presentational + navigational only. Every number on screen is server-read
- * (profile, daily attempts, season) and honesty-gated: slots the backend can't
- * serve yet (lobby counts, coins, global rank) are absent, never fabricated.
+ * (profile, daily attempts, the daily games' getToday, season) and
+ * honesty-gated: a state the server hasn't confirmed is absent, never guessed.
  */
 
-/** "h:mm" until the next UTC midnight — when the daily challenge re-rolls. */
+/** "h:mm" until the next UTC midnight — when the dailies re-roll. */
 function dailyResetCountdown(): string {
   const now = new Date();
   const nextUtcMidnight = Date.UTC(
@@ -59,23 +70,14 @@ function dailyResetCountdown(): string {
   return `${h}:${String(m).padStart(2, "0")}`;
 }
 
-/** Hard-shadow lift on hover, press-in on tap — the prototype's `.lift`. */
-const LIFT =
-  "transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px]";
-
-/**
- * TODAY cards: the mobile column stacks icon over title; on desktop each card
- * is a compact row (icon beside title). Three dailies fit the never-scroll md
- * grid only this way — stacked, the third card pushed the grid to 935px and
- * cut the bottom row off a 900px viewport (budget: 842px). The fourth daily
- * (Missing Letters, 2026-10) took the rows' vertical padding and the column
- * gap down a notch on md: at the three-card spacing it measured 911px.
- */
-const TODAY_CARD =
-  "p-4 md:px-4 md:py-1.5 flex flex-col md:flex-row md:items-center gap-1.5 md:gap-3 min-h-0 flex-1";
-
-const EYEBROW =
-  "font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground";
+/** Correct answers in a daily attempt's results (server `v.any()` rows). */
+function correctCount(results: unknown): { correct: number; total: number } | null {
+  if (!Array.isArray(results) || results.length === 0) return null;
+  const correct = results.filter(
+    (r) => typeof r === "object" && r !== null && (r as { correct?: unknown }).correct === true,
+  ).length;
+  return { correct, total: results.length };
+}
 
 /** Optional support nudge — small, unobtrusive, never shown during play. */
 const COFFEE_URL = "https://buymeacoffee.com/verveq";
@@ -89,29 +91,35 @@ export default function ShellHomeScreen() {
   // server-authoritative signal; tab-local guests have no server identity and
   // never pass it (their `_id` isn't a real Convex id).
   const userId = hasUsername && user?._id ? (user._id as Id<"users">) : undefined;
-  // Logged-out returning visitors land here by default (v2 is the entry); give
-  // them a visible way back to the existing password sign-in. Only shown with no
-  // session — anonymous/full accounts see their avatar (and upgrade lives in the
-  // ranked gates). `loading` keeps the avatar to avoid a sign-in flicker.
+  // Any server identity at all — a silently minted anonymous session counts.
+  // The daily games are SessionRoute modes: a reel visitor plays Who's Older
+  // with no username, and their result must still show here.
+  const hasSession = accountState !== "loggedOut" && accountState !== "loading";
+  // The header tells the truth about who you are (consistent with Settings):
+  //  - no session            → Sign in (back to the password screen);
+  //  - session, no username  → a "Guest" chip to the account chooser — this
+  //                            used to be a "P" avatar for a "Player" that
+  //                            does not exist;
+  //  - a username            → the avatar, to Profile.
   const showSignIn = accountState === "loggedOut";
+  const showGuest = accountState === "needsUsername";
   const profile = useQuery(api.profile.get, userId ? { userId } : "skip");
-  // Identity-scoped reads; all skipped for guests/logged-out so nothing throws.
   // The daily card reflects (and launches) the user's preferred subject; the
   // status query and the launch nav below must use this same value.
   const dailySport = usePreferredDailySport();
   const dailyStatus = useQuery(
     api.dailyChallenge.getAttemptStatus,
-    hasUsername ? { sport: dailySport, mode: "quiz" } : "skip",
+    hasSession ? { sport: dailySport, mode: "quiz" } : "skip",
   );
   // Daily Survival is football-only by design (the shared run).
   const dailySurvivalStatus = useQuery(
     api.dailyChallenge.getAttemptStatus,
-    hasUsername ? { sport: "football", mode: "survival" } : "skip",
+    hasSession ? { sport: "football", mode: "survival" } : "skip",
   );
   // Who's Older? — the reel format's daily twin.
-  const whosOlderToday = useQuery(api.whosOlder.getToday, hasUsername ? {} : "skip");
-  // Missing Letters — the twin of the reel the feed runs three times a day.
-  const missingLettersToday = useQuery(api.missingLetters.getToday, hasUsername ? {} : "skip");
+  const whosOlderToday = useQuery(api.whosOlder.getToday, hasSession ? {} : "skip");
+  // Missing Letters — the twin of the reel the feed runs twice a day.
+  const missingLettersToday = useQuery(api.missingLetters.getToday, hasSession ? {} : "skip");
   const season = useQuery(
     api.seasonManager.getCurrentSeason,
     hasUsername ? {} : "skip",
@@ -132,15 +140,56 @@ export default function ShellHomeScreen() {
   const elo = profile?.rankedEligible ? Math.round(profile.eloRating) : null;
   const progress = elo != null ? tierProgress(elo) : null;
 
-  const dailyPlayed = dailyStatus?.completed === true;
+  // ── TODAY: each tile's state, only when the server confirms it ──
+  const dailyQuizDone = dailyStatus?.completed === true;
+  const dailyQuizTally = dailyQuizDone ? correctCount(dailyStatus?.results) : null;
+  const dailyQuizStatus = dailyQuizTally
+    ? t("home.today.score", { score: dailyQuizTally.correct, total: dailyQuizTally.total })
+    : dailyQuizDone || dailyStatus?.forfeited === true
+      ? t("home.hooks.played")
+      : null;
   // A forfeited daily survival is still spent for the day.
-  const dailySurvivalPlayed =
-    dailySurvivalStatus?.completed === true ||
-    dailySurvivalStatus?.forfeited === true;
-  // Window shared with the backend's themed question pool (lib/daily.ts), so
-  // the card renames itself exactly while the WC edition is being served.
-  const whosOlderPlayed = whosOlderToday?.daily?.status === "completed";
-  const missingLettersPlayed = missingLettersToday?.daily?.status === "completed";
+  const dailySurvivalStatusText =
+    dailySurvivalStatus?.completed === true || dailySurvivalStatus?.forfeited === true
+      ? t("home.hooks.played")
+      : null;
+
+  /** Who's Older / Missing Letters share one getToday shape. */
+  const dailyGameStatus = (
+    today:
+      | {
+          daily: { status: string; score: number; totalRounds: number | null } | null;
+          streak: { current: number } | null;
+        }
+      | undefined,
+  ) => {
+    const daily = today?.daily;
+    const parts: string[] = [];
+    if (daily?.status === "completed") {
+      parts.push(
+        daily.totalRounds
+          ? t("home.today.score", { score: daily.score, total: daily.totalRounds })
+          : t("home.hooks.played"),
+      );
+    } else if (daily?.status === "active") {
+      parts.push(t("home.today.inProgress"));
+    }
+    const run = today?.streak?.current ?? 0;
+    if (parts.length === 0 && run === 0) return null;
+    return (
+      <>
+        {parts.join("")}
+        {run > 0 && (
+          <span className="inline-flex items-center gap-0.5" title={t("home.stats.streak")}>
+            {parts.length > 0 && <span aria-hidden>·</span>}
+            <Flame size={11} strokeWidth={3} aria-hidden />
+            {run}
+          </span>
+        )}
+      </>
+    );
+  };
+
   const dailyIsWorldCup = isWorldCupEditionActive(dailySport, getTodayUTC());
   const seasonNumber =
     typeof season?.seasonNumber === "number" ? season.seasonNumber : null;
@@ -151,7 +200,7 @@ export default function ShellHomeScreen() {
         {/* Brand bar — lockup left, streak + identity right. From md up the
             desktop top nav already carries the lockup, so it drops out here
             (one logo per screen) and the row keeps streak + identity. */}
-        <div className="flex items-center justify-between md:justify-end pt-4 pb-3 md:pt-5 md:pb-4 shrink-0">
+        <div className="flex items-center justify-between md:justify-end pt-4 pb-3 md:pt-3 md:pb-1 shrink-0">
           <BrandMark variant="lockup" size="md" className="md:hidden" />
           <div className="flex items-center gap-2">
             {streak > 0 && (
@@ -168,12 +217,25 @@ export default function ShellHomeScreen() {
               >
                 {t("auth.signIn")}
               </NeoButton>
-            ) : (
+            ) : showGuest ? (
+              <NeoButton
+                variant="secondary"
+                size="sm"
+                title={t("settings.notSignedIn")}
+                onClick={() =>
+                  navigate(`${SHELL_ROUTES.account}?next=${encodeURIComponent(SHELL_ROUTES.home)}`)
+                }
+                data-testid="home-guest-chip"
+              >
+                <UserRound size={16} strokeWidth={2.5} aria-hidden />
+                {t("home.guestChip")}
+              </NeoButton>
+            ) : hasUsername ? (
               <button
                 type="button"
                 aria-label={displayName}
                 onClick={() => navigate(SHELL_ROUTES.profile)}
-                className={LIFT}
+                className="rounded-full transition-transform duration-press active:translate-x-0.5 active:translate-y-0.5"
               >
                 <NeoAvatar
                   name={displayName}
@@ -181,177 +243,123 @@ export default function ShellHomeScreen() {
                   className="md:w-10 md:h-10 bg-hot-pink text-hot-pink-foreground"
                 />
               </button>
-            )}
+            ) : null}
           </div>
         </div>
 
-        {/* THE WEEKEND entry card (FW-GO) + THE DRAW home hero (Ticket H).
-            THE WEEKEND LEADS, UNCONDITIONALLY. The old default was
-            Draw-then-Weekend with `?w=1` swapping them, which was set before
-            either mode had numbers. They do now: THE WEEKEND is the most
-            revisited surface on the app (56 people, 3.5 views each) and the
-            destination of every ad that converts. THE DRAW is LIVE on prod —
-            VITE_DRAW_ENABLED is set in the host CI wrapper, NOT in the
-            procedure DEPLOYMENT.md documents, which still calls the mode dark
-            — and it took 39 people over 60 days. But it carries NO ANALYTICS:
-            no track() call anywhere in its screens and no "draw" member in
-            GameMode, so it fires no game events, and there is no reading of
-            the data in which it outranks the flagship. The old default handed
-            the top of Home to the one mode we cannot measure at all.
-            `?w=1` is now a no-op for ORDER (it stays honoured elsewhere) —
-            there is nothing left for it to swap. The Draw card stays
-            self-gating; the WEEKEND card is static, because the mode is live. */}
-        <HomeWeekendCard />
-        <HomeDrawCard />
+        {/* TODAY — the four dailies, first for everyone. */}
+        <section className="shrink-0 flex flex-col gap-2 pb-4 md:pb-3" aria-labelledby="home-today">
+          <div className="flex items-baseline justify-between gap-3">
+            <Eyebrow id="home-today" className="font-bold">
+              {t("home.today.eyebrow")}
+            </Eyebrow>
+            <Eyebrow as="span" className="shrink-0 tabular-nums">
+              {t("home.hooks.resetsIn", { time: dailyResetCountdown() })}
+            </Eyebrow>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {/* WHO'S OLDER? — the format behind most of the account's reel
+                reach, as a daily with endless unlocked after it. */}
+            <ModeTile
+              mode="blue"
+              icon={Hourglass}
+              name={t("modes.whosOlder.name")}
+              line={t("modes.whosOlder.desc")}
+              status={dailyGameStatus(whosOlderToday)}
+              onClick={() => navigate(SHELL_ROUTES.whosOlderPlay)}
+              className="min-h-[132px]"
+              data-testid="home-whos-older-card"
+            />
+            {/* MISSING LETTERS — the reel format that holds most of the feed's
+                daily slots, as a daily + endless. */}
+            <ModeTile
+              mode="pink"
+              icon={Type}
+              name={t("modes.missingLetters.name")}
+              line={t("modes.missingLetters.desc")}
+              status={dailyGameStatus(missingLettersToday)}
+              onClick={() => navigate(SHELL_ROUTES.missingLettersPlay)}
+              className="min-h-[132px]"
+              data-testid="home-missing-letters-card"
+            />
+            {/* Window shared with the backend's themed question pool
+                (lib/daily.ts), so the tile renames itself exactly while the
+                WC edition is being served. */}
+            <ModeTile
+              mode="yellow"
+              icon={Star}
+              name={dailyIsWorldCup ? t("modes.daily.worldCupName") : t("modes.daily.name")}
+              line={t("modes.daily.desc")}
+              status={dailyQuizStatus}
+              onClick={() => navigate(`${SHELL_ROUTES.dailyPlay}?sport=${dailySport}`)}
+              className="min-h-[132px]"
+              data-testid="home-daily-card"
+            />
+            <ModeTile
+              mode="yellow"
+              icon={CalendarHeart}
+              name={t("modes.dailySurvival.name")}
+              line={t("modes.dailySurvival.desc")}
+              status={dailySurvivalStatusText}
+              onClick={() => navigate("/v2/daily-survival")}
+              className="min-h-[132px]"
+              data-testid="home-daily-survival-card"
+            />
+          </div>
+        </section>
+
+        {/* THE WEEKEND entry card (FW-GO) + THE DRAW home card (Ticket H),
+            AFTER Today (owner decision 10 reversed "THE WEEKEND leads Home
+            unconditionally"). Side by side from md up; the Draw card is
+            self-gating, so without it THE WEEKEND takes the full row. The
+            `?w=1` param stays a no-op for order. */}
+        <div className="shrink-0 flex flex-col md:flex-row md:items-stretch md:gap-4">
+          <HomeWeekendCard />
+          <HomeDrawCard />
+        </div>
 
         {/* One tree, two breakpoints: mobile stacks in DOM order; desktop is a
-            never-scroll 3-column grid (pillars · pillars/dailies · ladder/forge),
-            ratios from the prototype (left 1.5fr split in two, right 1fr). */}
-        <div className="flex flex-col gap-3 md:grid md:grid-cols-[3fr_3fr_4fr] md:grid-rows-[auto_auto] md:gap-4 md:content-start">
-          {/* TODAY pillar — the daily slate leads the home. Three cards, one
-              habit: the shared quiz, the shared survival run and Who's Older,
-              all with honest played/reset state read from the server. */}
-          <div className="flex flex-col gap-3 md:gap-2 min-h-0">
-            <p className={EYEBROW}>{t("home.today.eyebrow")}</p>
-            <NeoCard
-              color="yellow"
-              shadow="lg"
-              onClick={() => navigate(`${SHELL_ROUTES.dailyPlay}?sport=${dailySport}`)}
-              className={`${TODAY_CARD} ${LIFT}`}
-            >
-              <Star size={24} strokeWidth={2.5} className="shrink-0" />
-              <div className="mt-auto md:mt-0 flex flex-col gap-1.5 md:gap-1 min-w-0">
-                <p className="font-heading font-black uppercase text-lg md:text-xl leading-none">
-                  {dailyIsWorldCup
-                    ? t("modes.daily.worldCupName")
-                    : t("modes.daily.name")}
-                </p>
-                <p className="font-mono text-[10.5px] uppercase text-muted-foreground">
-                  {dailyPlayed
-                    ? t("home.hooks.played")
-                    : t("home.hooks.resetsIn", { time: dailyResetCountdown() })}
-                </p>
-              </div>
-            </NeoCard>
-            <NeoCard
-              color="accent"
-              shadow="lg"
-              onClick={() => navigate("/v2/daily-survival")}
-              className={`${TODAY_CARD} ${LIFT}`}
-            >
-              <CalendarHeart size={24} strokeWidth={2.5} className="shrink-0" />
-              <div className="mt-auto md:mt-0 flex flex-col gap-1.5 md:gap-1 min-w-0">
-                <p className="font-heading font-black uppercase text-lg md:text-xl leading-none">
-                  {t("modes.dailySurvival.name")}
-                </p>
-                <p className="font-mono text-[10.5px] uppercase text-muted-foreground">
-                  {dailySurvivalPlayed
-                    ? t("home.hooks.played")
-                    : t("modes.dailySurvival.desc")}
-                </p>
-              </div>
-            </NeoCard>
-            {/* WHO'S OLDER? — the format behind most of the account's reel
-                reach (2026-09: the top five posts of all time), now a daily
-                with endless unlocked after it. Played state says so, because
-                the card still leads somewhere: endless. */}
-            <NeoCard
-              color="pink"
-              shadow="lg"
-              onClick={() => navigate(SHELL_ROUTES.whosOlderPlay)}
-              className={`${TODAY_CARD} ${LIFT}`}
-              data-testid="home-whos-older-card"
-            >
-              <Hourglass size={24} strokeWidth={2.5} className="shrink-0" />
-              <div className="mt-auto md:mt-0 flex flex-col gap-1.5 md:gap-1 min-w-0">
-                <p className="font-heading font-black uppercase text-lg md:text-xl leading-none">
-                  {t("modes.whosOlder.name")}
-                </p>
-                <p className="font-mono text-[10.5px] uppercase text-muted-foreground">
-                  {whosOlderPlayed
-                    ? t("modes.whosOlder.playedDesc")
-                    : t("modes.whosOlder.desc")}
-                </p>
-              </div>
-            </NeoCard>
-            {/* MISSING LETTERS — the reel format that took over three of the
-                feed's four daily slots (2026-10), as a daily + endless. */}
-            <NeoCard
-              color="blue"
-              shadow="lg"
-              onClick={() => navigate(SHELL_ROUTES.missingLettersPlay)}
-              className={`${TODAY_CARD} ${LIFT}`}
-              data-testid="home-missing-letters-card"
-            >
-              <Type size={24} strokeWidth={2.5} className="shrink-0" />
-              <div className="mt-auto md:mt-0 flex flex-col gap-1.5 md:gap-1 min-w-0">
-                <p className="font-heading font-black uppercase text-lg md:text-xl leading-none">
-                  {t("modes.missingLetters.name")}
-                </p>
-                <p className="font-mono text-[10.5px] uppercase opacity-80">
-                  {missingLettersPlayed
-                    ? t("modes.missingLetters.playedDesc")
-                    : t("modes.missingLetters.desc")}
-                </p>
-              </div>
-            </NeoCard>
-          </div>
-
+            never-scroll grid — Career Path · COMPETE · ladder over the hooks
+            strip. Height budget: everything stays above a 900px viewport at
+            1440 wide (measure maxBottom before adding anything here). */}
+        <div className="flex flex-col gap-3 md:grid md:grid-cols-[3fr_3fr_4fr] md:grid-rows-[auto_auto] md:gap-3 md:content-start">
           {/* CAREER PATH — the most-played mode on the app (73 people in 45
-              days, chained 10.6 completions each, 83% completion at ~34s a
-              run) and, until now, ABSENT FROM HOME ENTIRELY: its only entry
-              point was the Compete grid's "Just for fun" section, the bottom
-              of the screen, under a "these don't affect your rank" sub-line.
-              It sits in the TODAY column because it is the same kind of thing
-              the dailies are — a short, repeatable habit — and a 34-second
-              round is exactly what a home screen should be able to start. */}
-          <div className="flex flex-col gap-3 min-h-0 md:col-start-3 md:row-start-2">
-            <p className={EYEBROW}>{t("home.mostPlayed.eyebrow")}</p>
-            <NeoCard
-              color="yellow"
-              shadow="lg"
-              onClick={() => navigate(`${SHELL_ROUTES.careerPathPlay}?sport=football`)}
-              className={`p-4 flex flex-col gap-1.5 min-h-0 flex-1 ${LIFT}`}
-              data-testid="home-career-path-card"
-            >
-              <Route size={24} strokeWidth={2.5} />
-              <p className="font-heading font-black uppercase text-lg md:text-xl leading-none mt-auto">
-                {t("modes.careerPath.name")}
-              </p>
-              <p className="font-mono text-[10.5px] uppercase text-muted-foreground">
-                {t("modes.careerPath.desc")}
-              </p>
-            </NeoCard>
-          </div>
+              days, 10.6 completions each, ~34s a run): a short, repeatable
+              habit, which is exactly what Home should be able to start. */}
+          <ModeTile
+            mode="orange"
+            elevation="lifted"
+            icon={Route}
+            name={t("modes.careerPath.name")}
+            line={t("modes.careerPath.desc")}
+            onClick={() => navigate(`${SHELL_ROUTES.careerPathPlay}?sport=football`)}
+            className="md:col-start-1 md:row-start-1 min-h-[120px]"
+            data-testid="home-career-path-card"
+          />
 
-          {/* COMPETE pillar — moved out of the prime col2/row1 cell to make room
-              for Career Path, and it is the right card to move: COMPETE is
-              duplicated by persistent navigation (the bottom bar on mobile,
-              the top bar on desktop), so a visitor never loses the door. A
-              mode with 73 players and no home presence had nothing else
-              carrying it. */}
-          <NeoCard
-            color="primary"
-            shadow="lg"
+          {/* COMPETE pillar — duplicated by persistent navigation (the bottom
+              bar on mobile, the top bar on desktop), so it is a plain surface,
+              not a fill: the accents belong to modes. */}
+          <Card
+            interactive
+            elevation="lifted"
             onClick={() => navigate(SHELL_ROUTES.compete)}
-            className={`p-5 flex flex-col min-h-0 overflow-hidden ${LIFT}`}
+            className="p-4 md:p-5 flex flex-col min-h-0 overflow-hidden md:col-start-2 md:row-start-1"
           >
             <div className="flex items-start justify-between">
-              <NeoBadge className="bg-foreground text-background">
-                {t("home.pillars.competeChip")}
-              </NeoBadge>
-              <span aria-hidden className="text-[26px] leading-none">
+              <NeoBadge color="yellow">{t("home.pillars.competeChip")}</NeoBadge>
+              <span aria-hidden className="text-title leading-none">
                 ⚡
               </span>
             </div>
-            <p className="font-heading font-black uppercase text-[34px] md:text-[46px] leading-[0.95] mt-auto pt-3">
+            <p className="font-heading font-bold uppercase text-title-lg leading-none mt-auto pt-3">
               {t("home.pillars.competeTitle")}
             </p>
-            <p className="text-sm font-medium opacity-90 mt-2 max-w-[280px]">
+            <p className="text-body-sm text-muted-foreground mt-1.5 max-w-[280px] md:max-w-none">
               {t("home.pillars.competeBody")}
             </p>
-            <div className="flex flex-wrap items-center gap-2 mt-3.5">
-              <NeoBadge color="muted" className="bg-card text-foreground">
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              <NeoBadge color="muted">
                 {elo != null
                   ? t("home.pillars.rankChip", {
                       tier: t(`ranks.tiers.${tierFromElo(elo)}`),
@@ -359,120 +367,89 @@ export default function ShellHomeScreen() {
                   : t("home.stats.unranked")}
               </NeoBadge>
             </div>
-          </NeoCard>
+          </Card>
 
           {/* Daily hooks */}
-          <div className="flex flex-col gap-2.5 min-h-0 md:col-span-2 md:col-start-1 md:row-start-2">
-            <p className={EYEBROW}>
+          <div className="flex flex-col gap-2 min-h-0 md:col-span-3 md:row-start-2">
+            <Eyebrow className="font-bold">
               <span className="md:hidden">{t("home.hooks.eyebrowShort")}</span>
               <span className="hidden md:inline">{t("home.hooks.eyebrow")}</span>
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-3.5">
+            </Eyebrow>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {/* Ordered by measured demand over 45 days (organic sessions
-                  only — paid traffic stripped, so one ad buy cannot reorder
-                  the app): Quiz 20 people, Duels 14, Arena 10. The strip used
-                  to lead with Duels on a "settle it" thesis rather than a
-                  number; the thesis is still right about what the app is FOR,
-                  but it is not evidence about what this strip should open
-                  with. */}
-              <NeoCard
-                onClick={() =>
-                  navigate("/difficulty?sport=football&mode=quiz&target=v2")
-                }
-                className={`p-3.5 flex flex-col gap-1.5 min-h-0 ${LIFT}`}
-              >
-                <Brain size={22} strokeWidth={2.5} />
-                <p className="font-heading font-bold text-base leading-none">
-                  {t("modes.quiz.name")}
-                </p>
-                <p className="font-mono text-[10.5px] uppercase text-muted-foreground">
-                  {t("home.hooks.quizSub")}
-                </p>
-              </NeoCard>
-              <NeoCard
-                color="pink"
+                  only): Quiz 20 people, Duels 14, Arena 10. THE FORGE (7 people
+                  in 45 days) rides at the end, on a plain surface: it is a
+                  tool, not a mode with an accent. */}
+              <ModeTile
+                mode="orange"
+                icon={Brain}
+                name={t("modes.quiz.name")}
+                line={t("home.hooks.quizSub")}
+                onClick={() => navigate("/difficulty?sport=football&mode=quiz&target=v2")}
+                className="p-3.5"
+              />
+              <ModeTile
+                mode="pink"
+                icon={Users}
+                name={t("modes.duel.name")}
+                line={t("modes.duel.desc")}
                 onClick={() => navigate(SHELL_ROUTES.duels)}
-                className={`p-3.5 flex flex-col gap-1.5 min-h-0 ${LIFT}`}
-              >
-                <Users size={22} strokeWidth={2.5} />
-                <p className="font-heading font-bold text-base leading-none">
-                  {t("modes.duel.name")}
-                </p>
-                <p className="font-mono text-[10.5px] uppercase text-muted-foreground">
-                  {t("modes.duel.desc")}
-                </p>
-              </NeoCard>
-              <NeoCard
+                className="p-3.5"
+              />
+              <ModeTile
+                mode="pink"
+                icon={Swords}
+                name={t("modes.arena.name")}
+                line={t("modes.arena.desc")}
                 onClick={() => navigate(SHELL_ROUTES.arena)}
-                className={`p-3.5 flex flex-col gap-1.5 min-h-0 ${LIFT}`}
-              >
-                <Swords size={22} strokeWidth={2.5} />
-                <p className="font-heading font-bold text-base leading-none">
-                  {t("modes.arena.name")}
-                </p>
-                <p className="font-mono text-[10.5px] uppercase text-muted-foreground">
-                  {t("modes.arena.desc")}
-                </p>
-              </NeoCard>
-              {/* THE FORGE joins the strip rather than holding a cell of its
-                  own. It is the least-reached surface on Home (7 people in 45
-                  days) and it was occupying a full desktop grid cell, which is
-                  the cell Career Path and COMPETE now share between them. It
-                  keeps its colour and its copy — only its footprint shrinks. */}
-              <NeoCard
-                color="pink"
+                className="p-3.5"
+              />
+              <ModeTile
+                mode="surface"
+                icon={Hammer}
+                name={t("forge.title")}
+                line={t("forge.subtitle")}
                 onClick={() => navigate(SHELL_ROUTES.forge)}
-                className={`p-3.5 flex flex-col gap-1.5 min-h-0 ${LIFT}`}
-              >
-                <Hammer size={22} strokeWidth={2.5} />
-                <p className="font-heading font-bold text-base leading-none">
-                  {t("forge.title")}
-                </p>
-                <p className="font-mono text-[10.5px] uppercase text-muted-foreground">
-                  {t("forge.subtitle")}
-                </p>
-              </NeoCard>
+                className="p-3.5"
+              />
             </div>
           </div>
 
-          {/* The ladder — dark ranks card */}
-          <button
-            type="button"
+          {/* The ladder — a raised surface with the gold ranked accents. */}
+          <Card
+            interactive
+            elevation="lifted"
             onClick={() => navigate(SHELL_ROUTES.ranks)}
-            className={`neo-border neo-shadow-lg rounded-lg bg-foreground text-background text-left w-full p-[18px] flex flex-col min-h-0 overflow-hidden md:col-start-3 md:row-start-1 ${LIFT}`}
+            className="p-[18px] flex flex-col min-h-0 overflow-hidden md:col-start-3 md:row-start-1"
           >
             <div className="flex items-center justify-between gap-2">
-              <span className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-yellow">
+              <Eyebrow as="span" className="font-bold text-yellow">
                 {t("ranks.ladder")}
-              </span>
-              <span className="rounded-full border-2 border-background bg-yellow text-yellow-foreground px-3 py-1 font-heading font-bold uppercase tracking-wide text-[10px]">
+              </Eyebrow>
+              <NeoBadge color="yellow">
                 {seasonNumber != null
                   ? t("ranks.seasonChip", { n: seasonNumber })
                   : t("ranks.rankedChip")}
-              </span>
+              </NeoBadge>
             </div>
 
             {elo != null && progress ? (
               <>
-                <div className="flex items-center gap-3 mt-3 md:mt-4">
+                <div className="flex items-center gap-3 mt-3">
                   <div
-                    className="neo-border border-background w-[50px] h-[50px] md:w-[62px] md:h-[62px] shrink-0 rounded-[10px] -rotate-6 grid place-items-center"
+                    className="neo-border w-[50px] h-[50px] shrink-0 rounded-lg -rotate-6 grid place-items-center"
                     style={{
                       background:
-                        "linear-gradient(135deg, hsl(var(--yellow)), hsl(var(--primary)))",
+                        "linear-gradient(135deg, hsl(var(--yellow)), hsl(var(--orange)))",
                     }}
                   >
-                    <Crown
-                      size={26}
-                      strokeWidth={2.5}
-                      className="text-black/80"
-                    />
+                    <Crown size={26} strokeWidth={2.5} className="text-ink" />
                   </div>
                   <div className="min-w-0">
-                    <p className="font-heading font-black text-2xl md:text-3xl leading-none capitalize">
+                    <p className="font-heading font-bold text-title-lg leading-none capitalize">
                       {t(`ranks.tiers.${progress.tier}`)}
                     </p>
-                    <p className="font-mono text-xs text-yellow mt-1">
+                    <p className="font-mono text-meta text-yellow mt-1">
                       {progress.next
                         ? t("ranks.progressTo", {
                             elo,
@@ -483,7 +460,7 @@ export default function ShellHomeScreen() {
                     </p>
                   </div>
                 </div>
-                <div className="h-3 border-2 border-background rounded-full mt-3 overflow-hidden">
+                <div className="h-3 neo-border rounded-full mt-3 overflow-hidden">
                   <div
                     className="h-full bg-yellow"
                     style={{ width: `${Math.round(progress.pct * 100)}%` }}
@@ -492,29 +469,25 @@ export default function ShellHomeScreen() {
               </>
             ) : (
               <>
-                <div className="flex items-center gap-3 mt-3 md:mt-4">
-                  <div className="neo-border border-background/40 bg-background/15 w-[50px] h-[50px] md:w-[62px] md:h-[62px] shrink-0 rounded-[10px] -rotate-6 grid place-items-center">
-                    <Lock
-                      size={24}
-                      strokeWidth={2.5}
-                      className="text-background/70"
-                    />
+                <div className="flex items-center gap-3 mt-3">
+                  <div className="neo-border bg-muted w-[50px] h-[50px] shrink-0 rounded-lg -rotate-6 grid place-items-center">
+                    <Lock size={24} strokeWidth={2.5} className="text-muted-foreground" />
                   </div>
                   <div className="min-w-0">
-                    <p className="font-heading font-black text-2xl md:text-3xl leading-none">
+                    <p className="font-heading font-bold text-title-lg leading-none">
                       {t("ranks.locked.title")}
                     </p>
-                    <p className="font-mono text-xs text-yellow mt-1">
+                    <p className="font-mono text-meta text-yellow mt-1">
                       {t("ranks.locked.chip")}
                     </p>
                   </div>
                 </div>
-                <div className="h-3 border-2 border-background/40 rounded-full mt-3 overflow-hidden" />
+                <div className="h-3 neo-border rounded-full mt-3 overflow-hidden" />
               </>
             )}
 
-            <div className="flex items-center justify-between mt-auto pt-3.5">
-              <span className="flex items-baseline gap-1.5 font-mono text-[11px] text-background/60">
+            <div className="flex items-center justify-between mt-auto pt-3">
+              <span className="flex items-baseline gap-1.5 font-mono text-meta text-muted-foreground">
                 {typeof globalRank?.rank === "number" && (
                   <span className="text-yellow">
                     #{globalRank.rank.toLocaleString()} ·
@@ -523,17 +496,17 @@ export default function ShellHomeScreen() {
                 <span>{t("ranks.eloRating")}</span>
                 <span>{elo != null ? elo : "—"}</span>
               </span>
-              <span className="font-heading font-bold text-[13px] uppercase text-yellow">
+              <span className="font-heading font-bold text-meta uppercase text-yellow">
                 {t("home.ranksCard.view")} →
               </span>
             </div>
-          </button>
+          </Card>
         </div>
 
         {/* Support nudge — a small line at the foot of home; on mobile it sits
             below the content in the scroll column, on desktop it pins under the
             never-scroll grid. Links out to Buy Me a Coffee (new tab). */}
-        <p className="shrink-0 text-center text-[11px] text-muted-foreground pt-3.5 pb-1">
+        <p className="shrink-0 text-center text-meta text-muted-foreground pt-3 pb-1">
           {t("home.supportCoffeePrefix")}{" "}
           <a
             href={COFFEE_URL}
