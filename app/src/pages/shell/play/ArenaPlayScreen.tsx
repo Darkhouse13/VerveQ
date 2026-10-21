@@ -68,7 +68,7 @@ import {
   RoundBreakView,
   FinalView,
   NotInRoom,
-} from "@/pages/ChallengeArenaScreen";
+} from "@/pages/arena/ArenaRoomViews";
 
 type Room = NonNullable<FunctionReturnType<typeof api.challengeArenas.getRoom>>;
 type Phase = Room["phase"];

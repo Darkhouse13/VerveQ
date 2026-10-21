@@ -8,9 +8,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute, UsernameRequiredRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AnalyticsPageviews } from "./components/AnalyticsPageviews";
-// Flag-gated entry routing: v1 LoginScreen/HomeScreen when off, v2 shell
-// landing when VITE_V2_SHELL_ENABLED is on. Keeps "/" and "/home" as a clean
-// rollback seam (the only routes whose default destination the flag flips).
+// Entry routing: "/" resolves by session (cold landing, login, or the shell),
+// "/home" forwards to the shell Home.
 import {
   EntryRoute,
   HomeRoute,
@@ -19,10 +18,10 @@ import {
   MissingLettersShortLinkRoute,
   WeekendShortLinkRoute,
 } from "./components/EntryRoutes";
-// Deep-link aliases: with the v2 shell live, v1 mode URLs (and spelling
-// variants like /vervegrid) forward to the v2 surface for that mode so shared
-// links land on the mode they name. Flag-off renders children unchanged.
-import { V2Redirect, V2ArenaCodeRedirect } from "./components/V2Redirect";
+// Deep-link aliases: legacy v1 mode URLs (and spelling variants like
+// /vervegrid) forward to the shell surface for that mode so shared links land
+// on the mode they name.
+import { LegacyRedirect, LegacyArenaCodeRedirect } from "./components/LegacyRedirect";
 // v1 screens still live in production (embedded in the shell or reused by the
 // v2 play flow) stay statically imported.
 import OnboardingScreen from "./pages/OnboardingScreen";
@@ -45,24 +44,7 @@ import {
   FullAccountRoute,
 } from "./components/shell/ShellRouteGuards";
 
-// Rollback-only v1 mode screens: with the v2 shell flag on they sit behind
-// V2Redirect and never render, so they load lazily to stay out of the main
-// bundle. Flag-off (rollback) loads them through the app-level Suspense.
-const SportSelectScreen = lazyWithRetry(() => import("./pages/SportSelectScreen"));
-const QuizScreen = lazyWithRetry(() => import("./pages/QuizScreen"));
-const SurvivalScreen = lazyWithRetry(() => import("./pages/SurvivalScreen"));
-const LeaderboardScreen = lazyWithRetry(() => import("./pages/LeaderboardScreen"));
-const ProfileScreen = lazyWithRetry(() => import("./pages/ProfileScreen"));
-const DailyQuizScreen = lazyWithRetry(() => import("./pages/DailyQuizScreen"));
-const BlitzScreen = lazyWithRetry(() => import("./pages/BlitzScreen"));
-const HigherLowerScreen = lazyWithRetry(() => import("./pages/HigherLowerScreen"));
-const VerveGridScreen = lazyWithRetry(() => import("./pages/VerveGridScreen"));
-const LearnPrototypeScreen = lazyWithRetry(() => import("./pages/LearnPrototypeScreen"));
-const LearnNodePickerScreen = lazyWithRetry(() => import("./pages/LearnNodePickerScreen"));
-const LearnLadderScreen = lazyWithRetry(() => import("./pages/LearnLadderScreen"));
-
-// v2 unified shell (additive, flag-gated via VITE_V2_SHELL_ENABLED). Lazy so it
-// stays out of the main bundle; ShellGate redirects to /home when the flag is off.
+// The unified shell. Lazy so each screen stays out of the main bundle.
 const ShellHomeScreen = lazyWithRetry(() => import("./pages/shell/ShellHomeScreen"));
 // With Sport→Football the only live path, /compete lands directly on the mode
 // grid (the old category/sport chooser screens were removed).
@@ -80,13 +62,13 @@ const ShellLeaderboardScreen = lazyWithRetry(() => import("./pages/shell/ShellLe
 const PrivacyScreen = lazyWithRetry(() => import("./pages/legal/PrivacyScreen"));
 const TermsScreen = lazyWithRetry(() => import("./pages/legal/TermsScreen"));
 
-// Learn v2 (the Learn pillar) — additive, flag-gated, lazy.
+// Learn v2 (the Learn pillar) — lazy.
 const LearnEntryScreen = lazyWithRetry(() => import("./pages/shell/learn/LearnEntryScreen"));
 const LearnRunnerScreen = lazyWithRetry(() => import("./pages/shell/learn/LearnRunnerScreen"));
 const LearnReviewScreen = lazyWithRetry(() => import("./pages/shell/learn/LearnReviewScreen"));
 const LearnMasteryScreen = lazyWithRetry(() => import("./pages/shell/learn/LearnMasteryScreen"));
 
-// In-game prototype layout (migrated modes) — additive, flag-gated, lazy.
+// In-game layout (migrated modes) — lazy.
 const QuizPlayScreen = lazyWithRetry(() => import("./pages/shell/play/QuizPlayScreen"));
 const BlitzPlayScreen = lazyWithRetry(() => import("./pages/shell/play/BlitzPlayScreen"));
 const SurvivalPlayScreen = lazyWithRetry(() => import("./pages/shell/play/SurvivalPlayScreen"));
@@ -121,7 +103,6 @@ const RivalsListScreen = lazyWithRetry(() => import("./pages/RivalsScreen"));
 const RivalDetailScreen = lazyWithRetry(() =>
   import("./pages/RivalsScreen").then((m) => ({ default: m.RivalDetailScreen })),
 );
-const ChallengeArenaScreen = lazyWithRetry(() => import("./pages/ChallengeArenaScreen"));
 
 // THE DRAW (Ticket B) — mock-driven, flag-gated via VITE_DRAW_ENABLED inside
 // the screen itself; unlinked from any nav. Lazy so it stays out of the main
@@ -184,24 +165,8 @@ const AppRoutes = () => (
               on top of a game's bottom-docked buttons. */}
           <Routes>
             <Route path="/" element={<EntryRoute />} />
-            <Route
-              path="/leaderboard"
-              element={
-                <V2Redirect to="/v2/leaderboard">
-                  <LeaderboardScreen />
-                </V2Redirect>
-              }
-            />
-            <Route
-              path="/ranks"
-              element={
-                <V2Redirect to="/v2/ranks">
-                  <ProtectedRoute>
-                    <LeaderboardScreen />
-                  </ProtectedRoute>
-                </V2Redirect>
-              }
-            />
+            <Route path="/leaderboard" element={<LegacyRedirect to="/v2/leaderboard" />} />
+            <Route path="/ranks" element={<LegacyRedirect to="/v2/ranks" />} />
             <Route path="/home" element={<HomeRoute />} />
             <Route
               path="/onboarding"
@@ -211,16 +176,7 @@ const AppRoutes = () => (
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/sport-select"
-              element={
-                <V2Redirect to="/compete">
-                  <ProtectedRoute>
-                    <SportSelectScreen />
-                  </ProtectedRoute>
-                </V2Redirect>
-              }
-            />
+            <Route path="/sport-select" element={<LegacyRedirect to="/compete" />} />
             {/* The difficulty picker is PURE CLIENT STATE: it reads query params
                 and navigates — it calls no Convex function and needs no
                 identity (see pages/DifficultyScreen). It used to sit behind the
@@ -233,26 +189,8 @@ const AppRoutes = () => (
                 step later, on the mode route, which preserves intent via
                 ?next=. */}
             <Route path="/difficulty" element={<DifficultyScreen />} />
-            <Route
-              path="/quiz"
-              element={
-                <V2Redirect to="/v2/quiz?sport=football">
-                  <UsernameRequiredRoute>
-                    <QuizScreen />
-                  </UsernameRequiredRoute>
-                </V2Redirect>
-              }
-            />
-            <Route
-              path="/survival"
-              element={
-                <V2Redirect to="/v2/survival?sport=football">
-                  <UsernameRequiredRoute>
-                    <SurvivalScreen />
-                  </UsernameRequiredRoute>
-                </V2Redirect>
-              }
-            />
+            <Route path="/quiz" element={<LegacyRedirect to="/v2/quiz?sport=football" />} />
+            <Route path="/survival" element={<LegacyRedirect to="/v2/survival?sport=football" />} />
             <Route
               path="/results"
               element={
@@ -261,30 +199,12 @@ const AppRoutes = () => (
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/profile"
-              element={
-                <V2Redirect to="/v2/profile">
-                  <ProtectedRoute>
-                    <ProfileScreen />
-                  </ProtectedRoute>
-                </V2Redirect>
-              }
-            />
-            <Route
-              path="/challenge"
-              element={
-                <V2Redirect to="/v2/duels">
-                  <UsernameRequiredRoute>
-                    <ChallengeScreen />
-                  </UsernameRequiredRoute>
-                </V2Redirect>
-              }
-            />
+            <Route path="/profile" element={<LegacyRedirect to="/v2/profile" />} />
+            <Route path="/challenge" element={<LegacyRedirect to="/v2/duels" />} />
             {/* Bare /duel(s) name the head-to-head surface; only the deeper
                 /duel/:linkCode + play/result URLs are real v1 flows. */}
-            <Route path="/duel" element={<V2Redirect to="/v2/duels"><NotFound /></V2Redirect>} />
-            <Route path="/duels" element={<V2Redirect to="/v2/duels"><NotFound /></V2Redirect>} />
+            <Route path="/duel" element={<LegacyRedirect to="/v2/duels" />} />
+            <Route path="/duels" element={<LegacyRedirect to="/v2/duels" />} />
             <Route
               path="/duel/play/:duelId"
               element={
@@ -301,41 +221,12 @@ const AppRoutes = () => (
                 </UsernameRequiredRoute>
               }
             />
-            <Route
-              path="/duels/history"
-              element={
-                <V2Redirect to="/v2/duels/history">
-                  <UsernameRequiredRoute>
-                    <DuelHistoryScreen />
-                  </UsernameRequiredRoute>
-                </V2Redirect>
-              }
-            />
+            <Route path="/duels/history" element={<LegacyRedirect to="/v2/duels/history" />} />
             <Route path="/duel/:linkCode" element={<DuelLinkScreen />} />
             {/* Bare /arena names the group-challenge-room hub (create/join). */}
-            <Route path="/arena" element={<V2Redirect to="/v2/arena"><NotFound /></V2Redirect>} />
-            <Route
-              path="/arena/:code"
-              element={
-                <V2ArenaCodeRedirect>
-                  <UsernameRequiredRoute>
-                    <ErrorBoundary>
-                      <ChallengeArenaScreen />
-                    </ErrorBoundary>
-                  </UsernameRequiredRoute>
-                </V2ArenaCodeRedirect>
-              }
-            />
-            <Route
-              path="/rivals"
-              element={
-                <V2Redirect to="/v2/rivals">
-                  <UsernameRequiredRoute>
-                    <RivalsListScreen />
-                  </UsernameRequiredRoute>
-                </V2Redirect>
-              }
-            />
+            <Route path="/arena" element={<LegacyRedirect to="/v2/arena" />} />
+            <Route path="/arena/:code" element={<LegacyArenaCodeRedirect />} />
+            <Route path="/rivals" element={<LegacyRedirect to="/v2/rivals" />} />
             <Route
               path="/rivals/:opponentUserId"
               element={
@@ -344,18 +235,9 @@ const AppRoutes = () => (
                 </UsernameRequiredRoute>
               }
             />
-            <Route
-              path="/daily-quiz"
-              element={
-                <V2Redirect to="/v2/daily?sport=football">
-                  <UsernameRequiredRoute>
-                    <DailyQuizScreen />
-                  </UsernameRequiredRoute>
-                </V2Redirect>
-              }
-            />
+            <Route path="/daily-quiz" element={<LegacyRedirect to="/v2/daily?sport=football" />} />
             {/* /daily is the natural name for the Daily challenge. */}
-            <Route path="/daily" element={<V2Redirect to="/v2/daily?sport=football"><NotFound /></V2Redirect>} />
+            <Route path="/daily" element={<LegacyRedirect to="/v2/daily?sport=football" />} />
             <Route
               path="/daily-results"
               element={
@@ -369,16 +251,7 @@ const AppRoutes = () => (
                 </SessionRoute>
               }
             />
-            <Route
-              path="/blitz"
-              element={
-                <V2Redirect to="/v2/blitz?sport=football">
-                  <UsernameRequiredRoute>
-                    <BlitzScreen />
-                  </UsernameRequiredRoute>
-                </V2Redirect>
-              }
-            />
+            <Route path="/blitz" element={<LegacyRedirect to="/v2/blitz?sport=football" />} />
             <Route
               path="/blitz-results"
               element={
@@ -396,46 +269,17 @@ const AppRoutes = () => (
                 create a match (the challenge subsystem went in PR #11), so the
                 viewer routes advertised a dead end. Old /live-match and
                 /waiting-room URLs now fall through to NotFound. */}
-            <Route
-              path="/forge"
-              element={
-                <V2Redirect to="/v2/forge">
-                  <UsernameRequiredRoute>
-                    <ForgeScreen />
-                  </UsernameRequiredRoute>
-                </V2Redirect>
-              }
-            />
-            <Route
-              path="/higher-lower"
-              element={
-                <V2Redirect to="/v2/higher-lower?sport=football">
-                  <UsernameRequiredRoute>
-                    <HigherLowerScreen />
-                  </UsernameRequiredRoute>
-                </V2Redirect>
-              }
-            />
-            <Route path="/higherlower" element={<V2Redirect to="/v2/higher-lower?sport=football"><NotFound /></V2Redirect>} />
-            <Route
-              path="/verve-grid"
-              element={
-                <V2Redirect to="/v2/verve-grid?sport=football">
-                  <UsernameRequiredRoute>
-                    <VerveGridScreen />
-                  </UsernameRequiredRoute>
-                </V2Redirect>
-              }
-            />
-            <Route path="/vervegrid" element={<V2Redirect to="/v2/verve-grid?sport=football"><NotFound /></V2Redirect>} />
-            {/* Dev/preview only — Learn node picker + graph-built ladders. Not wired into home, nav, or any scored mode. */}
-            <Route path="/learn" element={<V2Redirect to="/v2/learn"><LearnNodePickerScreen /></V2Redirect>} />
-            <Route path="/learn/geography" element={<V2Redirect to="/v2/learn"><LearnNodePickerScreen /></V2Redirect>} />
-            <Route path="/learn/geography/:nodeId" element={<V2Redirect to="/v2/learn"><LearnLadderScreen /></V2Redirect>} />
-            <Route path="/learn/prototype" element={<V2Redirect to="/v2/learn"><LearnPrototypeScreen /></V2Redirect>} />
-            {/* v2 unified shell — additive, flag-gated. ShellGate redirects to
-                /home when VITE_V2_SHELL_ENABLED is off, so these are invisible
-                until enabled and never shadow existing routes. */}
+            <Route path="/forge" element={<LegacyRedirect to="/v2/forge" />} />
+            <Route path="/higher-lower" element={<LegacyRedirect to="/v2/higher-lower?sport=football" />} />
+            <Route path="/higherlower" element={<LegacyRedirect to="/v2/higher-lower?sport=football" />} />
+            <Route path="/verve-grid" element={<LegacyRedirect to="/v2/verve-grid?sport=football" />} />
+            <Route path="/vervegrid" element={<LegacyRedirect to="/v2/verve-grid?sport=football" />} />
+            {/* Old Learn prototype URLs forward to the Learn pillar. */}
+            <Route path="/learn" element={<LegacyRedirect to="/v2/learn" />} />
+            <Route path="/learn/geography" element={<LegacyRedirect to="/v2/learn" />} />
+            <Route path="/learn/geography/:nodeId" element={<LegacyRedirect to="/v2/learn" />} />
+            <Route path="/learn/prototype" element={<LegacyRedirect to="/v2/learn" />} />
+            {/* Shell routes. ShellGate gives each a local Suspense boundary. */}
             <Route path="/v2" element={<ShellGate><ShellHomeScreen /></ShellGate>} />
             {/* Account chooser for logged-out visitors hitting a gated surface:
                 sign in / create account / play as guest. Carries ?next=. */}
@@ -480,7 +324,7 @@ const AppRoutes = () => (
             {/* Contained legacy surfaces — the existing v1 screens embedded in
                 the shell chrome (v2 nav retained, v1 bottom nav suppressed) so a
                 shell nav target or Compete tile never drops the user back into
-                the v1 app. Gating mirrors the corresponding v1 routes. */}
+                the v1 app. Gating mirrors the old v1 routes. */}
             <Route
               path="/v2/duels"
               element={

@@ -19,9 +19,9 @@ describe("football-only scope", () => {
     expect(modal).not.toContain("Football · Basketball · Tennis");
   });
 
-  it("the leaderboard sport filter has no dead sports", () => {
-    const screen = read("../pages/LeaderboardScreen.tsx");
-    expect(screen).toContain('sport: ["All", "Football"]');
+  it("the leaderboard is football-only", () => {
+    const screen = read("../pages/shell/ShellLeaderboardScreen.tsx");
+    expect(screen).toContain('const sportParam = "football"');
     expect(screen).not.toContain("Tennis");
   });
 

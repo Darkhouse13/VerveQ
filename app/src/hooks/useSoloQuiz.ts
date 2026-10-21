@@ -1,7 +1,7 @@
 /**
  * useSoloQuiz — the solo Quiz game loop, server-authoritative and presentation
- * free, so any screen (the legacy `QuizScreen` keeps its own inline copy; the
- * v2 shell's `QuizPlayScreen` uses this) can drive the exact same backend flow.
+ * free, so the v2 shell's `QuizPlayScreen` can drive the exact same backend
+ * flow.
  *
  * Every correctness/score decision is the server's: `createSession`,
  * `getQuestion`, `checkAnswer`, and `completeQuiz` are called unchanged. This

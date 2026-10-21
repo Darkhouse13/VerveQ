@@ -1,15 +1,15 @@
 # VerveQ — Comprehensive App Overview
 
-> **Read this first.** Production runs the **v2 shell**
-> (`VITE_V2_SHELL_ENABLED=true`). The hub this document's Screen Inventory and
-> User Flow were written around — `LoginScreen` as the entry, `HomeScreen` as
-> the hub — is superseded: v1 `HomeScreen` is **not reachable in production**
-> and is stripped from the deployed bundle entirely, and `LoginScreen` mounts
-> only for an explicit `?mode=` / `?from=` auth intent.
+> **Read this first.** The **v2 shell** is the only shell (the
+> `VITE_V2_SHELL_ENABLED` flag was removed 2026-10). The hub this document's
+> Screen Inventory and User Flow were written around — `LoginScreen` as the
+> entry, `HomeScreen` as the hub — is superseded: v1 `HomeScreen` and the v1
+> mode screens were deleted, and `LoginScreen` mounts only for an explicit
+> `?mode=` / `?from=` auth intent.
 >
-> The v1 seam is **not uniformly dead**, so don't over-read that. Most v1 mode
-> routes are `V2Redirect`-wrapped and forward to a `/v2/*` counterpart, but a
-> few v1 deep-link screens are still live regardless of the flag —
+> A few v1 screens are **still live**, so don't over-read that. Old v1 mode
+> URLs are pure `LegacyRedirect`s to a `/v2/*` counterpart, but a few v1
+> deep-link screens still render —
 > `/duel/play/:duelId`, `/duel/result/:duelId` and `/rivals/:opponentUserId`
 > render v1 screens under `UsernameRequiredRoute`, and `/duel/:linkCode`
 > (the share-link landing) is live and unguarded by design.
@@ -739,10 +739,9 @@ Results Screen
 
 ## Screen Inventory
 
-**The live routes are the `/v2/*` shell below.** The v1 table that follows is
-mostly the rollback seam: with `VITE_V2_SHELL_ENABLED=true` those routes are
-`V2Redirect`-wrapped and forward to their v2 counterpart, and v1 `HomeScreen`
-is unreachable — dead-code-eliminated from the deployed bundle.
+**The live routes are the `/v2/*` shell below.** Most of the v1 table that
+follows is historical: those URLs are now pure `LegacyRedirect`s to their v2
+counterpart, and the v1 screens behind them were deleted.
 
 Exceptions worth knowing: `/duel/play/:duelId`, `/duel/result/:duelId` and
 `/rivals/:opponentUserId` are **not** redirect-wrapped — they render v1

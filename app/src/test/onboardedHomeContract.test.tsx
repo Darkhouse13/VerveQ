@@ -14,7 +14,6 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
-const flagMock = vi.hoisted(() => ({ enabled: true }));
 const authMock = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 const queryMock = vi.hoisted(() => ({
   value: undefined as unknown,
@@ -22,12 +21,6 @@ const queryMock = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/flags", () => ({
-  get V2_SHELL_ENABLED() {
-    return flagMock.enabled;
-  },
-  get LEARN_ENABLED() {
-    return false;
-  },
   // THE DRAW home card (Ticket H) stays dark here: flag off ⇒ it renders
   // nothing and fires no query.
   get DRAW_ENABLED() {
@@ -89,7 +82,6 @@ const usernameOnlyProfile = {
 
 describe("onboarded home (username-only session)", () => {
   beforeEach(() => {
-    flagMock.enabled = true;
     queryMock.value = undefined;
     queryMock.calls = [];
   });

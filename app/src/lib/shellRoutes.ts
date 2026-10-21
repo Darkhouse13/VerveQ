@@ -1,11 +1,7 @@
 /**
- * Canonical paths for the v2 shell. All are NEW, additive routes — they never
- * shadow an existing route. The Compete flow uses the literal `/compete/...`
- * paths from the design brief; Home and Ranks are namespaced under `/v2` to
- * avoid colliding with the live `/home` and `/ranks` routes, which stay intact.
- *
- * The mode grid NAVIGATES to the EXISTING mode routes (see `MODE_ROUTES`) — the
- * shell never reimplements a game mode.
+ * Canonical paths for the v2 shell. The Compete flow uses the literal
+ * `/compete/...` paths from the design brief; Home and Ranks are namespaced
+ * under `/v2` (the legacy `/home` and `/ranks` URLs redirect here).
  */
 export const SHELL_ROUTES = {
   home: "/v2",
@@ -142,21 +138,4 @@ export const SHELL_ROUTE_PATTERNS = {
   weekendFixtures: "/v2/weekend/fixtures",
   weekendLeaderboard: "/v2/weekend/leaderboard",
   weekendReceipt: "/v2/weekend/receipt/:gameweekId",
-} as const;
-
-/**
- * Existing, live deep links the shell routes INTO. Kept here so the mapping
- * from shell tiles to real modes is auditable in one place. These are not new
- * routes — they already exist in App.tsx.
- */
-export const MODE_ROUTES = {
-  quiz: "/sport-select?mode=quiz",
-  survival: "/sport-select?mode=survival",
-  blitz: "/sport-select?mode=blitz",
-  higherLower: "/higher-lower",
-  verveGrid: "/sport-select?mode=verve-grid",
-  daily: "/sport-select?mode=daily-quiz",
-  challenge: "/challenge",
-  forge: "/forge",
-  learn: "/learn",
 } as const;

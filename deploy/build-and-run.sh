@@ -86,7 +86,6 @@ fi
 BUILD_USER="${VERVEQ_BUILD_USER:-deploy}"
 ENV_PREFIX="VITE_CONVEX_URL='$CONVEX_URL' VITE_RELEASE_SHA='$RELEASE_SHA'"
 [[ -n "${VITE_CONVEX_SITE_URL:-}" ]] && ENV_PREFIX="$ENV_PREFIX VITE_CONVEX_SITE_URL='$VITE_CONVEX_SITE_URL'"
-[[ -n "${VITE_V2_SHELL_ENABLED:-}" ]] && ENV_PREFIX="$ENV_PREFIX VITE_V2_SHELL_ENABLED='$VITE_V2_SHELL_ENABLED'"
 [[ -n "${VITE_DRAW_ENABLED:-}" ]] && ENV_PREFIX="$ENV_PREFIX VITE_DRAW_ENABLED='$VITE_DRAW_ENABLED'"
 # FR-1B anonymous-first identity. Leave UNSET until the Convex backend carrying
 # lib/authz.assertSessionUser is live on prod: the frontend mints silent

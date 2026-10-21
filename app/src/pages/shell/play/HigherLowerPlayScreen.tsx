@@ -1,6 +1,6 @@
 /**
  * Higher or Lower (solo) on the v2 shell — a PRESENTATION-ONLY reskin of the
- * live `HigherLowerScreen` into the centered-column "prototype layout".
+ * former v1 `HigherLowerScreen` into the centered-column "prototype layout".
  *
  * The game loop is a faithful port: every decision stays server-authoritative
  * and UNCHANGED — `higherLower.startSession / makeGuess / penalizeTabSwitch`.

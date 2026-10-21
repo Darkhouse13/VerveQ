@@ -1,12 +1,8 @@
 /**
  * Guest ↔ account UX contract.
  *
- * Two surfaces:
- *   1. ProfileScreen — button matrix
- *        non-guest: "Sign Out" → logout + navigate("/?mode=signin")
- *        guest:     "Sign In"  → navigate("/?mode=signin") (no auth call)
- *                   plus a separate "Create an account" CTA card.
- *   2. LoginScreen — honors `?mode=signup|signin` in the URL on first mount
+ * Surfaces:
+ *   - LoginScreen — honors `?mode=signup|signin` in the URL on first mount
  *      and renders the "Guest progress is not carried over." notice only
  *      when arriving via the guest-upgrade path (`?from=guest`). It also
  *      tolerates an existing anonymous (guest) session without redirecting
@@ -14,15 +10,14 @@
  *      auto-redirected. Guest users still get an explicit "Play as Guest"
  *      route back into the app.
  */
-import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import React from "react";
-import { cleanup, render, screen, fireEvent, waitFor, within } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 // ─── Shared mocks ────────────────────────────────────────────────────────────
 const navigateSpy = vi.fn();
 const logoutSpy = vi.fn(async () => {});
-const signOutToGuestSpy = vi.fn(async () => {});
 const authContextMock = vi.hoisted(() => ({
   useAuth: vi.fn(),
 }));
@@ -60,14 +55,6 @@ vi.mock("convex/react", () => ({
 
 vi.mock("../../convex/_generated/api", () => ({
   api: {
-    profile: { get: "profile.get" },
-    achievements: {
-      list: "achievements.list",
-      userAchievements: "achievements.userAchievements",
-    },
-    seasonManager: {
-      getUserSeasonHistory: "seasonManager.getUserSeasonHistory",
-    },
     users: { me: "users.me", ensureProfile: "users.ensureProfile" },
     notifications: { unreadCount: "notifications.unreadCount" },
   },
@@ -77,160 +64,7 @@ afterEach(() => {
   cleanup();
 });
 
-// Profile fixture — enough to get past the "Loading profile..." guard.
-const profileFixture = {
-  username: "guestplayer",
-  displayName: "Guest Player",
-  createdAt: Date.UTC(2026, 0, 1),
-  eloRating: 1100,
-  stats: {
-    totalGames: 0,
-    winRate: 0,
-    bestStreak: 0,
-    favoriteSport: null,
-  },
-  recentGames: [],
-};
-
-function mockProfileQueries(convexReact: {
-  useQuery: Mock;
-}) {
-  convexReact.useQuery.mockImplementation((name: string) => {
-    switch (name) {
-      case "profile.get":
-        return profileFixture;
-      case "achievements.list":
-        return [];
-      case "achievements.userAchievements":
-        return [];
-      case "seasonManager.getUserSeasonHistory":
-        return [];
-      default:
-        return null;
-    }
-  });
-}
-
-// ─── 1. ProfileScreen ────────────────────────────────────────────────────────
-describe("ProfileScreen — sign-in/sign-out button matrix", () => {
-  beforeEach(() => {
-    navigateSpy.mockReset();
-    logoutSpy.mockReset();
-    logoutSpy.mockResolvedValue(undefined);
-    signOutToGuestSpy.mockReset();
-    signOutToGuestSpy.mockResolvedValue(undefined);
-    authContextMock.useAuth.mockReset();
-  });
-
-  async function renderProfile(isGuest: boolean) {
-    authContextMock.useAuth.mockReturnValue({
-      user: { _id: "u1", username: "guestplayer", isGuest, totalGames: 0 },
-      isGuest,
-      logout: logoutSpy,
-      signOutToGuest: signOutToGuestSpy,
-    });
-    const convexReact = await import("convex/react");
-    mockProfileQueries(
-      convexReact as unknown as { useQuery: Mock },
-    );
-    const { default: ProfileScreen } = await import(
-      "../pages/ProfileScreen"
-    );
-    render(
-      <MemoryRouter>
-        <ProfileScreen />
-      </MemoryRouter>,
-    );
-  }
-
-  it("renders the Create Account CTA for guest users", async () => {
-    await renderProfile(true);
-    expect(await screen.findByTestId("guest-upgrade-cta")).toBeInTheDocument();
-    expect(screen.getByText(/create an account/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        /create a username to save elo, achievements, forge progress, and leaderboard records\./i,
-      ),
-    ).toBeInTheDocument();
-  }, 15_000);
-
-  it("does NOT render the CTA for non-guest users", async () => {
-    await renderProfile(false);
-    await screen.findByText(/current elo/i);
-    expect(screen.queryByTestId("guest-upgrade-cta")).not.toBeInTheDocument();
-  });
-
-  it("renders 'Sign Out' for non-guest users", async () => {
-    await renderProfile(false);
-    expect(
-      await screen.findByRole("button", { name: /^sign out$/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /^sign in$/i }),
-    ).not.toBeInTheDocument();
-  });
-
-  it("renders 'Sign In' for guest users (instead of 'Sign Out')", async () => {
-    await renderProfile(true);
-    expect(
-      await screen.findByRole("button", { name: /^sign in$/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /^sign out$/i }),
-    ).not.toBeInTheDocument();
-  });
-
-  it("clicking the CTA logs the guest out and navigates to /?mode=signup&from=guest", async () => {
-    await renderProfile(true);
-    const button = await screen.findByRole("button", {
-      name: /^create account$/i,
-    });
-    fireEvent.click(button);
-
-    await waitFor(() => expect(logoutSpy).toHaveBeenCalledTimes(1));
-    await waitFor(() => expect(navigateSpy).toHaveBeenCalledTimes(1));
-    expect(navigateSpy).toHaveBeenCalledWith("/?mode=signup&from=guest");
-  });
-
-  it("clicking 'Sign Out' (non-guest) opens confirm, then confirming logs out and navigates to sign in", async () => {
-    await renderProfile(false);
-    const signOut = await screen.findByRole("button", {
-      name: /^sign out$/i,
-    });
-    fireEvent.click(signOut);
-
-    // The trigger does NOT call logout directly — it opens a confirm dialog.
-    // Wait for the dialog title, then click the confirm button inside.
-    expect(logoutSpy).not.toHaveBeenCalled();
-    expect(signOutToGuestSpy).not.toHaveBeenCalled();
-
-    const dialog = await screen.findByRole("dialog");
-    const confirm = await within(dialog).findByRole("button", {
-      name: /^sign out$/i,
-    });
-    fireEvent.click(confirm);
-
-    await waitFor(() => expect(logoutSpy).toHaveBeenCalledTimes(1));
-    await waitFor(() => expect(navigateSpy).toHaveBeenCalledTimes(1));
-    expect(navigateSpy).toHaveBeenCalledWith("/?mode=signin");
-    expect(signOutToGuestSpy).not.toHaveBeenCalled();
-  });
-
-  it("clicking 'Sign In' (guest) navigates to /?mode=signin with no auth calls", async () => {
-    await renderProfile(true);
-    const signIn = await screen.findByRole("button", {
-      name: /^sign in$/i,
-    });
-    fireEvent.click(signIn);
-
-    await waitFor(() => expect(navigateSpy).toHaveBeenCalledTimes(1));
-    expect(navigateSpy).toHaveBeenCalledWith("/?mode=signin");
-    expect(signOutToGuestSpy).not.toHaveBeenCalled();
-    expect(logoutSpy).not.toHaveBeenCalled();
-  });
-});
-
-// ─── 2. LoginScreen mode override ────────────────────────────────────────────
+// ─── LoginScreen mode override ───────────────────────────────────────────────
 describe("LoginScreen — mode override + guest notice", () => {
   beforeEach(() => {
     navigateSpy.mockReset();
@@ -396,18 +230,12 @@ describe("Guest account-required route contracts", () => {
     // into a wall, and because the post-run claim prompt lives on these two
     // screens and could never render above that tier. They are asserted at
     // their new tier in anonymousFirstIdentityContract.test.ts.
-    for (const screen of [
-      "QuizScreen",
-      "SurvivalScreen",
-      "ChallengeScreen",
-      "DailyQuizScreen",
-      "BlitzScreen",
-      "ForgeScreen",
-      "HigherLowerScreen",
-      "VerveGridScreen",
-    ]) {
-      // Indentation-agnostic: deep-link aliasing (V2Redirect) may nest the
-      // guard one level deeper, but the guard itself must stay.
+    //
+    // The v1 mode screens (Quiz, Survival, Challenge, DailyQuiz, Blitz, Forge,
+    // HigherLower, VerveGrid) left it 2026-10 when the v2 shell became the only
+    // shell: their URLs are now pure redirects to /v2 routes, which carry
+    // their own guards.
+    for (const screen of ["DuelPlayScreen", "DuelResultScreen"]) {
       expect(appSource).toMatch(
         new RegExp(
           `<UsernameRequiredRoute>\\s*<${screen} />\\s*</UsernameRequiredRoute>`,

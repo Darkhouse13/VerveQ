@@ -8,7 +8,7 @@
  * selects the no-board variant rather than falling through to the Blitz one.
  *
  * Run with the flag on, against DEV:
- *   VITE_ANONYMOUS_FIRST_ENABLED=true VITE_V2_SHELL_ENABLED=true \
+ *   VITE_ANONYMOUS_FIRST_ENABLED=true \
  *     npx playwright test e2e/claimCopy.spec.ts
  */
 import { test, expect, type Page } from "@playwright/test";

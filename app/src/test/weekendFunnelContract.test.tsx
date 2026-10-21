@@ -159,8 +159,6 @@ vi.mock("convex/react", () => ({
   useQuery: () => undefined,
 }));
 vi.mock("@/lib/flags", () => ({
-  V2_SHELL_ENABLED: true,
-  LEARN_ENABLED: false,
   // The Draw card must be present for "which card comes first" to mean
   // anything — with it gated off there is nothing to reorder against.
   DRAW_ENABLED: true,

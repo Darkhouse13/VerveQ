@@ -1,7 +1,6 @@
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
-import { V2_SHELL_ENABLED } from "@/lib/flags";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Star, ArrowUp, ArrowDown } from "lucide-react";
 import { useEffect } from "react";
@@ -333,13 +332,7 @@ export default function ResultScreen() {
             <NeoButton
               variant="secondary"
               size="full"
-              onClick={() =>
-                navigate(
-                  V2_SHELL_ENABLED
-                    ? "/compete"
-                    : `/sport-select?mode=${isQuiz ? "survival" : "quiz"}`,
-                )
-              }
+              onClick={() => navigate("/compete")}
             >
               {t("result.tryOtherMode")}
             </NeoButton>

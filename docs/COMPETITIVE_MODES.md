@@ -5,11 +5,10 @@ that a user can reach through the wired `app/` frontend today. It is grounded in
 the route table, the shell nav, direct entry routes, and the Convex functions
 those screens call.
 
-Production runs the v2 shell (`VITE_V2_SHELL_ENABLED=true`). The v1 screens
-still compile from source, but every v1 competitive route is wrapped in
-`V2Redirect` / `V2ArenaCodeRedirect` and forwards to its `/v2` counterpart while
-the flag is on, so v1 is a rollback seam and not a live surface. Where the two
-differ, this document describes the v2 surface.
+The v2 shell is the only shell. Every v1 competitive URL is a pure
+`LegacyRedirect` / `LegacyArenaCodeRedirect` to its `/v2` counterpart, and the
+v1 mode screens were deleted. Where older notes differ, this document
+describes the v2 surface.
 
 ## Top-level reachability
 

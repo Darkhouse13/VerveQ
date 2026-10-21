@@ -209,10 +209,10 @@ describe("Learn route containment (source contract)", () => {
     }
   });
 
-  it("contains the v1 learn screens behind the flag", () => {
+  it("redirects the old v1 learn URLs into the v2 shell", () => {
     for (const route of ["/learn/geography", "/learn/prototype"]) {
       const line = app.split("\n").find((l) => l.includes(`path="${route}"`));
-      expect(line, `${route} should redirect into the v2 shell`).toContain("V2Redirect");
+      expect(line, `${route} should redirect into the v2 shell`).toContain("LegacyRedirect");
     }
   });
 });

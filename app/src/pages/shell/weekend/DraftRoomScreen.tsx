@@ -9,7 +9,7 @@
  * page load mid-draft resumes exactly (LM7).
  *
  * Views are exported for the contract suite; the default export is the data
- * container (house pattern, ChallengeArenaScreen.tsx).
+ * container (house pattern).
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";

@@ -5,9 +5,9 @@ full account**. A visitor gets a real (anonymous) server identity first,
 claims a username second, and attaches an email + password later — keeping
 the same `users` doc, username, and casual progress throughout.
 
-Everything below describes what ships. Production runs the v2 shell
-(`VITE_V2_SHELL_ENABLED=true`), so the v2 onboarding screens are the live
-surface and `LoginScreen` is a secondary entry — see "Entry surfaces".
+Everything below describes what ships. The v2 shell is the only shell, so the
+v2 onboarding screens are the live surface and `LoginScreen` is a secondary
+entry — see "Entry surfaces".
 
 ## Providers
 
