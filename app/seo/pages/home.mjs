@@ -4,6 +4,7 @@
  * get real text and real links into every game and content section.
  */
 import { faqLd, faqSection, linkGrid, ORIGIN } from "../lib.mjs";
+import { HOME_CARD } from "../entries.mjs";
 
 export function buildHome(ctx) {
   const faqs = [
@@ -19,8 +20,9 @@ export function buildHome(ctx) {
     title: "Football Trivia & Quiz Games — Play Free | VerveQ",
     description:
       "Free football quiz games: a daily quiz, guess the footballer by career path, a football grid, higher or lower and 1v1 duels. No sign-up needed.",
-    ogTitle: "VerveQ — Settle it",
-    ogDescription: "Prove you know more than your mates — head-to-head football trivia. Play free, no sign-up.",
+    ogTitle: HOME_CARD.ogTitle,
+    ogDescription: HOME_CARD.ogDescription,
+    ogImage: HOME_CARD.image,
     jsonLd: [
       {
         "@context": "https://schema.org",

@@ -8,6 +8,10 @@
  */
 import { defineConfig, devices } from "@playwright/test";
 
+// E2E_PORT lets a second checkout (a worktree) run its own dev server instead
+// of `reuseExistingServer` silently testing whichever one holds 5173.
+const PORT = Number(process.env.E2E_PORT ?? 5173);
+
 export default defineConfig({
   testDir: "./e2e",
   timeout: 120_000,
@@ -17,12 +21,12 @@ export default defineConfig({
   reporter: [["list"]],
   use: {
     ...devices["Pixel 5"], // chromium-based mobile profile (WebKit not installed)
-    baseURL: "http://localhost:5173",
+    baseURL: `http://localhost:${PORT}`,
     screenshot: "only-on-failure",
   },
   webServer: {
-    command: "npx vite --port 5173 --strictPort",
-    url: "http://localhost:5173",
+    command: `npx vite --port ${PORT} --strictPort`,
+    url: `http://localhost:${PORT}`,
     reuseExistingServer: true,
     timeout: 60_000,
   },
