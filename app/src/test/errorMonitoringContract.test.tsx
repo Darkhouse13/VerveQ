@@ -64,7 +64,7 @@ describe("root error boundary", () => {
     consoleError.mockRestore();
   });
 
-  it("forwards the caught error to Sentry", () => {
+  it("forwards the caught error to Sentry", async () => {
     const consoleError = vi
       .spyOn(console, "error")
       .mockImplementation(() => {});
@@ -73,7 +73,9 @@ describe("root error boundary", () => {
         <Bomb />
       </ErrorBoundary>,
     );
-    expect(Sentry.captureException).toHaveBeenCalledTimes(1);
+    // The SDK loads lazily (off the critical path), so the report lands a
+    // tick after the crash.
+    await vi.waitFor(() => expect(Sentry.captureException).toHaveBeenCalledTimes(1));
     const [error] = vi.mocked(Sentry.captureException).mock.calls[0];
     expect((error as Error).message).toBe("boom: forced render error");
     consoleError.mockRestore();

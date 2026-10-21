@@ -4,6 +4,7 @@ import App from "./App.tsx";
 import i18n from "./i18n";
 import { initSentry } from "./lib/sentry";
 import { initAnalytics } from "./lib/analytics";
+import { armGa4 } from "./lib/ga4";
 import { captureEntrySource } from "./lib/entrySource";
 import { armExitAbandonReporting } from "./lib/gameAnalytics";
 import { armPerfVitals } from "./lib/perfVitals";
@@ -11,12 +12,15 @@ import { registerServiceWorker } from "./lib/pwa";
 import { armInstallPromptCapture } from "./lib/installPrompt";
 import "./index.css";
 
-// Before first render so global handlers catch everything from frame one.
-// No-op outside production builds that carry a DSN.
+// Arms error capture now (errors are buffered) and loads the SDK after first
+// paint. No-op outside production builds that carry a DSN.
 initSentry();
 // Same fail-closed rule: no-op outside production builds that carry a
-// VITE_POSTHOG_KEY. Pageviews are captured by AnalyticsPageviews in App.
+// VITE_POSTHOG_KEY. The SDK loads after first paint; events before then are
+// queued with their original timestamps. Pageviews: AnalyticsPageviews in App.
 initAnalytics();
+// GA4 for search/acquisition reporting, after first paint (lib/ga4.ts).
+armGa4();
 // Which door this visit came through, read from the FIRST url this tab saw —
 // /play and /s/d/:code both redirect, so anything later would read the
 // destination instead of the entry. Storage only; captures no event.

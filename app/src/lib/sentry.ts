@@ -1,5 +1,7 @@
-import * as Sentry from "@sentry/react";
 import type { Breadcrumb, ErrorEvent } from "@sentry/react";
+import { afterFirstPaint } from "./afterFirstPaint";
+
+type SentryModule = typeof import("@sentry/react");
 
 /**
  * Frontend error monitoring — errors only, privacy-safe.
@@ -98,24 +100,66 @@ export const IGNORE_ERROR_PATTERNS: (string | RegExp)[] = [
   /window\.webkit\.messageHandlers/,
 ];
 
-export function initSentry(): void {
-  const dsn = import.meta.env.VITE_SENTRY_DSN;
-  if (!import.meta.env.PROD || !dsn) return;
+function sentryEnabled(): boolean {
+  return import.meta.env.PROD && !!import.meta.env.VITE_SENTRY_DSN;
+}
 
-  Sentry.init({
-    dsn,
-    environment: "production",
-    release: import.meta.env.VITE_RELEASE_SHA,
-    sendDefaultPii: false,
-    // Errors only: no tracing/replay/profiling integrations are registered,
-    // and the explicit 0 keeps it that way if defaults ever shift.
-    tracesSampleRate: 0,
-    // BrowserSession (release-health pings on every pageload) is on by
-    // default — drop it so nothing leaves the client unless an error occurs.
-    integrations: (defaults) =>
-      defaults.filter((integration) => integration.name !== "BrowserSession"),
-    ignoreErrors: IGNORE_ERROR_PATTERNS,
-    beforeSend: scrubEvent,
-    beforeBreadcrumb: scrubBreadcrumb,
-  });
+let sentryModule: Promise<SentryModule | null> | null = null;
+
+/** The SDK, loaded once on demand (and initialized when enabled). */
+function loadSentry(): Promise<SentryModule | null> {
+  if (!sentryModule) {
+    sentryModule = import("@sentry/react")
+      .then((Sentry) => {
+        if (sentryEnabled()) {
+          Sentry.init({
+            dsn: import.meta.env.VITE_SENTRY_DSN,
+            environment: "production",
+            release: import.meta.env.VITE_RELEASE_SHA,
+            sendDefaultPii: false,
+            // Errors only: no tracing/replay/profiling integrations are
+            // registered, and the explicit 0 keeps it that way.
+            tracesSampleRate: 0,
+            // BrowserSession (release-health pings on every pageload) is on
+            // by default — drop it so nothing leaves unless an error occurs.
+            integrations: (defaults) =>
+              defaults.filter((integration) => integration.name !== "BrowserSession"),
+            ignoreErrors: IGNORE_ERROR_PATTERNS,
+            beforeSend: scrubEvent,
+            beforeBreadcrumb: scrubBreadcrumb,
+          });
+        }
+        return Sentry;
+      })
+      .catch(() => null);
+  }
+  return sentryModule;
+}
+
+/**
+ * Error monitoring, deferred: the SDK loads after first paint (or on the
+ * first error) so it stays off the entry routes' critical path. Errors thrown
+ * before it arrives are buffered and reported once it does.
+ */
+export function initSentry(): void {
+  if (!sentryEnabled() || typeof window === "undefined") return;
+  const early: unknown[] = [];
+  const onError = (event: globalThis.ErrorEvent) => early.push(event.error ?? event.message);
+  const onRejection = (event: PromiseRejectionEvent) => early.push(event.reason);
+  window.addEventListener("error", onError);
+  window.addEventListener("unhandledrejection", onRejection);
+  const start = () => {
+    void loadSentry().then((Sentry) => {
+      window.removeEventListener("error", onError);
+      window.removeEventListener("unhandledrejection", onRejection);
+      if (!Sentry) return;
+      for (const error of early.splice(0, 20)) Sentry.captureException(error);
+    });
+  };
+  afterFirstPaint(start);
+}
+
+/** Report a caught error (render crashes). No-op unless Sentry is enabled. */
+export function captureError(error: unknown, context?: Parameters<SentryModule["captureException"]>[1]): void {
+  void loadSentry().then((Sentry) => Sentry?.captureException(error, context));
 }

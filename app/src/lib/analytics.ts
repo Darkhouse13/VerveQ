@@ -1,4 +1,5 @@
-import posthog from "posthog-js";
+import type { PostHog } from "posthog-js";
+import { afterFirstPaint } from "./afterFirstPaint";
 
 /**
  * Product analytics — PostHog, fail-closed and privacy-scoped.
@@ -16,7 +17,19 @@ import posthog from "posthog-js";
  *    visitors count once and retention curves are real
  */
 
-let initialized = false;
+/** True once initAnalytics() decided to run (prod build with a key). */
+let enabled = false;
+/** The SDK, set once it has loaded. */
+let posthog: PostHog | null = null;
+/** Calls made before the SDK arrived, replayed in order once it does. */
+const pending: Array<(ph: PostHog) => void> = [];
+const MAX_PENDING = 200;
+
+/** Run now if the SDK is ready, queue if it is still loading, drop if off. */
+function withPosthog(fn: (ph: PostHog) => void): void {
+  if (posthog) fn(posthog);
+  else if (enabled && pending.length < MAX_PENDING) pending.push(fn);
+}
 
 /**
  * Verification test mode — OFF unless a local build sets
@@ -100,45 +113,52 @@ export function initAnalytics(): void {
   const key = import.meta.env.VITE_POSTHOG_KEY;
   if (!import.meta.env.PROD || !key) return;
 
-  posthog.init(key, {
-    api_host: import.meta.env.VITE_POSTHOG_HOST || "https://eu.i.posthog.com",
-    autocapture: false,
-    capture_pageview: false,
-    capture_pageleave: false,
-    disable_session_recording: true,
-    persistence: "localStorage",
-    person_profiles: "identified_only",
-    // Test-mode only: mint a test-scoped anonymous id up front so synthetic
-    // events are filterable by distinct_id as well as by property.
-    ...(TEST_MODE
-      ? {
-          bootstrap: { distinctID: stableTestAnonId() },
-          // posthog-js drops every event from an automated browser, and does
-          // it silently — it checks the UA blocklist, navigator.userAgentData
-          // .brands (which still says HeadlessChrome even when the UA string
-          // is overridden) and navigator.webdriver. This flag opts OUT of that
-          // filter; without it the scripted verification pass sends NOTHING and
-          // reads as a broken app.
-          //
-          // Test-mode only, and it must stay that way: setting it in production
-          // would opt prod out of the bot filter and let crawler hits into the
-          // /games/ funnel. Production keeps crawlers out precisely BECAUSE
-          // this is absent there.
-          opt_out_useragent_filter: true,
-        }
-      : {}),
+  enabled = true;
+  // The SDK loads after first paint (or the first tap) so it stays off the
+  // entry routes' critical path; anything tracked before then is queued.
+  afterFirstPaint(() => {
+    void import("posthog-js").then(({ default: ph }) => {
+      ph.init(key, {
+        api_host: import.meta.env.VITE_POSTHOG_HOST || "https://eu.i.posthog.com",
+        autocapture: false,
+        capture_pageview: false,
+        capture_pageleave: false,
+        disable_session_recording: true,
+        persistence: "localStorage",
+        person_profiles: "identified_only",
+        // Test-mode only: mint a test-scoped anonymous id up front so synthetic
+        // events are filterable by distinct_id as well as by property.
+        ...(TEST_MODE
+          ? {
+              bootstrap: { distinctID: stableTestAnonId() },
+              // posthog-js drops every event from an automated browser, and does
+              // it silently — it checks the UA blocklist, navigator.userAgentData
+              // .brands (which still says HeadlessChrome even when the UA string
+              // is overridden) and navigator.webdriver. This flag opts OUT of that
+              // filter; without it the scripted verification pass sends NOTHING and
+              // reads as a broken app.
+              //
+              // Test-mode only, and it must stay that way: setting it in production
+              // would opt prod out of the bot filter and let crawler hits into the
+              // /games/ funnel. Production keeps crawlers out precisely BECAUSE
+              // this is absent there.
+              opt_out_useragent_filter: true,
+            }
+          : {}),
+      });
+      if (TEST_MODE) ph.register({ is_test: true, env: "test" });
+      posthog = ph;
+      for (const fn of pending.splice(0)) fn(ph);
+    });
   });
-  initialized = true;
-  if (TEST_MODE) posthog.register({ is_test: true, env: "test" });
 }
 
 /** One $pageview per route change; the route path IS the game mode, so this
  *  alone answers "which modes get played" without per-screen call sites. */
 export function capturePageview(pathname: string, search: string): void {
-  if (!initialized) return;
-  posthog.capture("$pageview", {
-    $current_url: `${window.location.origin}${scrubPath(pathname)}${scrubSearch(search)}`,
-  });
+  const url = `${window.location.origin}${scrubPath(pathname)}${scrubSearch(search)}`;
+  const timestamp = new Date();
+  withPosthog((ph) => ph.capture("$pageview", { $current_url: url }, { timestamp }));
 }
 
 /** Explicit product events; silently no-ops when analytics is off. */
@@ -146,8 +166,8 @@ export function track(
   event: string,
   properties?: Record<string, unknown>,
 ): void {
-  if (!initialized) return;
-  posthog.capture(event, properties);
+  const timestamp = new Date();
+  withPosthog((ph) => ph.capture(event, properties, { timestamp }));
 }
 
 /**
@@ -159,8 +179,9 @@ export function trackOnExit(
   event: string,
   properties?: Record<string, unknown>,
 ): void {
-  if (!initialized) return;
-  posthog.capture(event, properties, { transport: "sendBeacon" });
+  // Before the SDK has loaded there is nothing to send with; the page is
+  // going away, so a queued call would never run.
+  posthog?.capture(event, properties, { transport: "sendBeacon" });
 }
 
 /**
@@ -176,14 +197,13 @@ export function trackOnExit(
  * Returns whether it identified, so callers can assert in tests.
  */
 export function identifyAccount(accountId: string | null | undefined): boolean {
-  if (!initialized || !accountId || NEVER_IDENTIFY.has(accountId)) return false;
-  posthog.identify(accountId);
+  if (!enabled || !accountId || NEVER_IDENTIFY.has(accountId)) return false;
+  withPosthog((ph) => ph.identify(accountId));
   return true;
 }
 
 /** Drop the identity on logout so the next visitor on this device starts as a
  *  fresh anonymous person instead of inheriting the last one's profile. */
 export function resetIdentity(): void {
-  if (!initialized) return;
-  posthog.reset();
+  withPosthog((ph) => ph.reset());
 }
