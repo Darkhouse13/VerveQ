@@ -1,14 +1,30 @@
+/**
+ * `/difficulty` — the difficulty step before a solo run (Quiz, Knowledge Quiz,
+ * Which Came First, and the curated modes VerveGrid / Higher or Lower).
+ *
+ * PURE CLIENT STATE: it reads query params and navigates; it calls no Convex
+ * function and needs no identity (see App.tsx). The mode route it hands off to
+ * carries the real gate.
+ *
+ * VerveQ ONE P3.4: a shell screen — the mode's name in the header, a
+ * Segmented for the tier, a card describing that tier, and one lime Start.
+ */
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { ArrowLeft } from "lucide-react";
+import { Play } from "lucide-react";
+import { ShellLayout } from "@/components/shell/ShellLayout";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Eyebrow } from "@/components/ui/eyebrow";
+import { Segmented } from "@/components/ui/segmented";
+import { DEFAULT_DIFFICULTY, type Difficulty } from "@/lib/difficulty";
 
-const difficulties = [
-  { name: "Easy", key: "easy", apiValue: "easy", emoji: "😊", color: "success" as const },
-  { name: "Medium", key: "medium", apiValue: "intermediate", emoji: "💪", color: "primary" as const },
-  { name: "Hard", key: "hard", apiValue: "hard", emoji: "🔥", color: "destructive" as const },
+/** The three tiers: the locale key and the value the play routes take. */
+const DIFFICULTIES: ReadonlyArray<{ key: "easy" | "medium" | "hard"; apiValue: Difficulty }> = [
+  { key: "easy", apiValue: "easy" },
+  { key: "medium", apiValue: "intermediate" },
+  { key: "hard", apiValue: "hard" },
 ];
 
 // Curated solo modes (VerveGrid, Higher or Lower) reuse this picker as their
@@ -20,9 +36,17 @@ const CURATED_MODE_DESTINATIONS: Record<string, string> = {
   "higher-lower": "/v2/higher-lower",
 };
 
+/** The shell `modes.*` key that names the mode this picker is starting. */
+function modeKeyFor(sport: string, mode: string): string {
+  if (mode === "verve-grid") return "verveGrid";
+  if (mode === "higher-lower") return "higherLower";
+  if (mode === "came_first") return "cameFirst";
+  return sport === "knowledge" ? "knowledgeQuiz" : "quiz";
+}
+
 export default function DifficultyScreen() {
   const { t } = useTranslation("screens");
-  const [selected, setSelected] = useState<string | null>(null);
+  const { t: tShell } = useTranslation("shell");
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
@@ -33,10 +57,11 @@ export default function DifficultyScreen() {
   const target = params.get("target");
   const curatedDest = CURATED_MODE_DESTINATIONS[mode];
   const isCurated = !!curatedDest;
+  const [selected, setSelected] = useState<Difficulty>(DEFAULT_DIFFICULTY);
+  const tier = DIFFICULTIES.find((d) => d.apiValue === selected) ?? DIFFICULTIES[0];
 
   const handleStart = () => {
-    if (!selected) return;
-    const diff = difficulties.find((d) => d.name === selected)!.apiValue;
+    const diff = selected;
     // Curated solo modes deep-link straight into their v2 play screen at the
     // chosen tier — no `mode` param (each route is the mode).
     if (curatedDest) {
@@ -49,53 +74,42 @@ export default function DifficultyScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-background px-5 py-6">
-      <button
-        onClick={() => navigate(-1)}
-        className="neo-border neo-shadow rounded-lg p-2 bg-background mb-6 cursor-pointer active:neo-shadow-pressed transition-all"
-      >
-        <ArrowLeft size={20} strokeWidth={2.5} />
-      </button>
+    <ShellLayout
+      title={tShell(`modes.${modeKeyFor(sport, mode)}.name`)}
+      subtitle={t("difficulty.title")}
+      back
+      // A cold deep link has no in-app history to go back to: land on Compete.
+      onBack={() => ((window.history.state?.idx ?? 0) > 0 ? navigate(-1) : navigate("/compete"))}
+      hideNav
+    >
+      <div className="mx-auto flex h-full w-full max-w-md flex-col gap-4 pt-2" data-testid="difficulty-screen">
+        {mode === "came_first" && <p className="text-body-sm text-muted-foreground">{t("difficulty.cameFirstHint")}</p>}
 
-      <h1 className="text-3xl font-heading font-bold mb-2">{t("difficulty.title")}</h1>
-      {mode === "came_first" && (
-        <p className="text-sm text-muted-foreground mb-4">
-          {t("difficulty.cameFirstHint")}
-        </p>
-      )}
+        <Segmented<Difficulty>
+          aria-label={t("difficulty.title")}
+          block
+          value={selected}
+          onChange={setSelected}
+          options={DIFFICULTIES.map((d) => ({ value: d.apiValue, label: t(`difficulty.${d.key}_name`) }))}
+        />
 
-      <div className="space-y-3">
-        {difficulties.map((d) => (
-          <NeoCard
-            key={d.name}
-            color={d.color}
-            active={selected === d.name}
-            shadow={selected === d.name ? "lg" : "default"}
-            className="flex items-center gap-4 cursor-pointer py-6"
-            onClick={() => setSelected(d.name)}
-          >
-            <span className="text-4xl">{d.emoji}</span>
-            <div>
-              <p className="font-heading font-bold text-xl uppercase">{t(`difficulty.${d.key}_name`)}</p>
-              <p className="text-sm opacity-80">
-                {isCurated ? t(`difficulty.curated.${d.key}_desc`) : t(`difficulty.${d.key}_desc`)}
-              </p>
-            </div>
-          </NeoCard>
-        ))}
+        <Card padding="lg" data-testid="difficulty-tier">
+          <Eyebrow>{t(`difficulty.${tier.key}_name`)}</Eyebrow>
+          <p className="mt-1 font-heading text-title-sm font-bold">
+            {isCurated ? t(`difficulty.curated.${tier.key}_desc`) : t(`difficulty.${tier.key}_desc`)}
+          </p>
+          {/* Quiz keeps an in-game difficulty changer; the curated solo modes
+              don't, so the "change later" reassurance would mislead there. */}
+          {!isCurated && <p className="mt-3 text-meta text-muted-foreground">{t("difficulty.changeLater")}</p>}
+        </Card>
+
+        <div className="mt-auto pb-2">
+          <Button variant="primary" size="lg" block onClick={handleStart} data-testid="difficulty-start">
+            <Play aria-hidden="true" className="h-5 w-5" />
+            {t("difficulty.startGame")}
+          </Button>
+        </div>
       </div>
-
-      {/* Quiz keeps an in-game difficulty changer; the curated solo modes don't,
-          so the "change later" reassurance would be misleading for them. */}
-      {!isCurated && (
-        <p className="text-center text-xs text-muted-foreground mt-4">{t("difficulty.changeLater")}</p>
-      )}
-
-      <div className="mt-6">
-        <NeoButton variant="primary" size="full" disabled={!selected} onClick={handleStart}>
-          {t("difficulty.startGame")}
-        </NeoButton>
-      </div>
-    </div>
+    </ShellLayout>
   );
 }

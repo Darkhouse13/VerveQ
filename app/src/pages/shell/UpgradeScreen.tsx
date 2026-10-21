@@ -9,6 +9,7 @@
  */
 import { useCallback, useEffect } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { UpgradeAccountForm } from "@/components/shell/onboarding/UpgradeAccountForm";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -37,9 +38,9 @@ export default function UpgradeScreen() {
   if (accountState === "loading" || isFullAccount) {
     return (
       <ShellLayout hideNav center>
-        <p className="font-heading font-bold uppercase tracking-wide animate-pulse text-center">
-          Loading…
-        </p>
+        <div className="flex justify-center">
+          <Loader2 className="animate-spin" size={28} strokeWidth={2.5} aria-label="Loading" />
+        </div>
       </ShellLayout>
     );
   }
@@ -56,8 +57,12 @@ export default function UpgradeScreen() {
   }
 
   return (
-    <ShellLayout hideNav center back onBack={() => navigate(next)}>
-      <UpgradeAccountForm onSuccess={onSuccess} />
+    <ShellLayout hideNav back onBack={() => navigate(next)}>
+      {/* Centered when it fits; scrolls from the top when the form is taller
+          than the screen (ShellLayout's `center` would clip its head). */}
+      <div className="flex min-h-full flex-col justify-center py-2">
+        <UpgradeAccountForm onSuccess={onSuccess} />
+      </div>
     </ShellLayout>
   );
 }

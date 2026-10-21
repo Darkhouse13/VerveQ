@@ -13,6 +13,7 @@ import { useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ShellLayout } from "@/components/shell/ShellLayout";
+import { Button } from "@/components/ui/button";
 import { UsernameOnlyOnboarding } from "@/components/shell/onboarding/UsernameOnlyOnboarding";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,23 +36,38 @@ export default function WelcomeScreen() {
   }, [navigate, next]);
 
   return (
-    <ShellLayout hideNav center>
-      <UsernameOnlyOnboarding inviteCode={code} onComplete={onComplete} />
-      {/* Returning users with a password account skip the username flow. Only
-          shown with no session — an in-progress anonymous session has nothing
-          to sign in to. */}
-      {accountState === "loggedOut" && (
-        <p className="mt-4 text-center text-sm font-heading text-muted-foreground">
-          {t("auth.haveAccount")}{" "}
-          <button
-            type="button"
-            onClick={() => navigate("/?mode=signin")}
-            className="underline underline-offset-4 hover:text-foreground"
-          >
-            {t("auth.signIn")}
-          </button>
-        </p>
-      )}
+    <ShellLayout
+      hideNav
+      back
+      // A cold invite link has no in-app history to go back to: offer the
+      // account chooser instead of leaving the site.
+      onBack={() =>
+        (window.history.state?.idx ?? 0) > 0
+          ? navigate(-1)
+          : navigate(`${SHELL_ROUTES.account}?next=${encodeURIComponent(next)}`)
+      }
+    >
+      {/* Centered when it fits; scrolls from the top when the on-screen
+          keyboard leaves less room (ShellLayout's `center` would clip). */}
+      <div className="flex min-h-full flex-col justify-center py-2">
+        <UsernameOnlyOnboarding inviteCode={code} onComplete={onComplete} />
+        {/* Returning users with a password account skip the username flow.
+            Only shown with no session — an in-progress anonymous session has
+            nothing to sign in to. */}
+        {accountState === "loggedOut" && (
+          <p className="mt-4 flex items-center justify-center gap-1 text-body-sm text-muted-foreground">
+            {t("auth.haveAccount")}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="px-2 underline underline-offset-4"
+              onClick={() => navigate("/?mode=signin")}
+            >
+              {t("auth.signIn")}
+            </Button>
+          </p>
+        )}
+      </div>
     </ShellLayout>
   );
 }

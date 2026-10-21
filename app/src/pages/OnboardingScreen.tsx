@@ -1,136 +1,118 @@
+/**
+ * `/onboarding` — the short welcome after sign-up or "Play as guest".
+ *
+ * VerveQ ONE P3.4: a shell screen in two steps — what VerveQ is, then a
+ * self-rated level — with one lime Next and a quiet Skip. The old middle step
+ * offered tennis and basketball, which VerveQ does not have (football only),
+ * so it is gone. Nothing here is saved; both ways out land on Home.
+ */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { NeoCard } from "@/components/neo/NeoCard";
-import { Trophy, Gamepad2, Star, Check } from "lucide-react";
+import { Check, Gamepad2, Star, Trophy } from "lucide-react";
+import { ShellLayout } from "@/components/shell/ShellLayout";
+import { BrandMark } from "@/components/ui/BrandMark";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Eyebrow } from "@/components/ui/eyebrow";
+import { cn } from "@/lib/utils";
 
-const steps = [
-  {
-    titleKey: "welcomeTitle",
-    features: [
-      { icon: Trophy, key: "elo", color: "primary" as const },
-      { icon: Gamepad2, key: "modes", color: "yellow" as const },
-      { icon: Star, key: "achievements", color: "blue" as const },
-    ],
-  },
-  {
-    titleKey: "pickSportTitle",
-    sports: [
-      { emoji: "⚽", name: "Football", key: "football", color: "success" as const },
-      { emoji: "🎾", name: "Tennis", key: "tennis", color: "yellow" as const },
-      { emoji: "🏀", name: "Basketball", key: "basketball", color: "primary" as const },
-      { emoji: "🏈", name: "More Coming", key: "moreComing", color: "default" as const },
-    ],
-  },
-  {
-    titleKey: "skillLevelTitle",
-    levels: [
-      { name: "Beginner", key: "beginner", color: "success" as const, emoji: "🌱" },
-      { name: "Intermediate", key: "intermediate", color: "primary" as const, emoji: "⚡" },
-      { name: "Expert", key: "expert", color: "destructive" as const, emoji: "🔥" },
-    ],
-  },
-];
+const FEATURES = [
+  { icon: Trophy, key: "elo" },
+  { icon: Gamepad2, key: "modes" },
+  { icon: Star, key: "achievements" },
+] as const;
+
+const LEVELS = ["beginner", "intermediate", "expert"] as const;
+type Level = (typeof LEVELS)[number];
+
+const STEPS = ["welcomeTitle", "skillLevelTitle"] as const;
 
 export default function OnboardingScreen() {
   const { t } = useTranslation("screens");
-  const [step, setStep] = useState(0);
-  const [selectedSport, setSelectedSport] = useState<string | null>(null);
-  const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
   const navigate = useNavigate();
-
-  const current = steps[step];
+  const [step, setStep] = useState(0);
+  const [level, setLevel] = useState<Level | null>(null);
+  const last = step === STEPS.length - 1;
 
   const handleNext = () => {
-    if (step < 2) setStep(step + 1);
+    if (!last) setStep(step + 1);
     else navigate("/home");
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col px-6 py-8">
-      {/* Step indicator */}
-      <div className="flex items-center justify-center gap-2 mb-8">
-        {[0, 1, 2].map((i) => (
-          <div key={i} className="flex items-center gap-2">
-            <div
-              className={`w-9 h-9 neo-border rounded-full flex items-center justify-center font-heading font-bold text-sm transition-all ${
-                i < step
-                  ? "bg-success text-success-foreground"
-                  : i === step
-                  ? "bg-primary text-primary-foreground neo-shadow"
-                  : "bg-muted text-muted-foreground"
-              }`}
-            >
-              {i < step ? <Check size={16} strokeWidth={3} /> : i + 1}
-            </div>
-            {i < 2 && <div className="w-8 border-t-2 border-dashed border-border" />}
-          </div>
-        ))}
-      </div>
+    <ShellLayout hideNav>
+      <div className="mx-auto flex min-h-full w-full max-w-md flex-col gap-5 pt-8" data-testid="onboarding-screen">
+        <div className="flex items-center justify-between">
+          <BrandMark variant="lockup" size="sm" />
+          <Eyebrow as="span" data-testid="onboarding-step">
+            {step + 1} / {STEPS.length}
+          </Eyebrow>
+        </div>
 
-      <h2 className="text-2xl font-heading font-bold text-center mb-6">{t(`onboarding.${current.titleKey}`)}</h2>
+        <h1 className="font-heading text-title-lg font-bold">{t(`onboarding.${STEPS[step]}`)}</h1>
 
-      <div className="flex-1 space-y-3">
-        {step === 0 &&
-          current.features?.map((f) => (
-            <NeoCard key={f.key} color={f.color} className="flex items-center gap-4">
-              <div className="neo-border rounded-lg bg-background p-2.5">
-                <f.icon size={24} strokeWidth={2.5} className="text-foreground" />
-              </div>
-              <div>
-                <p className="font-heading font-bold text-sm">{t(`onboarding.feature_${f.key}_label`)}</p>
-                <p className="text-xs opacity-80">{t(`onboarding.feature_${f.key}_desc`)}</p>
-              </div>
-            </NeoCard>
-          ))}
+        {step === 0 && (
+          <ul className="flex flex-col gap-3">
+            {FEATURES.map((f) => (
+              <li key={f.key}>
+                <Card padding="md" className="flex items-center gap-4">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-md bg-muted" aria-hidden="true">
+                    <f.icon size={22} strokeWidth={2.5} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block font-heading text-body font-bold">{t(`onboarding.feature_${f.key}_label`)}</span>
+                    <span className="block text-body-sm text-muted-foreground">{t(`onboarding.feature_${f.key}_desc`)}</span>
+                  </span>
+                </Card>
+              </li>
+            ))}
+          </ul>
+        )}
 
         {step === 1 && (
-          <div className="grid grid-cols-2 gap-3">
-            {current.sports?.map((s) => (
-              <NeoCard
-                key={s.name}
-                color={s.color}
-                active={selectedSport === s.name}
-                className="flex flex-col items-center gap-2 py-6 cursor-pointer"
-                onClick={() => setSelectedSport(s.name)}
-              >
-                <span className="text-4xl">{s.emoji}</span>
-                <p className="font-heading font-bold text-sm">{t(`onboarding.sport_${s.key}`)}</p>
-              </NeoCard>
-            ))}
+          <div className="flex flex-col gap-3" role="radiogroup" aria-label={t("onboarding.skillLevelTitle")}>
+            {LEVELS.map((l) => {
+              const selected = level === l;
+              return (
+                <Card
+                  key={l}
+                  interactive
+                  role="radio"
+                  aria-checked={selected}
+                  padding="md"
+                  onClick={() => setLevel(l)}
+                  className={cn("flex items-center gap-4", selected ? "bg-muted" : "hover:bg-muted")}
+                  data-testid={`onboarding-level-${l}`}
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-heading text-body font-bold">{t(`onboarding.level_${l}_name`)}</span>
+                    <span className="block text-body-sm text-muted-foreground">{t(`onboarding.level_${l}_desc`)}</span>
+                  </span>
+                  <span
+                    className={cn(
+                      "grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 border-border",
+                      selected && "bg-foreground text-background",
+                    )}
+                    aria-hidden="true"
+                  >
+                    {selected && <Check size={14} strokeWidth={3} />}
+                  </span>
+                </Card>
+              );
+            })}
           </div>
         )}
 
-        {step === 2 &&
-          current.levels?.map((l) => (
-            <NeoCard
-              key={l.name}
-              color={l.color}
-              active={selectedLevel === l.name}
-              className="flex items-center gap-4 cursor-pointer"
-              onClick={() => setSelectedLevel(l.name)}
-            >
-              <span className="text-3xl">{l.emoji}</span>
-              <div>
-                <p className="font-heading font-bold uppercase">{t(`onboarding.level_${l.key}_name`)}</p>
-                <p className="text-xs opacity-80">{t(`onboarding.level_${l.key}_desc`)}</p>
-              </div>
-            </NeoCard>
-          ))}
+        <div className="mt-auto flex items-center justify-between gap-4 pb-2">
+          <Button variant="ghost" size="md" onClick={() => navigate("/home")} data-testid="onboarding-skip">
+            {t("onboarding.skip")}
+          </Button>
+          <Button variant="primary" size="lg" className="flex-1" onClick={handleNext} data-testid="onboarding-next">
+            {last ? t("onboarding.letsGo") : t("onboarding.next")}
+          </Button>
+        </div>
       </div>
-
-      <div className="flex items-center justify-between mt-8 gap-4">
-        <button
-          className="text-sm text-muted-foreground font-heading underline underline-offset-4 cursor-pointer"
-          onClick={() => navigate("/home")}
-        >
-          {t("onboarding.skip")}
-        </button>
-        <NeoButton variant="primary" size="lg" onClick={handleNext}>
-          {step === 2 ? t("onboarding.letsGo") : t("onboarding.next")}
-        </NeoButton>
-      </div>
-    </div>
+    </ShellLayout>
   );
 }

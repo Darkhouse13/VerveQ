@@ -1,18 +1,18 @@
 {
   "onboarding": {
-    "welcomeTitle": "Welcome to VerveQ!",
-    "feature_elo_label": "ELO Rankings",
+    "welcomeTitle": "Welcome to VerveQ",
+    "feature_elo_label": "ELO rankings",
     "feature_elo_desc": "Climb the competitive ladder",
-    "feature_modes_label": "Quiz & Survival Modes",
+    "feature_modes_label": "Quiz & survival modes",
     "feature_modes_desc": "Two ways to play",
     "feature_achievements_label": "Achievements",
     "feature_achievements_desc": "Unlock badges and rewards",
-    "pickSportTitle": "Pick Your Sport",
+    "pickSportTitle": "Pick your sport",
     "sport_football": "Football",
     "sport_tennis": "Tennis",
     "sport_basketball": "Basketball",
     "sport_moreComing": "More Coming",
-    "skillLevelTitle": "Your Skill Level",
+    "skillLevelTitle": "Your skill level",
     "level_beginner_name": "Beginner",
     "level_beginner_desc": "Just getting started",
     "level_intermediate_name": "Intermediate",
@@ -20,11 +20,11 @@
     "level_expert_name": "Expert",
     "level_expert_desc": "Bring it on!",
     "skip": "Skip",
-    "letsGo": "Let's Go!",
+    "letsGo": "Let's go",
     "next": "Next"
   },
   "difficulty": {
-    "title": "Choose Difficulty",
+    "title": "Choose difficulty",
     "cameFirstHint": "Which Came First? asks you to pick the earlier event.",
     "easy_name": "Easy",
     "easy_desc": "Casual fun, relaxed pace",
@@ -38,7 +38,7 @@
       "hard_desc": "Every club & competition"
     },
     "changeLater": "You can always change this later",
-    "startGame": "Start Game"
+    "startGame": "Start game"
   },
   "waitingRoom": {
     "loading": "Loading match...",

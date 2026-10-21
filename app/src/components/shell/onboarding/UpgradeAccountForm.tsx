@@ -8,9 +8,9 @@
  */
 import { useCallback, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { NeoInput } from "@/components/neo/NeoInput";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAuth, AuthError } from "@/contexts/AuthContext";
 import {
   validatePassword,
@@ -130,19 +130,19 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
 
   const fieldError = (text: string | undefined, id: string) =>
     text ? (
-      <p id={id} role="alert" className="text-xs text-destructive font-heading mt-1">
+      <p id={id} role="alert" className="mt-1 text-meta font-bold text-destructive">
         {text}
       </p>
     ) : null;
 
   return (
     <div className="w-full max-w-sm mx-auto">
-      <NeoCard shadow="lg" className="p-6">
+      <Card elevation="lifted" padding="lg">
         <div className="text-center mb-5">
-          <h1 className="text-2xl font-heading font-bold tracking-tight">
+          <h1 className="font-heading text-title font-bold">
             {t("upgradeForm.title", { defaultValue: "Save your progress" })}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="mt-1 text-body-sm text-muted-foreground">
             {t("upgradeForm.subtitleBefore", {
               defaultValue: "Add an email and password to keep",
             })}{" "}
@@ -159,7 +159,7 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
 
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-3">
           <div>
-            <NeoInput
+            <Input
               type="email"
               autoComplete="email"
               placeholder={t("upgradeForm.emailPlaceholder", { defaultValue: "Email" })}
@@ -175,7 +175,7 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
             />
             {fieldError(errors.email, "upgrade-email-error")}
           </div>
-          <NeoInput
+          <Input
             type="text"
             autoComplete="nickname"
             placeholder={t("upgradeForm.displayNamePlaceholder", {
@@ -189,7 +189,7 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
             disabled={submitting}
           />
           <div>
-            <NeoInput
+            <Input
               type="password"
               autoComplete="new-password"
               placeholder={t("upgradeForm.passwordPlaceholder", {
@@ -209,7 +209,7 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
             />
             <p
               id="upgrade-password-hint"
-              className="text-xs text-muted-foreground font-heading mt-1"
+              className="mt-1 text-meta text-muted-foreground"
             >
               {t("upgradeForm.passwordHint", {
                 defaultValue:
@@ -221,7 +221,7 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
             {fieldError(errors.password, "upgrade-password-error")}
           </div>
           <div>
-            <NeoInput
+            <Input
               type="password"
               autoComplete="new-password"
               placeholder={t("upgradeForm.confirmPlaceholder", {
@@ -245,32 +245,31 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
           {errors.general && (
             <div
               role="alert"
-              className="text-sm text-destructive font-heading text-center"
+              className="text-center text-body-sm font-bold text-destructive"
             >
               {errors.general}
             </div>
           )}
 
-          <NeoButton
+          <Button
             type="submit"
             variant="primary"
-            size="full"
-            disabled={submitting}
-            className="disabled:opacity-60"
+            size="lg"
+            block
+            loading={submitting}
+            aria-label={submitting ? t("upgradeForm.saving", { defaultValue: "Saving…" }) : undefined}
           >
-            {submitting
-              ? t("upgradeForm.saving", { defaultValue: "Saving…" })
-              : t("upgradeForm.submit", { defaultValue: "Create full account" })}
-          </NeoButton>
+            {t("upgradeForm.submit", { defaultValue: "Create full account" })}
+          </Button>
         </form>
 
-        <p className="text-[11px] text-muted-foreground text-center mt-4 leading-snug">
+        <p className="mt-4 text-center text-meta text-muted-foreground">
           {t("upgradeForm.footer", {
             defaultValue:
               "Your username and casual progress carry over. Ranked ELO starts once you upgrade.",
           })}
         </p>
-      </NeoCard>
+      </Card>
     </div>
   );
 }
