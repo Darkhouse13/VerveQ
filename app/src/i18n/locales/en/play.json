@@ -229,7 +229,17 @@
     "home": "Home"
   },
   "stage": {
-    "exit": "Leave"
+    "exit": "Leave",
+    "quitRun": {
+      "title": "Quit this run?",
+      "body_one": "Your endless streak of {{count}} ends here.",
+      "body_other": "Your endless streak of {{count}} ends here.",
+      "confirm": "Quit run",
+      "cancel": "Keep playing"
+    },
+    "scoreLabel": "Score: {{value}}",
+    "streakLabel": "Streak: {{value}}",
+    "roundLabel": "Round {{current}} of {{total}}"
   },
   "quizView": {
     "quit": "Quit",
@@ -411,9 +421,9 @@
     "tabSwitchWarning": "Don't switch tabs — leaving forfeits the round",
     "tabSwitchForfeit": "Round forfeited — you left the tab",
     "guessFailed": "That answer didn't go through — try again",
-    "startFailedTitle": "Couldn't Load Today's Game",
+    "startFailedTitle": "Couldn't load today's game",
     "startFailedMessage": "Who's Older couldn't load right now. Try again in a moment.",
-    "tryAgain": "Try Again",
+    "tryAgain": "Try again",
     "tier": {
       "easy": "Easy",
       "close": "Close",
@@ -478,8 +488,8 @@
     "backToDaily": "Today's result",
     "tabSwitchForfeit": "Round forfeited — you left the tab",
     "guessFailed": "That answer didn't go through — try again",
-    "startFailedTitle": "Couldn't Load Today's Game",
-    "tryAgain": "Try Again",
+    "startFailedTitle": "Couldn't load today's game",
+    "tryAgain": "Try again",
     "bestShort_one": "best {{count}}",
     "bestShort_other": "best {{count}}",
     "streakTitle_one": "{{count}}-day streak",
@@ -547,7 +557,7 @@
     "followTitle": "New puzzle every morning on @{{handle}}",
     "followBody": "Follow us so tomorrow's game shows up in your feed.",
     "followCta": "Follow @{{handle}}",
-    "reminderCollapsed": "Or get an email reminder",
+    "reminderCollapsed": "Email reminder",
     "keepTitle": "Playing in Safari or Chrome next time?",
     "keepBody_one": "Take your {{count}}-day streak with you: copy this link and open it there.",
     "keepBody_other": "Take your {{count}}-day streak with you: copy this link and open it there.",
@@ -558,6 +568,27 @@
     "keepRateLimited": "You've made a lot of links today. Use one you already copied.",
     "linkConnected": "Streak connected. It follows you here now.",
     "linkExpired": "That streak link has expired. Copy a new one from where you play.",
-    "linkUsedUp": "That streak link can't be used any more. Copy a new one."
+    "linkUsedUp": "That streak link can't be used any more. Copy a new one.",
+    "storyStreak_one": "{{count}}-day streak",
+    "storyStreak_other": "{{count}}-day streak"
+  },
+  "result": {
+    "nextToday": "Next today",
+    "answers": "Your answers",
+    "squares": "{{score}} of {{total}} right",
+    "next": {
+      "older": {
+        "title": "Who's Older?",
+        "body": "Tap the older player. 10 a day."
+      },
+      "letters": {
+        "title": "Missing Letters",
+        "body": "Name the player. 10 a day."
+      },
+      "home": {
+        "title": "More games today",
+        "body": "See the rest of today on Home."
+      }
+    }
   }
 }

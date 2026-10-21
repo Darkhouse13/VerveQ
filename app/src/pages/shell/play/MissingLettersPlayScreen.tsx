@@ -4,10 +4,11 @@
  * tiles blank, a nation clue: fill the gaps. Ten rounds, EASY → IMPOSSIBLE as
  * the reel ramps them (the IMPOSSIBLE board hides the initials too).
  *
- * It wears the reel's look (`.theme-letters`: ink ground, cream tiles, lime
- * fills, the tier chip) and plays like Who's Older: type into the blanks on the
- * on-screen keyboard (or a real one), Check, and the board flips into the
- * reveal — the missing letters land lime when right, red when wrong — which
+ * It wears the reel's look on the shared StageFrame (ink ground, cream tiles,
+ * the tier tag, pink as its mode accent) and plays like Who's Older: type into
+ * the blanks on the on-screen keyboard (or a real one), Check, and the board
+ * flips into the reveal — the missing letters land green when right, red when
+ * wrong — which
  * holds for a beat and deals the next name. Tapping skips the wait. Only plain
  * A–Z letters are ever blank (lib/missingLetters.ts), so 26 keys always suffice.
  *
@@ -29,11 +30,17 @@ import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { useTranslation } from "react-i18next";
 import { notify, warnTabSwitchOnce } from "@/lib/notify";
-import { CalendarDays, Check, Share2, Delete, Flame, Infinity as InfinityIcon, Swords, X } from "lucide-react";
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoButton } from "@/components/neo/NeoButton";
+import { CalendarDays, Check, Share2, Delete, Flame, Infinity as InfinityIcon, Star, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { PlayStage } from "@/components/shell/play/PlayStage";
-import { MetricsPanel, AmbientStrip } from "@/components/shell/play/ambient";
+import { StageScore, StepDots, TierBadge } from "@/components/shell/play/StageParts";
+import { ResultDetails, ResultScreen } from "@/components/shell/play/result/ResultScreen";
+import { HeroPill, ResultHero } from "@/components/shell/play/result/ResultHero";
+import { NextTodayCard, ResultActions } from "@/components/shell/play/result/ResultActions";
+import { nextTodayTarget } from "@/components/shell/play/result/nextToday";
+import { MetricsPanel } from "@/components/shell/play/ambient";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { getShareBaseUrl } from "@/lib/shareBase";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
@@ -45,8 +52,8 @@ import {
   ReminderCard,
   StreakBlock,
 } from "@/components/shell/play/whosOlder/WhosOlderRetention";
-import { FollowCard, ShareSheet, StreakLinkOffer } from "@/components/shell/play/whosOlder/DailyShare";
-import { isInstagramInAppBrowser, isInstagramVisitor } from "@/lib/dailyShare";
+import { FollowLink, ShareSheet, StreakLinkOffer } from "@/components/shell/play/whosOlder/DailyShare";
+import { isInstagramInAppBrowser, isInstagramVisitor, visibleStandingPct } from "@/lib/dailyShare";
 import { useStreakLinkClaim } from "@/hooks/useStreakLinkClaim";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -62,9 +69,6 @@ type SessionView = FunctionReturnType<typeof api.missingLetters.startDaily>["ses
 type Reveal = SessionView["history"][number];
 type Tier = Reveal["tier"];
 
-/** Below this many finishers "better than N%" is noise, so it stays hidden. */
-const MIN_FINISHERS_FOR_STANDING = 5;
-
 /** How long a reveal holds before the next board. A miss holds longer: the
  *  player needs to read the name they didn't get. */
 const REVEAL_HOLD_MS = { right: 1900, wrong: 3000 } as const;
@@ -73,12 +77,7 @@ const SKIP_GUARD_MS = 450;
 
 const THEME = "theme-letters";
 
-const TIER_CHIP: Record<Tier, string> = {
-  easy: "bg-success text-success-foreground border-black",
-  medium: "bg-yellow text-yellow-foreground border-black",
-  hard: "bg-destructive text-destructive-foreground border-black",
-  impossible: "bg-black text-accent border-accent",
-};
+const TIER_LEVEL: Record<Tier, 0 | 1 | 2 | 3> = { easy: 0, medium: 1, hard: 2, impossible: 3 };
 
 const KEY_ROWS = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
 
@@ -147,7 +146,10 @@ export default function MissingLettersPlayScreen() {
   const [reveal, setReveal] = useState<Reveal | null>(null);
   const [status, setStatus] = useState<"loading" | "failed" | "ready">("loading");
   const [busy, setBusy] = useState(false);
-  const [flash, setFlash] = useState<"good" | "bad" | null>(null);
+  const [flash, setFlash] = useState<"right" | "wrong" | null>(null);
+  // "Next today" on the result: is today's Who's Older already done? Asked
+  // only once a run has finished.
+  const olderToday = useQuery(api.whosOlder.getToday, view?.status === "completed" ? {} : "skip");
   // The letters typed into the pending board's blanks, one per blank, in
   // board order, and which blank the next key fills.
   const [typed, setTyped] = useState<Array<string | null>>([]);
@@ -318,7 +320,7 @@ export default function MissingLettersPlayScreen() {
           noteQuestionAnswered(view.sessionId);
           revealedAt.current = Date.now();
           setReveal(res.reveal);
-          setFlash(res.reveal.correct ? "good" : "bad");
+          setFlash(res.reveal.correct ? "right" : "wrong");
           if (res.session.status === "completed") {
             completeRun(view.sessionId, {
               score: res.session.score,
@@ -462,18 +464,18 @@ export default function MissingLettersPlayScreen() {
 
   if (status !== "ready" || !view) {
     return (
-      <PlayStage theme={THEME} title={t("missingLetters.title")} onExit={exit} exitLabel={t("missingLetters.quit")}>
+      <PlayStage mode="missing-letters" theme={THEME} title={t("missingLetters.title")} onExit={exit} exitLabel={t("missingLetters.quit")}>
         <div className="flex flex-col items-center justify-center py-12">
           {status === "failed" ? (
-            <NeoCard color="pink" shadow="lg" className="w-full text-center py-8 px-5">
-              <p className="font-heading font-bold text-2xl">{t("missingLetters.startFailedTitle")}</p>
-              <p className="text-sm mt-3 opacity-90">{t("missingLetters.startFailedMessage")}</p>
-              <NeoButton variant="primary" size="lg" className="mt-6 w-full" onClick={loadDaily}>
+            <Card elevation="lifted" padding="lg" className="w-full text-center">
+              <p className="font-heading font-bold text-title">{t("missingLetters.startFailedTitle")}</p>
+              <p className="mt-3 text-body-sm text-muted-foreground">{t("missingLetters.startFailedMessage")}</p>
+              <Button variant="primary" size="lg" block className="mt-6" onClick={loadDaily}>
                 {t("missingLetters.tryAgain")}
-              </NeoButton>
-            </NeoCard>
+              </Button>
+            </Card>
           ) : (
-            <p className="font-heading font-bold text-lg animate-pulse">{t("missingLetters.loading")}</p>
+            <p className="font-heading font-bold text-title-sm animate-pulse motion-reduce:animate-none">{t("missingLetters.loading")}</p>
           )}
         </div>
       </PlayStage>
@@ -495,168 +497,194 @@ export default function MissingLettersPlayScreen() {
       ? t("missingLetters.dailySubtitle", { n: view.edition })
       : t("missingLetters.endlessSubtitle");
   const metrics = isDaily ? { score: view.score } : { streak: view.score };
-  const progress =
-    isDaily && view.totalRounds
-      ? { current: Math.min(view.roundIndex + (reveal ? 0 : 1), view.totalRounds), total: view.totalRounds }
-      : undefined;
 
   // ── Finished states (only once the last reveal has played out) ──
   if (view.status === "completed" && !reveal) {
     if (isDaily) {
       const daily = view;
-      const standing = isChallengeRun ? null : (today?.standing ?? null);
-      const showStanding = standing && standing.finishers >= MIN_FINISHERS_FOR_STANDING;
+      // Decision 7: "better than X%" only when X ≥ 50 (lib/dailyShare.ts).
+      const standingPct = isChallengeRun ? null : visibleStandingPct(today?.standing);
       const streak = !isChallengeRun && today?.streak?.playedToday ? today.streak : null;
+      const total = daily.totalRounds ?? daily.history.length;
+      const next = nextTodayTarget(
+        "letters",
+        olderToday === undefined ? undefined : olderToday.daily?.status === "completed",
+      );
       return (
-        <PlayStage theme={THEME} title={t("missingLetters.title")} subtitle={subtitle} onExit={exit} exitLabel={t("missingLetters.home")}>
-          <div className="flex flex-col gap-3 py-2">
-            {challengeHere && challengeVerdict && (
-              <HeadToHead game="letters" challenge={challengeHere} myScore={daily.score} verdict={challengeVerdict} />
-            )}
-            <div className="neo-border border-black neo-shadow-lg rounded-lg bg-electric-blue text-white text-center py-6 px-4">
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] opacity-90">
-                {t("missingLetters.editionLabel", { n: daily.edition })}
-              </p>
-              <p className="font-heading font-black text-7xl leading-none mt-2" style={{ textShadow: "3px 3px 0 hsl(0 0% 7%)" }}>
-                {daily.score}
-                <span className="text-4xl opacity-80">/{daily.totalRounds}</span>
-              </p>
-              <p className="text-xl whitespace-nowrap mt-3" aria-hidden>
-                {emojiRow(daily.history)}
-              </p>
-              {showStanding && (
-                <p className="inline-block mt-3 rounded-full border-2 border-black bg-accent text-accent-foreground px-3 py-1 text-sm font-bold">
-                  {t("missingLetters.standing", {
-                    pct: Math.round((standing.below / standing.finishers) * 100),
-                    count: standing.finishers,
-                  })}
-                </p>
-              )}
-              {!streak && !isChallengeRun && (
-                <p className="font-mono text-[10.5px] uppercase mt-3 opacity-90">
+        <PlayStage mode="missing-letters" theme={THEME} title={t("missingLetters.title")} subtitle={subtitle} onExit={exit} exitLabel={t("missingLetters.home")}>
+          <ResultScreen
+            testId="missing-letters-result"
+            top={
+              challengeHere && challengeVerdict ? (
+                <HeadToHead game="letters" challenge={challengeHere} myScore={daily.score} verdict={challengeVerdict} />
+              ) : undefined
+            }
+            hero={
+              <ResultHero
+                eyebrow={t("missingLetters.editionLabel", { n: daily.edition })}
+                score={daily.score}
+                total={total}
+                squares={daily.history.map((r) => r.correct)}
+                squaresLabel={t("result.squares", { score: daily.score, total })}
+              >
+                {standingPct != null && today?.standing && (
+                  <HeroPill testId="missing-letters-standing">
+                    {t("missingLetters.standing", { pct: standingPct, count: today.standing.finishers })}
+                  </HeroPill>
+                )}
+              </ResultHero>
+            }
+            status={
+              streak ? (
+                <StreakBlock game="letters" current={streak.current} best={streak.best} />
+              ) : !isChallengeRun ? (
+                <p className="text-center text-body-sm text-muted-foreground">
                   {t("missingLetters.nextIn", { time: nextEditionCountdown() })}
                 </p>
-              )}
-            </div>
-
-            {isChallengeRun ? (
-              <NeoButton variant="accent" size="lg" onClick={loadDaily} data-testid="missing-letters-play-today">
-                <CalendarDays size={18} className="mr-1.5" />
-                {t("missingLetters.playToday", { n: today?.edition ?? "" })}
-              </NeoButton>
-            ) : (
-              <NeoButton
-                variant="pink"
-                size="lg"
-                className="w-full"
-                onClick={() => {
-                  track("missing_letters_share_pressed", { edition: daily.edition, score: daily.score });
-                  setShareOpen(true);
-                }}
-                data-testid="missing-letters-challenge-share"
-              >
-                <Share2 size={18} className="mr-1.5" />
-                {t("dailyShare.cta")}
-              </NeoButton>
-            )}
-
-            {streak && <StreakBlock game="letters" current={streak.current} best={streak.best} />}
-            {streak && isInstagramInAppBrowser() && <StreakLinkOffer game="letters" streak={streak.current} />}
-            {!isChallengeRun && (
-              <NeoButton
-                variant="outline"
-                size="lg"
-                className="w-full"
-                onClick={startEndless}
-                disabled={busy}
-                data-testid="missing-letters-endless"
-              >
-                <InfinityIcon size={18} className="mr-1.5" />
-                {t("missingLetters.playEndless")}
-              </NeoButton>
-            )}
-            {!isChallengeRun && bestEndless != null && (
-              <p className="text-center font-mono text-[11px] uppercase text-accent">
-                {t("missingLetters.bestStreak", { count: bestEndless })}
-              </p>
-            )}
-
-            {!isChallengeRun && isInstagramVisitor() && <FollowCard game="letters" />}
-            {today?.reminder && <ReminderCard game="letters" reminder={today.reminder} collapsed />}
-            {!isChallengeRun && today?.challenges && <ChallengeResults game="letters" challenges={today.challenges} />}
-            {!isChallengeRun && (
-              <ShareSheet
-                game="letters"
-                open={shareOpen}
-                onOpenChange={setShareOpen}
-                makeLink={() => makeShareLink(daily)}
-                result={{
-                  edition: daily.edition,
-                  score: daily.score,
-                  total: daily.totalRounds ?? daily.history.length,
-                  history: daily.history,
-                  standingPct: showStanding ? Math.round((standing.below / standing.finishers) * 100) : null,
-                }}
+              ) : undefined
+            }
+            actions={
+              <ResultActions
+                primary={
+                  isChallengeRun
+                    ? {
+                        label: t("missingLetters.playToday", { n: today?.edition ?? "" }),
+                        icon: <CalendarDays size={18} aria-hidden="true" />,
+                        onClick: loadDaily,
+                        testId: "missing-letters-play-today",
+                      }
+                    : {
+                        label: t("dailyShare.cta"),
+                        icon: <Share2 size={18} aria-hidden="true" />,
+                        onClick: () => {
+                          track("missing_letters_share_pressed", { edition: daily.edition, score: daily.score });
+                          setShareOpen(true);
+                        },
+                        testId: "missing-letters-challenge-share",
+                      }
+                }
+                next={
+                  isChallengeRun ? undefined : (
+                    <NextTodayCard
+                      target={next}
+                      testId="missing-letters-next-today"
+                      onFollow={() =>
+                        track("daily_next_today_clicked", { from: "letters", to: next.kind === "game" ? next.game : "home" })
+                      }
+                    />
+                  )
+                }
+                secondary={
+                  isChallengeRun
+                    ? []
+                    : [
+                        {
+                          label: t("missingLetters.playEndless"),
+                          icon: <InfinityIcon size={18} aria-hidden="true" />,
+                          onClick: startEndless,
+                          disabled: busy,
+                          testId: "missing-letters-endless",
+                        },
+                      ]
+                }
+                note={
+                  !isChallengeRun && bestEndless != null ? (
+                    <p className="text-center font-mono text-eyebrow uppercase text-muted-foreground">
+                      {t("missingLetters.bestStreak", { count: bestEndless })}
+                    </p>
+                  ) : undefined
+                }
               />
-            )}
-
-            {/* The ten names — each row carries its verdict colour. */}
-            <ol className="space-y-2" data-testid="missing-letters-answers">
-              {daily.history.map((r, i) => (
-                <li
-                  key={i}
-                  className={cn(
-                    "neo-border border-black rounded-lg flex items-center gap-3 px-3 py-2 text-sm",
-                    r.correct ? "bg-success text-success-foreground" : "bg-destructive text-destructive-foreground",
-                  )}
-                >
-                  <span className="shrink-0 grid place-items-center h-6 w-6 rounded-full bg-black/25">
-                    {r.correct ? <Check size={14} strokeWidth={3.5} /> : <X size={14} strokeWidth={3.5} />}
-                  </span>
-                  <span className="min-w-0 flex-1 leading-snug">
-                    <span className="font-heading font-bold">{r.name}</span>{" "}
-                    <span className="opacity-90">· {r.nation}</span>
-                  </span>
-                  <span className="shrink-0 font-mono text-[10px] font-bold uppercase opacity-90">
-                    {t(`missingLetters.tier.${r.tier}`)}
-                  </span>
-                </li>
-              ))}
-            </ol>
-            <p className="text-center text-[11px] text-muted-foreground">{t("missingLetters.sources")}</p>
-          </div>
+            }
+            details={
+              <>
+                {streak && isInstagramInAppBrowser() && <StreakLinkOffer game="letters" streak={streak.current} />}
+                {!isChallengeRun && today?.challenges && <ChallengeResults game="letters" challenges={today.challenges} />}
+                <ResultDetails summary={t("result.answers")}>
+                  {/* The ten names — each row marked with its verdict. */}
+                  <ol data-testid="missing-letters-answers">
+                    {daily.history.map((r, i) => (
+                      <li key={i} className="flex items-center gap-3 border-b border-border/15 py-2 text-body-sm last:border-b-0">
+                        <span
+                          className={cn(
+                            "grid h-6 w-6 shrink-0 place-items-center rounded-full text-ink",
+                            r.correct ? "bg-verdict-right" : "bg-verdict-wrong",
+                          )}
+                        >
+                          {r.correct ? <Check size={14} strokeWidth={3.5} /> : <X size={14} strokeWidth={3.5} />}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="font-heading font-bold">{r.name}</span>{" "}
+                          <span className="text-muted-foreground">· {r.nation}</span>
+                        </span>
+                        <span className="shrink-0 font-mono text-eyebrow uppercase text-muted-foreground">
+                          {t(`missingLetters.tier.${r.tier}`)}
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                  <p className="mt-2 text-meta text-muted-foreground">{t("missingLetters.sources")}</p>
+                </ResultDetails>
+              </>
+            }
+            footer={
+              <>
+                {today?.reminder && <ReminderCard game="letters" reminder={today.reminder} collapsed />}
+                {!isChallengeRun && isInstagramVisitor() && <FollowLink game="letters" />}
+              </>
+            }
+          />
+          {!isChallengeRun && (
+            <ShareSheet
+              game="letters"
+              open={shareOpen}
+              onOpenChange={setShareOpen}
+              makeLink={() => makeShareLink(daily)}
+              result={{
+                edition: daily.edition,
+                score: daily.score,
+                total,
+                history: daily.history,
+                standingPct,
+                streak: streak?.current ?? null,
+              }}
+            />
+          )}
         </PlayStage>
       );
     }
 
     const last = view.history[view.history.length - 1];
     return (
-      <PlayStage theme={THEME} title={t("missingLetters.title")} subtitle={subtitle} onExit={exit} exitLabel={t("missingLetters.home")}>
-        <div className="flex flex-col gap-3 py-2">
-          <div className="neo-border border-black neo-shadow-lg rounded-lg bg-hot-pink text-white text-center py-7 px-4">
-            <p className="font-heading font-bold text-lg uppercase">{t("missingLetters.runOver")}</p>
-            <p className="font-heading font-black text-8xl leading-none mt-2" style={{ textShadow: "3px 3px 0 hsl(0 0% 7%)" }}>
-              {view.score}
-            </p>
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] mt-2">{t("missingLetters.streakLabel")}</p>
-            {last && !last.correct && (
-              <p className="mt-3 text-sm">{t("missingLetters.itWas", { name: last.name })}</p>
-            )}
-            {bestEndless != null && (
-              <p className="inline-block mt-4 rounded-full border-2 border-black bg-accent text-accent-foreground px-3 py-1 text-sm font-bold">
-                {t("missingLetters.bestStreak", { count: bestEndless })}
-              </p>
-            )}
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <NeoButton variant="accent" size="lg" onClick={startEndless} disabled={busy}>
-              {t("missingLetters.playAgain")}
-            </NeoButton>
-            <NeoButton variant="blue" size="lg" onClick={loadDaily}>
-              {t("missingLetters.backToDaily")}
-            </NeoButton>
-          </div>
-        </div>
+      <PlayStage mode="missing-letters" theme={THEME} title={t("missingLetters.title")} subtitle={subtitle} onExit={exit} exitLabel={t("missingLetters.home")}>
+        <ResultScreen
+          testId="missing-letters-run-over"
+          hero={
+            <ResultHero eyebrow={t("missingLetters.runOver")} score={view.score} caption={t("missingLetters.streakLabel")}>
+              {last && !last.correct && (
+                <p className="mt-3 text-body-sm font-bold">{t("missingLetters.itWas", { name: last.name })}</p>
+              )}
+              {bestEndless != null && <HeroPill>{t("missingLetters.bestStreak", { count: bestEndless })}</HeroPill>}
+            </ResultHero>
+          }
+          actions={
+            <ResultActions
+              primary={{
+                label: t("missingLetters.playAgain"),
+                icon: <InfinityIcon size={18} aria-hidden="true" />,
+                onClick: startEndless,
+                disabled: busy,
+              }}
+              secondary={[
+                {
+                  label: t("missingLetters.backToDaily"),
+                  icon: <CalendarDays size={18} aria-hidden="true" />,
+                  onClick: loadDaily,
+                },
+              ]}
+            />
+          }
+        />
       </PlayStage>
     );
   }
@@ -687,16 +715,16 @@ export default function MissingLettersPlayScreen() {
     // Hyphens, apostrophes, dots: a narrow glyph, not a tile.
     if (slot === undefined && cell.char !== null && !isLetterCell(cell)) {
       return (
-        <span key={cell.index} className="font-heading font-black text-foreground/80 self-center" style={{ fontSize: `calc(${tileWidth} * 0.6)` }}>
+        <span key={cell.index} className="font-heading font-bold text-muted-foreground self-center" style={{ fontSize: `calc(${tileWidth} * 0.6)` }}>
           {cell.char}
         </span>
       );
     }
-    const base = "grid place-items-center rounded-md font-heading font-black uppercase leading-none select-none";
+    const base = "grid place-items-center rounded-md font-heading font-bold uppercase leading-none select-none";
     const size = { width: tileWidth, aspectRatio: "5 / 6", fontSize: `calc(${tileWidth} * 0.62)` } as const;
     if (slot === undefined) {
       return (
-        <span key={cell.index} className={cn(base, "bg-foreground text-background border-[3px] border-black shadow-[3px_3px_0_0_#000]")} style={size}>
+        <span key={cell.index} className={cn(base, "bg-paper text-paper-foreground neo-border neo-shadow-sm")} style={size}>
           {cell.char}
         </span>
       );
@@ -709,8 +737,8 @@ export default function MissingLettersPlayScreen() {
           key={cell.index}
           className={cn(
             base,
-            "border-[3px] border-black shadow-[3px_3px_0_0_#000] animate-badge-land",
-            right ? "bg-accent text-accent-foreground" : "bg-destructive text-destructive-foreground",
+            "neo-border neo-shadow-sm text-ink animate-badge-land motion-reduce:animate-none",
+            right ? "bg-verdict-right" : "bg-verdict-wrong",
           )}
           style={{ ...size, animationDelay: `${slot * 60}ms` }}
         >
@@ -729,9 +757,9 @@ export default function MissingLettersPlayScreen() {
         aria-label={t("missingLetters.blankLabel", { n: slot + 1 })}
         className={cn(
           base,
-          "border-[3px]",
-          letter ? "bg-white/10 text-foreground border-solid" : "bg-white/5 border-dashed",
-          active ? "border-accent letters-cursor" : letter ? "border-foreground/70" : "border-foreground/45",
+          "border-2",
+          letter ? "bg-foreground/10 text-foreground border-solid" : "bg-foreground/5 border-dashed",
+          active ? "border-ring letters-cursor" : letter ? "border-foreground/70" : "border-foreground/45",
         )}
         style={size}
       >
@@ -742,91 +770,71 @@ export default function MissingLettersPlayScreen() {
 
   const verdict = reveal
     ? reveal.forfeit === "timeout"
-      ? { label: t("missingLetters.forfeited"), cls: "bg-destructive text-destructive-foreground" }
+      ? { label: t("missingLetters.forfeited"), right: false }
       : reveal.forfeit === "skip"
-        ? { label: t("missingLetters.gaveUp"), cls: "bg-destructive text-destructive-foreground" }
+        ? { label: t("missingLetters.gaveUp"), right: false }
         : reveal.correct
-          ? { label: t("missingLetters.correct"), cls: "bg-accent text-accent-foreground" }
-          : { label: t("missingLetters.wrong"), cls: "bg-destructive text-destructive-foreground" }
+          ? { label: t("missingLetters.correct"), right: true }
+          : { label: t("missingLetters.wrong"), right: false }
     : null;
+
+  // Leaving an endless run with points on the board loses it; a daily
+  // resumes where it was left, so it leaves without asking.
+  const exitConfirm =
+    !isDaily && view.status === "active" && view.score > 0
+      ? {
+          title: t("stage.quitRun.title"),
+          description: t("stage.quitRun.body", { count: view.score }),
+          confirmLabel: t("stage.quitRun.confirm"),
+          cancelLabel: t("stage.quitRun.cancel"),
+        }
+      : undefined;
 
   return (
     <PlayStage
+      mode="missing-letters"
       theme={THEME}
       title={t("missingLetters.title")}
       subtitle={subtitle}
       onExit={exit}
       exitLabel={t("missingLetters.quit")}
-      strip={<AmbientStrip metrics={metrics} progress={progress} />}
+      exitConfirm={exitConfirm}
+      flash={flash}
+      score={
+        <StageScore
+          icon={isDaily ? <Star size={16} strokeWidth={3} /> : <Flame size={16} strokeWidth={3} />}
+          value={view.score}
+          label={isDaily ? t("stage.scoreLabel", { value: view.score }) : t("stage.streakLabel", { value: view.score })}
+          detail={!isDaily && bestEndless != null ? t("missingLetters.bestShort", { count: bestEndless }) : undefined}
+        />
+      }
+      progress={
+        isDaily && view.totalRounds ? (
+          <StepDots
+            total={view.totalRounds}
+            results={view.history.map((h) => h.correct)}
+            current={shownIndex}
+            label={t("stage.roundLabel", { current: Math.min(shownIndex + 1, view.totalRounds), total: view.totalRounds })}
+          />
+        ) : undefined
+      }
       right={<MetricsPanel metrics={metrics} />}
     >
-      {flash && (
-        <div
-          aria-hidden
-          className={cn(
-            "fixed inset-0 z-50 pointer-events-none opacity-0 animate-older-flash",
-            flash === "good" ? "bg-success" : "bg-destructive",
-          )}
-        />
-      )}
       <div className="flex flex-col h-full" onClick={reveal ? skipReveal : undefined}>
         {challengeHere && <ChallengeBanner game="letters" challenge={challengeHere} />}
-        {/* Tier chip + progress: the reel's top line. */}
-        <div className="shrink-0 flex items-center justify-between gap-2 mb-3">
-          <span
-            data-testid="missing-letters-tier"
-            className={cn(
-              "rounded-md border-[3px] px-2.5 py-0.5 font-mono font-bold text-[11px] uppercase tracking-[0.14em] shadow-[3px_3px_0_0_#000]",
-              TIER_CHIP[board.tier],
-            )}
-          >
-            {t(`missingLetters.tier.${board.tier}`)}
-          </span>
-          {isDaily && view.totalRounds ? (
-            <div className="flex gap-1.5" aria-hidden>
-              {Array.from({ length: view.totalRounds }, (_, i) => {
-                const done = view.history[i];
-                return (
-                  <span
-                    key={i}
-                    className={cn(
-                      "h-2.5 w-2.5 rounded-full border-2",
-                      done
-                        ? done.correct
-                          ? "bg-accent border-accent"
-                          : "bg-destructive border-destructive"
-                        : i === shownIndex
-                          ? "border-foreground bg-foreground/30 scale-125"
-                          : "border-foreground/40",
-                    )}
-                  />
-                );
-              })}
-            </div>
-          ) : (
-            <span className="inline-flex items-center gap-1 font-mono font-bold text-sm text-accent">
-              <Flame size={15} strokeWidth={3} />
-              {view.score}
-              {bestEndless != null && (
-                <span className="text-muted-foreground font-normal ml-1">
-                  · {t("missingLetters.bestShort", { count: bestEndless })}
-                </span>
-              )}
-            </span>
-          )}
+        <div className="shrink-0 mb-2">
+          <TierBadge label={t(`missingLetters.tier.${board.tier}`)} level={TIER_LEVEL[board.tier]} testId="missing-letters-tier" />
         </div>
 
         <div className="shrink-0 flex items-end justify-between gap-3">
-          <p className="font-heading font-black uppercase text-4xl leading-[0.9] tracking-tight">
+          <p className="font-heading font-bold uppercase text-title-lg tracking-tight">
             {t("missingLetters.prompt")}
           </p>
           <span className="flex items-center gap-2 min-w-0">
-            <span className="font-mono font-bold text-[10px] tracking-[0.16em] text-muted-foreground">
-              {t("missingLetters.clue")}
-            </span>
+            <span className="font-mono text-eyebrow text-muted-foreground">{t("missingLetters.clue")}</span>
             <span
               data-testid="missing-letters-clue"
-              className="truncate rounded-md border-[3px] border-black bg-foreground text-background px-2.5 py-0.5 font-heading font-black uppercase text-sm shadow-[3px_3px_0_0_#000]"
+              className="truncate rounded-md bg-paper text-paper-foreground px-2.5 py-0.5 font-heading font-bold uppercase text-body-sm neo-border neo-shadow-sm"
             >
               {board.nation}
             </span>
@@ -849,21 +857,22 @@ export default function MissingLettersPlayScreen() {
 
         {reveal && verdict ? (
           <div className="shrink-0 min-h-[13rem] flex flex-col items-center justify-center gap-3" aria-live="polite">
-            <span
-              className={cn(
-                "animate-badge-land rounded-md border-[3px] border-black px-3 py-1 font-heading font-black uppercase text-sm shadow-[3px_3px_0_0_#000]",
-                verdict.cls,
-              )}
+            <Badge
+              tone={verdict.right ? "right" : "wrong"}
+              shape="tag"
+              size="md"
+              stamp
+              className="text-body-sm animate-badge-land motion-reduce:animate-none"
             >
               {verdict.label}
-            </span>
+            </Badge>
             <span
               data-testid="missing-letters-answer"
-              className="animate-badge-land rounded-md border-[3px] border-black bg-foreground text-background px-3 py-1.5 font-heading font-black uppercase text-lg shadow-[3px_3px_0_0_#000] text-center"
+              className="animate-badge-land motion-reduce:animate-none rounded-md bg-paper text-paper-foreground px-3 py-1.5 font-heading font-bold uppercase text-title-sm text-center neo-border neo-shadow-sm"
             >
               {reveal.name}
             </span>
-            <span className="font-mono text-[10.5px] uppercase text-muted-foreground">{t("missingLetters.tapToContinue")}</span>
+            <span className="font-mono text-eyebrow uppercase text-muted-foreground">{t("missingLetters.tapToContinue")}</span>
           </div>
         ) : (
           <div className="shrink-0 flex flex-col gap-1.5" data-testid="missing-letters-keyboard">
@@ -871,50 +880,50 @@ export default function MissingLettersPlayScreen() {
               <div key={row} className="flex justify-center gap-1">
                 {ri === 2 && <span className="flex-[0.5]" />}
                 {[...row].map((k) => (
-                  <button
+                  <Button
                     key={k}
-                    type="button"
+                    variant="secondary"
+                    size="sm"
                     disabled={busy}
                     onClick={() => typeLetter(k)}
                     data-testid={`missing-letters-key-${k}`}
-                    className="flex-1 max-w-[2.6rem] h-11 rounded-md border-2 border-black bg-foreground text-background font-heading font-black text-base shadow-[2px_2px_0_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-60"
+                    className="flex-1 min-w-0 max-w-[2.6rem] px-0 text-title-sm neo-shadow-sm"
                   >
                     {k}
-                  </button>
+                  </Button>
                 ))}
                 {ri === 2 && (
-                  <button
-                    type="button"
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     disabled={busy}
                     onClick={backspace}
                     aria-label={t("missingLetters.backspace")}
                     data-testid="missing-letters-backspace"
-                    className="flex-[1.5] max-w-[4rem] h-11 grid place-items-center rounded-md border-2 border-black bg-muted text-foreground shadow-[2px_2px_0_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-60"
+                    className="flex-[1.5] min-w-0 max-w-[4rem] px-0 bg-muted neo-shadow-sm"
                   >
-                    <Delete size={20} />
-                  </button>
+                    <Delete size={20} aria-hidden="true" />
+                  </Button>
                 )}
               </div>
             ))}
             <div className="mt-1.5 grid grid-cols-[1fr_2fr] gap-2">
-              <NeoButton
-                variant="outline"
-                size="md"
+              <Button
+                variant="secondary"
                 disabled={busy}
                 onClick={() => void submit({ forfeit: "skip" })}
                 data-testid="missing-letters-give-up"
               >
                 {t("missingLetters.giveUp")}
-              </NeoButton>
-              <NeoButton
-                variant="accent"
-                size="md"
+              </Button>
+              <Button
+                variant="primary"
                 disabled={busy || !complete}
                 onClick={check}
                 data-testid="missing-letters-check"
               >
                 {t("missingLetters.check")}
-              </NeoButton>
+              </Button>
             </div>
           </div>
         )}

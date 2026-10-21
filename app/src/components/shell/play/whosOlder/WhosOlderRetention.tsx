@@ -4,6 +4,11 @@
  * tomorrow. Shared by Who's Older? (the default) and Missing Letters via the
  * `game` prop, which picks the copy namespace, test ids and analytics events.
  * Server rules: convex/lib/whosOlderRetention.ts + convex/lib/dailyGames.ts.
+ *
+ * Since VerveQ ONE P2.2 these sit on the shared ResultScreen
+ * (components/shell/play/result): the streak is a quiet line under the hero,
+ * the reminder one link in the bottom line, and nothing here is lime — the
+ * screen's one lime button is Share.
  */
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useUtcMidnightCountdown } from "@/hooks/useUtcMidnightCountdown";
@@ -11,7 +16,10 @@ import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
 import { useTranslation } from "react-i18next";
 import { BellRing, Flame, Mail, Swords } from "lucide-react";
-import { NeoButton } from "@/components/neo/NeoButton";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 import { api } from "../../../../../convex/_generated/api";
@@ -40,27 +48,24 @@ const GAME_UI = {
   },
 } as const;
 
+/**
+ * The streak line under the result hero: a quiet two-liner, not a card — the
+ * flame in the mode's accent, the count, and when the next game unlocks.
+ */
 export function StreakBlock({ current, best, game = "older" }: { current: number; best: number; game?: DailyGame }) {
   const { t } = useTranslation("play");
   const { ns, tid } = GAME_UI[game];
   const time = useUtcMidnightCountdown();
   return (
-    <div
-      data-testid={`${tid}-streak`}
-      className="neo-border border-black neo-shadow rounded-lg bg-black text-center px-4 py-4"
-    >
-      <p className="inline-flex items-center gap-2 font-heading font-black text-2xl uppercase text-accent">
-        <Flame size={24} strokeWidth={3} className="animate-pulse" />
+    <div data-testid={`${tid}-streak`} className="flex flex-col items-center gap-0.5 py-1 text-center">
+      <p className="inline-flex items-center gap-1.5 font-heading font-bold text-title-sm">
+        <Flame size={20} strokeWidth={2.5} className="text-mode-accent" aria-hidden="true" />
         {t(`${ns}.streakTitle`, { count: current })}
       </p>
-      <p className="mt-1.5 text-sm text-foreground/90">
+      <p className="text-body-sm text-muted-foreground">
         {t(`${ns}.streakNext`, { time, next: current + 1 })}
+        {best > current && <> · {t(`${ns}.streakBest`, { count: best })}</>}
       </p>
-      {best > current && (
-        <p className="mt-1 font-mono text-[10.5px] uppercase text-muted-foreground">
-          {t(`${ns}.streakBest`, { count: best })}
-        </p>
-      )}
     </div>
   );
 }
@@ -76,8 +81,9 @@ function errorCode(err: unknown): string | null {
 
 /**
  * `collapsed` (the result screens since RETURN_LOOP, 2026-10-16): with no
- * reminder yet the form starts as one line, "Or get an email reminder", and
- * `*_reminder_shown` fires only once that line is opened into the form.
+ * reminder yet the form starts as one quiet link, and `*_reminder_shown`
+ * fires only once that link is opened into the form. Pending / on are one
+ * line of status text.
  */
 export function ReminderCard({
   reminder,
@@ -131,73 +137,77 @@ export function ReminderCard({
 
   if (reminder.state === "pending" || reminder.state === "on") {
     return (
-      <div
+      <p
         data-testid={`${tid}-reminder-${reminder.state}`}
-        className="neo-border border-black rounded-lg bg-foreground text-background px-4 py-3 flex items-center gap-3"
+        className="inline-flex flex-wrap items-center justify-center gap-x-2 text-center text-body-sm text-muted-foreground"
       >
-        {reminder.state === "on" ? <BellRing size={20} className="shrink-0" /> : <Mail size={20} className="shrink-0" />}
-        <p className="text-sm leading-snug flex-1">
+        {reminder.state === "on" ? (
+          <BellRing size={16} className="shrink-0" aria-hidden="true" />
+        ) : (
+          <Mail size={16} className="shrink-0" aria-hidden="true" />
+        )}
+        <span>
           {reminder.state === "on"
             ? t(`${ns}.reminderOn`, { email: reminder.email })
             : t(`${ns}.reminderPending`, { email: reminder.email })}
-        </p>
+        </span>
         {reminder.state === "on" && (
-          <button
-            type="button"
-            className="shrink-0 font-mono text-[11px] uppercase underline opacity-70"
+          <Button
+            variant="ghost"
+            size="sm"
+            className="px-2 font-body font-normal text-muted-foreground underline underline-offset-4"
             onClick={() => {
               void turnOff(gameArg);
               track(events.reminderTurnedOff);
             }}
           >
             {t(`${ns}.reminderOff`)}
-          </button>
+          </Button>
         )}
-      </div>
+      </p>
     );
   }
 
   if (!expanded) {
     return (
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="sm"
         data-testid={`${tid}-reminder-expand`}
         onClick={() => setExpanded(true)}
-        className="inline-flex items-center justify-center gap-2 py-1 text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+        className="px-2 font-body font-normal text-muted-foreground underline underline-offset-4 hover:text-foreground"
       >
-        <Mail size={16} className="shrink-0" />
+        <Mail size={16} className="shrink-0" aria-hidden="true" />
         {t("dailyShare.reminderCollapsed")}
-      </button>
+      </Button>
     );
   }
 
   return (
-    <form
-      onSubmit={submit}
-      data-testid={`${tid}-reminder-form`}
-      className="neo-border border-black neo-shadow rounded-lg bg-yellow text-yellow-foreground px-4 py-4"
-    >
-      <p className="font-heading font-black text-lg uppercase leading-tight">{t(`${ns}.reminderTitle`)}</p>
-      <p className="text-sm mt-1 leading-snug">{t(`${ns}.reminderBody`)}</p>
-      <div className="mt-3 flex gap-2">
-        <input
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder={t(`${ns}.reminderPlaceholder`)}
-          aria-label={t(`${ns}.reminderPlaceholder`)}
-          className="min-w-0 flex-1 rounded-md border-[3px] border-black bg-white text-black px-3 py-2 text-base"
-        />
-        <NeoButton type="submit" variant="primary" size="md" disabled={busy || !email}>
-          {t(`${ns}.reminderCta`)}
-        </NeoButton>
-      </div>
-      {error && <p className="mt-2 text-sm font-bold text-destructive">{error}</p>}
-      <p className="mt-2 text-[11px] opacity-80">{t(`${ns}.reminderPrivacy`)}</p>
-    </form>
+    <Card elevation="flat" className="w-full basis-full text-left" data-testid={`${tid}-reminder-form`}>
+      <form onSubmit={submit}>
+        <p className="font-heading font-bold text-title-sm">{t(`${ns}.reminderTitle`)}</p>
+        <p className="mt-1 text-body-sm text-muted-foreground">{t(`${ns}.reminderBody`)}</p>
+        <div className="mt-3 flex gap-2">
+          <Input
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder={t(`${ns}.reminderPlaceholder`)}
+            aria-label={t(`${ns}.reminderPlaceholder`)}
+            className="min-w-0 flex-1"
+          />
+          <Button type="submit" variant="secondary" disabled={!email} loading={busy}>
+            {t(`${ns}.reminderCta`)}
+          </Button>
+        </div>
+        {error && <p className="mt-2 text-body-sm font-bold text-verdict-wrong">{error}</p>}
+        <p className="mt-2 text-meta text-muted-foreground">{t(`${ns}.reminderPrivacy`)}</p>
+      </form>
+    </Card>
   );
 }
 
@@ -214,32 +224,27 @@ export function ChallengeResults({ challenges, game = "older" }: { challenges: C
   const { ns, tid } = GAME_UI[game];
   if (challenges.length === 0) return null;
   return (
-    <div data-testid={`${tid}-challenge-results`} className="neo-border border-black rounded-lg bg-card px-4 py-3">
-      <p className="inline-flex items-center gap-2 font-heading font-black uppercase text-sm">
-        <Swords size={16} /> {t(`${ns}.challengeResultsTitle`)}
+    <Card elevation="flat" padding="sm" data-testid={`${tid}-challenge-results`}>
+      <p className="inline-flex items-center gap-2 font-heading font-bold text-body-sm">
+        <Swords size={16} className="text-mode-accent" aria-hidden="true" /> {t(`${ns}.challengeResultsTitle`)}
       </p>
       <ul className="mt-2 space-y-1.5">
         {challenges.flatMap((c) =>
           c.results.map((r, i) => (
-            <li key={`${c.challengeId}-${i}`} className="flex items-center justify-between gap-2 text-sm">
+            <li key={`${c.challengeId}-${i}`} className="flex items-center justify-between gap-2 text-body-sm">
               <span className="min-w-0 truncate">
-                <span className="font-mono text-[10.5px] text-muted-foreground mr-1.5">#{c.edition}</span>
+                <span className="mr-1.5 font-mono text-eyebrow text-muted-foreground">#{c.edition}</span>
                 <span className="font-bold">{r.name ?? t(`${ns}.aFriend`)}</span>{" "}
                 {r.score}/{r.total}
               </span>
-              <span
-                className={cn(
-                  "shrink-0 rounded-full border-2 border-black px-2 py-0.5 text-[11px] font-bold uppercase",
-                  r.tie ? "bg-yellow text-yellow-foreground" : r.beatYou ? "bg-destructive text-destructive-foreground" : "bg-accent text-accent-foreground",
-                )}
-              >
+              <Badge tone={r.tie ? "neutral" : r.beatYou ? "wrong" : "right"} className="shrink-0">
                 {r.tie ? t(`${ns}.challengeTieShort`) : r.beatYou ? t(`${ns}.challengeBeatYou`) : t(`${ns}.challengeYouWon`)}
-              </span>
+              </Badge>
             </li>
           )),
         )}
       </ul>
-    </div>
+    </Card>
   );
 }
 
@@ -256,9 +261,9 @@ export function ChallengeBanner({ challenge, game = "older" }: { challenge: Chal
   return (
     <div
       data-testid={`${tid}-challenge-banner`}
-      className="shrink-0 mb-2 rounded-lg border-[3px] border-black bg-hot-pink text-white px-3 py-1.5 text-center text-sm font-bold shadow-[3px_3px_0_0_#000]"
+      className="mb-2 shrink-0 rounded-lg bg-card px-3 py-1.5 text-center text-body-sm font-bold neo-border"
     >
-      <Swords size={14} className="inline mr-1.5 -mt-0.5" />
+      <Swords size={14} className="-mt-0.5 mr-1.5 inline text-mode-accent" aria-hidden="true" />
       {t(`${ns}.challengeBanner`, {
         name: challenge.fromName ?? t(`${ns}.aFriend`),
         score: challenge.score,
@@ -284,26 +289,28 @@ export function HeadToHead({
   const { ns, tid } = GAME_UI[game];
   const name = challenge.fromName ?? t(`${ns}.aFriend`);
   return (
-    <div
+    <Card
+      elevation="lifted"
       data-testid={`${tid}-head-to-head`}
       className={cn(
-        "neo-border border-black neo-shadow-lg rounded-lg text-center px-4 py-4",
-        verdict === "won" ? "bg-accent text-accent-foreground" : verdict === "lost" ? "bg-hot-pink text-white" : "bg-yellow text-yellow-foreground",
+        "text-center",
+        verdict === "won" && "!border-verdict-right",
+        verdict === "lost" && "!border-verdict-wrong",
       )}
     >
-      <p className="font-heading font-black text-xl uppercase">
+      <p className="font-heading font-bold text-title">
         {verdict === "won"
           ? t(`${ns}.challengeWon`, { name })
           : verdict === "lost"
             ? t(`${ns}.challengeLost`, { name })
             : t(`${ns}.challengeTie`, { name })}
       </p>
-      <p className="mt-2 font-heading font-black text-4xl tabular-nums">
-        {myScore} <span className="opacity-60 text-2xl">–</span> {challenge.score}
+      <p className="mt-2 font-mono font-bold text-display tabular-nums">
+        {myScore} <span className="text-muted-foreground">–</span> {challenge.score}
       </p>
-      <p className="mt-1 font-mono text-[11px] uppercase opacity-80">
+      <p className="mt-1 font-mono text-eyebrow uppercase text-muted-foreground">
         {t(`${ns}.you`)} · {name}
       </p>
-    </div>
+    </Card>
   );
 }

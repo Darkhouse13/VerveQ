@@ -229,7 +229,17 @@
     "home": "Accueil"
   },
   "stage": {
-    "exit": "Quitter"
+    "exit": "Quitter",
+    "quitRun": {
+      "title": "Quitter cette partie ?",
+      "body_one": "Ta série infinie de {{count}} s'arrête ici.",
+      "body_other": "Ta série infinie de {{count}} s'arrête ici.",
+      "confirm": "Quitter la partie",
+      "cancel": "Continuer"
+    },
+    "scoreLabel": "Score : {{value}}",
+    "streakLabel": "Série : {{value}}",
+    "roundLabel": "Manche {{current}} sur {{total}}"
   },
   "quizView": {
     "quit": "Quitter",
@@ -547,7 +557,7 @@
     "followTitle": "Un nouveau jeu chaque matin sur @{{handle}}",
     "followBody": "Abonne-toi pour voir le jeu de demain dans ton fil.",
     "followCta": "Suivre @{{handle}}",
-    "reminderCollapsed": "Ou reçois un rappel par e-mail",
+    "reminderCollapsed": "Rappel par e-mail",
     "keepTitle": "Tu joueras sur Safari ou Chrome la prochaine fois ?",
     "keepBody_one": "Garde ta série de {{count}} jour : copie ce lien et ouvre-le là-bas.",
     "keepBody_other": "Garde ta série de {{count}} jours : copie ce lien et ouvre-le là-bas.",
@@ -558,6 +568,27 @@
     "keepRateLimited": "Tu as créé beaucoup de liens aujourd'hui. Utilise celui déjà copié.",
     "linkConnected": "Série connectée. Elle te suit ici maintenant.",
     "linkExpired": "Ce lien de série a expiré. Copies-en un nouveau là où tu joues.",
-    "linkUsedUp": "Ce lien de série ne peut plus servir. Copies-en un nouveau."
+    "linkUsedUp": "Ce lien de série ne peut plus servir. Copies-en un nouveau.",
+    "storyStreak_one": "Série de {{count}} jour",
+    "storyStreak_other": "Série de {{count}} jours"
+  },
+  "result": {
+    "nextToday": "Ensuite aujourd'hui",
+    "answers": "Tes réponses",
+    "squares": "{{score}} bonnes réponses sur {{total}}",
+    "next": {
+      "older": {
+        "title": "Qui est le plus âgé ?",
+        "body": "Touche le joueur le plus âgé. 10 par jour."
+      },
+      "letters": {
+        "title": "Lettres manquantes",
+        "body": "Trouve le joueur. 10 par jour."
+      },
+      "home": {
+        "title": "D'autres jeux aujourd'hui",
+        "body": "La suite du jour est sur l'accueil."
+      }
+    }
   }
 }

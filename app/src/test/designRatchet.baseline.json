@@ -149,10 +149,7 @@
     "opacityText": 1
   },
   "src/components/shell/play/PlayStage.tsx": {
-    "textPx": 2,
-    "rawButton": 1,
-    "fixedInset": 2,
-    "opacityText": 1
+    "fixedInset": 2
   },
   "src/components/shell/play/QuizPlayView.tsx": {
     "rawButton": 1,
@@ -214,19 +211,6 @@
     "rawButton": 1,
     "fixedInset": 2
   },
-  "src/components/shell/play/whosOlder/DailyShare.tsx": {
-    "borderBlack": 3,
-    "fontBlack": 2
-  },
-  "src/components/shell/play/whosOlder/WhosOlderRetention.tsx": {
-    "textPx": 6,
-    "shadowArbitrary": 1,
-    "borderBlack": 8,
-    "hex": 1,
-    "rawButton": 2,
-    "fontBlack": 5,
-    "opacityText": 4
-  },
   "src/components/ui/overlay.tsx": {
     "fixedInset": 1
   },
@@ -278,9 +262,6 @@
   "src/index.css": {
     "hex": 2,
     "colorFn": 20
-  },
-  "src/lib/dailyShare.ts": {
-    "hex": 19
   },
   "src/lib/rankedLadder.ts": {
     "hex": 4
@@ -499,32 +480,13 @@
     "opacityText": 2
   },
   "src/pages/shell/play/MissingLettersPlayScreen.tsx": {
-    "textPx": 9,
-    "shadowArbitrary": 8,
-    "borderBlack": 15,
-    "hex": 8,
-    "colorFn": 2,
-    "rawButton": 3,
-    "fixedInset": 1,
-    "fontBlack": 9,
-    "opacityText": 3,
-    "trackingArbitrary": 4
+    "rawButton": 1
   },
   "src/pages/shell/play/SurvivalPlayScreen.tsx": {
     "roundedXl": 1
   },
   "src/pages/shell/play/WhosOlderPlayScreen.tsx": {
-    "textPx": 9,
-    "shadowArbitrary": 11,
-    "borderBlack": 14,
-    "hex": 11,
-    "colorFn": 1,
-    "rawButton": 1,
-    "fixedInset": 1,
-    "roundedXl": 2,
-    "fontBlack": 8,
-    "opacityText": 2,
-    "trackingArbitrary": 4
+    "rawButton": 1
   },
   "src/pages/shell/weekend/BudgetSquadScreen.tsx": {
     "textPx": 26,

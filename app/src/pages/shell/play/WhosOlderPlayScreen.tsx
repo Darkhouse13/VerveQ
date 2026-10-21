@@ -3,8 +3,9 @@
  * most of the account's reach. Two footballers, tap the older one; the gap
  * between their birth dates shrinks every round, from years to days.
  *
- * It wears the reel's look (`.theme-older`: ink ground, blue card over pink,
- * lime OLDER stamp, escalating EASY → IMPOSSIBLE chip) and moves on by itself:
+ * It wears the reel's look on the shared StageFrame (ink ground, blue card
+ * over pink with cream display names, an OLDER stamp, the EASY → IMPOSSIBLE
+ * ramp as a neutral tier tag) and moves on by itself:
  * an answer flips straight into the reveal — verdict, birth dates, gap — which
  * holds for a beat and then deals the next pair. Tapping skips the wait.
  *
@@ -12,7 +13,10 @@
  * scored /10 with a shareable emoji row. Finishing it unlocks ENDLESS — fresh
  * pairs until the first wrong answer.
  *
- * The retention loop sits on the daily's result card (WhosOlderRetention.tsx):
+ * The result is the shared ResultScreen (components/shell/play/result): score
+ * hero, streak, ONE lime Share, "Next today" (Missing Letters), Endless, and a
+ * quiet reminder/follow line. The retention loop's pieces
+ * (WhosOlderRetention.tsx) are:
  * the daily STREAK with a live countdown to the next edition, the EMAIL
  * REMINDER sign-up, and the CHALLENGE — sharing turns the result into a
  * `/older?c=<id>` link. A friend opening it plays the same ten pairs (today's
@@ -28,11 +32,17 @@ import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { useTranslation } from "react-i18next";
 import { notify, warnTabSwitchOnce } from "@/lib/notify";
-import { CalendarDays, Check, Share2, Flame, Infinity as InfinityIcon, Swords, X } from "lucide-react";
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoButton } from "@/components/neo/NeoButton";
+import { CalendarDays, Check, Share2, Flame, Infinity as InfinityIcon, Star, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { PlayStage } from "@/components/shell/play/PlayStage";
-import { MetricsPanel, AmbientStrip } from "@/components/shell/play/ambient";
+import { StageScore, StepDots, TierBadge } from "@/components/shell/play/StageParts";
+import { ResultDetails, ResultScreen } from "@/components/shell/play/result/ResultScreen";
+import { HeroPill, ResultHero } from "@/components/shell/play/result/ResultHero";
+import { NextTodayCard, ResultActions } from "@/components/shell/play/result/ResultActions";
+import { nextTodayTarget } from "@/components/shell/play/result/nextToday";
+import { MetricsPanel } from "@/components/shell/play/ambient";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { getShareBaseUrl } from "@/lib/shareBase";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
@@ -44,8 +54,8 @@ import {
   ReminderCard,
   StreakBlock,
 } from "@/components/shell/play/whosOlder/WhosOlderRetention";
-import { FollowCard, ShareSheet, StreakLinkOffer } from "@/components/shell/play/whosOlder/DailyShare";
-import { isInstagramInAppBrowser, isInstagramVisitor } from "@/lib/dailyShare";
+import { FollowLink, ShareSheet, StreakLinkOffer } from "@/components/shell/play/whosOlder/DailyShare";
+import { isInstagramInAppBrowser, isInstagramVisitor, visibleStandingPct } from "@/lib/dailyShare";
 import { useStreakLinkClaim } from "@/hooks/useStreakLinkClaim";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -60,9 +70,6 @@ import { api } from "../../../../convex/_generated/api";
 type SessionView = FunctionReturnType<typeof api.whosOlder.startDaily>["session"];
 type Reveal = SessionView["history"][number];
 type Side = "a" | "b";
-
-/** Below this many finishers "better than N%" is noise, so it stays hidden. */
-const MIN_FINISHERS_FOR_STANDING = 5;
 
 /** How long a reveal holds before the next pair. A miss holds longer: that is
  *  the reveal the player actually needs to read. */
@@ -80,14 +87,13 @@ function tierFor(step: number): Tier {
   if (step <= 8) return "tight";
   return "impossible";
 }
-const TIER_CHIP: Record<Tier, string> = {
-  easy: "bg-success text-success-foreground border-black",
-  close: "bg-yellow text-yellow-foreground border-black",
-  tight: "bg-destructive text-destructive-foreground border-black",
-  impossible: "bg-black text-accent border-accent",
-};
-/** Heavy ink drop on the white names — the reel's type treatment. */
-const NAME_SHADOW = { textShadow: "3px 3px 0 hsl(0 0% 7%)" } as const;
+const TIER_LEVEL: Record<Tier, 0 | 1 | 2 | 3> = { easy: 0, close: 1, tight: 2, impossible: 3 };
+/**
+ * Heavy ink drop on the cream display names — the reel's type treatment, and
+ * the one sanctioned exception to "ink text on fills": ≥24px bold names pass
+ * 3:1 large-text contrast on the blue and pink cards.
+ */
+const NAME_SHADOW = { textShadow: "3px 3px 0 hsl(var(--ink))" } as const;
 
 /** "h:mm" until the next UTC midnight — when the next edition goes live. */
 function nextEditionCountdown(): string {
@@ -134,9 +140,12 @@ export default function WhosOlderPlayScreen() {
   const [status, setStatus] = useState<"loading" | "failed" | "ready">("loading");
   const [busy, setBusy] = useState(false);
   const [pendingPick, setPendingPick] = useState<Side | null>(null);
-  const [flash, setFlash] = useState<"good" | "bad" | null>(null);
+  const [flash, setFlash] = useState<"right" | "wrong" | null>(null);
   const revealedAt = useRef(0);
   const inFlight = useRef(false);
+  // "Next today" on the result: is today's Missing Letters already done?
+  // Asked only once a run has finished.
+  const lettersToday = useQuery(api.missingLetters.getToday, view?.status === "completed" ? {} : "skip");
 
   const accountStateRef = useRef(accountState);
   accountStateRef.current = accountState;
@@ -309,7 +318,7 @@ export default function WhosOlderPlayScreen() {
           noteQuestionAnswered(view.sessionId);
           revealedAt.current = Date.now();
           setReveal(res.reveal);
-          setFlash(res.reveal.correct ? "good" : "bad");
+          setFlash(res.reveal.correct ? "right" : "wrong");
           if (res.session.status === "completed") {
             completeRun(view.sessionId, {
               score: res.session.score,
@@ -390,18 +399,18 @@ export default function WhosOlderPlayScreen() {
 
   if (status !== "ready" || !view) {
     return (
-      <PlayStage theme={THEME} title={t("whosOlder.title")} onExit={exit} exitLabel={t("whosOlder.quit")}>
+      <PlayStage mode="whos-older" theme={THEME} title={t("whosOlder.title")} onExit={exit} exitLabel={t("whosOlder.quit")}>
         <div className="flex flex-col items-center justify-center py-12">
           {status === "failed" ? (
-            <NeoCard color="pink" shadow="lg" className="w-full text-center py-8 px-5">
-              <p className="font-heading font-bold text-2xl">{t("whosOlder.startFailedTitle")}</p>
-              <p className="text-sm mt-3 opacity-90">{t("whosOlder.startFailedMessage")}</p>
-              <NeoButton variant="primary" size="lg" className="mt-6 w-full" onClick={loadDaily}>
+            <Card elevation="lifted" padding="lg" className="w-full text-center">
+              <p className="font-heading font-bold text-title">{t("whosOlder.startFailedTitle")}</p>
+              <p className="mt-3 text-body-sm text-muted-foreground">{t("whosOlder.startFailedMessage")}</p>
+              <Button variant="primary" size="lg" block className="mt-6" onClick={loadDaily}>
                 {t("whosOlder.tryAgain")}
-              </NeoButton>
-            </NeoCard>
+              </Button>
+            </Card>
           ) : (
-            <p className="font-heading font-bold text-lg animate-pulse">{t("whosOlder.loading")}</p>
+            <p className="font-heading font-bold text-title-sm animate-pulse motion-reduce:animate-none">{t("whosOlder.loading")}</p>
           )}
         </div>
       </PlayStage>
@@ -424,167 +433,193 @@ export default function WhosOlderPlayScreen() {
       ? t("whosOlder.dailySubtitle", { n: view.edition })
       : t("whosOlder.endlessSubtitle");
   const metrics = isDaily ? { score: view.score } : { streak: view.score };
-  const progress =
-    isDaily && view.totalRounds
-      ? { current: Math.min(view.roundIndex + (reveal ? 0 : 1), view.totalRounds), total: view.totalRounds }
-      : undefined;
 
   // ── Finished states (only once the last reveal has played out) ──
   if (view.status === "completed" && !reveal) {
     if (isDaily) {
       const daily = view;
-      const standing = isChallengeRun ? null : (today?.standing ?? null);
-      const showStanding = standing && standing.finishers >= MIN_FINISHERS_FOR_STANDING;
+      // Decision 7: "better than X%" only when X ≥ 50 (lib/dailyShare.ts).
+      const standingPct = isChallengeRun ? null : visibleStandingPct(today?.standing);
       const streak = !isChallengeRun && today?.streak?.playedToday ? today.streak : null;
+      const total = daily.totalRounds ?? daily.history.length;
+      const next = nextTodayTarget(
+        "older",
+        lettersToday === undefined ? undefined : lettersToday.daily?.status === "completed",
+      );
       return (
-        <PlayStage theme={THEME} title={t("whosOlder.title")} subtitle={subtitle} onExit={exit} exitLabel={t("whosOlder.home")}>
-          <div className="flex flex-col gap-3 py-2">
-            {challengeHere && challengeVerdict && (
-              <HeadToHead challenge={challengeHere} myScore={daily.score} verdict={challengeVerdict} />
-            )}
-            <div className="neo-border border-black neo-shadow-lg rounded-lg bg-electric-blue text-white text-center py-6 px-4">
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] opacity-90">
-                {t("whosOlder.editionLabel", { n: daily.edition })}
-              </p>
-              <p className="font-heading font-black text-7xl leading-none mt-2" style={NAME_SHADOW}>
-                {daily.score}
-                <span className="text-4xl opacity-80">/{daily.totalRounds}</span>
-              </p>
-              <p className="text-xl whitespace-nowrap mt-3" aria-hidden>
-                {emojiRow(daily.history)}
-              </p>
-              {showStanding && (
-                <p className="inline-block mt-3 rounded-full border-2 border-black bg-accent text-accent-foreground px-3 py-1 text-sm font-bold">
-                  {t("whosOlder.standing", {
-                    pct: Math.round((standing.below / standing.finishers) * 100),
-                    count: standing.finishers,
-                  })}
-                </p>
-              )}
-              {!streak && !isChallengeRun && (
-                <p className="font-mono text-[10.5px] uppercase mt-3 opacity-90">
+        <PlayStage mode="whos-older" theme={THEME} title={t("whosOlder.title")} subtitle={subtitle} onExit={exit} exitLabel={t("whosOlder.home")}>
+          <ResultScreen
+            testId="whos-older-result"
+            top={
+              challengeHere && challengeVerdict ? (
+                <HeadToHead challenge={challengeHere} myScore={daily.score} verdict={challengeVerdict} />
+              ) : undefined
+            }
+            hero={
+              <ResultHero
+                eyebrow={t("whosOlder.editionLabel", { n: daily.edition })}
+                score={daily.score}
+                total={total}
+                squares={daily.history.map((r) => r.correct)}
+                squaresLabel={t("result.squares", { score: daily.score, total })}
+              >
+                {standingPct != null && today?.standing && (
+                  <HeroPill testId="whos-older-standing">
+                    {t("whosOlder.standing", { pct: standingPct, count: today.standing.finishers })}
+                  </HeroPill>
+                )}
+              </ResultHero>
+            }
+            status={
+              streak ? (
+                <StreakBlock current={streak.current} best={streak.best} />
+              ) : !isChallengeRun ? (
+                <p className="text-center text-body-sm text-muted-foreground">
                   {t("whosOlder.nextIn", { time: nextEditionCountdown() })}
                 </p>
-              )}
-            </div>
-
-            {isChallengeRun ? (
-              <NeoButton variant="accent" size="lg" onClick={loadDaily} data-testid="whos-older-play-today">
-                <CalendarDays size={18} className="mr-1.5" />
-                {t("whosOlder.playToday", { n: today?.edition ?? "" })}
-              </NeoButton>
-            ) : (
-              <NeoButton
-                variant="pink"
-                size="lg"
-                className="w-full"
-                onClick={() => {
-                  track("whos_older_share_pressed", { edition: daily.edition, score: daily.score });
-                  setShareOpen(true);
-                }}
-                data-testid="whos-older-challenge-share"
-              >
-                <Share2 size={18} className="mr-1.5" />
-                {t("dailyShare.cta")}
-              </NeoButton>
-            )}
-
-            {streak && <StreakBlock current={streak.current} best={streak.best} />}
-            {streak && isInstagramInAppBrowser() && <StreakLinkOffer game="older" streak={streak.current} />}
-            {!isChallengeRun && (
-              <NeoButton
-                variant="outline"
-                size="lg"
-                className="w-full"
-                onClick={startEndless}
-                disabled={busy}
-                data-testid="whos-older-endless"
-              >
-                <InfinityIcon size={18} className="mr-1.5" />
-                {t("whosOlder.playEndless")}
-              </NeoButton>
-            )}
-            {!isChallengeRun && bestEndless != null && (
-              <p className="text-center font-mono text-[11px] uppercase text-accent">
-                {t("whosOlder.bestStreak", { count: bestEndless })}
-              </p>
-            )}
-
-            {!isChallengeRun && isInstagramVisitor() && <FollowCard game="older" />}
-            {today?.reminder && <ReminderCard reminder={today.reminder} collapsed />}
-            {!isChallengeRun && today?.challenges && <ChallengeResults challenges={today.challenges} />}
-            {!isChallengeRun && (
-              <ShareSheet
-                game="older"
-                open={shareOpen}
-                onOpenChange={setShareOpen}
-                makeLink={() => makeShareLink(daily)}
-                result={{
-                  edition: daily.edition,
-                  score: daily.score,
-                  total: daily.totalRounds ?? daily.history.length,
-                  history: daily.history,
-                  standingPct: showStanding ? Math.round((standing.below / standing.finishers) * 100) : null,
-                }}
+              ) : undefined
+            }
+            actions={
+              <ResultActions
+                primary={
+                  isChallengeRun
+                    ? {
+                        label: t("whosOlder.playToday", { n: today?.edition ?? "" }),
+                        icon: <CalendarDays size={18} aria-hidden="true" />,
+                        onClick: loadDaily,
+                        testId: "whos-older-play-today",
+                      }
+                    : {
+                        label: t("dailyShare.cta"),
+                        icon: <Share2 size={18} aria-hidden="true" />,
+                        onClick: () => {
+                          track("whos_older_share_pressed", { edition: daily.edition, score: daily.score });
+                          setShareOpen(true);
+                        },
+                        testId: "whos-older-challenge-share",
+                      }
+                }
+                next={
+                  isChallengeRun ? undefined : (
+                    <NextTodayCard
+                      target={next}
+                      testId="whos-older-next-today"
+                      onFollow={() =>
+                        track("daily_next_today_clicked", { from: "older", to: next.kind === "game" ? next.game : "home" })
+                      }
+                    />
+                  )
+                }
+                secondary={
+                  isChallengeRun
+                    ? []
+                    : [
+                        {
+                          label: t("whosOlder.playEndless"),
+                          icon: <InfinityIcon size={18} aria-hidden="true" />,
+                          onClick: startEndless,
+                          disabled: busy,
+                          testId: "whos-older-endless",
+                        },
+                      ]
+                }
+                note={
+                  !isChallengeRun && bestEndless != null ? (
+                    <p className="text-center font-mono text-eyebrow uppercase text-muted-foreground">
+                      {t("whosOlder.bestStreak", { count: bestEndless })}
+                    </p>
+                  ) : undefined
+                }
               />
-            )}
-
-            {/* The ten answers — each row carries its verdict colour. */}
-            <ol className="space-y-2">
-              {daily.history.map((r, i) => {
-                const older = r[r.older];
-                const younger = r[r.older === "a" ? "b" : "a"];
-                return (
-                  <li
-                    key={i}
-                    className={cn(
-                      "neo-border border-black rounded-lg flex items-center gap-3 px-3 py-2 text-sm",
-                      r.correct ? "bg-success text-success-foreground" : "bg-destructive text-destructive-foreground",
-                    )}
-                  >
-                    <span className="shrink-0 grid place-items-center h-6 w-6 rounded-full bg-black/25">
-                      {r.correct ? <Check size={14} strokeWidth={3.5} /> : <X size={14} strokeWidth={3.5} />}
-                    </span>
-                    <span className="min-w-0 leading-snug">
-                      <span className="font-heading font-bold">{older.name}</span>{" "}
-                      <span className="opacity-90">
-                        {t("whosOlder.olderThan", { name: younger.name, gap: formatGap(r.gapDays) })}
-                      </span>
-                    </span>
-                  </li>
-                );
-              })}
-            </ol>
-            <p className="text-center text-[11px] text-muted-foreground">{t("whosOlder.sources")}</p>
-          </div>
+            }
+            details={
+              <>
+                {streak && isInstagramInAppBrowser() && <StreakLinkOffer game="older" streak={streak.current} />}
+                {!isChallengeRun && today?.challenges && <ChallengeResults challenges={today.challenges} />}
+                <ResultDetails summary={t("result.answers")}>
+                  {/* The ten answers — each row marked with its verdict. */}
+                  <ol data-testid="whos-older-answers">
+                    {daily.history.map((r, i) => {
+                      const older = r[r.older];
+                      const younger = r[r.older === "a" ? "b" : "a"];
+                      return (
+                        <li key={i} className="flex items-center gap-3 border-b border-border/15 py-2 text-body-sm last:border-b-0">
+                          <span
+                            className={cn(
+                              "grid h-6 w-6 shrink-0 place-items-center rounded-full text-ink",
+                              r.correct ? "bg-verdict-right" : "bg-verdict-wrong",
+                            )}
+                          >
+                            {r.correct ? <Check size={14} strokeWidth={3.5} /> : <X size={14} strokeWidth={3.5} />}
+                          </span>
+                          <span className="min-w-0">
+                            <span className="font-heading font-bold">{older.name}</span>{" "}
+                            <span className="text-muted-foreground">
+                              {t("whosOlder.olderThan", { name: younger.name, gap: formatGap(r.gapDays) })}
+                            </span>
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                  <p className="mt-2 text-meta text-muted-foreground">{t("whosOlder.sources")}</p>
+                </ResultDetails>
+              </>
+            }
+            footer={
+              <>
+                {today?.reminder && <ReminderCard reminder={today.reminder} collapsed />}
+                {!isChallengeRun && isInstagramVisitor() && <FollowLink game="older" />}
+              </>
+            }
+          />
+          {!isChallengeRun && (
+            <ShareSheet
+              game="older"
+              open={shareOpen}
+              onOpenChange={setShareOpen}
+              makeLink={() => makeShareLink(daily)}
+              result={{
+                edition: daily.edition,
+                score: daily.score,
+                total,
+                history: daily.history,
+                standingPct,
+                streak: streak?.current ?? null,
+              }}
+            />
+          )}
         </PlayStage>
       );
     }
 
     return (
-      <PlayStage theme={THEME} title={t("whosOlder.title")} subtitle={subtitle} onExit={exit} exitLabel={t("whosOlder.home")}>
-        <div className="flex flex-col gap-3 py-2">
-          <div className="neo-border border-black neo-shadow-lg rounded-lg bg-hot-pink text-white text-center py-7 px-4">
-            <p className="font-heading font-bold text-lg uppercase">{t("whosOlder.runOver")}</p>
-            <p className="font-heading font-black text-8xl leading-none mt-2" style={NAME_SHADOW}>
-              {view.score}
-            </p>
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] mt-2">{t("whosOlder.streakLabel")}</p>
-            {bestEndless != null && (
-              <p className="inline-block mt-4 rounded-full border-2 border-black bg-accent text-accent-foreground px-3 py-1 text-sm font-bold">
-                {t("whosOlder.bestStreak", { count: bestEndless })}
-              </p>
-            )}
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <NeoButton variant="accent" size="lg" onClick={startEndless} disabled={busy}>
-              {t("whosOlder.playAgain")}
-            </NeoButton>
-            <NeoButton variant="blue" size="lg" onClick={loadDaily}>
-              {t("whosOlder.backToDaily")}
-            </NeoButton>
-          </div>
-        </div>
+      <PlayStage mode="whos-older" theme={THEME} title={t("whosOlder.title")} subtitle={subtitle} onExit={exit} exitLabel={t("whosOlder.home")}>
+        <ResultScreen
+          testId="whos-older-run-over"
+          hero={
+            <ResultHero eyebrow={t("whosOlder.runOver")} score={view.score} caption={t("whosOlder.streakLabel")}>
+              {bestEndless != null && <HeroPill>{t("whosOlder.bestStreak", { count: bestEndless })}</HeroPill>}
+            </ResultHero>
+          }
+          actions={
+            <ResultActions
+              primary={{
+                label: t("whosOlder.playAgain"),
+                icon: <InfinityIcon size={18} aria-hidden="true" />,
+                onClick: startEndless,
+                disabled: busy,
+              }}
+              secondary={[
+                {
+                  label: t("whosOlder.backToDaily"),
+                  icon: <CalendarDays size={18} aria-hidden="true" />,
+                  onClick: loadDaily,
+                },
+              ]}
+            />
+          }
+        />
       </PlayStage>
     );
   }
@@ -606,6 +641,7 @@ export default function WhosOlderPlayScreen() {
   const renderCard = (side: Side) => {
     const isOlder = reveal?.older === side;
     const pickedWrong = reveal && !reveal.correct && reveal.guess === side;
+    const pickedRight = reveal && reveal.correct && isOlder;
     return (
       <button
         key={`${shownIndex}-${side}`}
@@ -614,39 +650,42 @@ export default function WhosOlderPlayScreen() {
         onClick={() => (reveal ? skipReveal() : answer(side))}
         data-testid={`whos-older-card-${side}`}
         className={cn(
-          "relative flex-1 min-h-0 w-full rounded-xl px-4 py-3 text-white",
+          "relative flex-1 min-h-0 w-full rounded-lg px-4 py-3 text-cream neo-border",
           "flex flex-col items-center justify-center text-center overflow-visible",
-          "border-[3px] transition-[transform,opacity,box-shadow] duration-200",
+          "transition-[transform,box-shadow,border-color] duration-ui motion-reduce:transition-none",
           side === "a" ? "bg-electric-blue animate-older-in-top" : "bg-hot-pink animate-older-in-bottom",
-          isOlder
-            ? "border-accent shadow-[7px_7px_0_0_#000] -translate-y-1"
-            : pickedWrong
-              ? "border-destructive shadow-[5px_5px_0_0_#000]"
-              : "border-black shadow-[5px_5px_0_0_#000]",
-          pickedWrong && "animate-shake-horizontal",
-          !reveal && "active:translate-x-[3px] active:translate-y-[3px] active:shadow-[2px_2px_0_0_#000]",
-          pendingPick === side && "translate-x-[3px] translate-y-[3px] shadow-[2px_2px_0_0_#000]",
+          isOlder ? "neo-shadow-lg -translate-y-1" : "neo-shadow",
+          pickedRight && "!border-4 !border-verdict-right",
+          pickedWrong && "!border-4 !border-verdict-wrong animate-shake-horizontal",
+          !reveal && "enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm",
+          pendingPick === side && "translate-x-0.5 translate-y-0.5 neo-shadow-sm",
         )}
       >
         {/* The younger card dims under a scrim — not via opacity, which the
             swing-in animation's fill would override. */}
         {reveal && !isOlder && (
-          <span aria-hidden className="absolute inset-0 rounded-[9px] bg-black/55 pointer-events-none" />
+          <span aria-hidden className="absolute inset-0 rounded-[inherit] bg-ink/55 pointer-events-none" />
         )}
         {isOlder && (
-          <span className="absolute -top-3 right-3 rotate-[-8deg] animate-badge-land rounded-md border-[3px] border-black bg-accent text-accent-foreground px-2.5 py-0.5 font-heading font-black text-sm uppercase shadow-[3px_3px_0_0_#000]">
+          <Badge
+            tone="neutral"
+            shape="tag"
+            size="md"
+            stamp
+            className="absolute -top-3 right-3 bg-paper text-paper-foreground text-body-sm animate-badge-land motion-reduce:animate-none"
+          >
             {t("whosOlder.olderBadge")}
-          </span>
+          </Badge>
         )}
         <span
-          className="relative font-heading font-black uppercase leading-[0.92] tracking-tight text-[30px] md:text-[38px] break-words max-w-full"
+          className="relative font-heading font-bold uppercase leading-none tracking-tight text-title-lg md:text-display break-words max-w-full"
           style={NAME_SHADOW}
         >
           {names[side]}
         </span>
         <span className="relative mt-2.5 min-h-[1.9rem] flex items-center">
           {reveal && (
-            <span className="animate-badge-land rounded-md border-[3px] border-black bg-foreground text-background px-2.5 py-0.5 font-mono font-bold text-sm tabular-nums shadow-[3px_3px_0_0_#000]">
+            <span className="animate-badge-land motion-reduce:animate-none rounded-md bg-paper text-paper-foreground px-2.5 py-0.5 font-mono font-bold text-body-sm tabular-nums neo-border neo-shadow-sm">
               {formatDob(reveal[side].dob)}
             </span>
           )}
@@ -657,96 +696,77 @@ export default function WhosOlderPlayScreen() {
 
   const verdict = reveal
     ? reveal.guess === "timeout"
-      ? { label: t("whosOlder.forfeited"), cls: "bg-destructive text-destructive-foreground" }
+      ? { label: t("whosOlder.forfeited"), right: false }
       : reveal.correct
-        ? { label: t("whosOlder.correct"), cls: "bg-accent text-accent-foreground" }
-        : { label: t("whosOlder.wrong"), cls: "bg-destructive text-destructive-foreground" }
+        ? { label: t("whosOlder.correct"), right: true }
+        : { label: t("whosOlder.wrong"), right: false }
     : null;
+
+  // Leaving an endless run with points on the board loses it; a daily
+  // resumes where it was left, so it leaves without asking.
+  const exitConfirm =
+    !isDaily && view.status === "active" && view.score > 0
+      ? {
+          title: t("stage.quitRun.title"),
+          description: t("stage.quitRun.body", { count: view.score }),
+          confirmLabel: t("stage.quitRun.confirm"),
+          cancelLabel: t("stage.quitRun.cancel"),
+        }
+      : undefined;
 
   return (
     <PlayStage
+      mode="whos-older"
       theme={THEME}
       title={t("whosOlder.title")}
       subtitle={subtitle}
       onExit={exit}
       exitLabel={t("whosOlder.quit")}
-      strip={<AmbientStrip metrics={metrics} progress={progress} />}
+      exitConfirm={exitConfirm}
+      flash={flash}
+      score={
+        <StageScore
+          icon={isDaily ? <Star size={16} strokeWidth={3} /> : <Flame size={16} strokeWidth={3} />}
+          value={view.score}
+          label={isDaily ? t("stage.scoreLabel", { value: view.score }) : t("stage.streakLabel", { value: view.score })}
+          detail={!isDaily && bestEndless != null ? t("whosOlder.bestShort", { count: bestEndless }) : undefined}
+        />
+      }
+      progress={
+        isDaily && view.totalRounds ? (
+          <StepDots
+            total={view.totalRounds}
+            results={view.history.map((h) => h.correct)}
+            current={shownIndex}
+            label={t("stage.roundLabel", { current: Math.min(shownIndex + 1, view.totalRounds), total: view.totalRounds })}
+          />
+        ) : undefined
+      }
       right={<MetricsPanel metrics={metrics} />}
     >
-      {flash && (
-        <div
-          aria-hidden
-          className={cn(
-            "fixed inset-0 z-50 pointer-events-none opacity-0 animate-older-flash",
-            flash === "good" ? "bg-success" : "bg-destructive",
-          )}
-        />
-      )}
       <div className="flex flex-col h-full">
         {challengeHere && <ChallengeBanner challenge={challengeHere} />}
-        {/* Escalation chip + progress: the reel's top line. */}
-        <div className="shrink-0 flex items-center justify-between gap-2 mb-2">
-          <span
-            className={cn(
-              "rounded-md border-[3px] px-2.5 py-0.5 font-mono font-bold text-[11px] uppercase tracking-[0.14em] shadow-[3px_3px_0_0_#000]",
-              TIER_CHIP[tier],
-            )}
-          >
-            {t(`whosOlder.tier.${tier}`)}
-          </span>
-          {isDaily && view.totalRounds ? (
-            <div className="flex gap-1.5" aria-hidden>
-              {Array.from({ length: view.totalRounds }, (_, i) => {
-                const done = view.history[i];
-                return (
-                  <span
-                    key={i}
-                    className={cn(
-                      "h-2.5 w-2.5 rounded-full border-2",
-                      done
-                        ? done.correct
-                          ? "bg-accent border-accent"
-                          : "bg-destructive border-destructive"
-                        : i === shownIndex
-                          ? "border-foreground bg-foreground/30 scale-125"
-                          : "border-foreground/40",
-                    )}
-                  />
-                );
-              })}
-            </div>
-          ) : (
-            <span className="inline-flex items-center gap-1 font-mono font-bold text-sm text-accent">
-              <Flame size={15} strokeWidth={3} />
-              {view.score}
-              {bestEndless != null && (
-                <span className="text-muted-foreground font-normal ml-1">
-                  · {t("whosOlder.bestShort", { count: bestEndless })}
-                </span>
-              )}
-            </span>
-          )}
+        {/* The tier tag + the ask: the reel's top line. */}
+        <div className="shrink-0 flex items-center justify-between gap-2 mb-3">
+          <TierBadge label={t(`whosOlder.tier.${tier}`)} level={TIER_LEVEL[tier]} />
+          <p className="font-heading font-bold uppercase text-body tracking-tight text-right">{t("whosOlder.prompt")}</p>
         </div>
-
-        <p className="shrink-0 text-center font-heading font-black uppercase text-lg tracking-tight mb-3">
-          {t("whosOlder.prompt")}
-        </p>
 
         <div className="relative flex-1 min-h-0 flex flex-col gap-4">
           {renderCard("a")}
           {renderCard("b")}
           {/* The VS hinge on the seam; it becomes the verdict on reveal. */}
-          <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+          <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-raised">
             <div
               key={reveal ? `v${shownIndex}` : "vs"}
               className={cn(
-                "grid place-items-center h-14 w-14 rounded-full border-[3px] border-black font-heading font-black text-lg shadow-[4px_4px_0_0_#000]",
-                reveal ? "animate-badge-land" : "",
+                "grid place-items-center h-14 w-14 rounded-full neo-border neo-shadow font-heading font-bold text-title-sm",
+                reveal && "animate-badge-land motion-reduce:animate-none",
                 !reveal
-                  ? "bg-foreground text-background"
+                  ? "bg-paper text-paper-foreground"
                   : reveal.correct
-                    ? "bg-accent text-accent-foreground"
-                    : "bg-destructive text-destructive-foreground",
+                    ? "bg-verdict-right text-ink"
+                    : "bg-verdict-wrong text-ink",
               )}
             >
               {!reveal ? "VS" : reveal.correct ? <Check size={28} strokeWidth={4} /> : <X size={28} strokeWidth={4} />}
@@ -755,29 +775,21 @@ export default function WhosOlderPlayScreen() {
         </div>
 
         {/* Verdict + gap, where a Next button used to be. */}
-        <div className="shrink-0 mt-4 min-h-[2.75rem] flex items-center justify-center gap-2" aria-live="polite">
+        <div className="shrink-0 mt-4 min-h-11 flex items-center justify-center gap-2" aria-live="polite">
           {verdict && reveal && (
             <>
-              <span
-                className={cn(
-                  "animate-badge-land rounded-md border-[3px] border-black px-3 py-1 font-heading font-black uppercase text-sm shadow-[3px_3px_0_0_#000]",
-                  verdict.cls,
-                )}
+              <Badge
+                tone={verdict.right ? "right" : "wrong"}
+                shape="tag"
+                size="md"
+                stamp
+                className="text-body-sm animate-badge-land motion-reduce:animate-none"
               >
                 {verdict.label}
-              </span>
-              <span className="animate-badge-land inline-flex items-baseline gap-2 rounded-md border-[3px] border-black bg-foreground text-background px-3 py-1 shadow-[3px_3px_0_0_#000]">
-                <span className="font-mono font-bold text-[10px] tracking-[0.16em] opacity-60">
-                  {t("whosOlder.gapLabel")}
-                </span>
-                <span
-                  className={cn(
-                    "font-heading font-black uppercase text-sm",
-                    reveal.gapDays < 30 ? "text-destructive" : "text-background",
-                  )}
-                >
-                  {formatGap(reveal.gapDays)}
-                </span>
+              </Badge>
+              <span className="animate-badge-land motion-reduce:animate-none inline-flex items-baseline gap-2 rounded-md bg-paper text-paper-foreground px-3 py-1 neo-border neo-shadow-sm">
+                <span className="font-mono font-bold text-eyebrow text-ink/70">{t("whosOlder.gapLabel")}</span>
+                <span className="font-heading font-bold uppercase text-body-sm">{formatGap(reveal.gapDays)}</span>
               </span>
             </>
           )}

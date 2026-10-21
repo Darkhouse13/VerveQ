@@ -1,14 +1,15 @@
 /**
  * The DAILY GAMES' share and follow pieces (docs/RETURN_LOOP.md, parts A + B).
  *
- * "Share result" opens a sheet with two ways out: a text share (the tier-
- * grouped grid plus the challenge link) and a 1080×1920 story image drawn on a
+ * "Share" opens a sheet with two ways out: a text share (the tier-grouped
+ * grid plus the challenge link) and a 1080×1920 story image drawn on a
  * canvas. Both are prepared when the sheet opens, so the share call itself runs
  * straight from the tap — iOS drops the share sheet if an await sits between
  * the tap and navigator.share.
  *
- * The follow card is the "come back tomorrow" ask for Instagram visitors,
- * whose return path is the feed, not an inbox.
+ * The follow link is the "come back tomorrow" ask for Instagram visitors,
+ * whose return path is the feed, not an inbox. It sits in the result screen's
+ * quiet bottom line next to the email reminder.
  */
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -16,8 +17,9 @@ import { notify } from "@/lib/notify";
 import { Image as ImageIcon, Instagram, Link2, Send } from "lucide-react";
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
-import { NeoButton } from "@/components/neo/NeoButton";
+import { Sheet } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { track } from "@/lib/analytics";
 import type { DailyGame } from "./WhosOlderRetention";
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL, SHARE_UI, renderStoryImage, streakLinkUrl, tierGrid } from "@/lib/dailyShare";
@@ -31,8 +33,10 @@ export type ShareResult = {
   score: number;
   total: number;
   history: Array<{ correct: boolean }>;
-  /** 0–100, only when the standing is shown on the result card. */
+  /** 0–100, only when the standing is shown on the result card (≥ 50%). */
   standingPct: number | null;
+  /** Today's daily streak, drawn on the story in the standing's place. */
+  streak: number | null;
 };
 
 export function ShareSheet({
@@ -78,7 +82,10 @@ export function ShareSheet({
       score: result.score,
       total: result.total,
       history: result.history,
-      standing,
+      standing: standing != null && result.standingPct != null ? { pct: result.standingPct, text: standing } : null,
+      streak: result.streak
+        ? { days: result.streak, text: t("dailyShare.storyStreak", { count: result.streak }) }
+        : null,
       cta: t("dailyShare.storyCta"),
     })
       .then((blob) => !cancelled && setStory({ blob, url: URL.createObjectURL(blob) }))
@@ -143,55 +150,62 @@ export function ShareSheet({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className={`${ui.theme} bg-background text-foreground border-[3px] border-border rounded-lg max-w-[min(28rem,calc(100vw-2rem))] max-h-[90dvh] overflow-y-auto`}
-        data-testid={`${ui.tid}-share-sheet`}
-      >
-        <DialogTitle className="font-heading font-black uppercase text-xl pr-10">{t("dailyShare.sheetTitle")}</DialogTitle>
-        <DialogDescription className="sr-only">{t("dailyShare.sheetTitle")}</DialogDescription>
-        {showImage && story ? (
-          <div className="grid gap-3">
-            <img
-              src={story.url}
-              alt={t("dailyShare.storyAlt", { title, n: result.edition })}
-              className="w-full max-w-[16rem] mx-auto rounded-md border-2 border-border"
-              data-testid={`${ui.tid}-story-image`}
-            />
-            <p className="text-sm text-center leading-snug">{t("dailyShare.storyHint")}</p>
-          </div>
-        ) : (
-          <div className="grid gap-3">
-            <NeoButton
-              variant="pink"
-              size="lg"
-              onClick={sendToFriend}
-              disabled={!link}
-              data-testid={`${ui.tid}-share-friend`}
-            >
-              <Send size={18} className="mr-1.5" />
-              {t("dailyShare.friend")}
-            </NeoButton>
-            <NeoButton
-              variant="accent"
-              size="lg"
-              onClick={postToStory}
-              disabled={!story}
-              data-testid={`${ui.tid}-share-story`}
-            >
-              <ImageIcon size={18} className="mr-1.5" />
-              {t("dailyShare.story")}
-            </NeoButton>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
+    <Sheet
+      open={open}
+      onOpenChange={onOpenChange}
+      mdCenter
+      eyebrow={`${title} #${result.edition}`}
+      title={t("dailyShare.sheetTitle")}
+      testId={`${ui.tid}-share-sheet`}
+    >
+      {showImage && story ? (
+        <div className="grid gap-3">
+          <img
+            src={story.url}
+            alt={t("dailyShare.storyAlt", { title, n: result.edition })}
+            className="mx-auto max-h-[55dvh] w-auto max-w-full rounded-md neo-border"
+            data-testid={`${ui.tid}-story-image`}
+          />
+          <p className="text-center text-body-sm">{t("dailyShare.storyHint")}</p>
+        </div>
+      ) : (
+        <div className="grid gap-3">
+          <Button
+            variant="primary"
+            size="lg"
+            block
+            onClick={sendToFriend}
+            disabled={!link}
+            data-testid={`${ui.tid}-share-friend`}
+          >
+            <Send size={18} aria-hidden="true" />
+            {t("dailyShare.friend")}
+          </Button>
+          <Button
+            variant="secondary"
+            size="lg"
+            block
+            onClick={postToStory}
+            disabled={!story}
+            data-testid={`${ui.tid}-share-story`}
+          >
+            <ImageIcon size={18} aria-hidden="true" />
+            {t("dailyShare.story")}
+          </Button>
+        </div>
+      )}
+    </Sheet>
   );
 }
 
-// ── Follow card ────────────────────────────────────────────────────────────
+// ── Follow link ────────────────────────────────────────────────────────────
 
-export function FollowCard({ game }: { game: DailyGame }) {
+/**
+ * "Follow @playverveq" as one quiet link for Instagram visitors. Fires
+ * `*_follow_shown` when it first renders and `*_follow_clicked` on the tap,
+ * as the card it replaced did.
+ */
+export function FollowLink({ game }: { game: DailyGame }) {
   const { t } = useTranslation("play");
   const ui = SHARE_UI[game];
   const shown = useRef(false);
@@ -201,25 +215,18 @@ export function FollowCard({ game }: { game: DailyGame }) {
     track(`${ui.prefix}_follow_shown`);
   }, [ui.prefix]);
   return (
-    <div
+    <a
+      href={INSTAGRAM_URL}
+      target="_blank"
+      rel="noopener noreferrer"
       data-testid={`${ui.tid}-follow`}
-      className="neo-border border-black neo-shadow rounded-lg bg-yellow text-yellow-foreground px-4 py-4"
+      title={t("dailyShare.followBody")}
+      onClick={() => track(`${ui.prefix}_follow_clicked`)}
+      className="inline-flex min-h-11 items-center gap-2 px-2 text-body-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
     >
-      <p className="font-heading font-black text-lg uppercase leading-tight">
-        {t("dailyShare.followTitle", { handle: INSTAGRAM_HANDLE })}
-      </p>
-      <p className="text-sm mt-1 leading-snug">{t("dailyShare.followBody")}</p>
-      <a
-        href={INSTAGRAM_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={() => track(`${ui.prefix}_follow_clicked`)}
-        className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-md border-[3px] border-black bg-black text-white px-4 py-3 font-heading font-bold uppercase"
-      >
-        <Instagram size={18} />
-        {t("dailyShare.followCta", { handle: INSTAGRAM_HANDLE })}
-      </a>
-    </div>
+      <Instagram size={16} className="shrink-0" aria-hidden="true" />
+      {t("dailyShare.followCta", { handle: INSTAGRAM_HANDLE })}
+    </a>
   );
 }
 
@@ -272,9 +279,9 @@ export function StreakLinkOffer({ game, streak }: { game: DailyGame; streak: num
   };
 
   return (
-    <div data-testid={`${ui.tid}-streak-link`} className="neo-border border-black rounded-lg bg-card px-4 py-3 grid gap-2">
-      <p className="text-sm font-bold leading-snug">{t("dailyShare.keepTitle")}</p>
-      <p className="text-sm leading-snug text-muted-foreground">{t("dailyShare.keepBody", { count: streak })}</p>
+    <Card elevation="flat" padding="sm" className="grid gap-2" data-testid={`${ui.tid}-streak-link`}>
+      <p className="text-body-sm font-bold">{t("dailyShare.keepTitle")}</p>
+      <p className="text-body-sm text-muted-foreground">{t("dailyShare.keepBody", { count: streak })}</p>
       {link ? (
         <>
           <input
@@ -283,24 +290,24 @@ export function StreakLinkOffer({ game, streak }: { game: DailyGame; streak: num
             onFocus={(e) => e.currentTarget.select()}
             aria-label={t("dailyShare.keepCta")}
             data-testid={`${ui.tid}-streak-link-url`}
-            className="w-full min-w-0 rounded-md border-2 border-border bg-background text-foreground px-2 py-1.5 font-mono text-xs"
+            className="w-full min-w-0 rounded-md neo-border bg-background px-2 py-1.5 font-mono text-meta text-foreground"
           />
-          <p className="text-xs text-accent" role="status">
+          <p className="text-meta text-muted-foreground" role="status">
             {state === "copied" ? t("dailyShare.keepCopied") : t("dailyShare.keepManual")}
           </p>
         </>
       ) : (
-        <NeoButton
+        <Button
           variant="secondary"
-          size="md"
+          size="sm"
           onClick={copy}
-          disabled={state === "busy"}
+          loading={state === "busy"}
           data-testid={`${ui.tid}-streak-link-copy`}
         >
-          <Link2 size={16} className="mr-1.5" />
+          <Link2 size={16} aria-hidden="true" />
           {t("dailyShare.keepCta")}
-        </NeoButton>
+        </Button>
       )}
-    </div>
+    </Card>
   );
 }

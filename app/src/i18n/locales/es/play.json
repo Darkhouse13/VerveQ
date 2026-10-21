@@ -229,7 +229,17 @@
     "home": "Inicio"
   },
   "stage": {
-    "exit": "Salir"
+    "exit": "Salir",
+    "quitRun": {
+      "title": "¿Dejar esta partida?",
+      "body_one": "Tu racha infinita de {{count}} termina aquí.",
+      "body_other": "Tu racha infinita de {{count}} termina aquí.",
+      "confirm": "Dejar partida",
+      "cancel": "Seguir jugando"
+    },
+    "scoreLabel": "Puntos: {{value}}",
+    "streakLabel": "Racha: {{value}}",
+    "roundLabel": "Ronda {{current}} de {{total}}"
   },
   "quizView": {
     "quit": "Salir",
@@ -547,7 +557,7 @@
     "followTitle": "Un juego nuevo cada mañana en @{{handle}}",
     "followBody": "Síguenos para ver el juego de mañana en tu feed.",
     "followCta": "Seguir a @{{handle}}",
-    "reminderCollapsed": "O recibe un recordatorio por correo",
+    "reminderCollapsed": "Recordatorio por correo",
     "keepTitle": "¿La próxima vez juegas en Safari o Chrome?",
     "keepBody_one": "Llévate tu racha de {{count}} día: copia este enlace y ábrelo allí.",
     "keepBody_other": "Llévate tu racha de {{count}} días: copia este enlace y ábrelo allí.",
@@ -558,6 +568,27 @@
     "keepRateLimited": "Has creado muchos enlaces hoy. Usa uno que ya copiaste.",
     "linkConnected": "Racha conectada. Ahora te sigue aquí.",
     "linkExpired": "Ese enlace de racha ha caducado. Copia uno nuevo desde donde juegas.",
-    "linkUsedUp": "Ese enlace de racha ya no se puede usar. Copia uno nuevo."
+    "linkUsedUp": "Ese enlace de racha ya no se puede usar. Copia uno nuevo.",
+    "storyStreak_one": "Racha de {{count}} día",
+    "storyStreak_other": "Racha de {{count}} días"
+  },
+  "result": {
+    "nextToday": "Siguiente hoy",
+    "answers": "Tus respuestas",
+    "squares": "{{score}} de {{total}} acertadas",
+    "next": {
+      "older": {
+        "title": "¿Quién es mayor?",
+        "body": "Toca al jugador mayor. 10 al día."
+      },
+      "letters": {
+        "title": "Letras perdidas",
+        "body": "Adivina el jugador. 10 al día."
+      },
+      "home": {
+        "title": "Más juegos hoy",
+        "body": "El resto de hoy está en Inicio."
+      }
+    }
   }
 }

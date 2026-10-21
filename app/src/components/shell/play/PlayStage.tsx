@@ -1,7 +1,15 @@
 /**
- * PlayStage — the in-game "prototype layout" shared by every migrated game mode.
+ * StageFrame (exported as `PlayStage` too) — the in-game frame shared by every
+ * migrated game mode (VerveQ ONE P2.1).
  *
- * The discipline (matches ShellLayout / LearnShell):
+ * The header is the brand line: the VERVEQ wordmark eyebrow (plus the
+ * subtitle) above the game title, a 44px Exit on the left — with a confirm
+ * step only when leaving would lose progress — and an optional score slot on
+ * the right. An optional progress row (StepDots) sits under it. The header
+ * carries the reel's subtle lime diagonal stripe, and the frame sets
+ * `--mode-accent` from `mode` so everything inside can identify the mode.
+ *
+ * The layout discipline (matches ShellLayout / LearnShell):
  *  - ALL devices: `fixed inset-0`, the page itself never scrolls. On mobile the
  *    side rails collapse to a single `strip` above the answering column, which
  *    is sized to fit the viewport (the question image box is dvh-scaled).
@@ -16,23 +24,48 @@
  * `./ambient` and are content-blind by contract (enforced by the answer-leak
  * ESLint guard).
  */
-import type { ReactNode } from "react";
-import { LogOut } from "lucide-react";
+import type { CSSProperties, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { ThemeScope } from "@/components/ui/theme-scope";
+import { BrandMark } from "@/components/ui/BrandMark";
+import { ExitButton, type ExitConfirm } from "@/components/ui/icon-button";
 
-interface PlayStageProps {
-  /** Eyebrow/title shown in the fixed header. */
+/** Modes whose frame carries a mode accent (`--mode-accent`). */
+export type StageMode = "whos-older" | "missing-letters";
+
+/** The color token each mode is identified by. */
+const MODE_ACCENT: Record<StageMode, string> = {
+  "whos-older": "var(--electric-blue)",
+  "missing-letters": "var(--hot-pink)",
+};
+
+/** The reel's 6% lime diagonal hatch, scaled from its 1080px frame to a phone. */
+const HEADER_TEXTURE: CSSProperties = {
+  backgroundImage: "repeating-linear-gradient(45deg, hsl(var(--lime) / 0.06) 0 2px, transparent 2px 22px)",
+};
+
+export interface StageFrameProps {
+  /** Game title shown in the fixed header. */
   title?: string;
-  /** Secondary line under the title (e.g. mode · phase). */
+  /** Secondary line beside the wordmark (e.g. "Daily #24"). */
   subtitle?: string;
-  /** Exit affordance handler; renders a Leave/Exit button when provided. */
+  /** Exit affordance handler; renders the Exit button when provided. */
   onExit?: () => void;
   exitLabel?: string;
   exitDisabled?: boolean;
+  /** Ask before leaving — pass only when leaving would lose progress. */
+  exitConfirm?: ExitConfirm;
   /** Optional header right slot (e.g. share). */
   headerRight?: ReactNode;
+  /** Score slot, right of the title (see StageScore). */
+  score?: ReactNode;
+  /** Progress row under the header (see StepDots). */
+  progress?: ReactNode;
+  /** Sets `--mode-accent` for everything in the frame. */
+  mode?: StageMode;
+  /** A one-beat full-frame wash marking a verdict. */
+  flash?: "right" | "wrong" | null;
   /** Left ambient rail (desktop) — roster status + standings. */
   left?: ReactNode;
   /** Right ambient rail (desktop) — metrics + progress. */
@@ -55,63 +88,77 @@ interface PlayStageProps {
 
 const RAIL = "hidden md:flex md:flex-col md:gap-4 md:overflow-y-auto md:py-2 md:w-full md:max-w-[16rem]";
 
-export function PlayStage({
+export function StageFrame({
   title,
   subtitle,
   onExit,
   exitLabel,
   exitDisabled = false,
+  exitConfirm,
   headerRight,
+  score,
+  progress,
+  mode,
+  flash = null,
   left,
   right,
   strip,
   theme,
   wide = false,
   children,
-}: PlayStageProps) {
+}: StageFrameProps) {
   const { t } = useTranslation("play");
   const resolvedExitLabel = exitLabel ?? t("stage.exit");
+  const accent = mode ? ({ "--mode-accent": MODE_ACCENT[mode] } as CSSProperties) : undefined;
   return (
     <ThemeScope theme={theme}>
     <div
+      data-mode={mode}
+      style={accent}
       className={cn(
         theme,
         "bg-background text-foreground shell-canvas-bg flex flex-col",
         // Fill the viewport and never scroll — on every device.
-        "fixed inset-0 z-40 h-[100dvh] overflow-hidden",
+        "fixed inset-0 z-frame h-[100dvh] overflow-hidden",
         // iOS standalone insets: keeps the round pill / score header clear of
         // the status bar and the answer CTAs clear of the home indicator.
         "safe-pt safe-pb",
       )}
     >
-      {(title || onExit || headerRight) && (
-        <header className="shrink-0 w-full border-b-[3px] border-border bg-background">
-          <div className="mx-auto w-full max-w-6xl flex items-center gap-3 px-4 py-3 md:px-6">
-            {onExit && (
-              <button
-                type="button"
-                onClick={onExit}
-                disabled={exitDisabled}
-                className="neo-border neo-shadow rounded-lg px-3 py-2 bg-background shrink-0 cursor-pointer active:neo-shadow-pressed inline-flex items-center gap-1.5 disabled:opacity-60"
-              >
-                <LogOut size={14} strokeWidth={3} />
-                <span className="text-[10px] font-heading font-bold uppercase">{resolvedExitLabel}</span>
-              </button>
-            )}
-            <div className="min-w-0 flex-1 text-center md:text-left">
-              {title && (
-                <p className="font-heading font-bold text-base md:text-lg leading-tight truncate">
-                  {title}
-                </p>
-              )}
-              {subtitle && (
-                <p className="text-[10px] md:text-xs font-heading uppercase tracking-wide text-muted-foreground truncate">
-                  {subtitle}
-                </p>
+      {(title || onExit || headerRight || score) && (
+        <header className="shrink-0 w-full border-b-2 border-border bg-background" style={HEADER_TEXTURE}>
+          <div className="mx-auto w-full max-w-6xl grid grid-cols-[1fr_minmax(0,auto)_1fr] items-center gap-2 px-2 py-1.5 md:px-6">
+            <div className="justify-self-start min-w-0">
+              {onExit && (
+                <ExitButton
+                  onExit={onExit}
+                  label={resolvedExitLabel}
+                  disabled={exitDisabled}
+                  confirm={exitConfirm}
+                  data-testid="stage-exit"
+                />
               )}
             </div>
-            <div className="shrink-0">{headerRight}</div>
+            <div className="min-w-0 text-center">
+              <p className="flex items-center justify-center gap-1.5 text-muted-foreground">
+                <BrandMark variant="wordmark" size="sm" />
+                {subtitle && (
+                  <>
+                    <span aria-hidden="true" className="font-mono text-eyebrow">·</span>
+                    <span className="font-mono text-eyebrow uppercase truncate">{subtitle}</span>
+                  </>
+                )}
+              </p>
+              {title && (
+                <p className="mt-0.5 font-heading font-bold text-title-sm md:text-title truncate">{title}</p>
+              )}
+            </div>
+            <div className="justify-self-end flex items-center gap-2 min-w-0">
+              {score}
+              {headerRight}
+            </div>
           </div>
+          {progress && <div className="mx-auto w-full max-w-md flex justify-center px-4 pb-2">{progress}</div>}
         </header>
       )}
 
@@ -152,7 +199,20 @@ export function PlayStage({
           </div>
         )}
       </main>
+
+      {flash && (
+        <div
+          aria-hidden="true"
+          className={cn(
+            "absolute inset-0 z-overlay pointer-events-none opacity-0 animate-older-flash",
+            flash === "right" ? "bg-verdict-right" : "bg-verdict-wrong",
+          )}
+        />
+      )}
     </div>
     </ThemeScope>
   );
 }
+
+/** The frame every play screen uses; kept under its original name. */
+export const PlayStage = StageFrame;
