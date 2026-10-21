@@ -23,7 +23,7 @@ import {
   XCircle,
   Clock,
 } from "lucide-react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import type { Id } from "../../convex/_generated/dataModel";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -203,12 +203,12 @@ function SubmitTab({ onSuccess }: { onSuccess: () => void }) {
   };
 
   const handleSubmit = async () => {
-    if (!questionText.trim()) return toast.error("Question is required");
-    if (!category.trim()) return toast.error("Category is required");
-    if (options.some((o) => !o.trim())) return toast.error("All 4 options are required");
+    if (!questionText.trim()) return notify.error("Question is required");
+    if (!category.trim()) return notify.error("Category is required");
+    if (options.some((o) => !o.trim())) return notify.error("All 4 options are required");
 
     const uniqueOptions = new Set(options.map((o) => o.trim().toLowerCase()));
-    if (uniqueOptions.size !== 4) return toast.error("All options must be unique");
+    if (uniqueOptions.size !== 4) return notify.error("All options must be unique");
 
     setSubmitting(true);
     try {
@@ -222,7 +222,7 @@ function SubmitTab({ onSuccess }: { onSuccess: () => void }) {
         difficulty,
         imageId: imageId ?? undefined,
       });
-      toast.success("Question submitted for review!");
+      notify.success("Question submitted for review!");
       // Reset form
       setQuestionText("");
       setCategory("");
@@ -232,7 +232,7 @@ function SubmitTab({ onSuccess }: { onSuccess: () => void }) {
       setImageId(null);
       onSuccess();
     } catch (e) {
-      toast.error(friendlyError(e, "Submission failed"));
+      notify.error(friendlyError(e, "Submission failed"));
     } finally {
       setSubmitting(false);
     }
@@ -392,14 +392,14 @@ function ReviewTab() {
     try {
       const res = await voteMut({ submissionId, vote });
       if (res.newStatus === "approved") {
-        toast.success("Question approved and added to the pool!");
+        notify.success("Question approved and added to the pool!");
       } else if (res.newStatus === "rejected") {
-        toast("Question rejected and archived.");
+        notify("Question rejected and archived.");
       } else {
-        toast.success(`Vote recorded (${vote})`);
+        notify.success(`Vote recorded (${vote})`);
       }
     } catch (e) {
-      toast.error(friendlyError(e, "Vote failed"));
+      notify.error(friendlyError(e, "Vote failed"));
     } finally {
       setVoting(null);
     }

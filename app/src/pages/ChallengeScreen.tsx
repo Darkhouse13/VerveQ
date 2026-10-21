@@ -14,7 +14,7 @@ import {
   History,
   ChevronRight,
 } from "lucide-react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
@@ -342,7 +342,7 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
                       e.stopPropagation();
                       const url = `${window.location.origin}/duel/${d.linkCode}`;
                       navigator.clipboard.writeText(url).catch(() => {});
-                      toast.success(t("challenge.linkCopied"));
+                      notify.success(t("challenge.linkCopied"));
                     }}
                     className="text-[11px] font-heading font-bold uppercase underline underline-offset-2 text-primary cursor-pointer"
                   >

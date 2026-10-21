@@ -19,7 +19,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "convex/react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { User, AlertTriangle, Share2, Shirt } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
@@ -119,8 +119,8 @@ export default function CareerPathClassicGame() {
     const outcome = await shareCareerPathResult(
       t("careerPath.classicShareText", { score: result.score }),
     );
-    if (outcome === "copied") toast.success(t("careerPath.shareCopied"));
-    if (outcome === "failed") toast.error(t("careerPath.shareFailed"));
+    if (outcome === "copied") notify.success(t("careerPath.shareCopied"));
+    if (outcome === "failed") notify.error(t("careerPath.shareFailed"));
   };
 
   // Top-of-funnel instrumentation, mirroring ColdEntryScreen's taste round:
@@ -255,7 +255,7 @@ export default function CareerPathClassicGame() {
           setScore(res.score);
           setResult({ correct: false, score: res.score });
           setGameOver(true);
-          toast.error(t("careerPath.tabSwitchEnded"));
+          notify.error(t("careerPath.tabSwitchEnded"));
         }
       });
     }, [sessionId, gameOver, loading, startupState, penalizeTabSwitchMut, guestToken, t]),
@@ -292,7 +292,7 @@ export default function CareerPathClassicGame() {
         setGameOver(true);
       } else {
         setGuess("");
-        toast.error(
+        notify.error(
           t("careerPath.wrongGuessesLeft", {
             count: Math.max(
               0,

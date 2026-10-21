@@ -10,7 +10,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery } from "convex/react";
 import { Bell, LogOut, Settings2, Swords } from "lucide-react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { api } from "../../../../convex/_generated/api";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -59,7 +59,7 @@ export default function CrewScreen() {
       await leaveCrew({ crewId: crew.crewId });
       navigate(SHELL_ROUTES.weekendCrews, { replace: true });
     } catch (error) {
-      toast.error(friendlyError(error, t("weekend.leaveCrewFailed", { defaultValue: "Could not leave the crew." })));
+      notify.error(friendlyError(error, t("weekend.leaveCrewFailed", { defaultValue: "Could not leave the crew." })));
     } finally {
       setBusy(false);
     }

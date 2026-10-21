@@ -122,6 +122,34 @@ export default tseslint.config(
     }
   },
   {
+    // VerveQ ONE design system: overlays and toasts go through the primitives
+    // in src/components/ui (one look, one theme-carrying portal, one toast
+    // position). The primitives themselves are the only importers.
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: [
+      "src/components/ui/**",
+      "src/lib/notify.ts",
+      "src/test/**",
+    ],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "sonner",
+              message: "Use notify from @/lib/notify (one themed Toaster, one position).",
+            },
+            {
+              name: "@radix-ui/react-dialog",
+              message: "Use Dialog / Sheet / ConfirmDialog / FullscreenFlow from @/components/ui.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     // Answer-leak guard scope: in-game ambient/side panels and their fixtures.
     // Wired into `npm run lint` (the CI gate, see .github/workflows/check.yml).
     // The `**/play/ambient/**` glob covers the shared ambient dir AND any new

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation } from "convex/react";
 import { ArrowLeft, Swords, Flame } from "lucide-react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { friendlyError } from "@/lib/errors";
 
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -211,16 +211,16 @@ export function RivalDetailScreen({ embedded = false }: { embedded?: boolean } =
 
   const handleRematch = async () => {
     if (!rivalry.lastDuelId) {
-      toast.error(t("rivals.noPreviousDuel"));
+      notify.error(t("rivals.noPreviousDuel"));
       return;
     }
     setRematching(true);
     try {
       const result = await rematchMut({ duelId: rivalry.lastDuelId });
-      toast.success(t("rivals.rematchSent"));
+      notify.success(t("rivals.rematchSent"));
       navigate(`/duel/play/${result.duelId}`);
     } catch (e) {
-      toast.error(friendlyError(e, t("rivals.rematchFailed")));
+      notify.error(friendlyError(e, t("rivals.rematchFailed")));
     } finally {
       setRematching(false);
     }

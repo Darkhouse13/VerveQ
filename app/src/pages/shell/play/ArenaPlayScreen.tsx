@@ -25,7 +25,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery } from "convex/react";
 import { ArrowRight, Share2 } from "lucide-react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { useTranslation } from "react-i18next";
 
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -196,7 +196,7 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
     try {
       await leaveMut({ arenaId: room.arenaId });
     } catch (e) {
-      toast.error(friendlyError(e, t("arena.leaveFailed")));
+      notify.error(friendlyError(e, t("arena.leaveFailed")));
     } finally {
       setLeaving(false);
       navigate("/v2/arena");
@@ -212,10 +212,10 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
     setRematching(true);
     try {
       const result = await rematchMut({ arenaId: room.arenaId });
-      toast.success(t("arena.rematchReady"));
+      notify.success(t("arena.rematchReady"));
       navigate(`/v2/arena/${result.code}`, { replace: true });
     } catch (e) {
-      toast.error(friendlyError(e, t("arena.rematchFailed")));
+      notify.error(friendlyError(e, t("arena.rematchFailed")));
     } finally {
       setRematching(false);
     }
@@ -224,8 +224,8 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
   const handleShare = useCallback(async () => {
     if (!room) return;
     const res = await shareArenaLink(room.code);
-    if (res === "copied") toast.success(t("arena.linkCopied"));
-    if (res === "failed") toast.error(t("arena.shareFailed"));
+    if (res === "copied") notify.success(t("arena.linkCopied"));
+    if (res === "failed") notify.error(t("arena.shareFailed"));
   }, [room, t]);
 
   if (room === undefined) return <CenteredMessage>{t("arena.loadingArena")}</CenteredMessage>;
@@ -447,7 +447,7 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Submit failed";
       if (!/already answered/i.test(msg)) {
-        toast.error(friendlyError(e, t("arena.submitFailed")));
+        notify.error(friendlyError(e, t("arena.submitFailed")));
         setPending(null);
         setSubmitting(false);
       }
@@ -473,7 +473,7 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Submit failed";
       if (!/already answered/i.test(msg)) {
-        toast.error(friendlyError(e, t("arena.submitFailed")));
+        notify.error(friendlyError(e, t("arena.submitFailed")));
         setSubmitting(false);
       }
     }

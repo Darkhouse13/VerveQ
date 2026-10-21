@@ -14,7 +14,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "convex/react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
@@ -235,7 +235,7 @@ export default function HigherLowerPlayScreen() {
           // A forfeit is a real end state, not an exit — the server has already
           // closed the session, so this run can never be abandoned afterwards.
           completeRun(sessionId, { score: res.score, result: "loss" });
-          toast.error(t("higherLower.tabSwitchEnded"));
+          notify.error(t("higherLower.tabSwitchEnded"));
         }
       });
     }, [sessionId, gameOver, loading, startupState, penalizeTabSwitchMut, t]),

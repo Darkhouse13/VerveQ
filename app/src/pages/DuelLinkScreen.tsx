@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useMutation } from "convex/react";
 import { useTranslation } from "react-i18next";
 import { Swords, ArrowRight, Sparkles } from "lucide-react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { friendlyError } from "@/lib/errors";
 
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -122,12 +122,12 @@ export default function DuelLinkScreen() {
               guestToken: taken.guestToken,
             });
             clearGuestDuelToken(linkCode);
-            toast.success(t("duelLink.toastResultAttached"));
+            notify.success(t("duelLink.toastResultAttached"));
             navigate(`/duel/result/${taken.duelId}`, { replace: true });
             return;
           }
         } catch (e) {
-          toast.error(friendlyError(e, t("duelLink.errorAttachFailed")));
+          notify.error(friendlyError(e, t("duelLink.errorAttachFailed")));
         }
       }
 
@@ -225,9 +225,9 @@ export default function DuelLinkScreen() {
             onClick={async () => {
               try {
                 await navigator.clipboard.writeText(buildShareUrl(linkCode));
-                toast.success(t("duelLink.toastLinkCopied"));
+                notify.success(t("duelLink.toastLinkCopied"));
               } catch {
-                toast.error(t("duelLink.toastCopyFailed"));
+                notify.error(t("duelLink.toastCopyFailed"));
               }
             }}
           >

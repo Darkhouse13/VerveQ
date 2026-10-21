@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery } from "convex/react";
 import { ChevronRight, Heart, Lock } from "lucide-react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { api } from "../../../convex/_generated/api";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
@@ -78,14 +78,14 @@ export function FavoriteClubCard() {
     try {
       const result = await setFavoriteClub({ clubId: candidate.clubId });
       close();
-      toast.success(
+      notify.success(
         t("weekend.favoriteClubSet", {
           defaultValue: "{{club}} is your favorite club — for good.",
           club: nameOf(result.inForce) ?? candidate.name,
         }),
       );
     } catch (error) {
-      toast.error(
+      notify.error(
         friendlyError(
           error,
           t("weekend.favoriteClubFailed", {

@@ -66,7 +66,6 @@
   "src/components/draw/ResultStage.tsx": {
     "textPx": 3,
     "rawButton": 1,
-    "toast": 3,
     "fontBlack": 1,
     "opacityText": 2
   },
@@ -217,7 +216,6 @@
   },
   "src/components/shell/play/whosOlder/DailyShare.tsx": {
     "borderBlack": 3,
-    "toast": 3,
     "fontBlack": 2
   },
   "src/components/shell/play/whosOlder/WhosOlderRetention.tsx": {
@@ -235,7 +233,6 @@
   "src/components/weekend/FavoriteClubCard.tsx": {
     "textPx": 4,
     "rawButton": 1,
-    "toast": 2,
     "trackingArbitrary": 1
   },
   "src/components/weekend/FormationChooser.tsx": {
@@ -278,24 +275,6 @@
     "opacityText": 1,
     "trackingArbitrary": 1
   },
-  "src/hooks/useAntiCheat.ts": {
-    "toast": 1
-  },
-  "src/hooks/useDailyQuiz.ts": {
-    "toast": 5
-  },
-  "src/hooks/useSoloBlitz.ts": {
-    "toast": 2
-  },
-  "src/hooks/useSoloQuiz.ts": {
-    "toast": 4
-  },
-  "src/hooks/useStreakLinkClaim.ts": {
-    "toast": 3
-  },
-  "src/hooks/useVerveGrid.ts": {
-    "toast": 4
-  },
   "src/index.css": {
     "hex": 2,
     "colorFn": 20
@@ -316,12 +295,10 @@
   },
   "src/pages/ChallengeScreen.tsx": {
     "textPx": 10,
-    "rawButton": 4,
-    "toast": 1
+    "rawButton": 4
   },
   "src/pages/DailyResultScreen.tsx": {
     "textPx": 2,
-    "toast": 3,
     "opacityText": 2
   },
   "src/pages/DifficultyScreen.tsx": {
@@ -336,31 +313,26 @@
     "opacityText": 3
   },
   "src/pages/DuelLinkScreen.tsx": {
-    "textPx": 1,
-    "toast": 4
+    "textPx": 1
   },
   "src/pages/DuelPlayScreen.tsx": {
     "textPx": 3,
     "rawButton": 2,
-    "toast": 6,
     "transitionAll": 1,
     "opacityText": 1
   },
   "src/pages/DuelResultScreen.tsx": {
     "textPx": 3,
     "rawButton": 2,
-    "toast": 9,
     "opacityText": 6
   },
   "src/pages/ForgeScreen.tsx": {
     "textPx": 2,
     "rawButton": 5,
-    "toast": 10,
     "transitionAll": 7
   },
   "src/pages/LoginScreen.tsx": {
-    "rawButton": 5,
-    "toast": 2
+    "rawButton": 5
   },
   "src/pages/NotFound.tsx": {
     "shadowArbitrary": 3,
@@ -375,24 +347,20 @@
   "src/pages/ResultScreen.tsx": {
     "textPx": 6,
     "rawButton": 1,
-    "toast": 1,
     "opacityText": 4
   },
   "src/pages/RivalsScreen.tsx": {
     "textPx": 1,
-    "rawButton": 4,
-    "toast": 3
+    "rawButton": 4
   },
   "src/pages/arena/ArenaRoomViews.tsx": {
     "textPx": 32,
-    "toast": 13,
     "opacityText": 8,
     "trackingArbitrary": 5
   },
   "src/pages/arena/CreateArenaModal.tsx": {
     "textPx": 6,
     "rawButton": 3,
-    "toast": 1,
     "opacityText": 4
   },
   "src/pages/arena/JoinArenaModal.tsx": {
@@ -400,7 +368,6 @@
   },
   "src/pages/challenge/CreateDuelModal.tsx": {
     "textPx": 1,
-    "toast": 1,
     "opacityText": 1
   },
   "src/pages/draw/DrawScreen.tsx": {
@@ -447,7 +414,6 @@
   "src/pages/shell/SettingsScreen.tsx": {
     "textPx": 11,
     "rawButton": 1,
-    "toast": 2,
     "transitionAll": 4,
     "opacityText": 1
   },
@@ -471,7 +437,6 @@
     "hex": 1,
     "colorFn": 1,
     "rawButton": 1,
-    "toast": 1,
     "roundedXl": 3,
     "transitionAll": 1,
     "opacityText": 1
@@ -509,7 +474,6 @@
   "src/pages/shell/play/ArenaPlayScreen.tsx": {
     "textPx": 9,
     "rawButton": 2,
-    "toast": 7,
     "transitionAll": 1,
     "opacityText": 2
   },
@@ -520,12 +484,10 @@
   },
   "src/pages/shell/play/CareerPathClassicGame.tsx": {
     "textPx": 1,
-    "toast": 4,
     "opacityText": 4
   },
   "src/pages/shell/play/CareerPathLadderGame.tsx": {
     "textPx": 1,
-    "toast": 2,
     "opacityText": 2
   },
   "src/pages/shell/play/CareerPathPlayScreen.tsx": {
@@ -533,7 +495,6 @@
   },
   "src/pages/shell/play/HigherLowerPlayScreen.tsx": {
     "textPx": 2,
-    "toast": 1,
     "transitionAll": 1,
     "opacityText": 2
   },
@@ -544,14 +505,12 @@
     "hex": 8,
     "colorFn": 2,
     "rawButton": 3,
-    "toast": 5,
     "fixedInset": 1,
     "fontBlack": 9,
     "opacityText": 3,
     "trackingArbitrary": 4
   },
   "src/pages/shell/play/SurvivalPlayScreen.tsx": {
-    "toast": 11,
     "roundedXl": 1
   },
   "src/pages/shell/play/WhosOlderPlayScreen.tsx": {
@@ -561,7 +520,6 @@
     "hex": 11,
     "colorFn": 1,
     "rawButton": 1,
-    "toast": 5,
     "fixedInset": 1,
     "roundedXl": 2,
     "fontBlack": 8,
@@ -571,45 +529,38 @@
   "src/pages/shell/weekend/BudgetSquadScreen.tsx": {
     "textPx": 26,
     "rawButton": 5,
-    "toast": 3,
     "opacityText": 4,
     "trackingArbitrary": 6
   },
   "src/pages/shell/weekend/CourtScreen.tsx": {
     "textPx": 11,
-    "toast": 1,
     "trackingArbitrary": 1
   },
   "src/pages/shell/weekend/CrewCommandScreen.tsx": {
     "textPx": 14,
     "rawButton": 6,
-    "toast": 7,
     "opacityText": 5,
     "trackingArbitrary": 7
   },
   "src/pages/shell/weekend/CrewCompetitionPanel.tsx": {
     "textPx": 16,
     "rawButton": 1,
-    "toast": 1,
     "opacityText": 6,
     "trackingArbitrary": 6
   },
   "src/pages/shell/weekend/CrewScreen.tsx": {
     "textPx": 4,
     "rawButton": 3,
-    "toast": 1,
     "opacityText": 1,
     "trackingArbitrary": 1
   },
   "src/pages/shell/weekend/CrewSheetScreen.tsx": {
     "textPx": 1,
-    "toast": 3,
     "trackingArbitrary": 1
   },
   "src/pages/shell/weekend/DraftRoomScreen.tsx": {
     "textPx": 15,
     "rawButton": 5,
-    "toast": 5,
     "opacityText": 4,
     "trackingArbitrary": 1
   },
@@ -620,14 +571,12 @@
   "src/pages/shell/weekend/VoteScreen.tsx": {
     "textPx": 12,
     "rawButton": 2,
-    "toast": 7,
     "roundedXl": 1,
     "opacityText": 5,
     "trackingArbitrary": 3
   },
   "src/pages/shell/weekend/WeekendCrewsScreen.tsx": {
     "textPx": 2,
-    "toast": 2,
     "roundedXl": 1,
     "opacityText": 1,
     "trackingArbitrary": 2
@@ -651,7 +600,6 @@
   },
   "src/pages/shell/weekend/WeekendReceiptScreen.tsx": {
     "textPx": 10,
-    "toast": 2,
     "roundedXl": 1,
     "trackingArbitrary": 8
   }

@@ -12,7 +12,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { Image as ImageIcon, Instagram, Link2, Send } from "lucide-react";
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
@@ -119,9 +119,9 @@ export function ShareSheet({
     try {
       await navigator.clipboard.writeText(`${text}\n${url}`);
       sent("clipboard");
-      toast.success(t(`${ui.ns}.copied`));
+      notify.success(t(`${ui.ns}.copied`));
     } catch {
-      toast.error(t(`${ui.ns}.shareFailed`));
+      notify.error(t(`${ui.ns}.shareFailed`));
     }
   };
 
@@ -267,7 +267,7 @@ export function StreakLinkOffer({ game, streak }: { game: DailyGame; streak: num
         err instanceof ConvexError && typeof err.data === "object" && err.data && "code" in err.data
           ? String((err.data as { code: unknown }).code)
           : null;
-      toast.error(code === "rate_limited" ? t("dailyShare.keepRateLimited") : t("dailyShare.keepFailed"));
+      notify.error(code === "rate_limited" ? t("dailyShare.keepRateLimited") : t("dailyShare.keepFailed"));
     }
   };
 

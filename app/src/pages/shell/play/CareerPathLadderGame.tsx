@@ -21,7 +21,7 @@ import {
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { shareCareerPathResult } from "@/lib/careerPathShare";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { clubsForDisplay, type CareerPathClub } from "../../../../convex/lib/careerPathClubs";
@@ -344,8 +344,8 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
     const outcome = await shareCareerPathResult(
       t("careerPath.ladderShareText", { correct: correctCount, score: totalScore }),
     );
-    if (outcome === "copied") toast.success(t("careerPath.shareCopied"));
-    if (outcome === "failed") toast.error(t("careerPath.shareFailed"));
+    if (outcome === "copied") notify.success(t("careerPath.shareCopied"));
+    if (outcome === "failed") notify.error(t("careerPath.shareFailed"));
   };
 
   if (finished) {

@@ -18,7 +18,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { useQuery } from "convex/react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { Download, Share2 } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -267,7 +267,7 @@ export default function WeekendReceiptScreen() {
       }
       await navigator.clipboard.writeText(`${text} ${url}`);
       track("weekend_receipt_shared", { gw_number: receipt.gwNumber, mode: "copy" });
-      toast.success(t("common.copied", { defaultValue: "Copied" }));
+      notify.success(t("common.copied", { defaultValue: "Copied" }));
     } catch {
       /* user cancelled the share sheet — not an error */
     } finally {
@@ -288,7 +288,7 @@ export default function WeekendReceiptScreen() {
       URL.revokeObjectURL(url);
       track("weekend_receipt_shared", { gw_number: receipt.gwNumber, mode: "download" });
     } catch {
-      toast.error(
+      notify.error(
         t("weekend.receiptDownloadFailed", { defaultValue: "Could not build the image." }),
       );
     } finally {

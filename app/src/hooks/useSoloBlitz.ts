@@ -13,7 +13,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "convex/react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { api } from "../../convex/_generated/api";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
 import { useAuth } from "@/contexts/AuthContext";
@@ -202,7 +202,7 @@ export function useSoloBlitz(): SoloBlitzState {
         setEndTimeMs(serverEndTimeMs);
         setLoading(false);
       } catch {
-        toast.error(t("blitz.startFailedToast"));
+        notify.error(t("blitz.startFailedToast"));
         navigate(-1);
       }
     })();
@@ -229,7 +229,7 @@ export function useSoloBlitz(): SoloBlitzState {
           setEndTimeMs(res.endTimeMs);
           if (res.gameOver) void finishGame();
         });
-        toast.error(t("blitz.tabSwitchWrong"));
+        notify.error(t("blitz.tabSwitchWrong"));
       }
     }, [gameOver, question, sessionId, revealed, submitAnswerMut, finishGame, t]),
     { warningMessage: t("blitz.tabSwitchWarning") },

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation } from "convex/react";
 import { Check, Minus, Plus } from "lucide-react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { useTranslation } from "react-i18next";
 import { friendlyError } from "@/lib/errors";
 
@@ -142,7 +142,7 @@ export default function CreateArenaModal({
       const result = await create({ mode, rounds, perRound, categories });
       onCreated(result.code);
     } catch (e) {
-      toast.error(friendlyError(e, t("createArena.createError")));
+      notify.error(friendlyError(e, t("createArena.createError")));
     } finally {
       setSubmitting(false);
     }

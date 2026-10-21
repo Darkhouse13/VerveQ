@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "convex/react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { useTranslation } from "react-i18next";
 import { friendlyError } from "@/lib/errors";
 
@@ -155,7 +155,7 @@ export default function CreateDuelModal({
       const result = await createMut({ ...args, viaLink: true });
       onCreated(result.duelId);
     } catch (e) {
-      toast.error(friendlyError(e, t("createDuel.startError")));
+      notify.error(friendlyError(e, t("createDuel.startError")));
     } finally {
       setSubmitting(false);
     }

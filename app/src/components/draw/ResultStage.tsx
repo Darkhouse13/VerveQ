@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Share2, Copy, Flame } from "lucide-react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { cn } from "@/lib/utils";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -77,7 +77,7 @@ export function ResultStage({ view, rarity, streak, leaderboard, nextBoardAt, sh
         await navigator.share({ title: "THE DRAW", text, url: shareUrl });
       } else {
         await navigator.clipboard.writeText(text);
-        toast.success("Result copied");
+        notify.success("Result copied");
       }
     } catch {
       /* user cancelled */
@@ -87,9 +87,9 @@ export function ResultStage({ view, rarity, streak, leaderboard, nextBoardAt, sh
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(buildShareText(shareData));
-      toast.success("Copied");
+      notify.success("Copied");
     } catch {
-      toast.error("Could not copy");
+      notify.error("Could not copy");
     }
   };
 

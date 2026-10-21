@@ -16,7 +16,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { ArrowDown, ArrowUp, Bot, CalendarClock, Check, LogOut, ScrollText, Star, Swords, Timer, UserPlus, X } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -363,9 +363,9 @@ export function DraftBoardView({
             const position = next % order.length;
             return round % 2 === 0 ? order[position] : order[order.length - 1 - position];
           })();
-    if (myTurn) toast.success(t("weekend.draftTurnLive", { defaultValue: "Your draft turn is live." }));
+    if (myTurn) notify.success(t("weekend.draftTurnLive", { defaultValue: "Your draft turn is live." }));
     else if (nextSeat === room.mySeatIndex) {
-      toast(t("weekend.draftTurnNext", { defaultValue: "You are next in the draft." }));
+      notify(t("weekend.draftTurnNext", { defaultValue: "You are next in the draft." }));
     }
     notifiedPick.current = room.currentPickIndex;
   }, [myTurn, room.currentPickIndex, room.mySeatIndex, room.snakeOrder, room.totalPicks, t]);
@@ -727,7 +727,7 @@ export default function DraftRoomScreen() {
     if (busy) return;
     setBusy(true);
     void fn()
-      .catch((e: unknown) => toast.error(friendlyError(e, fallback)))
+      .catch((e: unknown) => notify.error(friendlyError(e, fallback)))
       .finally(() => setBusy(false));
   };
 
@@ -804,7 +804,7 @@ export default function DraftRoomScreen() {
               queuedIds={queue?.playerIds ?? []}
               onChange={(playerIds) => {
                 void setMyDraftQueue({ roomId: room.roomId, playerIds: playerIds as Id<"fantasyPlayers">[] })
-                  .catch((error: unknown) => toast.error(friendlyError(error, t("weekend.saveShortlistFailed", { defaultValue: "Could not save your shortlist." }))));
+                  .catch((error: unknown) => notify.error(friendlyError(error, t("weekend.saveShortlistFailed", { defaultValue: "Could not save your shortlist." }))));
               }}
             />
           </div>
@@ -819,7 +819,7 @@ export default function DraftRoomScreen() {
             queuedIds={queue?.playerIds ?? []}
             onQueueChange={(playerIds) => {
               void setMyDraftQueue({ roomId: room.roomId, playerIds: playerIds as Id<"fantasyPlayers">[] })
-                .catch((error: unknown) => toast.error(friendlyError(error, t("weekend.saveShortlistFailed", { defaultValue: "Could not save your shortlist." }))));
+                .catch((error: unknown) => notify.error(friendlyError(error, t("weekend.saveShortlistFailed", { defaultValue: "Could not save your shortlist." }))));
             }}
             onPick={(playerId) =>
               run(

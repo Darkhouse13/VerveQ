@@ -18,7 +18,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
@@ -282,7 +282,7 @@ export function useVerveGrid(sport: string, difficulty: Difficulty): VerveGridVi
           setGameOver(true);
           setAllSolved(false);
           setCorrectCount(res.correctCount);
-          toast.error(t("verveGrid.tabSwitchEnded"));
+          notify.error(t("verveGrid.tabSwitchEnded"));
         }
       });
     }, [sessionId, gameOver, loading, startupState, penalizeTabSwitchMut, t]),
@@ -325,7 +325,7 @@ export function useVerveGrid(sport: string, difficulty: Difficulty): VerveGridVi
         if (result.alreadyUsed) {
           setShakeCellIndex(cellIndex);
           setTimeout(() => setShakeCellIndex(null), 600);
-          toast.warning(t("verveGrid.alreadyUsed"));
+          notify.warning(t("verveGrid.alreadyUsed"));
           // Re-open so the player can pick a different name for this cell.
           setSearchOpen(true);
           return;
@@ -352,7 +352,7 @@ export function useVerveGrid(sport: string, difficulty: Difficulty): VerveGridVi
         if (!result.correct) {
           setShakeCellIndex(cellIndex);
           setTimeout(() => setShakeCellIndex(null), 600);
-          toast.error(t("verveGrid.notAMatch"));
+          notify.error(t("verveGrid.notAMatch"));
         }
 
         if ("gameOver" in result && result.gameOver) {
@@ -362,7 +362,7 @@ export function useVerveGrid(sport: string, difficulty: Difficulty): VerveGridVi
         setActiveCellIndex(null);
       } catch (err) {
         console.error("Guess error:", err);
-        toast.error(t("verveGrid.submitFailed"));
+        notify.error(t("verveGrid.submitFailed"));
       } finally {
         setSubmitting(false);
       }

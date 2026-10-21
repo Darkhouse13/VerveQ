@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { FunctionReturnType } from "convex/server";
 import { CalendarRange, ChevronDown, ChevronUp, Medal, Share2, Sparkles, Swords, Trophy } from "lucide-react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { api } from "../../../../convex/_generated/api";
 import { formatPoints } from "../../../../convex/lib/fantasyScoring";
 import { NeoBadge } from "@/components/neo/NeoBadge";
@@ -174,7 +174,7 @@ function Recap({ dashboard }: { dashboard: Dashboard }) {
         });
       }
       else await navigator.clipboard.writeText(text);
-      toast.success(t("weekend.crewRecapReady", { defaultValue: "Crew recap ready to share." }));
+      notify.success(t("weekend.crewRecapReady", { defaultValue: "Crew recap ready to share." }));
     } catch {
       // Cancelling the native share sheet is not an error worth surfacing.
     }

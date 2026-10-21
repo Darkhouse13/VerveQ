@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery } from "convex/react";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Swords, Share2, Copy } from "lucide-react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { friendlyError } from "@/lib/errors";
 
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -171,7 +171,7 @@ export default function DuelResultScreen() {
         await navigator.share(payload);
       } else {
         await navigator.clipboard.writeText(`${shareCardText} ${payload.url}`);
-        toast.success(t("duelResult.resultCopied"));
+        notify.success(t("duelResult.resultCopied"));
       }
     } catch {
       /* user cancelled */
@@ -182,9 +182,9 @@ export default function DuelResultScreen() {
     markShared();
     try {
       await navigator.clipboard.writeText(`${shareCardText} ${shareUrl ?? ""}`);
-      toast.success(t("duelResult.copied"));
+      notify.success(t("duelResult.copied"));
     } catch {
-      toast.error(t("duelResult.couldNotCopy"));
+      notify.error(t("duelResult.couldNotCopy"));
     }
   };
 
@@ -200,16 +200,16 @@ export default function DuelResultScreen() {
     try {
       const result = await rematchMut({ duelId: view.duelId });
       if (result.existing) {
-        toast.success(t("duelResult.rematchAlreadyOpen"));
+        notify.success(t("duelResult.rematchAlreadyOpen"));
       } else if (result.linkCode) {
         // It's now a link rematch (e.g. former guest); send to play screen.
-        toast.success(t("duelResult.rematchReadyShareLink"));
+        notify.success(t("duelResult.rematchReadyShareLink"));
       } else {
-        toast.success(t("duelResult.rematchSent"));
+        notify.success(t("duelResult.rematchSent"));
       }
       navigate(`/duel/play/${result.duelId}`);
     } catch (e) {
-      toast.error(friendlyError(e, t("duelResult.errorRematchFailed")));
+      notify.error(friendlyError(e, t("duelResult.errorRematchFailed")));
     } finally {
       setRematching(false);
     }
@@ -220,9 +220,9 @@ export default function DuelResultScreen() {
     setDeclining(true);
     try {
       await declineMut({ duelId: openRematch.duelId });
-      toast.success(t("duelResult.rematchDeclined"));
+      notify.success(t("duelResult.rematchDeclined"));
     } catch (e) {
-      toast.error(friendlyError(e, t("duelResult.errorCouldNotDecline")));
+      notify.error(friendlyError(e, t("duelResult.errorCouldNotDecline")));
     } finally {
       setDeclining(false);
     }

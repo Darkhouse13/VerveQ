@@ -28,7 +28,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { notify, warnTabSwitchOnce } from "@/lib/notify";
 import { CalendarDays, Check, Share2, Delete, Flame, Infinity as InfinityIcon, Swords, X } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
@@ -72,8 +72,6 @@ const REVEAL_HOLD_MS = { right: 1900, wrong: 3000 } as const;
 const SKIP_GUARD_MS = 450;
 
 const THEME = "theme-letters";
-/** In-round toasts go up top: at the bottom they would cover Check and Give up. */
-const TOAST_AT = "top-center" as const;
 
 const TIER_CHIP: Record<Tier, string> = {
   easy: "bg-success text-success-foreground border-black",
@@ -175,7 +173,7 @@ export default function MissingLettersPlayScreen() {
     void claimTokenMut({ token, confirm })
       .then((res) => {
         track("missing_letters_reminder_claimed", { confirmed: res.confirmed, ok: res.ok });
-        if (res.confirmed) toast.success(t("missingLetters.reminderConfirmed"));
+        if (res.confirmed) notify.success(t("missingLetters.reminderConfirmed"));
       })
       .catch((err) => console.error("Reminder link failed:", err))
       .finally(() => setReminderLinkSettled(true));
@@ -298,7 +296,7 @@ export default function MissingLettersPlayScreen() {
       setReveal(null);
     } catch (err) {
       console.error("Endless failed to start:", err);
-      toast.error(t("missingLetters.startFailedMessage"));
+      notify.error(t("missingLetters.startFailedMessage"));
     } finally {
       inFlight.current = false;
       setBusy(false);
@@ -332,7 +330,7 @@ export default function MissingLettersPlayScreen() {
         setView(res.session);
       } catch (err) {
         console.error("Missing Letters guess failed:", err);
-        toast.error(t("missingLetters.guessFailed"), { position: TOAST_AT });
+        notify.error(t("missingLetters.guessFailed"));
       } finally {
         inFlight.current = false;
         setBusy(false);
@@ -431,19 +429,19 @@ export default function MissingLettersPlayScreen() {
   useAntiCheat(
     useCallback(() => {
       if (status !== "ready" || !view || view.status !== "active" || reveal) return;
-      toast.error(t("missingLetters.tabSwitchForfeit"), { position: TOAST_AT });
+      notify.error(t("missingLetters.tabSwitchForfeit"));
       void submit({ forfeit: "timeout" });
     }, [status, view, reveal, submit, t]),
     // The hook's mount-time toast would also greet a player re-opening a
     // finished daily; warn once, when a round is actually live.
     { warningMessage: null },
   );
-  const warned = useRef(false);
+  // The anti-cheat reminder: once per session, on the first tap in a live round.
+  const live = view?.status === "active";
   useEffect(() => {
-    if (warned.current || view?.status !== "active") return;
-    warned.current = true;
-    toast.warning(t("missingLetters.tabSwitchWarning"), { duration: 4000, position: TOAST_AT });
-  }, [view?.status, t]);
+    if (!live) return;
+    return warnTabSwitchOnce(t("missingLetters.tabSwitchWarning"));
+  }, [live, t]);
 
   // Sharing a finished daily IS the challenge: the link replays the same ten
   // boards for whoever opens it. If the challenge cannot be minted the plain

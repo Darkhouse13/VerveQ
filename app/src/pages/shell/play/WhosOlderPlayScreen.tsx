@@ -27,7 +27,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { notify, warnTabSwitchOnce } from "@/lib/notify";
 import { CalendarDays, Check, Share2, Flame, Infinity as InfinityIcon, Swords, X } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
@@ -176,7 +176,7 @@ export default function WhosOlderPlayScreen() {
     void claimTokenMut({ token, confirm })
       .then((res) => {
         track("whos_older_reminder_claimed", { confirmed: res.confirmed, ok: res.ok });
-        if (res.confirmed) toast.success(t("whosOlder.reminderConfirmed"));
+        if (res.confirmed) notify.success(t("whosOlder.reminderConfirmed"));
       })
       .catch((err) => console.error("Reminder link failed:", err))
       .finally(() => setReminderLinkSettled(true));
@@ -286,7 +286,7 @@ export default function WhosOlderPlayScreen() {
       setReveal(null);
     } catch (err) {
       console.error("Endless failed to start:", err);
-      toast.error(t("whosOlder.startFailedMessage"));
+      notify.error(t("whosOlder.startFailedMessage"));
     } finally {
       inFlight.current = false;
       setBusy(false);
@@ -321,7 +321,7 @@ export default function WhosOlderPlayScreen() {
         setView(res.session);
       } catch (err) {
         console.error("Who's Older guess failed:", err);
-        toast.error(t("whosOlder.guessFailed"));
+        notify.error(t("whosOlder.guessFailed"));
       } finally {
         inFlight.current = false;
         setBusy(false);
@@ -357,19 +357,19 @@ export default function WhosOlderPlayScreen() {
   useAntiCheat(
     useCallback(() => {
       if (status !== "ready" || !view || view.status !== "active" || reveal) return;
-      toast.error(t("whosOlder.tabSwitchForfeit"));
+      notify.error(t("whosOlder.tabSwitchForfeit"));
       void answer("timeout");
     }, [status, view, reveal, answer, t]),
     // The hook's mount-time toast would also greet a player re-opening a
     // finished daily; warn once, when a round is actually live.
     { warningMessage: null },
   );
-  const warned = useRef(false);
+  // The anti-cheat reminder: once per session, on the first tap in a live round.
+  const live = view?.status === "active";
   useEffect(() => {
-    if (warned.current || view?.status !== "active") return;
-    warned.current = true;
-    toast.warning(t("whosOlder.tabSwitchWarning"), { duration: 4000 });
-  }, [view?.status, t]);
+    if (!live) return;
+    return warnTabSwitchOnce(t("whosOlder.tabSwitchWarning"));
+  }, [live, t]);
 
   // Sharing a finished daily IS the challenge: the link replays the same ten
   // pairs for whoever opens it. If the challenge cannot be minted the plain

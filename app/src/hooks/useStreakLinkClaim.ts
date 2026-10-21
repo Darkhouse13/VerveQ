@@ -11,7 +11,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation } from "convex/react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { track } from "@/lib/analytics";
 import type { DailyGame } from "@/components/shell/play/whosOlder/WhosOlderRetention";
 import { api } from "../../convex/_generated/api";
@@ -36,9 +36,9 @@ export function useStreakLinkClaim(game: DailyGame) {
           ok: res.ok,
           ...(res.ok ? { accounts: res.accounts, already_linked: res.alreadyLinked } : { reason: res.reason }),
         });
-        if (res.ok && !res.alreadyLinked) toast.success(t("dailyShare.linkConnected"));
-        else if (!res.ok && res.reason === "expired") toast.error(t("dailyShare.linkExpired"));
-        else if (!res.ok && (res.reason === "used_up" || res.reason === "group_full")) toast.error(t("dailyShare.linkUsedUp"));
+        if (res.ok && !res.alreadyLinked) notify.success(t("dailyShare.linkConnected"));
+        else if (!res.ok && res.reason === "expired") notify.error(t("dailyShare.linkExpired"));
+        else if (!res.ok && (res.reason === "used_up" || res.reason === "group_full")) notify.error(t("dailyShare.linkUsedUp"));
       })
       .catch((err) => console.error("Streak link failed:", err))
       .finally(() => setSettled(true));

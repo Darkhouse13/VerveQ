@@ -11,7 +11,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "convex/react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { friendlyError } from "@/lib/errors";
 import { api } from "../../convex/_generated/api";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
@@ -135,7 +135,7 @@ export function useSoloQuiz(): SoloQuizState {
         });
         applyQuestion(q);
       } catch {
-        toast.error(t("quiz.loadQuestionFailed"));
+        notify.error(t("quiz.loadQuestionFailed"));
       } finally {
         setLoading(false);
       }
@@ -175,7 +175,7 @@ export function useSoloQuiz(): SoloQuizState {
           await fetchQuestion(sid);
         }
       } catch {
-        toast.error(t("quiz.startSessionFailed"));
+        notify.error(t("quiz.startSessionFailed"));
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -205,7 +205,7 @@ export function useSoloQuiz(): SoloQuizState {
           // result. (Career Path treats ITS anti-cheat forfeit as a completion
           // because there the forfeit still produces a final scored card.)
           abandonRun(sessionId);
-          toast.error(t("quiz.tabSwitchEnded"));
+          notify.error(t("quiz.tabSwitchEnded"));
           navigate("/home", { replace: true });
         }
       });
@@ -244,7 +244,7 @@ export function useSoloQuiz(): SoloQuizState {
           { correct: res.correct, timeTaken: res.timeTaken, score: res.score },
         ]);
       } catch (error) {
-        toast.error(friendlyError(error, t("quiz.checkFailedToast")));
+        notify.error(friendlyError(error, t("quiz.checkFailedToast")));
       } finally {
         answerSubmitInFlight.current = false;
         setChecking(false);

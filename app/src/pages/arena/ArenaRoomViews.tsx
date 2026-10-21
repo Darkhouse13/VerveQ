@@ -17,7 +17,7 @@ import {
   Trophy,
   Users,
 } from "lucide-react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { friendlyError } from "@/lib/errors";
 
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -96,7 +96,7 @@ export function LobbyView({
     try {
       await setReady({ arenaId: room.arenaId, ready: !me.ready });
     } catch (e) {
-      toast.error(friendlyError(e, "Could not update ready"));
+      notify.error(friendlyError(e, "Could not update ready"));
     }
   };
 
@@ -104,7 +104,7 @@ export function LobbyView({
     try {
       await setTeam({ arenaId: room.arenaId, team });
     } catch (e) {
-      toast.error(friendlyError(e, "Could not set team"));
+      notify.error(friendlyError(e, "Could not set team"));
     }
   };
 
@@ -112,22 +112,22 @@ export function LobbyView({
     try {
       await startMut({ arenaId: room.arenaId, force });
     } catch (e) {
-      toast.error(friendlyError(e, "Could not start"));
+      notify.error(friendlyError(e, "Could not start"));
     }
   };
 
   const handleShare = async () => {
     const res = await shareArenaLink(room.code);
-    if (res === "copied") toast.success("Link copied");
-    if (res === "failed") toast.error("Could not share link");
+    if (res === "copied") notify.success("Link copied");
+    if (res === "failed") notify.error("Could not share link");
   };
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(buildArenaUrl(room.code));
-      toast.success("Link copied");
+      notify.success("Link copied");
     } catch {
-      toast.error("Could not copy");
+      notify.error("Could not copy");
     }
   };
 
@@ -465,7 +465,7 @@ export function RoundBreakView({
     try {
       await readyNextRound({ arenaId: room.arenaId });
     } catch (e) {
-      toast.error(friendlyError(e, "Could not ready"));
+      notify.error(friendlyError(e, "Could not ready"));
     }
   };
 
@@ -616,8 +616,8 @@ function FinalUnavailable({
           size="full"
           onClick={() => {
             void shareArenaLink(room.code).then((res) => {
-              if (res === "copied") toast.success("Link copied");
-              if (res === "failed") toast.error("Could not share");
+              if (res === "copied") notify.success("Link copied");
+              if (res === "failed") notify.error("Could not share");
             });
           }}
         >
@@ -710,9 +710,9 @@ function FinalSummaryView({
       text = `VerveQ arena ${code} — rematch?`;
     }
     const res = await shareArenaLink(code, text);
-    if (res === "shared") toast.success("Result shared");
-    if (res === "copied") toast.success("Result copied");
-    if (res === "failed") toast.error("Could not share");
+    if (res === "shared") notify.success("Result shared");
+    if (res === "copied") notify.success("Result copied");
+    if (res === "failed") notify.error("Could not share");
   };
 
   const modeLabel = arenaModeVerboseLabel(summary.mode);

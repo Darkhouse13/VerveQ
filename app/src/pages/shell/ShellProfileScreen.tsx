@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "convex/react";
 import { Lock, Share2, Crown, Settings } from "lucide-react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
@@ -176,7 +176,7 @@ export default function ShellProfileScreen() {
           className="flex-1"
           onClick={() => {
             navigator.clipboard.writeText(window.location.href);
-            toast.success(t("profile.shareCopied"));
+            notify.success(t("profile.shareCopied"));
           }}
         >
           <Share2 size={14} strokeWidth={2.5} /> {t("profile.share")}

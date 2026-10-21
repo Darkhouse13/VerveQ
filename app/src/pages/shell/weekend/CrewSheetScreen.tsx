@@ -16,7 +16,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useConvex, useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import type { SlotRole } from "../../../../convex/lib/fantasyConstants";
@@ -147,7 +147,7 @@ export default function CrewSheetScreen() {
       })),
     })
       .catch((e: unknown) =>
-        toast.error(
+        notify.error(
           friendlyError(e, t("weekend.swapFailed", { defaultValue: "That swap isn't legal." })),
         ),
       )
@@ -163,7 +163,7 @@ export default function CrewSheetScreen() {
     void setFormationMutation({ squadId: sheet.squadId, slots: plan.payload })
       .then(() => rememberFormation(formationName))
       .catch((e: unknown) =>
-        toast.error(
+        notify.error(
           friendlyError(
             e,
             t("weekend.shapeFailed", { defaultValue: "Couldn't switch the shape." }),
@@ -190,7 +190,7 @@ export default function CrewSheetScreen() {
       })),
     })
       .catch((e: unknown) =>
-        toast.error(
+        notify.error(
           friendlyError(
             e,
             t("weekend.finisherRoleFailed", {

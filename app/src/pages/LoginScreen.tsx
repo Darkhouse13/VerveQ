@@ -11,7 +11,7 @@ import {
   validatePassword,
   describePasswordReason,
 } from "../../convex/lib/passwordPolicy";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { friendlyError } from "@/lib/errors";
 
 type Mode = "signin" | "signup" | "reset-request" | "reset-confirm";
@@ -165,7 +165,7 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await requestPasswordReset(email);
-      toast.success("If that email is registered, a reset code is on its way.");
+      notify.success("If that email is registered, a reset code is on its way.");
       switchMode("reset-confirm");
       setEmail(email); // preserve email into next step
     } catch (e: unknown) {
@@ -193,7 +193,7 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await confirmPasswordReset(email, code, password);
-      toast.success("Password updated. You're signed in.");
+      notify.success("Password updated. You're signed in.");
       navigate("/home");
     } catch (e: unknown) {
       reportError(e);

@@ -9,7 +9,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery } from "convex/react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { Bell, Hash, Plus, Users } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -44,7 +44,7 @@ export default function WeekendCrewsScreen() {
       track("weekend_crew_created");
       navigate(SHELL_ROUTES.weekendCrew(newCode));
     } catch (e) {
-      toast.error(friendlyError(e, t("weekend.crewCreateFailed", { defaultValue: "Could not create the crew." })));
+      notify.error(friendlyError(e, t("weekend.crewCreateFailed", { defaultValue: "Could not create the crew." })));
     } finally {
       setBusy(false);
     }
@@ -58,7 +58,7 @@ export default function WeekendCrewsScreen() {
       track("weekend_crew_joined");
       navigate(SHELL_ROUTES.weekendCrew(joinedCode));
     } catch (e) {
-      toast.error(friendlyError(e, t("weekend.crewJoinFailed", { defaultValue: "Could not join that crew." })));
+      notify.error(friendlyError(e, t("weekend.crewJoinFailed", { defaultValue: "Could not join that crew." })));
     } finally {
       setBusy(false);
     }

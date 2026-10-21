@@ -7,7 +7,7 @@ import { useEffect } from "react";
 import { useMutation } from "convex/react";
 import { useTranslation } from "react-i18next";
 import { api } from "../../convex/_generated/api";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import type { GameResultState } from "@/types/api";
 
 function getGrade(accuracy: number) {
@@ -67,7 +67,7 @@ export default function ResultScreen() {
       try {
         const res = await checkAchievements();
         if (res.newlyUnlocked.length > 0) {
-          toast.success(
+          notify.success(
             t("result.achievementUnlocked", { count: res.newlyUnlocked.length }),
           );
         }

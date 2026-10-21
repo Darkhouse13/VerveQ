@@ -25,7 +25,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useConvex, useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { ArrowLeftRight, Check, ChevronDown, ChevronRight, Lock, Plus, X } from "lucide-react";
 import { matchesNameSearch } from "../../../../convex/lib/fantasyPlayerName";
 import {
@@ -1373,7 +1373,7 @@ export default function BudgetSquadScreen() {
     const clubName =
       market?.players.find((p) => p.clubId === clubId)?.clubName ?? clubId;
     if (hit[2] === "your favorite") {
-      toast.error(
+      notify.error(
         t("weekend.clubCapFavoriteFriendly", {
           defaultValue: "Only {{cap}} from {{club}}, even as your favorite club.",
           cap: hit[1],
@@ -1382,7 +1382,7 @@ export default function BudgetSquadScreen() {
       );
       return true;
     }
-    toast.error(
+    notify.error(
       t("weekend.clubCapFriendly", {
         defaultValue:
           "Only {{cap}} from {{club}} — your favorite club gets one more. Set it once (it's permanent) on the Weekend home.",
@@ -1404,7 +1404,7 @@ export default function BudgetSquadScreen() {
     setBusy(true);
     void fn()
       .catch((e: unknown) => {
-        if (!clubCapToast(e)) toast.error(friendlyError(e, fallback));
+        if (!clubCapToast(e)) notify.error(friendlyError(e, fallback));
       })
       .finally(() => setBusy(false));
   };

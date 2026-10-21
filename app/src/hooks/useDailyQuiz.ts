@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "convex/react";
 import { usePreferredDailySport } from "@/hooks/usePreferredDailySport";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { friendlyError, isAlreadyAttemptedError } from "@/lib/errors";
 import { api } from "../../convex/_generated/api";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
@@ -119,7 +119,7 @@ export function useDailyQuiz(): DailyQuizState {
     if (attemptStatus) {
       const hasLocalAttempt = localAttemptSport.current === sport || attemptId !== null;
       if (startAttemptInFlight.current || hasLocalAttempt) return;
-      toast.error(t("dailyQuiz.alreadyPlayed"));
+      notify.error(t("dailyQuiz.alreadyPlayed"));
       navigate(SHELL_ROUTES.home, { replace: true });
       return;
     }
@@ -141,10 +141,10 @@ export function useDailyQuiz(): DailyQuizState {
         startTime.current = Date.now();
       } catch (e) {
         if (isAlreadyAttemptedError(e)) {
-          toast.error(t("dailyQuiz.alreadyPlayed"));
+          notify.error(t("dailyQuiz.alreadyPlayed"));
           navigate(SHELL_ROUTES.home, { replace: true });
         } else {
-          toast.error(friendlyError(e, t("dailyQuiz.startFailedToast")));
+          notify.error(friendlyError(e, t("dailyQuiz.startFailedToast")));
           navigate(-1);
         }
         localAttemptSport.current = null;
@@ -199,7 +199,7 @@ export function useDailyQuiz(): DailyQuizState {
         // settles because the run is over either way.
         abandonRun(attemptId);
         forfeitMut({ attemptId }).then(() => {
-          toast.error(t("dailyQuiz.forfeitedTabSwitch"));
+          notify.error(t("dailyQuiz.forfeitedTabSwitch"));
           navigate(SHELL_ROUTES.home, { replace: true });
         });
       }
@@ -242,7 +242,7 @@ export function useDailyQuiz(): DailyQuizState {
           { correct: res.correct, timeTaken: res.timeTaken, score: res.score },
         ]);
       } catch (error) {
-        toast.error(friendlyError(error, t("dailyQuiz.checkFailedToast")));
+        notify.error(friendlyError(error, t("dailyQuiz.checkFailedToast")));
       } finally {
         answerSubmitInFlight.current = false;
         setChecking(false);

@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { toast } from "sonner";
+import { warnTabSwitchOnce } from "@/lib/notify";
 
 interface UseAntiCheatOptions {
-  /** One-time toast shown on mount to warn the player. Pass null to suppress. */
+  /** Reminder shown once per session on the first tap. Pass null to suppress. */
   warningMessage?: string | null;
   /** Delay before applying the penalty, so transient mobile visibility flickers do not count. */
   hiddenGraceMs?: number;
@@ -13,19 +13,19 @@ const DEFAULT_WARNING =
 
 /**
  * Calls `onTabAway` whenever the user switches away from the tab.
- * Used to forfeit / mark wrong during active games. Shows a one-time
- * warning toast on mount so the rule isn't a hidden gotcha.
+ * Used to forfeit / mark wrong during active games. Shows the rule once per
+ * session, on the first interaction, so it isn't a hidden gotcha.
  */
 export function useAntiCheat(
   onTabAway: () => void,
   { warningMessage = DEFAULT_WARNING, hiddenGraceMs = 1000 }: UseAntiCheatOptions = {},
 ) {
   useEffect(() => {
-    if (warningMessage) {
-      toast.warning(warningMessage, { duration: 4000 });
-    }
-    // Intentionally only fire warning on mount; subsequent re-renders
-    // (e.g. callback identity changes) shouldn't re-toast.
+    // Once per session, on the player's first tap or key in the game — not as
+    // it opens, where it covered the first question (owner decision 9).
+    if (!warningMessage) return;
+    return warnTabSwitchOnce(warningMessage);
+    // Arm once per mount; a new message string (locale switch) mustn't re-arm.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

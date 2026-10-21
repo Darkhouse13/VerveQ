@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Calendar, Copy, Check, Share2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { ClaimNamePrompt } from "@/components/shell/onboarding/ClaimNamePrompt";
 import { getTodayUTC, isWorldCupEditionActive } from "../../convex/lib/daily";
 
@@ -75,7 +75,7 @@ export default function DailyResultScreen() {
   const copyShareText = async () => {
     await navigator.clipboard.writeText(shareText);
     setCopied(true);
-    toast.success(t("dailyResult.copiedToClipboard"));
+    notify.success(t("dailyResult.copiedToClipboard"));
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -95,7 +95,7 @@ export default function DailyResultScreen() {
     try {
       await copyShareText();
     } catch {
-      toast.error(t("dailyResult.copyFailed"));
+      notify.error(t("dailyResult.copyFailed"));
     }
   };
 
@@ -103,7 +103,7 @@ export default function DailyResultScreen() {
     try {
       await copyShareText();
     } catch {
-      toast.error(t("dailyResult.copyFailed"));
+      notify.error(t("dailyResult.copyFailed"));
     }
   };
 

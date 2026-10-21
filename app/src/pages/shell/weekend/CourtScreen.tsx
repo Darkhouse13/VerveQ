@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useConvex, useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { Gavel, Scale } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -315,7 +315,7 @@ export default function CourtScreen() {
     if (busy) return;
     setBusy(true);
     void fn()
-      .catch((e: unknown) => toast.error(friendlyError(e, fallback)))
+      .catch((e: unknown) => notify.error(friendlyError(e, fallback)))
       .finally(() => setBusy(false));
   };
 

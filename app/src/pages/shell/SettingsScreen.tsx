@@ -15,7 +15,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "convex/react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { ArrowUp, CalendarDays, Coffee, LifeBuoy, LogIn, LogOut, Mail, User } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
@@ -67,9 +67,9 @@ export default function SettingsScreen() {
     setSavingDailySport(sport);
     try {
       await setPreferredDailySport({ sport });
-      toast.success(t("settings.dailySaved"));
+      notify.success(t("settings.dailySaved"));
     } catch (error) {
-      toast.error(friendlyError(error, t("settings.dailyHeading")));
+      notify.error(friendlyError(error, t("settings.dailyHeading")));
     } finally {
       setSavingDailySport(null);
     }

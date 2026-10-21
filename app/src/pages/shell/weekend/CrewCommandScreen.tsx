@@ -15,7 +15,7 @@ import {
   UserMinus,
   Users,
 } from "lucide-react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { api } from "../../../../convex/_generated/api";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoButton } from "@/components/neo/NeoButton";
@@ -77,7 +77,7 @@ export default function CrewCommandScreen() {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
-      toast.error(t("weekend.copyCodeFailed", { defaultValue: "Could not copy the code." }));
+      notify.error(t("weekend.copyCodeFailed", { defaultValue: "Could not copy the code." }));
     }
   };
 
@@ -88,7 +88,7 @@ export default function CrewCommandScreen() {
       const { roomId } = await createRoom({ crewId: crew.crewId });
       navigate(SHELL_ROUTES.weekendDraft(roomId));
     } catch (error) {
-      toast.error(friendlyError(error, t("weekend.openDraftFailed", { defaultValue: "Could not open the draft room." })));
+      notify.error(friendlyError(error, t("weekend.openDraftFailed", { defaultValue: "Could not open the draft room." })));
     } finally {
       setBusy(false);
     }
@@ -102,10 +102,10 @@ export default function CrewCommandScreen() {
         crewId: crew.crewId,
         memberUserId: memberToRemove.userId as typeof crew.isMe,
       });
-      toast.success(t("weekend.memberRemoved", { defaultValue: "{{name}} was removed.", name: memberToRemove.name }));
+      notify.success(t("weekend.memberRemoved", { defaultValue: "{{name}} was removed.", name: memberToRemove.name }));
       setMemberToRemove(null);
     } catch (error) {
-      toast.error(friendlyError(error, t("weekend.removeMemberFailed", { defaultValue: "Could not remove that member." })));
+      notify.error(friendlyError(error, t("weekend.removeMemberFailed", { defaultValue: "Could not remove that member." })));
     } finally {
       setBusy(false);
     }
@@ -118,7 +118,7 @@ export default function CrewCommandScreen() {
       await leaveCrew({ crewId: crew.crewId });
       navigate(SHELL_ROUTES.weekendCrews, { replace: true });
     } catch (error) {
-      toast.error(friendlyError(error, t("weekend.leaveCrewFailed", { defaultValue: "Could not leave the crew." })));
+      notify.error(friendlyError(error, t("weekend.leaveCrewFailed", { defaultValue: "Could not leave the crew." })));
     } finally {
       setBusy(false);
     }
@@ -129,10 +129,10 @@ export default function CrewCommandScreen() {
     setBusy(true);
     try {
       await deleteCrew({ crewId: crew.crewId });
-      toast.success(t("weekend.crewDeleted", { defaultValue: "Crew deleted." }));
+      notify.success(t("weekend.crewDeleted", { defaultValue: "Crew deleted." }));
       navigate(SHELL_ROUTES.weekendCrews, { replace: true });
     } catch (error) {
-      toast.error(friendlyError(error, t("weekend.deleteCrewFailed", { defaultValue: "Could not delete the crew." })));
+      notify.error(friendlyError(error, t("weekend.deleteCrewFailed", { defaultValue: "Could not delete the crew." })));
       setDeleteOpen(false);
     } finally {
       setBusy(false);

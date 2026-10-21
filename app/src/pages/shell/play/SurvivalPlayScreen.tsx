@@ -21,7 +21,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "convex/react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoInput } from "@/components/neo/NeoInput";
@@ -279,7 +279,7 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
           setLoading(false);
           return;
         }
-        toast.error(t("survival.failedToStart"));
+        notify.error(t("survival.failedToStart"));
         navigate(-1);
       }
     })();
@@ -304,7 +304,7 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
         // Daily rule: leaving the tab forfeits the one attempt outright.
         if ("dailyForfeit" in res && res.dailyForfeit) {
           setCheatModal("penalty");
-          toast.error(t("survival.daily.forfeited"), { duration: 4000 });
+          notify.error(t("survival.daily.forfeited"), { duration: 4000 });
           setTimeout(() => goToResults(0, round), 2000);
           return;
         }
@@ -391,7 +391,7 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
       if (res.closeCall) {
         setCloseCallShake(true);
         setTimeout(() => setCloseCallShake(false), 600);
-        toast.warning(
+        notify.warning(
           res.ambiguousSurname
             ? t("survival.ambiguousSurname")
             : t("survival.closeCheckSpelling"),
@@ -423,12 +423,12 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
         setSpeedStreak(res.speedStreak ?? 0);
         setIsOnFire(res.isOnFire ?? false);
         if (res.surnameMatch) {
-          toast.success(
+          notify.success(
             t("survival.surnameAccepted", { answer: res.correctAnswer }),
             { duration: 3000 },
           );
         } else if (res.typoAccepted) {
-          toast.warning(
+          notify.warning(
             t("survival.typoAccepted", { answer: res.correctAnswer }),
             {
               duration: 3000,
@@ -436,12 +436,12 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
           );
         }
         if (res.isHiddenAnswer) {
-          toast.success(t("survival.hiddenAnswerFound"), { duration: 4000 });
+          notify.success(t("survival.hiddenAnswerFound"), { duration: 4000 });
         }
         if (res.earnedLife) {
           setShowEarnedLife(true);
           setTimeout(() => setShowEarnedLife(false), 1500);
-          toast.success(t("survival.plusOneLife"), { duration: 3000 });
+          notify.success(t("survival.plusOneLife"), { duration: 3000 });
         }
       } else {
         if (daily) dailyOutcomesRef.current.push("🟥");
@@ -459,7 +459,7 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
         }, 1500);
       }
     } catch {
-      toast.error(t("survival.failedToSubmit"));
+      notify.error(t("survival.failedToSubmit"));
     } finally {
       setSubmitting(false);
     }
@@ -480,7 +480,7 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
       setLettersRemaining(res.lettersRemaining);
       setHelpStage(res.stage);
     } catch {
-      toast.error(t("survival.failedToGetHelp"));
+      notify.error(t("survival.failedToGetHelp"));
     } finally {
       setHelpLoading(false);
     }
@@ -502,7 +502,7 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
         setRound(res.round);
       }
     } catch {
-      toast.error(t("survival.failedToSkip"));
+      notify.error(t("survival.failedToSkip"));
     }
   };
 
@@ -513,7 +513,7 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
       const res = await endRunMut({ sessionId });
       await goToResults(res.score, res.round);
     } catch {
-      toast.error(t("survival.failedToCashOut"));
+      notify.error(t("survival.failedToCashOut"));
       setEndingRun(false);
     }
   };

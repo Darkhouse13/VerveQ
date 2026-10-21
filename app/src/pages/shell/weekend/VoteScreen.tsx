@@ -33,7 +33,7 @@ import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { useConvex, useMutation } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { Check, EyeOff, Plus } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -244,7 +244,7 @@ export function showUndoToast(
 ): void {
   const duration = undoToastMs(undo.expiresAt);
   if (duration <= 0) return;
-  const toastId = toast(
+  const toastId = notify(
     t("weekend.undoRetired", {
       defaultValue: "Retired {{fixture}}",
       fixture: undoFixtureLine(undo.fixtures),
@@ -258,15 +258,15 @@ export function showUndoToast(
           // action toast automatically, so without this the same visible Undo
           // could be tapped again while the first mutation was already in
           // flight (the server refused it, but the UI still offered it).
-          toast.dismiss(toastId);
+          notify.dismiss(toastId);
           void run(undo.pairId)
             .then(() =>
-              toast.success(
+              notify.success(
                 t("weekend.undoDone", { defaultValue: "Back on your list." }),
               ),
             )
             .catch((e: unknown) =>
-              toast.error(
+              notify.error(
                 friendlyError(
                   e,
                   t("weekend.undoFailed", {
@@ -788,7 +788,7 @@ export default function VoteScreen() {
         setPhase("stack");
       })
       .catch((e: unknown) => {
-        toast.error(
+        notify.error(
           friendlyError(e, t("weekend.serveFailed", { defaultValue: "Could not deal a pair." })),
         );
         setServe({ status: "closed" });
@@ -809,7 +809,7 @@ export default function VoteScreen() {
     watchedMutation({ fixtureIds: [...selected] as Id<"fantasyFixtures">[] })
       .then(() => serveNext())
       .catch((e: unknown) => {
-        toast.error(
+        notify.error(
           friendlyError(
             e,
             t("weekend.pickerFailed", { defaultValue: "Could not save your games." }),
@@ -859,7 +859,7 @@ export default function VoteScreen() {
         beat.current = setTimeout(advance, REVEAL_BEAT_MS);
       })
       .catch((e: unknown) => {
-        toast.error(
+        notify.error(
           friendlyError(e, t("weekend.voteFailed", { defaultValue: "That vote didn't land." })),
         );
         setBusy(false);

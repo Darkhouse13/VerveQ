@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery } from "convex/react";
 import { useTranslation } from "react-i18next";
 import { Check, X, Clock, Trophy, ArrowLeft, Swords } from "lucide-react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { friendlyError } from "@/lib/errors";
 
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -217,7 +217,7 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
         await refresh();
       }, AUTO_ADVANCE_DELAY_MS);
     } catch (e) {
-      toast.error(friendlyError(e, t("duelPlay.errorSubmitAnswer")));
+      notify.error(friendlyError(e, t("duelPlay.errorSubmitAnswer")));
       setSelected(null);
     } finally {
       setSubmitting(false);
@@ -230,15 +230,15 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
     try {
       const result = await rematchMut({ duelId: view.duelId });
       if (result.existing) {
-        toast.success(t("duelPlay.rematchAlreadyOpen"));
+        notify.success(t("duelPlay.rematchAlreadyOpen"));
       } else if (result.linkCode) {
-        toast.success(t("duelPlay.rematchReady"));
+        notify.success(t("duelPlay.rematchReady"));
       } else {
-        toast.success(t("duelPlay.rematchSent"));
+        notify.success(t("duelPlay.rematchSent"));
       }
       navigate(`/duel/play/${result.duelId}`);
     } catch (e) {
-      toast.error(friendlyError(e, t("duelPlay.errorRematchFailed")));
+      notify.error(friendlyError(e, t("duelPlay.errorRematchFailed")));
     } finally {
       setRematching(false);
     }
@@ -565,7 +565,7 @@ function WaitingForOpponent({
         });
       } else {
         await navigator.clipboard.writeText(url);
-        toast.success(t("duelPlay.linkCopied"));
+        notify.success(t("duelPlay.linkCopied"));
       }
     } catch {
       /* ignore */
