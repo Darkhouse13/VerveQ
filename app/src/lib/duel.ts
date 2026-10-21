@@ -161,3 +161,17 @@ export function duelOpponentLabel(username: string, t: TFunction): string {
     ? t("duelLib.openInvite")
     : t("duelLib.versusUser", { username });
 }
+
+/**
+ * One meta line for a duel row: "Knowledge · Quiz · easy". The mode label is
+ * dropped when the headline already says it (Which Came First), so the row
+ * never reads "Which Came First · Which Came First".
+ */
+export function duelMetaLine(
+  s: { type: string; sport: string | null; category: string | null; mode: string; difficulty: string },
+  modeLabel: string,
+  t: TFunction,
+): string {
+  const head = duelSummaryHeadline(s, t);
+  return (head === modeLabel ? [head, s.difficulty] : [head, modeLabel, s.difficulty]).join(" · ");
+}

@@ -19,7 +19,7 @@ import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import {
   formatModeLabel,
   formatRelativeTime,
-  duelSummaryHeadline,
+  duelMetaLine,
   duelStatusBadge,
   duelOpponentLabel,
   type DuelOutcomeForMe,
@@ -115,7 +115,7 @@ export default function DuelHistoryScreen() {
                   key={d.duelId}
                   to={`/duel/result/${d.duelId}`}
                   title={duelOpponentLabel(d.opponent.username, t)}
-                  meta={`${duelSummaryHeadline(d, t)} · ${formatModeLabel(d.mode, t)} · ${d.difficulty}`}
+                  meta={duelMetaLine(d, formatModeLabel(d.mode, t), t)}
                   footer={
                     <span className="flex items-center justify-between gap-2 font-mono">
                       <span>

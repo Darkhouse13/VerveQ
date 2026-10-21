@@ -346,7 +346,7 @@ function ConvertPrompt({
             headline={t("duelLink.claimScoreTitle")}
             myScore={view.myResult.score}
             opponentScore={view.opponentResult.score}
-            youLabel={t("duelLink.yourScore")}
+            youLabel={t("duelHistory.scoreYou")}
             opponentLabel={`@${opponent}`}
           />
         }

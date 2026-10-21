@@ -30,6 +30,7 @@ import {
   formatModeLabel,
   formatRelativeTime,
   duelSummaryHeadline,
+  duelMetaLine,
   duelStatusBadge,
   duelOpponentLabel,
 } from "@/lib/duel";
@@ -109,6 +110,8 @@ export default function ChallengeScreen() {
   const recent = resolved.slice(0, RECENT_RESULTS_SHOWN);
   const hasRecord = record.wins + record.losses + record.draws > 0;
   const unreadCount = unread?.count ?? 0;
+  // A player with no duels at all sees one empty line, not three.
+  const noDuels = !loading && yourTurn.length + awaiting.length + resolved.length === 0;
 
   return (
     <ShellLayout
@@ -142,7 +145,7 @@ export default function ChallengeScreen() {
         {/* Your turn */}
         <section>
           <SectionLabel
-            aside={<span className="font-mono text-eyebrow uppercase text-muted-foreground">{t("challenge.duelsWaiting", { count: yourTurn.length })}</span>}
+            aside={yourTurn.length > 0 ? <Count>{t("challenge.duelsWaiting", { count: yourTurn.length })}</Count> : undefined}
           >
             <span className="inline-flex items-center gap-1.5">
               <Swords size={14} strokeWidth={3} aria-hidden="true" />
@@ -154,15 +157,12 @@ export default function ChallengeScreen() {
           ) : (
             <div className="flex flex-col gap-2.5">
               {yourTurn.map((d) => {
-                const badge = d.rematchOfDuelId
-                  ? { label: t("challenge.rematch"), color: "blue" as const }
-                  : duelStatusBadge(d.status, null, t);
                 return (
                   <DuelRow
                     key={d.duelId}
                     to={`/duel/play/${d.duelId}`}
                     title={duelOpponentLabel(d.opponent.username, t)}
-                    meta={`${duelSummaryHeadline(d, t)} · ${formatModeLabel(d.mode, t)} · ${d.difficulty}`}
+                    meta={duelMetaLine(d, formatModeLabel(d.mode, t), t)}
                     footer={
                       <span className="flex items-center justify-between gap-2 font-mono">
                         <span>{t("challenge.answeredCount", { answered: d.myAnsweredCount, total: d.questionCount })}</span>
@@ -172,7 +172,7 @@ export default function ChallengeScreen() {
                         </span>
                       </span>
                     }
-                    aside={<DuelBadge label={badge.label} color={badge.color} />}
+                    aside={d.rematchOfDuelId ? <Badge tone="neutral">{t("challenge.rematch")}</Badge> : undefined}
                   />
                 );
               })}
@@ -181,9 +181,10 @@ export default function ChallengeScreen() {
         </section>
 
         {/* Waiting on them */}
+        {!noDuels && (
         <section>
           <SectionLabel
-            aside={<span className="font-mono text-eyebrow uppercase text-muted-foreground">{t("challenge.duelsOut", { count: awaiting.length })}</span>}
+            aside={awaiting.length > 0 ? <Count>{t("challenge.duelsOut", { count: awaiting.length })}</Count> : undefined}
           >
             <span className="inline-flex items-center gap-1.5">
               <Clock size={14} strokeWidth={3} aria-hidden="true" />
@@ -195,13 +196,12 @@ export default function ChallengeScreen() {
           ) : (
             <div className="flex flex-col gap-2.5">
               {awaiting.map((d) => {
-                const badge = duelStatusBadge(d.status, null, t);
                 return (
                   <div key={d.duelId} className="flex flex-col gap-1.5">
                     <DuelRow
                       to={`/duel/play/${d.duelId}`}
                       title={duelOpponentLabel(d.opponent.username, t)}
-                      meta={`${duelSummaryHeadline(d, t)} · ${formatModeLabel(d.mode, t)} · ${d.difficulty}`}
+                      meta={duelMetaLine(d, formatModeLabel(d.mode, t), t)}
                       footer={
                         <span className="flex items-center justify-between gap-2 font-mono">
                           <span>
@@ -210,7 +210,6 @@ export default function ChallengeScreen() {
                           <span>{d.linkCode ? t("challenge.linkShare") : t("challenge.waitingForOpponent")}</span>
                         </span>
                       }
-                      aside={<DuelBadge label={badge.label} color={badge.color} />}
                     />
                     {d.linkCode && (
                       <Button
@@ -234,7 +233,10 @@ export default function ChallengeScreen() {
           )}
         </section>
 
+        )}
+
         {/* Recent results — the full list lives on the history page. */}
+        {!noDuels && (
         <section>
           <SectionLabel
             aside={resolved.length > 0 ? <SectionLink to={SHELL_ROUTES.duelHistory}>{t("challenge.history")}</SectionLink> : undefined}
@@ -282,14 +284,15 @@ export default function ChallengeScreen() {
           )}
         </section>
 
+        )}
+
         {/* Rivals */}
         <section>
-          <SectionLabel
-            aside={topRivals.length > 0 ? <SectionLink to={SHELL_ROUTES.rivals}>{t("challenge.seeAll")}</SectionLink> : undefined}
-          >
-            {t("challenge.yourRivals")}
-          </SectionLabel>
           {topRivals.length > 0 && (
+            <>
+            <SectionLabel aside={<SectionLink to={SHELL_ROUTES.rivals}>{t("challenge.seeAll")}</SectionLink>}>
+              {t("challenge.yourRivals")}
+            </SectionLabel>
             <div className="-mx-1 mb-2.5 flex gap-2 overflow-x-auto px-1 pb-2 scrollbar-none">
               {topRivals.map((r) => (
                 <Link
@@ -310,6 +313,7 @@ export default function ChallengeScreen() {
                 </Link>
               ))}
             </div>
+            </>
           )}
           <DuelRow
             to={SHELL_ROUTES.rivals}
@@ -373,4 +377,9 @@ export default function ChallengeScreen() {
       )}
     </ShellLayout>
   );
+}
+
+/** A section's quiet count line (hidden at zero). */
+function Count({ children }: { children: React.ReactNode }) {
+  return <span className="font-mono text-eyebrow uppercase text-muted-foreground">{children}</span>;
 }

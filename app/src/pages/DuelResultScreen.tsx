@@ -231,6 +231,8 @@ export default function DuelResultScreen() {
     }
   };
 
+  // A link duel nobody has opened yet: the opponent is a server placeholder.
+  const noOpponentYet = stillOpen && view.opponent.id === null;
   const rematchLabel = openRematch
     ? openRematch.byMe
       ? t("duelResult.openYourRematch")
@@ -302,8 +304,9 @@ export default function DuelResultScreen() {
             eyebrow={`${topicLabel(view, t)} · ${formatModeLabel(view.mode, t)} · ${view.difficulty}`}
             headline={headlineText}
             myScore={myScore}
-            opponentScore={stillOpen && view.opponent.id === null ? undefined : opponentScore}
-            youLabel={t("duelResult.youVsOpponentScore", { myScore, name: opponentName, opponentScore })}
+            opponentScore={noOpponentYet ? undefined : opponentScore}
+            youLabel={noOpponentYet ? t("duelPlay.yourScore") : t("duelHistory.scoreYou")}
+            opponentLabel={noOpponentYet ? undefined : `@${opponentName}`}
             testId="duel-result-hero"
           >
             {justResolved && (

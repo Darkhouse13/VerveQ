@@ -730,11 +730,8 @@ function LiveResolvedStatus({
             headline={statusHeadline(view, status, userId, t)}
             myScore={status.myScore}
             opponentScore={status.opponentScore}
-            youLabel={t("duelResult.youVsOpponentScore", {
-              myScore: status.myScore,
-              name: opponentName,
-              opponentScore: status.opponentScore,
-            })}
+            youLabel={t("duelHistory.scoreYou")}
+            opponentLabel={`@${opponentName}`}
           />
         }
         actions={
@@ -793,11 +790,8 @@ function DuelLocked({
             headline={title}
             myScore={view.myResult.score}
             opponentScore={view.opponentResult.score}
-            youLabel={t("duelResult.youVsOpponentScore", {
-              myScore: view.myResult.score,
-              name: opponentName,
-              opponentScore: view.opponentResult.score,
-            })}
+            youLabel={t("duelHistory.scoreYou")}
+            opponentLabel={`@${opponentName}`}
           />
         }
         actions={
