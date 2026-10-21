@@ -1,6 +1,17 @@
+/**
+ * The password account screen — sign in, create an account, reset a
+ * password. Reached at `/` with `?mode=` (and `?from=guest|duel`, `?next=`).
+ *
+ * VerveQ ONE P3.4: a centered shell screen — the brand, one card holding the
+ * current form with its one lime submit, quiet ghost links between modes, and
+ * "Play as guest" as the secondary way in.
+ */
 import { BrandMark } from "@/components/ui/BrandMark";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { NeoInput } from "@/components/neo/NeoInput";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ShellLayout } from "@/components/shell/ShellLayout";
+import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -22,6 +33,13 @@ const MODES: readonly Mode[] = [
   "reset-request",
   "reset-confirm",
 ];
+
+const HEADINGS: Record<Mode, string> = {
+  signin: "Welcome back",
+  signup: "Create your account",
+  "reset-request": "Reset your password",
+  "reset-confirm": "Check your email",
+};
 
 function isMode(value: string | null): value is Mode {
   return !!value && (MODES as readonly string[]).includes(value);
@@ -221,9 +239,11 @@ export default function LoginScreen() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <BrandMark variant="mark" size="lg" />
-      </div>
+      <ShellLayout hideNav center>
+        <div className="flex justify-center">
+          <BrandMark variant="mark" size="lg" />
+        </div>
+      </ShellLayout>
     );
   }
 
@@ -232,257 +252,221 @@ export default function LoginScreen() {
       ? `At least ${PASSWORD_MIN_LENGTH} characters. Up to ${PASSWORD_MAX_LENGTH}.`
       : null;
 
+  const submit =
+    mode === "signin"
+      ? handleSignIn
+      : mode === "signup"
+        ? handleSignUp
+        : mode === "reset-request"
+          ? handleRequestReset
+          : handleConfirmReset;
+
+  const errorLine = error && (
+    <p role="alert" className="text-center text-body-sm font-bold text-destructive">
+      {error}
+    </p>
+  );
+  const hint = (text: string) => <p className="text-center text-meta text-muted-foreground">{text}</p>;
+
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-12">
-      <div className="flex flex-col items-center gap-6 w-full max-w-sm animate-slide-up">
-        <BrandMark variant="mark" size="lg" />
-        <div className="text-center">
+    <ShellLayout
+      hideNav
+      back
+      // A cold deep link has no in-app history to go back to: land on Home.
+      onBack={() => ((window.history.state?.idx ?? 0) > 0 ? navigate(-1) : navigate(SHELL_ROUTES.home))}
+    >
+      {/* min-h-full + justify-center (not ShellLayout's `center`): centered
+          when it fits, and when the sign-up form is taller than the screen it
+          scrolls from the top instead of clipping the brand off. */}
+      <div className="mx-auto flex min-h-full w-full max-w-sm flex-col justify-center gap-5 py-2" data-testid="login-screen">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <BrandMark variant="mark" size="md" />
           <h1>
             <BrandMark variant="wordmark" size="lg" />
           </h1>
-          <p className="text-muted-foreground font-heading text-lg mt-2">
-            Prove Your Sports IQ
-          </p>
+          <p className="font-heading text-body text-muted-foreground">Prove your football IQ</p>
         </div>
 
-        {mode === "signin" && (
-          <>
-            <div className="w-full space-y-3 mt-2">
-              <NeoInput
-                type="email"
-                autoComplete="email"
-                placeholder={t("login.emailPlaceholder")}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <NeoInput
-                type="password"
-                autoComplete="current-password"
-                placeholder={t("login.passwordPlaceholder")}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSignIn()}
-              />
-              {error && (
-                <div
-                  role="alert"
-                  className="text-sm text-destructive font-heading text-center"
-                >
-                  {error}
+        <Card padding="lg" elevation="lifted">
+          <h2 className="mb-4 font-heading text-title-sm font-bold">{HEADINGS[mode]}</h2>
+          <form
+            noValidate
+            className="flex flex-col gap-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void submit();
+            }}
+          >
+            {mode === "signin" && (
+              <>
+                <Input
+                  type="email"
+                  autoComplete="email"
+                  placeholder={t("login.emailPlaceholder")}
+                  aria-label={t("login.emailPlaceholder")}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <Input
+                  type="password"
+                  autoComplete="current-password"
+                  placeholder={t("login.passwordPlaceholder")}
+                  aria-label={t("login.passwordPlaceholder")}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                {errorLine}
+                <Button type="submit" variant="primary" size="lg" block loading={loading}>
+                  Sign in
+                </Button>
+                <div className="flex items-center justify-between gap-2">
+                  <Button variant="ghost" size="sm" className="px-2" onClick={() => switchMode("signup")} disabled={loading}>
+                    Create account
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="px-2 text-muted-foreground"
+                    onClick={() => switchMode("reset-request")}
+                    disabled={loading}
+                  >
+                    Forgot password?
+                  </Button>
                 </div>
-              )}
-              <NeoButton
-                variant="primary"
-                size="full"
-                onClick={handleSignIn}
-                disabled={loading}
-              >
-                {loading ? "Signing In..." : "Sign In"}
-              </NeoButton>
-              <div className="flex items-center justify-between text-sm font-heading">
-                <button
-                  className="underline underline-offset-4 text-muted-foreground hover:text-foreground"
-                  onClick={() => switchMode("signup")}
-                  disabled={loading}
-                >
+              </>
+            )}
+
+            {mode === "signup" && (
+              <>
+                {fromGuestUpgrade && (
+                  <p data-testid="guest-upgrade-notice" className="text-center text-meta text-muted-foreground">
+                    Guest progress is not carried over.
+                  </p>
+                )}
+                <Input
+                  type="email"
+                  autoComplete="email"
+                  placeholder={t("login.emailPlaceholder")}
+                  aria-label={t("login.emailPlaceholder")}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <div className="flex flex-col gap-1">
+                  <Input
+                    type="text"
+                    autoComplete="username"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    placeholder={t("login.usernamePlaceholder")}
+                    aria-label={t("login.usernamePlaceholder")}
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.toLowerCase())}
+                  />
+                  {hint(`Your challenge handle: @${username.trim().toLowerCase() || "username"}`)}
+                </div>
+                <Input
+                  type="text"
+                  autoComplete="nickname"
+                  placeholder={t("login.displayNamePlaceholder")}
+                  aria-label={t("login.displayNamePlaceholder")}
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                />
+                <Input
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder={t("login.passwordPlaceholder")}
+                  aria-label={t("login.passwordPlaceholder")}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <Input
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder={t("login.confirmPasswordPlaceholder")}
+                  aria-label={t("login.confirmPasswordPlaceholder")}
+                  value={confirmPwd}
+                  onChange={(e) => setConfirmPwd(e.target.value)}
+                />
+                {passwordHint && hint(passwordHint)}
+                {errorLine}
+                <Button type="submit" variant="primary" size="lg" block loading={loading}>
                   Create account
-                </button>
-                <button
-                  className="underline underline-offset-4 text-muted-foreground hover:text-foreground"
-                  onClick={() => switchMode("reset-request")}
-                  disabled={loading}
-                >
-                  Forgot password?
-                </button>
-              </div>
-              <NeoButton
-                variant="secondary"
-                size="full"
-                onClick={handleGuest}
-                disabled={loading}
-              >
-                Play as Guest
-              </NeoButton>
-            </div>
-          </>
-        )}
+                </Button>
+                <Button variant="ghost" size="sm" block onClick={() => switchMode("signin")} disabled={loading}>
+                  Back to sign in
+                </Button>
+              </>
+            )}
 
-        {mode === "signup" && (
-          <div className="w-full space-y-3 mt-2">
-            {fromGuestUpgrade && (
-              <p
-                data-testid="guest-upgrade-notice"
-                className="text-xs text-muted-foreground font-heading text-center"
-              >
-                Guest progress is not carried over.
-              </p>
+            {mode === "reset-request" && (
+              <>
+                <Input
+                  type="email"
+                  autoComplete="email"
+                  placeholder={t("login.emailPlaceholder")}
+                  aria-label={t("login.emailPlaceholder")}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                {hint("We'll email you a 6-digit code valid for 10 minutes.")}
+                {errorLine}
+                <Button type="submit" variant="primary" size="lg" block loading={loading}>
+                  Send reset code
+                </Button>
+                <Button variant="ghost" size="sm" block onClick={() => switchMode("signin")} disabled={loading}>
+                  Back to sign in
+                </Button>
+              </>
             )}
-            <NeoInput
-              type="email"
-              autoComplete="email"
-              placeholder={t("login.emailPlaceholder")}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <NeoInput
-              type="text"
-              autoComplete="username"
-              placeholder={t("login.usernamePlaceholder")}
-              value={username}
-              onChange={(e) => setUsername(e.target.value.toLowerCase())}
-            />
-            <p className="text-xs text-muted-foreground font-heading text-center -mt-1">
-              Your challenge handle: @{username.trim().toLowerCase() || "username"}
-            </p>
-            <NeoInput
-              type="text"
-              autoComplete="nickname"
-              placeholder={t("login.displayNamePlaceholder")}
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-            />
-            <NeoInput
-              type="password"
-              autoComplete="new-password"
-              placeholder={t("login.passwordPlaceholder")}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <NeoInput
-              type="password"
-              autoComplete="new-password"
-              placeholder={t("login.confirmPasswordPlaceholder")}
-              value={confirmPwd}
-              onChange={(e) => setConfirmPwd(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSignUp()}
-            />
-            {passwordHint && (
-              <p className="text-xs text-muted-foreground font-heading text-center">
-                {passwordHint}
-              </p>
-            )}
-            {error && (
-              <div
-                role="alert"
-                className="text-sm text-destructive font-heading text-center"
-              >
-                {error}
-              </div>
-            )}
-            <NeoButton
-              variant="primary"
-              size="full"
-              onClick={handleSignUp}
-              disabled={loading}
-            >
-              {loading ? "Creating Account..." : "Create Account"}
-            </NeoButton>
-            <button
-              className="w-full text-sm text-muted-foreground font-heading underline underline-offset-4 hover:text-foreground"
-              onClick={() => switchMode("signin")}
-              disabled={loading}
-            >
-              Back to sign in
-            </button>
-          </div>
-        )}
 
-        {mode === "reset-request" && (
-          <div className="w-full space-y-3 mt-2">
-            <NeoInput
-              type="email"
-              autoComplete="email"
-              placeholder={t("login.emailPlaceholder")}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleRequestReset()}
-            />
-            <p className="text-xs text-muted-foreground font-heading text-center">
-              We'll email you a 6-digit code valid for 10 minutes.
-            </p>
-            {error && (
-              <div
-                role="alert"
-                className="text-sm text-destructive font-heading text-center"
-              >
-                {error}
-              </div>
+            {mode === "reset-confirm" && (
+              <>
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoComplete="one-time-code"
+                  placeholder={t("login.otpPlaceholder")}
+                  aria-label={t("login.otpPlaceholder")}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                />
+                <Input
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder={t("login.newPasswordPlaceholder")}
+                  aria-label={t("login.newPasswordPlaceholder")}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <Input
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder={t("login.confirmNewPasswordPlaceholder")}
+                  aria-label={t("login.confirmNewPasswordPlaceholder")}
+                  value={confirmPwd}
+                  onChange={(e) => setConfirmPwd(e.target.value)}
+                />
+                {passwordHint && hint(passwordHint)}
+                {errorLine}
+                <Button type="submit" variant="primary" size="lg" block loading={loading}>
+                  Reset password
+                </Button>
+                <Button variant="ghost" size="sm" block onClick={() => switchMode("reset-request")} disabled={loading}>
+                  Request a new code
+                </Button>
+              </>
             )}
-            <NeoButton
-              variant="primary"
-              size="full"
-              onClick={handleRequestReset}
-              disabled={loading}
-            >
-              {loading ? "Sending..." : "Send Reset Code"}
-            </NeoButton>
-            <button
-              className="w-full text-sm text-muted-foreground font-heading underline underline-offset-4 hover:text-foreground"
-              onClick={() => switchMode("signin")}
-              disabled={loading}
-            >
-              Back to sign in
-            </button>
-          </div>
-        )}
+          </form>
+        </Card>
 
-        {mode === "reset-confirm" && (
-          <div className="w-full space-y-3 mt-2">
-            <NeoInput
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              autoComplete="one-time-code"
-              placeholder={t("login.otpPlaceholder")}
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-            />
-            <NeoInput
-              type="password"
-              autoComplete="new-password"
-              placeholder={t("login.newPasswordPlaceholder")}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <NeoInput
-              type="password"
-              autoComplete="new-password"
-              placeholder={t("login.confirmNewPasswordPlaceholder")}
-              value={confirmPwd}
-              onChange={(e) => setConfirmPwd(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleConfirmReset()}
-            />
-            {passwordHint && (
-              <p className="text-xs text-muted-foreground font-heading text-center">
-                {passwordHint}
-              </p>
-            )}
-            {error && (
-              <div
-                role="alert"
-                className="text-sm text-destructive font-heading text-center"
-              >
-                {error}
-              </div>
-            )}
-            <NeoButton
-              variant="primary"
-              size="full"
-              onClick={handleConfirmReset}
-              disabled={loading}
-            >
-              {loading ? "Resetting..." : "Reset Password"}
-            </NeoButton>
-            <button
-              className="w-full text-sm text-muted-foreground font-heading underline underline-offset-4 hover:text-foreground"
-              onClick={() => switchMode("reset-request")}
-              disabled={loading}
-            >
-              Request a new code
-            </button>
-          </div>
+        {mode === "signin" && (
+          <Button variant="secondary" size="md" block onClick={handleGuest} disabled={loading}>
+            Play as guest
+          </Button>
         )}
       </div>
-    </div>
+    </ShellLayout>
   );
 }

@@ -137,14 +137,6 @@
     "rawButton": 1,
     "opacityText": 1
   },
-  "src/components/shell/onboarding/UpgradeAccountForm.tsx": {
-    "textPx": 1,
-    "opacityText": 1
-  },
-  "src/components/shell/onboarding/UsernameOnlyOnboarding.tsx": {
-    "textPx": 1,
-    "opacityText": 1
-  },
   "src/components/shell/play/PlayStage.tsx": {
     "fixedInset": 2
   },
@@ -276,11 +268,6 @@
     "textPx": 2,
     "opacityText": 2
   },
-  "src/pages/DifficultyScreen.tsx": {
-    "rawButton": 1,
-    "transitionAll": 1,
-    "opacityText": 1
-  },
   "src/pages/DuelHistoryScreen.tsx": {
     "textPx": 6,
     "rawButton": 2,
@@ -306,18 +293,10 @@
     "rawButton": 5,
     "transitionAll": 7
   },
-  "src/pages/LoginScreen.tsx": {
-    "rawButton": 5
-  },
   "src/pages/NotFound.tsx": {
     "shadowArbitrary": 3,
     "roundedXl": 3,
     "fontBlack": 2
-  },
-  "src/pages/OnboardingScreen.tsx": {
-    "rawButton": 1,
-    "transitionAll": 1,
-    "opacityText": 2
   },
   "src/pages/ResultScreen.tsx": {
     "textPx": 6,
@@ -404,9 +383,6 @@
     "roundedXl": 3,
     "transitionAll": 1,
     "opacityText": 1
-  },
-  "src/pages/shell/WelcomeScreen.tsx": {
-    "rawButton": 1
   },
   "src/pages/shell/learn/LearnEntryScreen.tsx": {
     "textPx": 11,
