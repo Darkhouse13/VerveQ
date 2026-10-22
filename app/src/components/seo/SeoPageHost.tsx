@@ -27,7 +27,9 @@ export function SeoPageHost() {
     if (!el) return;
     const visible = isOnStaticPage(pathname);
     el.style.display = visible ? "" : "none";
-    document.documentElement.classList.toggle("seo-static-page", visible);
+    // The homepage's block sits under the app's ink hero and is drawn on ink
+    // (seo/lib.mjs); only the standalone article pages get the cream ground.
+    document.documentElement.classList.toggle("seo-static-page", visible && staticSeoPath() !== "/");
   }, [pathname]);
 
   // A French/Spanish page is an explicit language signal: the game it

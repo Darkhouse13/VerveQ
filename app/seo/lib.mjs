@@ -307,6 +307,20 @@ html,body{margin:0;background:#FFF7F0}
 #seo .seo-foot-links a{display:inline-flex;align-items:center;min-height:44px}
 #seo .seo-foot a{color:var(--ink)}
 @media (max-width:520px){#seo .seo-nav{gap:10px;font-size:13px}#seo .seo-cta{display:block;text-align:center;margin:8px 0}}
+html:has(#seo[data-seo-path="/"]),html:has(#seo[data-seo-path="/"]) body{background:#121212}
+#seo[data-seo-path="/"]{--muted:rgba(255,247,240,.66);--line:rgba(255,247,240,.14);color:var(--cream);background:transparent;font-family:"Space Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#seo[data-seo-path="/"] .seo-main,#seo[data-seo-path="/"] .seo-foot{max-width:1064px}
+#seo[data-seo-path="/"] a{color:var(--cream)}
+#seo[data-seo-path="/"] h1,#seo[data-seo-path="/"] h2,#seo[data-seo-path="/"] h3,#seo[data-seo-path="/"] strong,#seo[data-seo-path="/"] summary{font-family:"Space Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#seo[data-seo-path="/"] h2{font-size:12px;letter-spacing:.12em;color:var(--muted);margin:40px 0 12px}
+#seo[data-seo-path="/"] .seo-main>h2:first-child,#seo[data-seo-path="/"] .seo-main>section:first-child>h2:first-child{margin-top:8px}
+#seo[data-seo-path="/"] .seo-links a,#seo[data-seo-path="/"] .seo-faq,#seo[data-seo-path="/"] .seo-box,#seo[data-seo-path="/"] .seo-q,#seo[data-seo-path="/"] table{background:#1f1f1f;border-color:var(--line);box-shadow:none}
+#seo[data-seo-path="/"] .seo-links a:hover{background:#1f1f1f;border-color:var(--lime)}
+#seo[data-seo-path="/"] .seo-links strong{color:var(--cream)}
+#seo[data-seo-path="/"] th{background:#2a2a2a;color:var(--cream)}
+#seo[data-seo-path="/"] th,#seo[data-seo-path="/"] td{border-bottom-color:var(--line)}
+#seo[data-seo-path="/"] .seo-foot{border-top-color:var(--line)}
+#seo[data-seo-path="/"] .seo-foot a{color:var(--muted)}
 `
   .replace(/\n/g, "")
   .trim();
