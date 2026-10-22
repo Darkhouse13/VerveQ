@@ -16,6 +16,11 @@ const BRAND_INK = "#121212";
 // instead of a cream-to-black flash.
 const BRAND_CANVAS = BRAND_INK;
 
+// Cache-buster for the icon files (scripts/generatePwaIcons.mjs keeps their
+// names; nginx serves PNGs immutable for 30 days). Bump together with the
+// `?v=` on the icon links in index.html and public/{terms,privacy}.
+const ICON_VERSION = "2";
+
 // Origins the service worker must never intercept, cache, or fallback-route.
 // Convex carries every query/mutation/action plus auth; a cached or
 // SW-mediated response there breaks real-time sync. PostHog is fire-and-forget
@@ -109,7 +114,7 @@ export default defineConfig(({ mode }) => ({
       // ships inside the hashed bundle instead of as a separate unhashed
       // registerSW.js the html would have to reference.
       injectRegister: null,
-      includeAssets: ["vq-logo.png", "apple-touch-icon-180x180.png", "robots.txt"],
+      includeAssets: ["favicon.svg", "favicon-48x48.png", "apple-touch-icon.png", "robots.txt"],
       manifest: {
         id: "/",
         name: "VerveQ",
@@ -123,10 +128,10 @@ export default defineConfig(({ mode }) => ({
         theme_color: BRAND_INK,
         background_color: BRAND_CANVAS,
         icons: [
-          { src: "/pwa-192x192.png", sizes: "192x192", type: "image/png", purpose: "any" },
-          { src: "/pwa-512x512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+          { src: `/pwa-192x192.png?v=${ICON_VERSION}`, sizes: "192x192", type: "image/png", purpose: "any" },
+          { src: `/pwa-512x512.png?v=${ICON_VERSION}`, sizes: "512x512", type: "image/png", purpose: "any" },
           {
-            src: "/pwa-maskable-512x512.png",
+            src: `/pwa-maskable-512x512.png?v=${ICON_VERSION}`,
             sizes: "512x512",
             type: "image/png",
             purpose: "maskable",
@@ -142,9 +147,10 @@ export default defineConfig(({ mode }) => ({
           "index.html",
           "app-shell.html",
           "assets/**/*.{js,css,woff2}",
-          "vq-logo.png",
+          "favicon.svg",
+          "favicon-48x48.png",
           "pwa-*.png",
-          "apple-touch-icon-*.png",
+          "apple-touch-icon*.png",
         ],
         cleanupOutdatedCaches: true,
         // app-shell.html, not index.html: the homepage now carries its own

@@ -18,6 +18,9 @@ const VAR: Record<keyof typeof BRAND_HSL, string> = {
   pink: "--hot-pink",
   right: "--right",
   wrong: "--wrong",
+  card: "--card",
+  mutedText: "--muted-foreground",
+  shadow: "--neo-shadow-color",
 };
 
 describe("brand tokens (canvas mirror of src/index.css)", () => {

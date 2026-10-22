@@ -6,12 +6,16 @@
          iPhones — without it the bottom nav's safe-area padding is 0 and its
          tap targets sit inside the home-indicator gesture zone. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <link rel="icon" type="image/png" href="/vq-logo.png" />
+    <!-- The brand mark (scripts/generatePwaIcons.mjs). `?v=` because nginx
+         serves these immutable for 30 days: bump it with ICON_VERSION in
+         vite.config.ts whenever the icons are regenerated. -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png?v=2" />
     <!-- iOS reads this, never the manifest's icon list, and applies its own
-         corner mask to whatever it gets — so the artwork is full-bleed lime
-         with no alpha and no safe-zone inset (scripts/generatePwaIcons.mjs).
-         An inset disc renders as a small logo stranded in a dead square. -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+         corner mask to whatever it gets — so the artwork is ink to every edge
+         with no alpha channel at all; the mask itself becomes the mark's
+         square around the lime VQ. -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=2" />
     <!-- Home-screen launches run without Safari chrome. black-translucent puts
          the app behind the status bar, which the viewport-fit=cover +
          safe-area padding above already accounts for. -->

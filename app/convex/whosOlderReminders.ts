@@ -318,16 +318,38 @@ export const markSent = internalMutation({
 const escapeHtml = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
+/**
+ * The reminder emails' HTML, on the VerveQ ONE brand: ink ground, cream type,
+ * the one lime button, the mark + VERVEQ lockup as live text (email clients
+ * block images by default and can't load web fonts, so the mark is a small
+ * ink tile with lime "VQ" in Arial and the wordmark is widely tracked Courier
+ * — the mono wordmark's shape with system fallbacks). Colors are the
+ * --ink / --cream / --lime / --muted-foreground tokens (src/styles/tokens.json).
+ */
+const MAIL = {
+  ink: "#121212",
+  cream: "#FFF7F0",
+  lime: "#C6FF1A",
+  muted: "#C6B8A9",
+  rim: "#3A3734",
+  sans: "Arial,Helvetica,sans-serif",
+  mono: "'Courier New',Courier,monospace",
+} as const;
+
 export function renderEmail(args: { heading: string; lines: string[]; button: string; href: string; footer: string; unsubscribe: string }) {
   const text = [args.heading, "", ...args.lines, "", `${args.button}: ${args.href}`, "", args.footer, `Unsubscribe: ${args.unsubscribe}`].join("\n");
-  const html = `<!doctype html><html><body style="margin:0;background:#111;font-family:Arial,Helvetica,sans-serif;color:#fff8f0">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#111"><tr><td align="center" style="padding:28px 16px">
+  const m = MAIL;
+  const html = `<!doctype html><html><head><meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark"></head><body style="margin:0;background:${m.ink};font-family:${m.sans};color:${m.cream}">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="${m.ink}" style="background:${m.ink}"><tr><td align="center" style="padding:28px 16px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px">
-<tr><td style="font-family:'Courier New',monospace;font-weight:bold;letter-spacing:3px;color:#c6ff1a;font-size:13px">VERVEQ</td></tr>
-<tr><td style="padding-top:18px;font-size:28px;font-weight:900;line-height:1.1">${escapeHtml(args.heading)}</td></tr>
-${args.lines.map((l) => `<tr><td style="padding-top:12px;font-size:16px;line-height:1.45;color:#f3ece4">${escapeHtml(l)}</td></tr>`).join("\n")}
-<tr><td style="padding-top:24px"><a href="${escapeHtml(args.href)}" style="display:inline-block;background:#c6ff1a;color:#111;font-weight:900;font-size:18px;text-decoration:none;padding:14px 26px;border:3px solid #000;border-radius:10px">${escapeHtml(args.button)}</a></td></tr>
-<tr><td style="padding-top:32px;font-size:12px;line-height:1.5;color:#9a948e">${escapeHtml(args.footer)}<br><a href="${escapeHtml(args.unsubscribe)}" style="color:#9a948e">Unsubscribe</a></td></tr>
+<tr><td><table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td width="34" height="34" align="center" valign="middle" bgcolor="${m.ink}" style="width:34px;height:34px;background:${m.ink};border:1px solid ${m.rim};border-radius:8px;font-family:${m.sans};font-weight:bold;font-size:15px;line-height:34px;color:${m.lime};letter-spacing:-0.5px">VQ</td>
+<td style="padding-left:12px;font-family:${m.mono};font-weight:bold;font-size:14px;letter-spacing:4px;color:${m.cream}">VERVEQ</td>
+</tr></table></td></tr>
+<tr><td style="padding-top:22px;font-size:28px;font-weight:bold;line-height:1.15;color:${m.cream}">${escapeHtml(args.heading)}</td></tr>
+${args.lines.map((l) => `<tr><td style="padding-top:12px;font-size:16px;line-height:1.5;color:${m.cream}">${escapeHtml(l)}</td></tr>`).join("\n")}
+<tr><td style="padding-top:26px"><a href="${escapeHtml(args.href)}" style="display:inline-block;background:${m.lime};color:${m.ink};font-family:${m.sans};font-weight:bold;font-size:18px;text-decoration:none;padding:15px 28px;border-radius:10px">${escapeHtml(args.button)}</a></td></tr>
+<tr><td style="padding-top:34px;font-size:12px;line-height:1.5;color:${m.muted}">${escapeHtml(args.footer)}<br><a href="${escapeHtml(args.unsubscribe)}" style="color:${m.muted}">Unsubscribe</a></td></tr>
 </table></td></tr></table></body></html>`;
   return { text, html };
 }

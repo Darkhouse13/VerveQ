@@ -215,10 +215,6 @@
   "src/lib/rankedLadder.ts": {
     "hex": 4
   },
-  "src/lib/receiptImage.ts": {
-    "hex": 9,
-    "colorFn": 4
-  },
   "src/pages/NotFound.tsx": {
     "shadowArbitrary": 3,
     "roundedXl": 3,

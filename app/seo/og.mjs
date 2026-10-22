@@ -1,65 +1,132 @@
 /**
- * Social / search preview cards (1200×630) for the static layer, in the style
- * of public/og/home.png. Rendered at build time with resvg-wasm and the Space
- * Grotesk Bold the Convex share-card renderer already embeds.
+ * Social / search preview cards (1200×630) for the static layer's game and
+ * section pages, rendered at build time with resvg-wasm.
+ *
+ * The look is the per-game entry cards' (scripts/renderOgCards.mjs, VerveQ ONE
+ * P2.4), moved here in P4.4: ink ground with a faint lime stripe, the mark +
+ * VERVEQ lockup, a mono eyebrow, cream headline, the one lime action, the
+ * tilted mark as the hero. Colors and the mark come from scripts/lib/brand.mjs
+ * (src/index.css + brandMark.geometry.json); lettering uses the static 700
+ * TTFs in scripts/og/fonts. No system font is ever consulted.
+ *
+ * The files land in dist/<OG_DIR>/. Preview caches key on the image URL, so
+ * OG_DIR carries a version: bump it whenever the artwork changes.
  */
 import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { createRequire } from "node:module";
+import { APP, CREAM, INK, LIME, loadResvg, markSvg, stripedGroundSvg, wordmarkSvg } from "../scripts/lib/brand.mjs";
 
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-const require = createRequire(import.meta.url);
+/** Where the cards are written under dist/, and served from. */
+export const OG_DIR = "og/pages-v2";
+
+const W = 1200;
+const H = 630;
+const HEAD = "Space Grotesk";
+const MONO = "JetBrains Mono";
 
 let ready = null;
 async function init() {
-  if (ready) return ready;
-  ready = (async () => {
-    const resvg = await import("@resvg/resvg-wasm");
-    const wasmPath = require.resolve("@resvg/resvg-wasm/index_bg.wasm");
-    await resvg.initWasm(readFileSync(wasmPath));
-    const src = readFileSync(path.resolve(HERE, "../convex/lib/shareCardFontData.ts"), "utf8");
-    const b64 = src.match(/SHARE_CARD_FONT_BASE64\s*=\s*"([^"]+)"/)[1];
-    // A plain Uint8Array, not a Buffer: under vitest's jsdom realm resvg
+  ready ??= (async () => {
+    const resvg = await loadResvg();
+    // Plain Uint8Arrays, not Buffers: under vitest's jsdom realm resvg
     // rejects a Node Buffer passed as a font.
-    return { resvg, font: Uint8Array.from(Buffer.from(b64, "base64")) };
+    // Space Grotesk: the full Bold the Convex share card embeds — the static
+    // TTF in scripts/og/fonts is ASCII-only, and the FR/ES cards need é, ú, ñ…
+    // JetBrains Mono: the static TTF; resvg falls back to Space Grotesk for
+    // the few accented capitals an eyebrow may carry.
+    const src = readFileSync(path.join(APP, "convex/lib/shareCardFontData.ts"), "utf8");
+    const grotesk = Buffer.from(src.match(/SHARE_CARD_FONT_BASE64\s*=\s*"([^"]+)"/)[1], "base64");
+    const mono = readFileSync(path.join(APP, "scripts/og/fonts/jetbrains-mono-700.ttf"));
+    const fonts = [grotesk, mono].map((b) => Uint8Array.from(b));
+    return { resvg, fonts };
   })();
   return ready;
 }
 
 const x = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-function svg({ tag, headline, subline, bar }) {
-  const size = headline.length > 18 ? 84 : 104;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="#FAF0E1"/>
-  <polygon points="1010,0 1200,0 1200,630 870,630" fill="#F9DEC0"/>
-  <rect x="6" y="6" width="1188" height="618" fill="none" stroke="#121212" stroke-width="12"/>
-  <g transform="rotate(-2 170 105)">
-    <rect x="66" y="74" width="${Math.max(220, tag.length * 23 + 70)}" height="62" fill="#FF7A1A" stroke="#121212" stroke-width="5"/>
-  </g>
-  <text x="${66 + 34}" y="118" font-family="Space Grotesk" font-size="34" fill="#FFFFFF" letter-spacing="1">${x(tag.toUpperCase())}</text>
-  <text x="70" y="330" font-family="Space Grotesk" font-size="${size}" fill="#121212">${x(headline)}</text>
-  <text x="72" y="405" font-family="Space Grotesk" font-size="38" fill="#121212">${x(subline)}</text>
-  <rect x="64" y="446" width="${Math.max(560, bar.length * 29 + 70)}" height="86" fill="#121212"/>
-  <text x="96" y="506" font-family="Space Grotesk" font-size="48" fill="#FF7A1A">${x(bar.toUpperCase())}</text>
-  <text x="1128" y="584" text-anchor="end" font-family="Space Grotesk" font-size="26" fill="#121212">verveq.com</text>
-</svg>`;
+function make(resvg, fonts, svg) {
+  return new resvg.Resvg(svg, {
+    fitTo: { mode: "width", value: W },
+    font: { fontBuffers: fonts, loadSystemFonts: false, defaultFontFamily: HEAD },
+  });
 }
 
-/** Renders every card; returns { id: "/og/<id>.png" }. */
+/** Rendered width of one line of text (resvg's own layout). */
+function measure(ctx, str, family, size, spacing = 0) {
+  const r = make(
+    ctx.resvg,
+    ctx.fonts,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${W * 4}" height="400"><text x="0" y="300" font-family="${family}" font-weight="700" font-size="${size}" letter-spacing="${spacing}">${x(str)}</text></svg>`,
+  );
+  const box = r.getBBox();
+  r.free();
+  return box ? box.width : 0;
+}
+
+/** Largest size ≤ `size` at which `str` fits `maxWidth` (width scales ~linearly with size). */
+function fit(ctx, str, family, size, maxWidth, spacing = 0) {
+  const width = measure(ctx, str, family, size, spacing);
+  return width <= maxWidth ? size : Math.floor((size * maxWidth) / width);
+}
+
+function text(px, py, str, { family = HEAD, size, fill = CREAM, anchor = "start", spacing = 0, opacity = 1 }) {
+  return `<text x="${px}" y="${py}" font-family="${family}" font-weight="700" font-size="${size}" fill="${fill}"${opacity < 1 ? ` fill-opacity="${opacity}"` : ""} text-anchor="${anchor}"${spacing ? ` letter-spacing="${spacing}"` : ""}>${x(str)}</text>`;
+}
+
+const PAD = 72;
+const LEFT_MAX = 660; // the copy column; the mark owns the right side
+
+function svg(ctx, { tag, headline, subline, bar }) {
+  // Ground: ink with a faint lime diagonal stripe (the entry cards' ground).
+  const ground = stripedGroundSvg(W, H);
+
+  // Hero: the mark, big and tilted, a lime outline offset behind it.
+  const size = 330;
+  const hx = 780;
+  const hy = 126;
+  const hero =
+    `<g transform="rotate(-4 ${hx + size / 2} ${hy + size / 2})"><rect x="${hx + 44}" y="${hy + 44}" width="${size * 0.875}" height="${size * 0.875}" rx="${size * 0.1875}" fill="none" stroke="${LIME}" stroke-width="5"/></g>` +
+    markSvg(hx, hy, size, { rim: 0.3 });
+
+  const lockup = markSvg(PAD - 4, PAD, 76) + wordmarkSvg(PAD + 76 + 18, PAD + 38 + 11, 22).svg;
+
+  // Copy, laid out bottom-up from the action.
+  const ctaY = 478;
+  const hSize = fit(ctx, headline, HEAD, 100, LEFT_MAX, -2);
+  const sSize = fit(ctx, subline, HEAD, 34, LEFT_MAX);
+  const subBase = ctaY - 34;
+  const headBase = Math.round(subBase - sSize * 1.15 - 18);
+  const eyebrowBase = Math.round(headBase - hSize * 0.8 - 26);
+  const eyebrow = tag.toUpperCase();
+  const eSize = fit(ctx, eyebrow, MONO, 24, LEFT_MAX, 4);
+  const ctaSize = fit(ctx, bar, HEAD, 34, LEFT_MAX - 64);
+  const ctaW = Math.round(measure(ctx, bar, HEAD, ctaSize) + 64);
+
+  const copy =
+    text(PAD, eyebrowBase, eyebrow, { family: MONO, size: eSize, fill: LIME, spacing: 4 }) +
+    text(PAD - 4, headBase, headline, { size: hSize, spacing: -2 }) +
+    text(PAD, subBase, subline, { size: sSize, opacity: 0.78 }) +
+    `<rect x="${PAD}" y="${ctaY}" width="${ctaW}" height="76" rx="10" fill="${LIME}"/>` +
+    text(PAD + 32, ctaY + 50, bar, { size: ctaSize, fill: INK }) +
+    text(W - PAD, H - 52, "verveq.com", { family: MONO, size: 22, opacity: 0.62, anchor: "end", spacing: 1 });
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${ground}${hero}${lockup}${copy}</svg>`;
+}
+
+/** Renders every card; returns { id: "/<OG_DIR>/<id>.png" }. */
 export async function renderCards(distDir, cards) {
-  const { resvg, font } = await init();
-  const outDir = path.join(distDir, "og");
+  const ctx = await init();
+  const outDir = path.join(distDir, OG_DIR);
   mkdirSync(outDir, { recursive: true });
   const urls = {};
   for (const [id, card] of Object.entries(cards)) {
-    const r = new resvg.Resvg(svg(card), {
-      font: { fontBuffers: [font], defaultFontFamily: "Space Grotesk", loadSystemFonts: false },
-      fitTo: { mode: "width", value: 1200 },
-    });
-    writeFileSync(path.join(outDir, `${id}.png`), r.render().asPng());
-    urls[id] = `/og/${id}.png`;
+    const r = make(ctx.resvg, ctx.fonts, svg(ctx, card));
+    const img = r.render();
+    writeFileSync(path.join(outDir, `${id}.png`), img.asPng());
+    img.free();
+    r.free();
+    urls[id] = `/${OG_DIR}/${id}.png`;
   }
   return urls;
 }
@@ -76,7 +143,7 @@ export const CARDS = {
   "game-survival": { tag: "Initials quiz", headline: "Two initials.", subline: "Name any footballer who fits. Three lives.", bar: EN },
   "game-blitz": { tag: "60 seconds", headline: "Beat the clock.", subline: "As many football questions as you can.", bar: EN },
   "game-duels": { tag: "Duels", headline: "Settle it 1v1.", subline: "Send a link. Same questions. Who knows more?", bar: EN },
-  "games-hub": { tag: "VerveQ", headline: "Free Football Games", subline: "Quiz, grid, career path, higher or lower.", bar: EN },
+  "games-hub": { tag: "All games", headline: "Free Football Games", subline: "Quiz, grid, career path, higher or lower.", bar: EN },
   "section-quiz": { tag: "Quiz archive", headline: "Football Quiz Q&A", subline: "Every daily quiz, with the answers.", bar: EN },
   "section-grid": { tag: "Grid answers", headline: "Who played for both?", subline: "Football grid answers, club by club.", bar: EN },
   "section-career": { tag: "Career path quiz", headline: "Guess the Player", subline: "Ten careers. Clubs in order. Answers hidden.", bar: EN },
@@ -87,7 +154,7 @@ export const CARDS = {
   "fr-survival": { tag: "Initiales", headline: "Deux initiales.", subline: "Cite un joueur qui colle. Trois vies.", bar: FR },
   "fr-blitz": { tag: "60 secondes", headline: "Contre la montre.", subline: "Un max de questions foot en une minute.", bar: FR },
   "fr-duels": { tag: "Duel", headline: "Règle ça en 1v1.", subline: "Un lien. Les mêmes questions.", bar: FR },
-  "fr-hub": { tag: "VerveQ", headline: "Jeux de foot gratuits", subline: "Quiz, grille, parcours, plus ou moins.", bar: FR },
+  "fr-hub": { tag: "Tous les jeux", headline: "Jeux de foot gratuits", subline: "Quiz, grille, parcours, plus ou moins.", bar: FR },
   "es-daily": { tag: "Quiz diario", headline: "Quiz de Fútbol Diario", subline: "10 preguntas. Las mismas para todos.", bar: ES },
   "es-grid": { tag: "Grid de fútbol", headline: "9 casillas. 9 intentos.", subline: "El jugador que encaja en club y país.", bar: ES },
   "es-career": { tag: "Trayectoria", headline: "Adivina el futbolista", subline: "Sus clubes en orden. ¿Quién es?", bar: ES },
@@ -95,7 +162,7 @@ export const CARDS = {
   "es-survival": { tag: "Iniciales", headline: "Dos iniciales.", subline: "Nombra un futbolista que encaje.", bar: ES },
   "es-blitz": { tag: "60 segundos", headline: "Contra el reloj.", subline: "Todas las preguntas que puedas.", bar: ES },
   "es-duels": { tag: "Duelo", headline: "Resuélvelo 1v1.", subline: "Un enlace. Las mismas preguntas.", bar: ES },
-  "es-hub": { tag: "VerveQ", headline: "Juegos de fútbol gratis", subline: "Quiz, grid, trayectorias y más.", bar: ES },
+  "es-hub": { tag: "Todos los juegos", headline: "Juegos de fútbol gratis", subline: "Quiz, grid, trayectorias y más.", bar: ES },
 };
 
 /** Card id for a page path. */
