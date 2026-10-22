@@ -17,6 +17,7 @@
 import { cn } from "@/lib/utils";
 import type { Card, Fixture } from "@/lib/drawEngine";
 import { DIR_ARROW, cardEffect } from "./fixtureEffects";
+import { useDrawT } from "./drawI18n";
 import { LAYOUT, PICK_IMPACT_H } from "./layout";
 
 interface PickImpactProps {
@@ -32,13 +33,19 @@ interface PickImpactProps {
   hidden?: boolean;
 }
 
+/**
+ * Boosted cells invert to a cream chip, cut cells stay on the card with a
+ * muted mark: the ▲/▼ carries the direction. Green and red are kept for
+ * right and wrong (VerveQ ONE), and a fixture's pull on a card is neither.
+ */
 const DIR_CLASS = {
-  up: "bg-success text-success-foreground",
-  down: "bg-destructive text-destructive-foreground",
+  up: "bg-foreground text-background",
+  down: "bg-card text-muted-foreground",
   flat: "bg-muted text-muted-foreground",
 } as const;
 
 export function PickImpact({ card, fixtures, hidden = false }: PickImpactProps) {
+  const t = useDrawT();
   return (
     <div
       className="shrink-0 flex flex-col justify-center"
@@ -47,13 +54,11 @@ export function PickImpact({ card, fixtures, hidden = false }: PickImpactProps) 
       data-hidden={hidden ? "true" : undefined}
     >
       {hidden ? null : card === null ? (
-        <p className="font-heading font-bold text-[10px] text-center text-muted-foreground tracking-wide">
-          TAP A CARD TO SEE WHAT IT DOES
-        </p>
+        <p className="text-meta text-center text-muted-foreground">{t("draft.tapToSee")}</p>
       ) : (
         <>
-          <p className="font-heading font-bold text-[8px] tracking-wide text-muted-foreground mb-1 truncate">
-            {card.name.toUpperCase()} VS THE GAUNTLET
+          <p className="font-mono text-eyebrow text-muted-foreground mb-1 truncate">
+            {t("draft.vsGauntlet", { name: card.name.toUpperCase() })}
           </p>
           <div className="flex" style={{ gap: LAYOUT.fixtureChipGap }}>
             {fixtures.map((fixture) => {
@@ -62,16 +67,16 @@ export function PickImpact({ card, fixtures, hidden = false }: PickImpactProps) 
                 <div
                   key={fixture.index}
                   className={cn(
-                    "neo-border rounded flex-1 min-w-0 flex items-center justify-center gap-0.5 h-5",
+                    "neo-border rounded flex-1 min-w-0 flex items-center justify-center gap-1 h-5",
                     DIR_CLASS[dir],
                   )}
                   data-testid={`draw-pick-impact-${fixture.index}`}
                   data-dir={dir}
                 >
-                  <span className="font-heading font-bold text-[7px] opacity-80">
-                    F{fixture.index + 1}
+                  <span className="font-mono font-bold text-eyebrow tracking-normal leading-none">
+                    {t("draft.fixtureShort", { n: fixture.index + 1 })}
                   </span>
-                  <span className="font-mono font-bold text-[9px] leading-none">
+                  <span className="font-mono font-bold text-eyebrow tracking-normal leading-none">
                     {DIR_ARROW[dir]}
                   </span>
                 </div>

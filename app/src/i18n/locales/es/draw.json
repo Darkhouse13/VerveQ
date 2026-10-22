@@ -1,0 +1,151 @@
+{
+  "title": "The Draw",
+  "board": "Tablero n.º {{n}}",
+  "loading": "Cargando…",
+  "quit": "Salir",
+  "home": "Inicio",
+  "streakLabel": "Racha: {{count}}",
+  "bankedLabel": "Asegurado: {{value}}",
+  "error": {
+    "title": "No se pudo cargar el tablero",
+    "guest": "No se pudo iniciar una sesión de invitado. Revisa tu conexión y vuelve a intentarlo.",
+    "disabled": "THE DRAW aún no está abierto.",
+    "retry": "Reintentar",
+    "leave": "Salir"
+  },
+  "entry": {
+    "eyebrow": "Un tablero al día · el mismo para todos",
+    "gauntletTitle": "El recorrido",
+    "gauntletBody": "Cinco rivales seguidos. Cada uno hace que unos jugadores sumen más y otros menos.",
+    "clearsAt": "Superar",
+    "howTitle": "Cómo se juega",
+    "howDraft": "Ficha a seis jugadores: elige una carta de cada fila de tres.",
+    "howBench": "En cada ronda, manda a un jugador al banquillo. Los otros cinco puntúan contra el rival.",
+    "howClear": "Alcanza la puntuación del rival para superarlo. Después, BANK para asegurar tus puntos o PUSH para seguir al siguiente rival.",
+    "howBust": "Si no llegas, pierdes: solo te quedas con el {{pct}} % de tus puntos.",
+    "play": "Jugar el tablero de hoy",
+    "resume": "Reanudar partida",
+    "seeResult": "Ver resultado"
+  },
+  "draft": {
+    "pickCount": "ELECCIÓN {{n}}/{{total}}",
+    "pick": "Elegir a {{name}}",
+    "banked": "ASEGURADO",
+    "firstClearsAt": "F1 SUPERAR",
+    "tapToSee": "Toca una carta para ver qué hace",
+    "vsGauntlet": "{{name}} CONTRA EL RECORRIDO",
+    "next": "SIGUIENTE",
+    "onPaper": "SOBRE EL PAPEL",
+    "onPaperSub": "mejores cinco · sin la forma",
+    "fixtureShort": "F{{n}}"
+  },
+  "round": {
+    "fixture": "PARTIDO {{n}}/{{total}}",
+    "boss": "JEFE",
+    "clearsAt": "SUPERAR",
+    "benched": "BANCA",
+    "yourFive": "TUS CINCO",
+    "ifYouPush": "SI HACES PUSH",
+    "banked": "ASEGURADO",
+    "bustKeeps": "SI PIERDES",
+    "tapToBench": "Toca un jugador para mandarlo al banquillo",
+    "confirm": "Confirmar alineación",
+    "resolving": "Calculando…",
+    "bank": "BANK",
+    "push": "PUSH",
+    "pts": "{{n}} pts",
+    "nextClearsAt": "siguiente: {{n}}",
+    "seeResultBusted": "Perdiste · ver resultado",
+    "seeResultFullClear": "Pleno · ver resultado",
+    "seeResult": "Ver resultado",
+    "needed": "OBJETIVO {{n}}",
+    "chain": "CADENA {{tag}}",
+    "cleared": "SUPERADO",
+    "busted": "PERDIDO",
+    "hint": {
+      "HOT": "Pista de forma: en racha",
+      "NEUTRAL": "Pista de forma: normal",
+      "COLD": "Pista de forma: en frío"
+    }
+  },
+  "zone": {
+    "SAFE": "SEGURO",
+    "TIGHT": "JUSTO",
+    "LONGSHOT": "DIFÍCIL"
+  },
+  "family": {
+    "club": "CLUB",
+    "nation": "PAÍS",
+    "era": "ÉPOCA"
+  },
+  "position": {
+    "GK": "Portero",
+    "DEF": "Defensa",
+    "MID": "Centrocampista",
+    "ATT": "Delantero"
+  },
+  "positionPlural": {
+    "GK": "Los porteros",
+    "DEF": "Los defensas",
+    "MID": "Los centrocampistas",
+    "ATT": "Los delanteros"
+  },
+  "positionLower": {
+    "GK": "los porteros",
+    "DEF": "los defensas",
+    "MID": "los centrocampistas",
+    "ATT": "los delanteros"
+  },
+  "effect": {
+    "sentence": "{{subject}}: {{mult}}.",
+    "positionCards": "Cartas {{pos}}",
+    "eraUpTo": "Cartas de los {{era}} y antes",
+    "eraFrom": "Cartas de los {{era}} y después",
+    "era": "Cartas de los {{era}}",
+    "tagCards": "Cartas {{tag}}",
+    "shine": "{{subject}} brillan",
+    "fade": "{{subject}} se apagan",
+    "eraUpToShort": "los {{era}} y antes",
+    "eraFromShort": "los {{era}} y después"
+  },
+  "sheet": {
+    "close": "Cerrar",
+    "fixtureLabel": "Partido {{n}}, {{label}}, superar {{threshold}}",
+    "rating": "MEDIA {{n}}",
+    "chainHelp": "Alinea 3 o más cartas que compartan club, país o época para conseguir un multiplicador.",
+    "bossHelp": "El último partido. Supéralo y cobras toda la partida: ya no queda nada contra lo que seguir."
+  },
+  "coach": {
+    "draft": "Elige 1 de 3. Encadena 3 o más del mismo CLUB, PAÍS o ÉPOCA para conseguir multiplicadores.",
+    "bench": "Manda a uno al banquillo. Solo puntúan los cinco del campo, y las cadenas solo cuentan a los alineados.",
+    "hints": "Las pistas son rumores. Casi siempre ciertos.",
+    "decision": "BANK asegura tus puntos. PUSH los arriesga contra el siguiente partido. Si pierdes, te quedas con poco.",
+    "introduced": "🔥/❄ muestran la forma de un jugador cuando se juegan las rondas. F1–F5 muestran cómo encaja cada carta con los cinco partidos. Ambos están activos desde ahora.",
+    "gotIt": "Entendido",
+    "skipAll": "Saltar todo"
+  },
+  "outcome": {
+    "banked": "ASEGURADO",
+    "busted": "PERDIDO",
+    "fullclear": "PLENO"
+  },
+  "result": {
+    "eyebrow": "{{outcome}} · Tablero n.º {{n}}",
+    "points": "Puntos",
+    "squares": "{{cleared}} de {{total}} partidos superados",
+    "streak": "Racha {{count}}",
+    "nextBoard": "Siguiente tablero en {{time}}",
+    "share": "Compartir resultado",
+    "copy": "Copiar resultado",
+    "copied": "Resultado copiado. Pégalo donde quieras.",
+    "copyFailed": "No se pudo copiar tu resultado.",
+    "shareCard": "Tu tarjeta para compartir",
+    "fullBoard": "El tablero completo",
+    "fullBoardHelp": "Todas las cartas del tablero de hoy. Las tuyas van marcadas; toca una carta para ver los detalles.",
+    "row": "R{{n}}",
+    "leaderboard": "Clasificación de hoy",
+    "rarity": "SOLO EL {{pct}} % ELIGIÓ ESTA LÍNEA",
+    "pts": "PTS",
+    "trailLabel": "Recorrido de las rondas"
+  }
+}

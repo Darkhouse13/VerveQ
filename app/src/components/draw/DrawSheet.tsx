@@ -12,7 +12,7 @@
 
 import type { ReactNode } from "react";
 import { Sheet } from "@/components/ui/sheet";
-import { LAYOUT } from "./layout";
+import { useDrawT } from "./drawI18n";
 
 interface DrawSheetProps {
   open: boolean;
@@ -35,6 +35,7 @@ export function DrawSheet({
   children,
   testId = "draw-sheet",
 }: DrawSheetProps) {
+  const t = useDrawT();
   return (
     <Sheet
       open={open}
@@ -43,16 +44,16 @@ export function DrawSheet({
       eyebrow={eyebrow}
       badge={badge}
       testId={testId}
-      closeLabel="Close"
+      closeLabel={t("sheet.close")}
       closeTestId={`${testId}-close`}
       titleClassName="text-title leading-none"
-      // Centred on the same 390px column the mode renders in, so the sheet
+      // Centred on a phone-width column, so the sheet
       // reads as part of the screen rather than the browser window. The
       // portal is mounted under document.body, outside DrawExperience's
       // protected root, so it needs its own translation boundary.
       className="notranslate max-w-none gap-3 p-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]"
       translate="no"
-      style={{ maxWidth: LAYOUT.viewportW }}
+      style={{ maxWidth: "28rem" }}
     >
       {children}
     </Sheet>

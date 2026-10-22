@@ -22,6 +22,7 @@ import { eraTag, fixtureMultFor } from "@/lib/drawEngine";
 import type { Card, Fixture, FixtureModifier, PositionId } from "@/lib/drawEngine";
 import { formatMult, shortTag } from "./meta";
 import { tagName } from "./tags";
+import { enDrawT, type DrawT } from "./drawI18n";
 
 /** Which way a multiplier pushes. `flat` = the card is untouched (×1). */
 export type EffectDir = "up" | "down" | "flat";
@@ -85,49 +86,39 @@ export function effectLine(fixture: Fixture): string {
     .join(" ");
 }
 
-/** Position → the plural noun the sheet copy uses. */
-const POSITION_NOUN: Record<PositionId, string> = {
-  GK: "Keepers",
-  DEF: "Defenders",
-  MID: "Midfielders",
-  ATT: "Attackers",
-};
+/** The positions the sheet and descriptor copy have nouns for. */
+const POSITIONS: ReadonlySet<string> = new Set<PositionId>(["GK", "DEF", "MID", "ATT"]);
 
 /**
  * The subject of one plain-language sentence, e.g. "Defenders",
  * "Cards from the 80s and earlier", "CLUB D cards". House voice: sentence
  * case, no jargon, the multiplier stated as a number the player can act on.
+ * The words come from the `draw` locale (`tr`; English by default).
  */
-function sentenceSubject(mod: FixtureModifier): string {
+function sentenceSubject(mod: FixtureModifier, tr: DrawT): string {
   switch (mod.kind) {
     case "position":
-      return POSITION_NOUN[mod.value as PositionId] ?? `${String(mod.value)} cards`;
+      return POSITIONS.has(String(mod.value))
+        ? tr(`positionPlural.${String(mod.value)}`)
+        : tr("effect.positionCards", { pos: String(mod.value) });
     case "eraBefore":
-      return `Cards from the ${shortTag(eraTag((mod.value as number) - 1))} and earlier`;
+      return tr("effect.eraUpTo", { era: shortTag(eraTag((mod.value as number) - 1)) });
     case "eraAtLeast":
-      return `Cards from the ${shortTag(eraTag(mod.value as number))} and later`;
+      return tr("effect.eraFrom", { era: shortTag(eraTag(mod.value as number)) });
     case "era":
-      return `Cards from the ${shortTag(String(mod.value))}`;
+      return tr("effect.era", { era: shortTag(String(mod.value)) });
     default:
       // club / nation — the tag's full name once the real set lands.
-      return `${tagName(String(mod.value))} cards`;
+      return tr("effect.tagCards", { tag: tagName(String(mod.value)) });
   }
 }
 
 /** One sentence per modifier, e.g. "Defenders score ×2.69." */
-export function effectSentences(fixture: Fixture): string[] {
-  return fixture.modifiers.map(
-    (mod) => `${sentenceSubject(mod)} score ${formatMult(mod.mult)}.`,
+export function effectSentences(fixture: Fixture, tr: DrawT = enDrawT): string[] {
+  return fixture.modifiers.map((mod) =>
+    tr("effect.sentence", { subject: sentenceSubject(mod, tr), mult: formatMult(mod.mult) }),
   );
 }
-
-/** Position → the lowercase plural the entry-tile descriptor uses (D4). */
-const DESCRIPTOR_NOUN: Record<PositionId, string> = {
-  GK: "keepers",
-  DEF: "defenders",
-  MID: "midfielders",
-  ATT: "attackers",
-};
 
 /**
  * D4 — a modifier shape the descriptor mapping cannot express. Thrown, never
@@ -152,7 +143,7 @@ export class DescriptorShapeError extends Error {
  * era cuts, tag modifiers, ×1 modifiers, multiple boosts — throws
  * DescriptorShapeError rather than rendering wrong words.
  */
-export function descriptorLine(fixture: Fixture): string {
+export function descriptorLine(fixture: Fixture, tr: DrawT = enDrawT): string {
   const boosts: FixtureModifier[] = [];
   const cuts: FixtureModifier[] = [];
   for (const mod of fixture.modifiers) {
@@ -168,13 +159,15 @@ export function descriptorLine(fixture: Fixture): string {
   const boost = boosts[0];
   let line: string;
   if (boost.kind === "position") {
-    const noun = DESCRIPTOR_NOUN[boost.value as PositionId];
-    if (!noun) throw new DescriptorShapeError(fixture, `unknown position ${String(boost.value)}`);
-    line = `${noun} shine`;
+    if (!POSITIONS.has(String(boost.value)))
+      throw new DescriptorShapeError(fixture, `unknown position ${String(boost.value)}`);
+    line = tr("effect.shine", { subject: tr(`positionLower.${String(boost.value)}`) });
   } else if (boost.kind === "eraBefore") {
-    line = `${shortTag(eraTag((boost.value as number) - 1))} and earlier shine`;
+    const era = shortTag(eraTag((boost.value as number) - 1));
+    line = tr("effect.shine", { subject: tr("effect.eraUpToShort", { era }) });
   } else if (boost.kind === "eraAtLeast") {
-    line = `${shortTag(eraTag(boost.value as number))} and later shine`;
+    const era = shortTag(eraTag(boost.value as number));
+    line = tr("effect.shine", { subject: tr("effect.eraFromShort", { era }) });
   } else {
     throw new DescriptorShapeError(fixture, `boost kind ${boost.kind} has no mapping`);
   }
@@ -183,9 +176,9 @@ export function descriptorLine(fixture: Fixture): string {
   if (cut) {
     if (cut.kind !== "position")
       throw new DescriptorShapeError(fixture, `cut kind ${cut.kind} has no mapping`);
-    const noun = DESCRIPTOR_NOUN[cut.value as PositionId];
-    if (!noun) throw new DescriptorShapeError(fixture, `unknown position ${String(cut.value)}`);
-    line += ` · ${noun} fade`;
+    if (!POSITIONS.has(String(cut.value)))
+      throw new DescriptorShapeError(fixture, `unknown position ${String(cut.value)}`);
+    line += ` · ${tr("effect.fade", { subject: tr(`positionLower.${String(cut.value)}`) })}`;
   }
   return line;
 }

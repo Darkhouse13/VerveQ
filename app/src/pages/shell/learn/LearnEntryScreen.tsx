@@ -3,12 +3,22 @@
  * learning streak. Navigation/presentation only; no scoring here. The subject
  * comes from the server's subjects registry (via useLearnSubject) — never
  * hardcoded — and every served subject is offered in the switcher.
+ *
+ * VerveQ ONE P4.3: on the ink ground with the ui primitives; Start is the
+ * screen's one lime action. Learn is reached from Profile → Labs, so Back
+ * returns there.
  */
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
-import { LearnShell, Eyebrow } from "@/components/learn/LearnPrimitives";
+import { LearnShell, MasteryBar } from "@/components/learn/LearnPrimitives";
+import { BackButton } from "@/components/ui/icon-button";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Eyebrow } from "@/components/ui/eyebrow";
+import { cn } from "@/lib/utils";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { pickTodaysSessionNode } from "@/lib/learn/todaysSession";
 import { learnPath, useLearnSubject } from "@/lib/learn/useLearnSubject";
@@ -37,33 +47,18 @@ export default function LearnEntryScreen() {
   return (
     <LearnShell>
       {/* Header */}
-      <div className="flex flex-none items-center justify-between px-4 py-3.5 md:px-6 md:py-4">
-        <div className="flex items-center gap-2.5">
-          <button
-            type="button"
-            onClick={() => navigate(SHELL_ROUTES.home)}
-            aria-label={t("common.back")}
-            className="rounded-xl border-[3px] border-foreground bg-card px-3 py-1.5 font-heading font-bold"
-          >
-            ←
-          </button>
-          <div className="font-heading text-xl">{t("entry.title")}</div>
+      <div className="flex flex-none items-center justify-between gap-2 px-2 py-2 md:px-6 md:py-3">
+        <div className="flex items-center gap-1">
+          <BackButton onClick={() => navigate(SHELL_ROUTES.profile)} aria-label={t("common.back")} />
+          <h1 className="font-heading font-bold text-title">{t("entry.title")}</h1>
         </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => navigate(learnPath(SHELL_ROUTES.learnMastery, subject))}
-            className="font-heading text-[13px] font-bold text-muted-foreground"
-          >
+        <div className="flex">
+          <Button variant="ghost" size="sm" onClick={() => navigate(learnPath(SHELL_ROUTES.learnMastery, subject))}>
             {t("entry.mastery")}
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate(learnPath(SHELL_ROUTES.learnReview, subject))}
-            className="font-heading text-[13px] font-bold text-muted-foreground"
-          >
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => navigate(learnPath(SHELL_ROUTES.learnReview, subject))}>
             {t("entry.review")}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -73,7 +68,7 @@ export default function LearnEntryScreen() {
         <div
           role="group"
           aria-label={t("entry.subjectsLabel")}
-          className="flex flex-none flex-wrap gap-2 px-4 pb-3 md:px-6"
+          className="flex flex-none gap-2 overflow-x-auto px-4 pb-3 md:flex-wrap md:px-6"
         >
           {subjects.map((s) => (
             <button
@@ -81,11 +76,10 @@ export default function LearnEntryScreen() {
               type="button"
               aria-pressed={s.subject === subject}
               onClick={() => setSubject(s.subject)}
-              className={`rounded-full border-2 border-foreground px-3 py-1 font-heading text-[12px] font-bold ${
-                s.subject === subject
-                  ? "bg-foreground text-background"
-                  : "bg-card text-foreground"
-              }`}
+              className={cn(
+                "shrink-0 min-h-11 rounded-full neo-border px-4 font-heading text-body-sm font-bold",
+                s.subject === subject ? "bg-foreground text-background" : "bg-card text-card-foreground hover:bg-muted",
+              )}
             >
               {t(`subjects.${s.subject}`, { defaultValue: s.name })}
               {s.dueCount > 0 ? ` · ${s.dueCount}` : ""}
@@ -95,108 +89,83 @@ export default function LearnEntryScreen() {
       )}
 
       <div className="flex-1 min-h-0 px-4 pb-6 md:px-6 md:pb-6 overflow-y-auto md:overflow-hidden md:grid md:grid-rows-[1.25fr_1fr] md:gap-4">
-        {/* Hero band */}
-        <div className="neo-border neo-shadow rounded-xl bg-primary text-primary-foreground p-5 md:p-7 flex flex-col md:flex-row md:gap-6 min-h-0 relative overflow-hidden">
-          <div className="absolute -right-8 -bottom-16 text-[220px] leading-none opacity-10 select-none" aria-hidden>
-            🌱
-          </div>
-          <div className="flex flex-1 flex-col min-w-0 z-10">
-            <span className="self-start rounded-full border-2 border-current bg-background/20 px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-wider">
+        {/* Hero */}
+        <Card padding="lg" className="flex flex-col md:flex-row md:gap-6 min-h-0">
+          <div className="flex flex-1 flex-col min-w-0">
+            <Badge tone="neutral" className="self-start shadow-none">
               {t("entry.todaysSession")}
-            </span>
-            <div className="font-heading font-black text-3xl md:text-5xl leading-[0.95] mt-3 md:mt-auto">
+            </Badge>
+            <h2 className="font-heading font-bold text-title-lg md:text-display mt-3 md:mt-auto">
               {t("entry.heroLine1")}
               <br />
               {t("entry.heroLine2")}
-            </div>
-            <p className="text-sm md:text-[15px] font-medium opacity-90 mt-2.5 md:mt-3 md:max-w-md">
+            </h2>
+            <p className="text-body-sm md:text-body text-muted-foreground mt-2.5 md:mt-3 md:max-w-md">
               {t("entry.heroBody")}
             </p>
           </div>
-          <div className="z-10 mt-3 md:mt-0 md:w-56 flex-none flex flex-col gap-2.5">
-            <Eyebrow className="text-primary-foreground/85">{t("entry.metaLine")}</Eyebrow>
-            {/* The four answer types: numbered rows on desktop, one compact
-                chip line on phones so the entry fits the fixed frame. */}
-            <div className="flex flex-wrap gap-1.5 md:hidden">
+          <div className="mt-4 md:mt-0 md:w-56 flex-none flex flex-col gap-2.5">
+            <Eyebrow>{t("entry.metaLine")}</Eyebrow>
+            {/* The four answer types: one wrapping line of tags. */}
+            <div className="flex flex-wrap gap-1.5">
               {TYPE_KEYS.map((k) => (
-                <span
-                  key={k}
-                  className="rounded-full border-2 border-current bg-background/15 px-2.5 py-1 font-bold text-[11px]"
-                >
+                <Badge key={k} tone="muted" className="shadow-none normal-case">
                   {t(`type.${k}`)}
-                </span>
+                </Badge>
               ))}
             </div>
-            {TYPE_KEYS.map((k, i) => (
-              <div
-                key={k}
-                className="hidden md:flex items-center gap-2.5 rounded-xl border-2 border-current bg-background/15 px-3 py-2"
-              >
-                <span className="font-heading text-sm w-4">{i + 1}</span>
-                <span className="font-bold text-[13.5px]">{t(`type.${k}`)}</span>
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={start}
-              disabled={!todaysNode}
-              className="mt-auto w-full neo-border rounded-xl bg-foreground px-4 py-3 font-heading font-bold text-background disabled:opacity-60"
-            >
+            <Button variant="primary" size="lg" block className="mt-auto" onClick={start} disabled={!todaysNode}>
               {t("entry.start")}
-            </button>
+            </Button>
           </div>
-        </div>
+        </Card>
 
         {/* Bottom band */}
         <div className="mt-4 md:mt-0 grid gap-4 md:grid-cols-[1.4fr_1fr] min-h-0">
-          <div className="neo-border rounded-xl bg-card p-4 md:p-5 flex flex-col min-h-0">
-            <div className="flex items-center justify-between">
+          <Card elevation="flat" className="flex flex-col min-h-0">
+            <div className="flex items-center justify-between gap-2">
               <Eyebrow>{t("entry.resumeTitle")}</Eyebrow>
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="sm"
+                className="shrink-0 px-2"
                 onClick={() => navigate(learnPath(SHELL_ROUTES.learnMastery, subject))}
-                className="font-heading text-xs font-bold text-muted-foreground"
               >
                 {t("entry.allSubjects")}
-              </button>
+              </Button>
             </div>
-            <div className="mt-3 flex flex-1 flex-col justify-center gap-2.5">
+            <div className="mt-2 flex flex-1 flex-col justify-center gap-2.5">
               {resume.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t("entry.resumeEmpty")}</p>
+                <p className="text-body-sm text-muted-foreground">{t("entry.resumeEmpty")}</p>
               ) : (
                 resume.map((s) => (
                   <div key={s.id}>
-                    <div className="mb-1 flex items-center justify-between">
-                      <span className="text-sm font-semibold">{s.label}</span>
-                      <span className="font-mono text-[11px] text-muted-foreground">
+                    <div className="mb-1 flex items-center justify-between gap-2">
+                      <span className="text-body-sm font-semibold">{s.label}</span>
+                      <span className="font-mono text-eyebrow text-muted-foreground">
                         {Math.round(s.mastery * 100)}% · {t("state.learning")}
                       </span>
                     </div>
-                    <div className="h-3 overflow-hidden rounded-full border-2 border-foreground bg-card">
-                      <div
-                        className="h-full bg-primary"
-                        style={{ width: `${Math.round(s.mastery * 100)}%` }}
-                      />
-                    </div>
+                    <MasteryBar value={s.mastery} />
                   </div>
                 ))
               )}
             </div>
-          </div>
+          </Card>
 
-          <div className="neo-border rounded-xl bg-card p-4 md:p-5 flex flex-col min-h-0">
+          <Card elevation="flat" className="flex flex-col min-h-0">
             <Eyebrow>{t("entry.dueTitle")}</Eyebrow>
             <div className="mt-2.5 flex items-center gap-2.5">
-              <span className="font-heading font-black text-5xl text-primary">{dueToday}</span>
-              <span className="text-[13.5px] font-semibold">{t("entry.dueItems")}</span>
+              <span className="font-mono font-bold text-display">{dueToday}</span>
+              <span className="text-body-sm font-semibold">{t("entry.dueItems")}</span>
             </div>
-            <p className="mt-3.5 text-sm text-muted-foreground">
+            <p className="mt-3 text-body-sm text-muted-foreground">
               {t("entry.rotationNote", { count: learningCount })}
             </p>
-            <p className="mt-auto pt-3 font-mono text-[11px] text-muted-foreground">
+            <p className="mt-auto pt-3 text-meta text-muted-foreground">
               {dueToday === 0 ? t("entry.dueNoteEmpty") : t("entry.dueNote", { count: dueToday })}
             </p>
-          </div>
+          </Card>
         </div>
       </div>
     </LearnShell>

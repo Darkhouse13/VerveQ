@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { clearanceFor, DEFAULT_CLEARANCE } from "@/lib/drawEngine";
 import type { Card, ClearanceSignal, EngineConfig, Fixture } from "@/lib/drawEngine";
 import type { DrawRules } from "@/lib/drawApi/types";
+import { useDrawT } from "./drawI18n";
 import { LAYOUT } from "./layout";
 
 interface ClearanceMeterProps {
@@ -38,16 +39,15 @@ interface ClearanceMeterProps {
 
 const ZONES: ClearanceSignal[] = ["LONGSHOT", "TIGHT", "SAFE"];
 
-const ZONE_COPY: Record<ClearanceSignal, string> = {
-  SAFE: "SAFE",
-  TIGHT: "TIGHT",
-  LONGSHOT: "LONGSHOT",
-};
-
+/**
+ * The lit zone is an inverted chip, not green/yellow/red: on the VerveQ ONE
+ * system green and red mean right and wrong only, and a zone is a forecast,
+ * not a verdict. Its word and position carry the read.
+ */
 const ZONE_ACTIVE_CLASS: Record<ClearanceSignal, string> = {
-  SAFE: "bg-success text-success-foreground",
-  TIGHT: "bg-yellow text-yellow-foreground",
-  LONGSHOT: "bg-destructive text-destructive-foreground",
+  SAFE: "bg-foreground text-background",
+  TIGHT: "bg-foreground text-background",
+  LONGSHOT: "bg-foreground text-background",
 };
 
 /**
@@ -73,9 +73,10 @@ export function ClearanceMeter({
   fielded,
   fixture,
   rules,
-  label = "YOUR FIVE",
+  label,
   testId = "draw-clearance-meter",
 }: ClearanceMeterProps) {
+  const t = useDrawT();
   const signal = meterSignal(fielded, fixture, rules);
 
   return (
@@ -85,19 +86,19 @@ export function ClearanceMeter({
       data-testid={testId}
       data-signal={signal}
     >
-      <div className="flex items-center justify-between font-mono font-bold text-[11px] mb-1">
+      <div className="flex items-center justify-between gap-2 font-mono text-eyebrow tracking-normal mb-1">
         <span className="truncate">
-          <span className="font-heading text-[9px] text-muted-foreground mr-1">{label}</span>
-          <span data-testid={`${testId}-signal`}>{ZONE_COPY[signal]}</span>
+          <span className="text-muted-foreground mr-1">{label ?? t("round.yourFive")}</span>
+          <span className="font-bold" data-testid={`${testId}-signal`}>{t(`zone.${signal}`)}</span>
         </span>
         <span className="text-muted-foreground shrink-0">
-          <span className="font-heading text-[9px] mr-1">CLEARS AT</span>
-          <span className="text-foreground">{fixture.threshold}</span>
+          <span className="mr-1">{t("round.clearsAt")}</span>
+          <span className="font-bold text-foreground">{fixture.threshold}</span>
         </span>
       </div>
 
       {/* Three fixed zones; the active one is lit. No numbers, no marker. */}
-      <div className="flex gap-1 h-3.5">
+      <div className="flex gap-1 h-5">
         {ZONES.map((zone) => (
           <div
             key={zone}
@@ -110,11 +111,11 @@ export function ClearanceMeter({
           >
             <span
               className={cn(
-                "font-heading font-bold text-[7px] tracking-wide leading-none",
-                zone === signal ? "" : "text-muted-foreground/60",
+                "font-mono font-bold text-eyebrow tracking-normal leading-none",
+                zone === signal ? "" : "text-muted-foreground",
               )}
             >
-              {ZONE_COPY[zone]}
+              {t(`zone.${zone}`)}
             </span>
           </div>
         ))}

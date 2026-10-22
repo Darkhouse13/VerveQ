@@ -45,7 +45,7 @@ describe("Draw full loop against LocalMockApi", () => {
 
     // S1 — entry: board number visible, gauntlet strip visible pre-draft.
     const cta = await screen.findByTestId("draw-entry-cta");
-    expect(cta).toHaveTextContent("PLAY TODAY'S BOARD");
+    expect(cta).toHaveTextContent("Play today's board");
     expect(screen.getByTestId("draw-fixture-strip")).toBeInTheDocument();
     fireEvent.click(cta);
 
@@ -127,7 +127,7 @@ describe("Draw full loop against LocalMockApi", () => {
       </MemoryRouter>,
     );
     const cta = await screen.findByTestId("draw-entry-cta");
-    expect(cta).toHaveTextContent("RESUME RUN");
+    expect(cta).toHaveTextContent("Resume run");
     fireEvent.click(cta);
     expect(await screen.findByText("PICK 2/6")).toBeInTheDocument();
   });
@@ -194,14 +194,14 @@ describe("Draw failure surfacing", () => {
 
   it("RETRY recovers once the fault clears, without a reload", async () => {
     const api = renderFaulted("networkError");
-    const retry = await screen.findByText("RETRY");
+    const retry = await screen.findByText("Retry");
 
     // The backend comes back; the same screen must recover in place.
     api.setFault(null);
     fireEvent.click(retry);
 
     const cta = await screen.findByTestId("draw-entry-cta");
-    expect(cta).toHaveTextContent("PLAY TODAY'S BOARD");
+    expect(cta).toHaveTextContent("Play today's board");
     expect(screen.queryByTestId("draw-error")).not.toBeInTheDocument();
   });
 

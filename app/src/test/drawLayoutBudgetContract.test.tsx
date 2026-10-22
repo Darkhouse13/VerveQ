@@ -49,18 +49,20 @@ describe("Draw layout budget (LAYOUT_SPEC 390×844)", () => {
     expect(result.metrics.roundViewH).toBeLessThanOrEqual(result.metrics.budgetH);
   });
 
-  it("the stage section stacks match the spec totals and fit the 812px budget", () => {
-    // LAYOUT_SPEC + Ticket F + D5:
-    //   draft 48+64+36+88+190+40+112+24+44 + 8×12 = 742 (was 618 pre-D5);
-    //   round 48+140+92+88+56+76+56 + 6×12 = 628; budget 844 − 2×16 = 812.
-    //
-    // D5 added the 112px ON PAPER projection panel (PROJECTION_H) to the draft:
-    // 618 → 742, consuming 124px (panel + one 12px gap) of the ~194px the draft
-    // had spare. It still fits with 70px to spare and no existing element was
-    // shrunk to make room; neither view scrolls.
-    expect(HEIGHT_BUDGET).toBe(812);
-    expect(stackedHeight(DRAFT_SECTIONS)).toBe(742);
-    expect(stackedHeight(ROUND_SECTIONS)).toBe(628);
+  it("the stage section stacks match the spec totals and fit the 390×844 stage budget", () => {
+    // VerveQ ONE P4.2 moved THE DRAW onto the shared StageFrame: the 48px
+    // in-stage top bar left the stacks, and the budget is now the viewport
+    // minus the frame chrome (58px header + 12px top + 16px bottom padding):
+    // 844 − 86 = 758 (was 844 − 2×16 = 812 with the top bar inside it).
+    //   draft 64+36+88+190+40+68+24+44 + 7×12 = 638 (ON PAPER re-laid as five
+    //         columns at the 12px floor: 112 → 68);
+    //   round (benching) 140+92+88+56+76+56 + 5×12 = 568.
+    // Both fit with room for the in-flow coach mark under the primary button.
+    // A resolved round swaps the meters for the ledger and may scroll a
+    // few px in its worst case; its decision panel is sticky (layout.ts).
+    expect(HEIGHT_BUDGET).toBe(758);
+    expect(stackedHeight(DRAFT_SECTIONS)).toBe(638);
+    expect(stackedHeight(ROUND_SECTIONS)).toBe(568);
     expect(stackedHeight(DRAFT_SECTIONS)).toBeLessThanOrEqual(HEIGHT_BUDGET);
     expect(stackedHeight(ROUND_SECTIONS)).toBeLessThanOrEqual(HEIGHT_BUDGET);
   });

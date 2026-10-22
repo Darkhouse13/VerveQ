@@ -1,12 +1,18 @@
 /**
  * Learn v2 — spaced-review surface. Two queues: locked-in (resting, long
  * intervals) vs still-learning (active, short intervals), each with due timing.
+ * VerveQ ONE P4.3: ink ground, ui primitives, one lime action.
  */
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
-import { LearnShell, Eyebrow, Chip, MasteryBar } from "@/components/learn/LearnPrimitives";
+import { LearnShell, MasteryBar } from "@/components/learn/LearnPrimitives";
+import { BackButton } from "@/components/ui/icon-button";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Eyebrow } from "@/components/ui/eyebrow";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { pickTodaysSessionNode } from "@/lib/learn/todaysSession";
 import { learnPath, useLearnSubject } from "@/lib/learn/useLearnSubject";
@@ -14,7 +20,6 @@ import type { LearnSubjectMastery } from "@/lib/learn/contract";
 
 function dueLabel(
   item: LearnSubjectMastery,
-  locked: boolean,
   t: (key: string, values?: Record<string, number>) => string,
 ) {
   if (item.due > 0) return t("review.dueNow");
@@ -35,46 +40,39 @@ function Queue({
 }) {
   const { t } = useTranslation("learn");
   return (
-    <div className="neo-border neo-shadow rounded-xl bg-card p-4 flex flex-col min-h-0 h-full">
-      <div className="flex flex-none items-center justify-between">
+    <Card className="flex flex-col min-h-0 h-full">
+      <div className="flex flex-none items-center justify-between gap-2">
         <div>
-          <Eyebrow className={locked ? "text-accent-foreground" : "text-primary"}>
-            {locked ? t("review.lockedIn") : t("review.stillLearning")}
-          </Eyebrow>
-          <div className="font-heading text-xl">{title}</div>
+          <Eyebrow>{locked ? t("review.lockedIn") : t("review.stillLearning")}</Eyebrow>
+          <h2 className="font-heading font-bold text-title-sm">{title}</h2>
         </div>
-        <Chip
-          className={
-            locked ? "bg-success text-success-foreground" : "bg-primary text-primary-foreground"
-          }
-        >
+        <Badge tone="neutral" className="shadow-none">
           {items.length}
-        </Chip>
+        </Badge>
       </div>
-      <p className="my-2 flex-none text-[12.5px] text-muted-foreground">
+      <p className="my-2 flex-none text-meta text-muted-foreground">
         {locked ? t("review.lockedBlurb") : t("review.learningBlurb")}
       </p>
       <div className="flex flex-1 flex-col gap-2.5 overflow-y-auto scrollbar-none">
         {items.map((s) => (
-          <div
-            key={s.id}
-            className={`neo-border rounded-xl p-3 ${locked ? "bg-card" : "bg-card"}`}
-          >
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-bold">{s.label}</div>
-              <Chip>{dueLabel(s, locked, t)}</Chip>
+          <div key={s.id} className="neo-border rounded-lg bg-muted/40 p-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-body-sm font-bold">{s.label}</div>
+              <Badge tone="muted" className="shadow-none shrink-0">
+                {dueLabel(s, t)}
+              </Badge>
             </div>
             <div className="mt-2">
-              <MasteryBar value={s.mastery} tone={locked ? "success" : "primary"} />
+              <MasteryBar value={s.mastery} locked={locked} />
             </div>
-            <div className="mt-1.5 flex items-center justify-between font-mono text-[10.5px] text-muted-foreground">
+            <div className="mt-1.5 flex items-center justify-between font-mono text-eyebrow text-muted-foreground">
               <span>{t("review.masteryPct", { pct: Math.round(s.mastery * 100) })}</span>
               <span>{t("review.inQueue", { count: s.due })}</span>
             </div>
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -98,29 +96,17 @@ export default function LearnReviewScreen() {
 
   return (
     <LearnShell>
-      <div className="flex flex-none items-center justify-between px-4 py-3.5 md:px-6 md:py-4">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => navigate(learnPath(SHELL_ROUTES.learn, subject))}
-            aria-label={t("common.back")}
-            className="rounded-xl border-[3px] border-foreground bg-card px-3 py-1.5 font-heading font-bold"
-          >
-            ←
-          </button>
-          <div>
+      <div className="flex flex-none items-center justify-between gap-2 px-2 py-2 md:px-6 md:py-3">
+        <div className="flex items-center gap-1 min-w-0">
+          <BackButton onClick={() => navigate(learnPath(SHELL_ROUTES.learn, subject))} aria-label={t("common.back")} />
+          <div className="min-w-0">
             <Eyebrow>{t("review.eyebrow")}</Eyebrow>
-            <div className="font-heading text-xl md:text-2xl">{t("review.title")}</div>
+            <h1 className="font-heading font-bold text-title-sm md:text-title">{t("review.title")}</h1>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={reviewDue}
-          disabled={!todaysNode}
-          className="neo-border neo-shadow rounded-xl bg-primary px-4 py-2.5 font-heading font-bold text-primary-foreground disabled:opacity-60"
-        >
+        <Button variant="primary" size="sm" className="shrink-0" onClick={reviewDue} disabled={!todaysNode}>
           {t("review.reviewDue")}
-        </button>
+        </Button>
       </div>
 
       <div className="grid flex-1 min-h-0 gap-3 px-4 pb-6 md:gap-4 md:px-6 md:pb-6 md:grid-cols-2 md:grid-rows-1 overflow-y-auto scrollbar-none md:overflow-hidden auto-rows-[minmax(0,46%)] md:auto-rows-auto">

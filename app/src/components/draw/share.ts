@@ -10,6 +10,7 @@
 import type { RunOutcome } from "@/lib/drawEngine";
 import type { DrawRarity } from "@/lib/drawApi/types";
 import { showRarity } from "./rarity";
+import { enDrawT, type DrawT } from "./drawI18n";
 
 // Ticket I — the trail/identity builders moved to convex/lib/drawShare (the
 // lib/drawMessages pattern): the share-landing server payload is built by the
@@ -41,15 +42,25 @@ export interface ShareCardData {
   rarity: DrawRarity | null;
 }
 
-/** The rarity claim, or null when the population is too small to make one. */
-export function rarityLine(rarity: DrawRarity | null): string | null {
+/**
+ * The rarity claim, or null when the population is too small to make one.
+ * `tr` reads the `draw` locale (English by default).
+ */
+export function rarityLine(rarity: DrawRarity | null, tr: DrawT = enDrawT): string | null {
   if (!showRarity(rarity)) return null;
-  return `ONLY ${rarity.linePercent}% DRAFTED THIS LINE`;
+  return tr("result.rarity", { pct: rarity.linePercent });
 }
 
-export function buildShareText(data: ShareCardData): string {
+/** The outcome stamp in the active language (OUTCOME_LABEL is the English). */
+export function outcomeLabel(outcome: RunOutcome, tr: DrawT = enDrawT): string {
+  const key = `outcome.${outcome}`;
+  const label = tr(key);
+  return label === key ? OUTCOME_LABEL[outcome] : label;
+}
+
+export function buildShareText(data: ShareCardData, tr: DrawT = enDrawT): string {
   const identity = data.identity ? ` · ${data.identity}` : "";
-  const rarity = rarityLine(data.rarity);
+  const rarity = rarityLine(data.rarity, tr);
   const rarityPart = rarity ? ` · ${rarity}` : "";
-  return `THE DRAW #${data.boardNumber} ${data.trail} ${OUTCOME_LABEL[data.outcome]}${identity}${rarityPart} · ${Math.round(data.score).toLocaleString("en-US")} PTS ${data.url}`;
+  return `THE DRAW #${data.boardNumber} ${data.trail} ${outcomeLabel(data.outcome, tr)}${identity}${rarityPart} · ${Math.round(data.score).toLocaleString("en-US")} ${tr("result.pts")} ${data.url}`;
 }

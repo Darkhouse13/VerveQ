@@ -14,7 +14,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useConvex } from "convex/react";
 import { ConvexError } from "convex/values";
-import { Flame } from "lucide-react";
+import { Coins, Flame } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { DRAW_ENABLED } from "@/lib/flags";
 import {
@@ -23,8 +23,13 @@ import {
   DRAW_DISABLED_MESSAGE,
   DRAW_SIGN_IN_REQUIRED,
 } from "../../../convex/lib/drawMessages";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { NeoCard } from "@/components/neo/NeoCard";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { StageFrame } from "@/components/shell/play/PlayStage";
+import { StageScore } from "@/components/shell/play/StageParts";
+import { NextTodayCard } from "@/components/shell/play/result/ResultActions";
+import { useNextToday } from "@/components/shell/play/result/useNextToday";
+import { track } from "@/lib/analytics";
 import { createDrawApi } from "@/lib/drawApi";
 import { buildRunShareUrl, drawModeUrl } from "@/lib/drawShareLinks";
 import type {
@@ -36,12 +41,11 @@ import type {
   DrawToday,
 } from "@/lib/drawApi/types";
 import type { Choice } from "@/lib/drawEngine";
-import { DrawTopBar } from "@/components/draw/DrawTopBar";
 import { FixtureStrip } from "@/components/draw/FixtureStrip";
 import { DraftStage } from "@/components/draw/DraftStage";
 import { RoundStage } from "@/components/draw/RoundStage";
 import { ResultStage } from "@/components/draw/ResultStage";
-import { LAYOUT } from "@/components/draw/layout";
+import { useDrawT, type DrawT } from "@/components/draw/drawI18n";
 import "@/components/draw/draw.css";
 import { abandonRun, completeRun, noteQuestionAnswered, startRun } from "@/lib/gameAnalytics";
 import type { AccountState } from "@/contexts/AuthContext";
@@ -54,6 +58,25 @@ interface DrawExperienceProps {
   revealMs?: number;
   /** Analytics identity state; omitted by tests and harnesses. */
   accountState?: AccountState;
+  /**
+   * The result's "Next today" card. The route passes the live one (it reads
+   * today's dailies from Convex); tests and harnesses render without it.
+   */
+  nextToday?: React.ReactNode;
+}
+
+/** "Next today" after THE DRAW: the first of today's dailies not yet done. */
+function DrawNextToday() {
+  const target = useNextToday(null);
+  return (
+    <NextTodayCard
+      target={target}
+      testId="draw-next-today"
+      onFollow={() =>
+        track("daily_next_today_clicked", { from: "draw", to: target.kind === "game" ? target.game : "home" })
+      }
+    />
+  );
 }
 
 /**
@@ -79,23 +102,24 @@ function codeOf(error: unknown): string | null {
   return null;
 }
 
-function messageOf(error: unknown): string {
+function messageOf(error: unknown, t: DrawT): string {
   const code = codeOf(error);
   const raw = error instanceof Error ? error.message : String(error);
   // Code first (prod redacts sentences); the sentence match stays as the
   // dev/legacy fallback only — dev deployments pass messages through.
   if (code === DRAW_AUTH_REQUIRED_CODE || raw.includes(DRAW_SIGN_IN_REQUIRED)) {
-    return "Couldn't start a guest session. Check your connection and retry.";
+    return t("error.guest");
   }
   if (code === DRAW_DISABLED_CODE || raw.includes(DRAW_DISABLED_MESSAGE)) {
-    return `${DRAW_DISABLED_MESSAGE}.`;
+    return t("error.disabled");
   }
   return raw;
 }
 
 /** The full mock-driven experience. Exported ungated for component tests. */
-export function DrawExperience({ api, revealMs = 380, accountState }: DrawExperienceProps) {
+export function DrawExperience({ api, revealMs = 380, accountState, nextToday }: DrawExperienceProps) {
   const navigate = useNavigate();
+  const t = useDrawT();
   const [stage, setStage] = useState<Stage>("loading");
   const [today, setToday] = useState<DrawToday | null>(null);
   const [view, setView] = useState<DrawRunView | null>(null);
@@ -103,7 +127,7 @@ export function DrawExperience({ api, revealMs = 380, accountState }: DrawExperi
   const [streak, setStreak] = useState<DrawStreak | null>(null);
   const [leaderboard, setLeaderboard] = useState<DrawLeaderboardEntry[]>([]);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   // Synchronous double-tap guard: React state alone flips too late for two
   // taps landing in the same frame (choice submission ordering contract).
   const busyRef = useRef(false);
@@ -124,7 +148,7 @@ export function DrawExperience({ api, revealMs = 380, accountState }: DrawExperi
       })
       .catch((e: unknown) => {
         if (cancelled) return;
-        setError(messageOf(e));
+        setError(e);
         setStage("error");
       });
     return () => {
@@ -172,7 +196,7 @@ export function DrawExperience({ api, revealMs = 380, accountState }: DrawExperi
     } catch (e: unknown) {
       // Without this the rejection escapes as an unhandled promise and the
       // CTA just silently un-sticks.
-      setError(messageOf(e));
+      setError(e);
       setStage("error");
     } finally {
       busyRef.current = false;
@@ -199,7 +223,7 @@ export function DrawExperience({ api, revealMs = 380, accountState }: DrawExperi
         // Includes the B2 replay-gate reject, where the server deliberately
         // wrote no result: retry re-reads the authoritative run state rather
         // than leaving a dead button behind.
-        setError(messageOf(e));
+        setError(e);
         setStage("error");
       } finally {
         busyRef.current = false;
@@ -218,131 +242,131 @@ export function DrawExperience({ api, revealMs = 380, accountState }: DrawExperi
     ? buildRunShareUrl(view.shareSlug)
     : drawModeUrl();
 
-  // safe-pt only: the bottom inset is already carried per-stage by the scroll
-  // containers below, and doubling it here would push BANK/PUSH up by the
-  // home-indicator height twice.
+
+  // The frame's score slot: the banked total in a run, the streak elsewhere.
+  const scoreSlot =
+    stage === "play" && view ? (
+      <StageScore
+        icon={<Coins size={16} strokeWidth={3} aria-hidden="true" />}
+        value={Math.round(view.cumulative)}
+        label={t("bankedLabel", { value: Math.round(view.cumulative) })}
+      />
+    ) : today ? (
+      <StageScore
+        icon={<Flame size={16} strokeWidth={3} aria-hidden="true" />}
+        value={today.streak ?? 0}
+        label={t("streakLabel", { count: today.streak ?? 0 })}
+      />
+    ) : undefined;
+
   // Google Translate rewrites React-managed text nodes with <font> elements.
   // Protect the mode so a translation pass cannot leave React reconciling a
-  // DOM tree it no longer owns (NotFoundError: removeChild).
+  // DOM tree it no longer owns (NotFoundError: removeChild). The copy itself
+  // is translated through the `draw` locale namespace instead.
+  //
+  // VerveQ ONE P4.2: the chrome is the shared StageFrame (44px Quit, VERVEQ
+  // eyebrow, score slot) in its wide layout, so a desktop gets a centred
+  // two-column board instead of a 390px phone island on an empty canvas.
   return (
-    <div
-      className="theme-draw notranslate fixed inset-0 z-40 h-[100dvh] bg-background text-foreground overflow-hidden safe-pt"
-      translate="no"
-    >
-      <div
-        className="mx-auto h-full w-full flex flex-col"
-        style={{
-          maxWidth: LAYOUT.viewportW,
-          padding: LAYOUT.pagePaddingY,
-          gap: LAYOUT.sectionGap,
-        }}
+    <div className="theme-draw notranslate" translate="no">
+      <StageFrame
+        mode="draw"
+        title={t("title")}
+        subtitle={today ? t("board", { n: today.boardNumber }) : undefined}
+        onExit={exit}
+        exitLabel={stage === "result" ? t("home") : t("quit")}
+        score={scoreSlot}
+        wide
       >
-        <DrawTopBar
-          boardNumber={today?.boardNumber ?? null}
-          onExit={exit}
-          right={
-            stage === "play" && view ? (
-              <span className="font-mono font-bold text-sm" data-testid="draw-cumulative">
-                {Math.round(view.cumulative)}
-              </span>
-            ) : (
-              <span className="neo-border rounded-full bg-card px-2 py-0.5 font-heading font-bold text-[10px] inline-flex items-center gap-1">
-                <Flame size={10} strokeWidth={3} />
-                {today?.streak ?? 0}
-              </span>
-            )
-          }
-        />
-
         {stage === "loading" && (
-          <div className="flex-1 flex items-center justify-center">
-            <p className="font-heading font-bold animate-pulse">Loading…</p>
+          <div className="h-full flex items-center justify-center">
+            <p className="font-heading font-bold animate-pulse">{t("loading")}</p>
           </div>
         )}
 
         {stage === "error" && (
           <div
-            className="flex-1 flex flex-col items-center justify-center text-center"
-            style={{ gap: LAYOUT.sectionGap }}
+            className="h-full max-w-md mx-auto flex flex-col items-center justify-center text-center gap-3"
             data-testid="draw-error"
           >
-            <NeoCard color="destructive" shadow="lg" className="w-full py-6 px-4">
-              <p className="font-heading font-bold text-sm">CAN'T LOAD THE BOARD</p>
-              <p className="text-xs text-muted-foreground mt-2 leading-snug break-words">
-                {error}
-              </p>
-            </NeoCard>
-            <div className="w-full flex flex-col gap-2">
-              <NeoButton variant="primary" size="lg" className="w-full" onClick={retry}>
-                RETRY
-              </NeoButton>
-              <NeoButton variant="secondary" size="lg" className="w-full" onClick={exit}>
-                LEAVE
-              </NeoButton>
+            <Card className="w-full">
+              <p className="font-heading font-bold text-title-sm">{t("error.title")}</p>
+              <p className="text-body-sm text-muted-foreground mt-2 break-words">{messageOf(error, t)}</p>
+            </Card>
+            <div className="w-full flex flex-col gap-3">
+              <Button variant="primary" size="lg" block onClick={retry}>
+                {t("error.retry")}
+              </Button>
+              <Button variant="secondary" size="lg" block onClick={exit}>
+                {t("error.leave")}
+              </Button>
             </div>
           </div>
         )}
 
         {stage === "entry" && today && (
-          <div className="flex flex-col flex-1 min-h-0" style={{ gap: LAYOUT.sectionGap }} data-testid="draw-entry">
-            <NeoCard color="primary" shadow="lg" className="text-center py-6">
-              <p className="font-heading font-bold text-[11px] tracking-widest opacity-80">
-                ONE BOARD. EVERYONE. DAILY.
-              </p>
-              <p className="font-mono font-black text-5xl leading-none mt-2">
-                #{today.boardNumber}
-              </p>
-              <p className="font-heading font-bold text-[10px] mt-2 uppercase opacity-80">
-                {today.dateKey}
-              </p>
-            </NeoCard>
+          <div className="h-full overflow-y-auto overflow-x-hidden" data-testid="draw-entry">
+            <div className="min-h-full flex flex-col gap-4">
+              <div className="flex flex-col gap-4 md:grid md:grid-cols-2 md:gap-6 md:items-start">
+                <div className="flex flex-col gap-4">
+                  <Card className="draw-outline-lime text-center" padding="lg">
+                    <p className="font-mono text-eyebrow uppercase text-muted-foreground">{t("entry.eyebrow")}</p>
+                    <p className="font-mono font-bold text-display mt-2">#{today.boardNumber}</p>
+                    <p className="font-mono text-eyebrow text-muted-foreground mt-1">{today.dateKey}</p>
+                  </Card>
 
-            {/* Design contract: the whole gauntlet + thresholds is visible
-                before the first pick. */}
-            <div>
-              <p className="font-heading font-bold text-xs tracking-wide mb-1.5">THE GAUNTLET</p>
-              <FixtureStrip fixtures={today.fixtures} activeIndex={null} clearedCount={0} variant="entry" />
-            </div>
+                  {/* The rules in plain words, on a paper reading card: the
+                      first place a cold visitor meets BANK / PUSH / bench. */}
+                  <Card tone="paper" elevation="flat" className="theme-paper">
+                    <h2 className="font-heading font-bold text-title-sm">{t("entry.howTitle")}</h2>
+                    <ol className="mt-2 flex flex-col gap-1.5 text-body-sm list-decimal pl-5">
+                      <li>{t("entry.howDraft")}</li>
+                      <li>{t("entry.howBench")}</li>
+                      <li>{t("entry.howClear")}</li>
+                      <li>{t("entry.howBust", { pct: Math.round(today.rules.bustKeep * 100) })}</li>
+                    </ol>
+                  </Card>
+                </div>
 
-            <p className="text-xs text-muted-foreground leading-snug">
-              Tonight's gauntlet: five opponents, each favoring different
-              players. Draft a squad of six, field five, and run the table.
-              Clear one, then BANK your points or PUSH deeper — bust and you
-              keep scraps.
-            </p>
+                {/* Design contract: the whole gauntlet + thresholds is visible
+                    before the first pick. */}
+                <section className="flex flex-col gap-2">
+                  <h2 className="font-heading font-bold text-title-sm">{t("entry.gauntletTitle")}</h2>
+                  <p className="text-meta text-muted-foreground">{t("entry.gauntletBody")}</p>
+                  <FixtureStrip fixtures={today.fixtures} activeIndex={null} clearedCount={0} variant="entry" />
+                </section>
+              </div>
 
-            <div className="mt-auto">
-              <NeoButton
-                variant={today.playState === "done" ? "secondary" : "primary"}
-                size="xl"
-                className="w-full"
-                disabled={busy}
-                onClick={begin}
-                data-testid="draw-entry-cta"
-              >
-                {today.playState === "unplayed"
-                  ? "PLAY TODAY'S BOARD"
-                  : today.playState === "in_progress"
-                    ? "RESUME RUN"
-                    : "SEE RESULT"}
-              </NeoButton>
+              <div className="sticky bottom-0 mt-auto bg-background pt-2 md:mt-0 md:max-w-sm md:w-full md:mx-auto">
+                <Button
+                  variant={today.playState === "done" ? "secondary" : "primary"}
+                  size="lg"
+                  block
+                  disabled={busy}
+                  onClick={begin}
+                  data-testid="draw-entry-cta"
+                >
+                  {today.playState === "unplayed"
+                    ? t("entry.play")
+                    : today.playState === "in_progress"
+                      ? t("entry.resume")
+                      : t("entry.seeResult")}
+                </Button>
+              </div>
             </div>
           </div>
         )}
 
-        {/* H1 — the play stages must scroll when the stack exceeds the (dynamic)
-            viewport: on small phones the resolved-round stack (~806px) overran
-            the fixed, overflow-hidden overlay and BANK/PUSH fell below an
-            unscrollable fold. Same single-container pattern the result stage
-            already uses; the stage root is min-h-full so it still FILLS the
-            wrapper when short (coach-mark bottom slack intact) and only grows —
-            and scrolls — when it doesn't fit. Bottom padding clears the iOS
-            home indicator. */}
+        {/* H1 — the play stages scroll when the stack exceeds the (dynamic)
+            viewport: on small phones the resolved-round stack overran a fixed
+            overlay and BANK/PUSH fell below an unscrollable fold. The stage
+            root is min-h-full so it still FILLS the scroller when short, and
+            only grows — and scrolls — when it doesn't fit; the round's
+            decision panel is sticky inside it. */}
         {stage === "play" && view && today && view.phase === "draft" && (
           <div
-            className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
+            className="h-full overflow-y-auto overflow-x-hidden"
             data-testid="draw-play-scroll"
-            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8px)" }}
           >
             <DraftStage view={view} rules={today.rules} locked={busy} onPick={(i) => submit({ type: "pick", offerIndex: i })} />
           </div>
@@ -350,9 +374,8 @@ export function DrawExperience({ api, revealMs = 380, accountState }: DrawExperi
 
         {stage === "play" && view && today && view.phase !== "draft" && (
           <div
-            className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
+            className="h-full overflow-y-auto overflow-x-hidden"
             data-testid="draw-play-scroll"
-            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8px)" }}
           >
             <RoundStage
               view={view}
@@ -368,9 +391,7 @@ export function DrawExperience({ api, revealMs = 380, accountState }: DrawExperi
         )}
 
         {stage === "result" && view && (
-          // safe-pb to match the draft/play scrollers above — without it the
-          // result stage's last row sits under the home indicator.
-          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-0.5 -mx-0.5 safe-pb">
+          <div className="max-w-xl mx-auto">
             <ResultStage
               view={view}
               rarity={rarity}
@@ -378,10 +399,11 @@ export function DrawExperience({ api, revealMs = 380, accountState }: DrawExperi
               leaderboard={leaderboard}
               nextBoardAt={today?.nextBoardAt ?? null}
               shareUrl={shareUrl}
+              next={nextToday}
             />
           </div>
         )}
-      </div>
+      </StageFrame>
     </div>
   );
 }
@@ -420,6 +442,7 @@ function DrawScreenInner() {
   const convex = useConvex();
   const api = useMemo(() => createDrawApi(convex), [convex]);
   const { accountState, startAnonymousSession } = useAuth();
+  const t = useDrawT();
   const [authFailed, setAuthFailed] = useState(false);
   const bootstrapped = useRef(false);
 
@@ -450,10 +473,10 @@ function DrawScreenInner() {
         className="notranslate fixed inset-0 z-40 bg-background text-foreground flex items-center justify-center"
         translate="no"
       >
-        <p className="font-heading font-bold animate-pulse">Loading…</p>
+        <p className="font-heading font-bold animate-pulse">{t("loading")}</p>
       </div>
     );
   }
 
-  return <DrawExperience api={api} accountState={accountState} />;
+  return <DrawExperience api={api} accountState={accountState} nextToday={<DrawNextToday />} />;
 }

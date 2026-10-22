@@ -1,0 +1,151 @@
+{
+  "title": "The Draw",
+  "board": "Plateau n°{{n}}",
+  "loading": "Chargement…",
+  "quit": "Quitter",
+  "home": "Accueil",
+  "streakLabel": "Série : {{count}}",
+  "bankedLabel": "En banque : {{value}}",
+  "error": {
+    "title": "Impossible de charger le plateau",
+    "guest": "Impossible de lancer une session invité. Vérifie ta connexion et réessaie.",
+    "disabled": "THE DRAW n'est pas encore ouvert.",
+    "retry": "Réessayer",
+    "leave": "Quitter"
+  },
+  "entry": {
+    "eyebrow": "Un plateau par jour · le même pour tous",
+    "gauntletTitle": "Le parcours",
+    "gauntletBody": "Cinq adversaires à la suite. Chacun fait marquer plus certains joueurs, et moins d'autres.",
+    "clearsAt": "À battre",
+    "howTitle": "Comment jouer",
+    "howDraft": "Recrute six joueurs : choisis une carte dans chaque rangée de trois.",
+    "howBench": "À chaque manche, mets un joueur sur le banc. Les cinq autres marquent contre l'adversaire.",
+    "howClear": "Atteins le score de l'adversaire pour le passer. Ensuite, BANK pour garder tes points, ou PUSH pour affronter le suivant.",
+    "howBust": "Rate un score et c'est perdu : tu ne gardes que {{pct}} % de tes points.",
+    "play": "Jouer le plateau du jour",
+    "resume": "Reprendre la partie",
+    "seeResult": "Voir le résultat"
+  },
+  "draft": {
+    "pickCount": "CHOIX {{n}}/{{total}}",
+    "pick": "Choisir {{name}}",
+    "banked": "EN BANQUE",
+    "firstClearsAt": "F1 À BATTRE",
+    "tapToSee": "Touche une carte pour voir son effet",
+    "vsGauntlet": "{{name}} FACE AU PARCOURS",
+    "next": "SUIVANT",
+    "onPaper": "SUR LE PAPIER",
+    "onPaperSub": "meilleurs cinq · avant la forme",
+    "fixtureShort": "F{{n}}"
+  },
+  "round": {
+    "fixture": "MATCH {{n}}/{{total}}",
+    "boss": "BOSS",
+    "clearsAt": "À BATTRE",
+    "benched": "BANC",
+    "yourFive": "TES CINQ",
+    "ifYouPush": "SI TU PUSH",
+    "banked": "EN BANQUE",
+    "bustKeeps": "SI PERDU",
+    "tapToBench": "Touche un joueur pour le mettre sur le banc",
+    "confirm": "Valider la compo",
+    "resolving": "Calcul…",
+    "bank": "BANK",
+    "push": "PUSH",
+    "pts": "{{n}} pts",
+    "nextClearsAt": "suivant : {{n}}",
+    "seeResultBusted": "Perdu · voir le résultat",
+    "seeResultFullClear": "Sans faute · voir le résultat",
+    "seeResult": "Voir le résultat",
+    "needed": "OBJECTIF {{n}}",
+    "chain": "CHAÎNE {{tag}}",
+    "cleared": "PASSÉ",
+    "busted": "PERDU",
+    "hint": {
+      "HOT": "Indice de forme : en feu",
+      "NEUTRAL": "Indice de forme : neutre",
+      "COLD": "Indice de forme : à froid"
+    }
+  },
+  "zone": {
+    "SAFE": "SÛR",
+    "TIGHT": "SERRÉ",
+    "LONGSHOT": "RISQUÉ"
+  },
+  "family": {
+    "club": "CLUB",
+    "nation": "NATION",
+    "era": "ÉPOQUE"
+  },
+  "position": {
+    "GK": "Gardien",
+    "DEF": "Défenseur",
+    "MID": "Milieu",
+    "ATT": "Attaquant"
+  },
+  "positionPlural": {
+    "GK": "Les gardiens",
+    "DEF": "Les défenseurs",
+    "MID": "Les milieux",
+    "ATT": "Les attaquants"
+  },
+  "positionLower": {
+    "GK": "les gardiens",
+    "DEF": "les défenseurs",
+    "MID": "les milieux",
+    "ATT": "les attaquants"
+  },
+  "effect": {
+    "sentence": "{{subject}} : {{mult}}.",
+    "positionCards": "Cartes {{pos}}",
+    "eraUpTo": "Cartes des années {{era}} et avant",
+    "eraFrom": "Cartes des années {{era}} et après",
+    "era": "Cartes des années {{era}}",
+    "tagCards": "Cartes {{tag}}",
+    "shine": "{{subject}} brillent",
+    "fade": "{{subject}} s'éteignent",
+    "eraUpToShort": "les années {{era}} et avant",
+    "eraFromShort": "les années {{era}} et après"
+  },
+  "sheet": {
+    "close": "Fermer",
+    "fixtureLabel": "Match {{n}}, {{label}}, à battre : {{threshold}}",
+    "rating": "NOTE {{n}}",
+    "chainHelp": "Aligne au moins 3 cartes qui partagent un club, une nation ou une époque pour obtenir un multiplicateur.",
+    "bossHelp": "Le dernier match. Passe-le et toute la partie est payée : il n'y a plus rien à affronter ensuite."
+  },
+  "coach": {
+    "draft": "Choisis 1 carte sur 3. Enchaîne 3+ cartes du même CLUB, de la même NATION ou de la même ÉPOQUE pour des multiplicateurs.",
+    "bench": "Mets-en un sur le banc. Seuls les cinq sur le terrain marquent, et les chaînes ne comptent que les joueurs alignés.",
+    "hints": "Les indices sont des rumeurs. Souvent vraies.",
+    "decision": "BANK garde tes points. PUSH les remet en jeu contre le match suivant. Si tu perds, il ne te reste presque rien.",
+    "introduced": "🔥/❄ montrent la forme d'un joueur une fois les manches jouées. F1–F5 montrent comment chaque carte convient aux cinq matchs. Les deux sont actifs à partir de maintenant.",
+    "gotIt": "Compris",
+    "skipAll": "Tout passer"
+  },
+  "outcome": {
+    "banked": "EN BANQUE",
+    "busted": "PERDU",
+    "fullclear": "SANS FAUTE"
+  },
+  "result": {
+    "eyebrow": "{{outcome}} · Plateau n°{{n}}",
+    "points": "Points",
+    "squares": "{{cleared}} matchs passés sur {{total}}",
+    "streak": "Série {{count}}",
+    "nextBoard": "Prochain plateau dans {{time}}",
+    "share": "Partager le résultat",
+    "copy": "Copier le résultat",
+    "copied": "Résultat copié. Colle-le où tu veux.",
+    "copyFailed": "Impossible de copier ton résultat.",
+    "shareCard": "Ta carte de partage",
+    "fullBoard": "Le plateau complet",
+    "fullBoardHelp": "Toutes les cartes du plateau du jour. Les tiennes sont entourées ; touche une carte pour les détails.",
+    "row": "R{{n}}",
+    "leaderboard": "Classement du jour",
+    "rarity": "SEULS {{pct}} % ONT CHOISI CETTE LIGNE",
+    "pts": "PTS",
+    "trailLabel": "Parcours des manches"
+  }
+}

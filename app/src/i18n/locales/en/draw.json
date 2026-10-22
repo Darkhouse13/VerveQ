@@ -1,0 +1,151 @@
+{
+  "title": "The Draw",
+  "board": "Board #{{n}}",
+  "loading": "Loading…",
+  "quit": "Quit",
+  "home": "Home",
+  "streakLabel": "Streak: {{count}}",
+  "bankedLabel": "Banked: {{value}}",
+  "error": {
+    "title": "Can't load the board",
+    "guest": "Couldn't start a guest session. Check your connection and retry.",
+    "disabled": "THE DRAW is not open yet.",
+    "retry": "Retry",
+    "leave": "Leave"
+  },
+  "entry": {
+    "eyebrow": "One board a day · the same for everyone",
+    "gauntletTitle": "The gauntlet",
+    "gauntletBody": "Five opponents in a row. Each one makes some players score more and others less.",
+    "clearsAt": "Clears at",
+    "howTitle": "How it works",
+    "howDraft": "Draft six players: pick one card from each row of three.",
+    "howBench": "Each round, bench one player. The other five score against the opponent.",
+    "howClear": "Reach the opponent's score to clear it. Then BANK your points, or PUSH on to the next opponent.",
+    "howBust": "Miss a score and you bust: you keep only {{pct}}% of your points.",
+    "play": "Play today's board",
+    "resume": "Resume run",
+    "seeResult": "See result"
+  },
+  "draft": {
+    "pickCount": "PICK {{n}}/{{total}}",
+    "pick": "Pick {{name}}",
+    "banked": "BANKED",
+    "firstClearsAt": "F1 CLEARS AT",
+    "tapToSee": "Tap a card to see what it does",
+    "vsGauntlet": "{{name}} VS THE GAUNTLET",
+    "next": "NEXT",
+    "onPaper": "ON PAPER",
+    "onPaperSub": "best five · before form",
+    "fixtureShort": "F{{n}}"
+  },
+  "round": {
+    "fixture": "FIXTURE {{n}}/{{total}}",
+    "boss": "BOSS",
+    "clearsAt": "CLEARS AT",
+    "benched": "BENCHED",
+    "yourFive": "YOUR FIVE",
+    "ifYouPush": "IF YOU PUSH",
+    "banked": "BANKED",
+    "bustKeeps": "BUST KEEPS",
+    "tapToBench": "Tap a player to bench",
+    "confirm": "Confirm lineup",
+    "resolving": "Resolving…",
+    "bank": "BANK",
+    "push": "PUSH",
+    "pts": "{{n}} pts",
+    "nextClearsAt": "next clears at {{n}}",
+    "seeResultBusted": "Busted · see result",
+    "seeResultFullClear": "Full clear · see result",
+    "seeResult": "See result",
+    "needed": "NEEDED {{n}}",
+    "chain": "{{tag}} CHAIN",
+    "cleared": "CLEARED",
+    "busted": "BUSTED",
+    "hint": {
+      "HOT": "Form hint: hot",
+      "NEUTRAL": "Form hint: neutral",
+      "COLD": "Form hint: cold"
+    }
+  },
+  "zone": {
+    "SAFE": "SAFE",
+    "TIGHT": "TIGHT",
+    "LONGSHOT": "LONGSHOT"
+  },
+  "family": {
+    "club": "CLUB",
+    "nation": "NATION",
+    "era": "ERA"
+  },
+  "position": {
+    "GK": "Keeper",
+    "DEF": "Defender",
+    "MID": "Midfielder",
+    "ATT": "Attacker"
+  },
+  "positionPlural": {
+    "GK": "Keepers",
+    "DEF": "Defenders",
+    "MID": "Midfielders",
+    "ATT": "Attackers"
+  },
+  "positionLower": {
+    "GK": "keepers",
+    "DEF": "defenders",
+    "MID": "midfielders",
+    "ATT": "attackers"
+  },
+  "effect": {
+    "sentence": "{{subject}} score {{mult}}.",
+    "positionCards": "{{pos}} cards",
+    "eraUpTo": "Cards from the {{era}} and earlier",
+    "eraFrom": "Cards from the {{era}} and later",
+    "era": "Cards from the {{era}}",
+    "tagCards": "{{tag}} cards",
+    "shine": "{{subject}} shine",
+    "fade": "{{subject}} fade",
+    "eraUpToShort": "{{era}} and earlier",
+    "eraFromShort": "{{era}} and later"
+  },
+  "sheet": {
+    "close": "Close",
+    "fixtureLabel": "Fixture {{n}}, {{label}}, clears at {{threshold}}",
+    "rating": "RATING {{n}}",
+    "chainHelp": "Chain 3 or more fielded cards sharing a club, nation or era for a multiplier.",
+    "bossHelp": "The last fixture. Clear it and the whole run pays out — there is nothing left to push into."
+  },
+  "coach": {
+    "draft": "Pick 1 of 3. Chain 3+ of the same CLUB, NATION, or ERA for multipliers.",
+    "bench": "Sit one. Only the five on the pitch score — chains count fielded players only.",
+    "hints": "Hints are rumors. Mostly true.",
+    "decision": "BANK keeps your points. PUSH risks them against the next fixture. Bust and you keep scraps.",
+    "introduced": "🔥/❄ show a player's form once rounds resolve. F1–F5 show how each card fits the five fixtures. Both are live from now on.",
+    "gotIt": "Got it",
+    "skipAll": "Skip all"
+  },
+  "outcome": {
+    "banked": "BANKED",
+    "busted": "BUSTED",
+    "fullclear": "FULL CLEAR"
+  },
+  "result": {
+    "eyebrow": "{{outcome}} · Board #{{n}}",
+    "points": "Points",
+    "squares": "{{cleared}} of {{total}} fixtures cleared",
+    "streak": "Streak {{count}}",
+    "nextBoard": "Next board in {{time}}",
+    "share": "Share result",
+    "copy": "Copy result",
+    "copied": "Result copied. Paste it anywhere.",
+    "copyFailed": "Couldn't copy your result.",
+    "shareCard": "Your share card",
+    "fullBoard": "The full board",
+    "fullBoardHelp": "Every card on today's board. Yours are outlined; tap any card for details.",
+    "row": "R{{n}}",
+    "leaderboard": "Today's board",
+    "rarity": "ONLY {{pct}}% DRAFTED THIS LINE",
+    "pts": "PTS",
+    "trailLabel": "Rounds trail"
+  }
+}

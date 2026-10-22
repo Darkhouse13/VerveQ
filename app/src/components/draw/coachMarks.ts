@@ -13,6 +13,7 @@
  */
 
 import { useCallback, useState } from "react";
+import { enDrawT } from "./drawI18n";
 
 export const DRAW_COACH_KEY = "drawCoachV1";
 
@@ -28,16 +29,18 @@ export type CoachId = "draft" | "bench" | "hints" | "decision" | "introduced";
  */
 export const COACH_IDS: readonly CoachId[] = ["draft", "bench", "hints", "decision"];
 
+/**
+ * The English copy, read from the en `draw` locale (`coach.<id>`) — the mark
+ * itself renders the active language's `coach.<id>`. "hints" is Ticket G3's
+ * one hint mark; "introduced" is D2's one first-run introduction, fired after
+ * fixture 1 resolves.
+ */
 export const COACH_COPY: Record<CoachId, string> = {
-  draft: "Pick 1 of 3. Chain 3+ of the same CLUB, NATION, or ERA for multipliers.",
-  bench: "Sit one. Only the five on the pitch score — chains count fielded players only.",
-  // Ticket G3 — the one hint mark, first run only.
-  hints: "Hints are rumors. Mostly true.",
-  decision:
-    "BANK keeps your points. PUSH risks them against the next fixture. Bust and you keep scraps.",
-  // Ticket D2 — the ONE first-run introduction, fired after fixture 1 resolves.
-  introduced:
-    "🔥/❄ show a player's form once rounds resolve. F1–F5 show how each card fits the five fixtures. Both are live from now on.",
+  draft: enDrawT("coach.draft"),
+  bench: enDrawT("coach.bench"),
+  hints: enDrawT("coach.hints"),
+  decision: enDrawT("coach.decision"),
+  introduced: enDrawT("coach.introduced"),
 };
 
 function readSeen(): Set<CoachId> {

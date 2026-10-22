@@ -43,7 +43,8 @@ export type StageMode =
   | "survival"
   | "daily-quiz"
   | "daily-survival"
-  | "blitz";
+  | "blitz"
+  | "draw";
 
 /** The color token each mode is identified by. */
 const MODE_ACCENT: Record<StageMode, string> = {
@@ -60,6 +61,9 @@ const MODE_ACCENT: Record<StageMode, string> = {
   "daily-quiz": "var(--yellow)",
   "daily-survival": "var(--yellow)",
   blitz: "var(--yellow)",
+  // THE DRAW wears lime as an OUTLINE only (its card faces are the identity);
+  // the accent reaches small marks, never a fill.
+  draw: "var(--lime)",
 };
 
 /** The reel's 6% lime diagonal hatch, scaled from its 1080px frame to a phone. */
@@ -94,7 +98,7 @@ export interface StageFrameProps {
   right?: ReactNode;
   /** Mobile ambient strip — the collapsed rails. */
   strip?: ReactNode;
-  /** Theme container class (e.g. `theme-learn`). */
+  /** Theme container class (e.g. `theme-weekend`). */
   theme?: string;
   /**
    * Opt-in wide layout for rail-less phases (e.g. the Arena lobby): the content

@@ -21,8 +21,9 @@ import { cn } from "@/lib/utils";
 import type { Card, Fixture } from "@/lib/drawEngine";
 import type { DrawRules } from "@/lib/drawApi/types";
 import { archetypeMeta } from "./meta";
-import { PROJECTION_H } from "./layout";
+import { LAYOUT, PROJECTION_H } from "./layout";
 import { projectBestFive, projectionConfig } from "./bookValue";
+import { useDrawT } from "./drawI18n";
 
 interface DraftProjectionProps {
   /** Confirmed picks so far — the "drafted cards" the projection is over. */
@@ -31,59 +32,60 @@ interface DraftProjectionProps {
   rules: DrawRules;
 }
 
+/**
+ * VerveQ ONE P4.2: one column per fixture, on the gauntlet strip's grid (same
+ * flex-1 + chip gap), so each value reads straight down from its tile and
+ * every number sits at the 12px floor.
+ */
 export function DraftProjection({ squad, fixtures, rules }: DraftProjectionProps) {
+  const t = useDrawT();
   const config = projectionConfig(rules);
   return (
     <div
-      className="neo-border rounded-lg bg-card text-card-foreground shrink-0 flex flex-col justify-center px-3 py-1"
+      className="draw-border-quiet neo-border rounded-lg bg-card text-card-foreground shrink-0 flex flex-col justify-center px-2 py-1.5"
       style={{ height: PROJECTION_H }}
       data-testid="draw-projection"
       data-picks={squad.length}
     >
-      <div className="flex items-baseline justify-between mb-0.5">
-        <span className="font-heading font-bold text-[9px] tracking-wide">ON PAPER</span>
-        <span
-          className="font-heading text-[7px] tracking-wide text-muted-foreground"
-          data-testid="draw-projection-sub"
-        >
-          best five · before form
+      <div className="flex items-baseline justify-between gap-2 mb-1 px-0.5">
+        <span className="font-mono text-eyebrow font-bold whitespace-nowrap shrink-0">{t("draft.onPaper")}</span>
+        <span className="text-eyebrow text-muted-foreground truncate" data-testid="draw-projection-sub">
+          {t("draft.onPaperSub")}
         </span>
       </div>
 
-      {/* One row per fixture: projected best-five value / threshold, with a
-          cleared-on-paper marker when the squad already clears it. */}
-      <div className="flex flex-col gap-0.5">
+      <div className="flex" style={{ gap: LAYOUT.fixtureChipGap }}>
         {fixtures.map((fixture) => {
-          const { label } = archetypeMeta(fixture.archetypeId);
+          const { label, Icon } = archetypeMeta(fixture.archetypeId);
           const value = projectBestFive(squad, fixture, config);
           const cleared = value !== null && value >= fixture.threshold;
           return (
             <div
               key={fixture.index}
-              className="flex items-center justify-between gap-1 h-3.5"
+              className="flex-1 min-w-0 flex flex-col items-center font-mono font-bold text-eyebrow tracking-normal leading-4"
               data-testid={`draw-projection-row-${fixture.index}`}
               data-cleared={cleared ? "true" : undefined}
+              aria-label={label}
             >
-              <span className="font-heading font-bold text-[8px] tracking-wide truncate">
-                {label}
-              </span>
-              <span className="flex items-center gap-1 shrink-0 font-mono font-bold text-[9px] leading-none">
+              <span className="flex items-center gap-0.5">
+                {cleared ? (
+                  <Check
+                    size={12}
+                    strokeWidth={4}
+                    className="text-success shrink-0"
+                    data-testid={`draw-projection-cleared-${fixture.index}`}
+                  />
+                ) : (
+                  <Icon size={12} strokeWidth={2.5} className="shrink-0 text-muted-foreground" aria-hidden="true" />
+                )}
                 <span
                   className={cn(cleared ? "text-success" : "text-foreground")}
                   data-testid={`draw-projection-value-${fixture.index}`}
                 >
                   {value === null ? "—" : Math.round(value)}
                 </span>
-                <span className="text-muted-foreground">/ {fixture.threshold}</span>
-                {cleared && (
-                  <Check
-                    size={9}
-                    strokeWidth={4}
-                    className="text-success shrink-0"
-                    data-testid={`draw-projection-cleared-${fixture.index}`}
-                  />
-                )}
               </span>
+              <span className="text-muted-foreground">/{fixture.threshold}</span>
             </div>
           );
         })}
@@ -91,3 +93,4 @@ export function DraftProjection({ squad, fixtures, rules }: DraftProjectionProps
     </div>
   );
 }
+

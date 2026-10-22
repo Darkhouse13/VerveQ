@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils";
 import { SYNERGY_FAMILIES, largestChain } from "@/lib/drawEngine";
 import type { Card } from "@/lib/drawEngine";
-import { FAMILY_CLASS, FAMILY_LABEL, formatMult, shortTag } from "./meta";
+import { FAMILY_CLASS, formatMult, shortTag } from "./meta";
+import { useDrawT } from "./drawI18n";
 import { LAYOUT, SYNERGY_METERS_H } from "./layout";
 
 interface SynergyMetersProps {
@@ -36,6 +37,7 @@ const SEGMENTS = 5;
  * disagree with the round that follows it.
  */
 export function SynergyMeters({ cards, synergyTable, ghostCard = null }: SynergyMetersProps) {
+  const t = useDrawT();
   return (
     <div
       className="flex flex-col shrink-0"
@@ -65,8 +67,8 @@ export function SynergyMeters({ cards, synergyTable, ghostCard = null }: Synergy
             data-testid={`draw-synergy-${family}`}
             data-ghost={extends_ ? "extends" : undefined}
           >
-            <span className="font-heading font-bold text-[9px] w-11 shrink-0 tracking-wide">
-              {FAMILY_LABEL[family]}
+            <span className="font-mono text-eyebrow w-16 shrink-0 text-muted-foreground truncate">
+              {t(`family.${family}`)}
             </span>
             <div className="flex-1 flex gap-1 h-3.5">
               {Array.from({ length: SEGMENTS }, (_, i) => {
@@ -91,7 +93,7 @@ export function SynergyMeters({ cards, synergyTable, ghostCard = null }: Synergy
             </div>
             <span
               className={cn(
-                "font-mono font-bold text-[10px] w-[4.5rem] shrink-0 text-right leading-none",
+                "font-mono font-bold text-eyebrow tracking-normal w-24 shrink-0 text-right leading-none truncate",
                 creates
                   ? "draw-ghost-chip text-foreground"
                   : live
@@ -101,7 +103,7 @@ export function SynergyMeters({ cards, synergyTable, ghostCard = null }: Synergy
               data-testid={creates ? `draw-synergy-creates-${family}` : undefined}
             >
               {creates
-                ? `${FAMILY_LABEL[family]} ${formatMult(ghostMult)}`
+                ? `${t(`family.${family}`)} ${formatMult(ghostMult)}`
                 : chain > 0
                   ? `${shortTag(tag)} ${live ? formatMult(mult) : "×1"}`
                   : "—"}

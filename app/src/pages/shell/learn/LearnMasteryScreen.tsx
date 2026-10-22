@@ -2,12 +2,18 @@
  * Learn v2 — topic-mastery dashboard. Overall mastery + per-topic rows with
  * state (locked-in vs learning) and due counts. Presentation only. The subject
  * rides the ?subject= param (server-resolved default when absent).
+ * VerveQ ONE P4.3: ink ground, ui primitives, one lime action.
  */
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
-import { LearnShell, Eyebrow, Chip, MasteryBar } from "@/components/learn/LearnPrimitives";
+import { LearnShell, MasteryBar } from "@/components/learn/LearnPrimitives";
+import { BackButton } from "@/components/ui/icon-button";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Eyebrow } from "@/components/ui/eyebrow";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { pickTodaysSessionNode } from "@/lib/learn/todaysSession";
 import { learnPath, useLearnSubject } from "@/lib/learn/useLearnSubject";
@@ -36,101 +42,71 @@ export default function LearnMasteryScreen() {
 
   return (
     <LearnShell>
-      <div className="flex flex-none items-center justify-between px-4 py-3.5 md:px-6 md:py-4">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => navigate(learnPath(SHELL_ROUTES.learn, subject))}
-            aria-label={t("common.back")}
-            className="rounded-xl border-[3px] border-foreground bg-card px-3 py-1.5 font-heading font-bold"
-          >
-            ←
-          </button>
-          <div>
+      <div className="flex flex-none items-center justify-between gap-2 px-2 py-2 md:px-6 md:py-3">
+        <div className="flex items-center gap-1 min-w-0">
+          <BackButton onClick={() => navigate(learnPath(SHELL_ROUTES.learn, subject))} aria-label={t("common.back")} />
+          <div className="min-w-0">
             <Eyebrow>{t("mastery.eyebrow")}</Eyebrow>
-            <div className="font-heading text-xl md:text-2xl">{t("mastery.title")}</div>
+            <h1 className="font-heading font-bold text-title-sm md:text-title">{t("mastery.title")}</h1>
           </div>
         </div>
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="sm"
+          className="shrink-0"
           onClick={() => navigate(learnPath(SHELL_ROUTES.learnReview, subject))}
-          className="font-heading text-[13px] font-bold text-muted-foreground"
         >
           {t("mastery.reviewSchedule")}
-        </button>
+        </Button>
       </div>
 
       <div className="grid flex-1 min-h-0 gap-4 px-4 pb-6 md:px-6 md:pb-6 md:grid-cols-[300px_1fr] overflow-y-auto scrollbar-none md:overflow-hidden">
         {/* Summary card */}
-        <div className="neo-border neo-shadow rounded-xl bg-card p-4 md:p-5 flex flex-col gap-3.5 min-h-0">
+        <Card className="flex flex-col gap-3.5 min-h-0">
           <Eyebrow>{t("mastery.overall")}</Eyebrow>
           <div className="flex items-baseline gap-1.5">
-            <span className="font-heading font-black text-6xl leading-none text-primary">
-              {overall}
-            </span>
-            <span className="font-heading font-black text-2xl">%</span>
+            <span className="font-mono font-bold text-score">{Number.isFinite(overall) ? overall : 0}</span>
+            <span className="font-mono font-bold text-title">%</span>
           </div>
-          <MasteryBar value={overall / 100} tone="primary" />
-          <div className="h-[3px] bg-foreground my-1" />
-          <div className="flex gap-2.5">
-            <div className="flex-1">
-              <div className="font-heading text-2xl">{lockedCount}</div>
-              <div className="font-mono text-[10.5px] text-muted-foreground uppercase">
-                {t("mastery.lockedIn")}
+          <MasteryBar value={(Number.isFinite(overall) ? overall : 0) / 100} />
+          <div className="h-0.5 bg-border/20 my-1" />
+          <div className="grid grid-cols-3 gap-2.5">
+            {[
+              [lockedCount, t("mastery.lockedIn")],
+              [learningCount, t("mastery.learning")],
+              [dueCount, t("mastery.due")],
+            ].map(([n, label]) => (
+              <div key={String(label)}>
+                <div className="font-mono font-bold text-title">{n}</div>
+                <Eyebrow>{label}</Eyebrow>
               </div>
-            </div>
-            <div className="flex-1">
-              <div className="font-heading text-2xl">{learningCount}</div>
-              <div className="font-mono text-[10.5px] text-muted-foreground uppercase">
-                {t("mastery.learning")}
-              </div>
-            </div>
-            <div className="flex-1">
-              <div className="font-heading text-2xl">{dueCount}</div>
-              <div className="font-mono text-[10.5px] text-muted-foreground uppercase">
-                {t("mastery.due")}
-              </div>
-            </div>
+            ))}
           </div>
-          <button
-            type="button"
-            onClick={startSession}
-            disabled={!todaysNode}
-            className="mt-auto w-full neo-border neo-shadow rounded-xl bg-primary px-4 py-3 font-heading font-bold text-primary-foreground disabled:opacity-60"
-          >
+          <Button variant="primary" size="lg" block className="mt-auto" onClick={startSession} disabled={!todaysNode}>
             {t("mastery.startSession")}
-          </button>
-        </div>
+          </Button>
+        </Card>
 
         {/* Per-subject */}
         <div className="flex flex-col gap-3 min-h-0 md:overflow-y-auto scrollbar-none">
           {subjects.map((s) => (
-            <div
-              key={s.id}
-              className="neo-border rounded-xl bg-card p-3.5 flex items-center gap-4"
-            >
-              <div className="grid h-14 w-14 shrink-0 place-items-center rounded-lg border-[3px] border-foreground bg-primary text-primary-foreground font-heading font-black text-lg">
+            <Card key={s.id} elevation="flat" padding="sm" className="flex items-center gap-4">
+              <div className="grid h-14 w-14 shrink-0 place-items-center rounded-md neo-border bg-muted font-mono font-bold text-title-sm">
                 {Math.round(s.mastery * 100)}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="font-heading text-base truncate">{s.label}</div>
-                  <Chip
-                    className={
-                      s.state === "locked" ? "bg-success text-success-foreground" : "bg-card"
-                    }
-                  >
+                  <div className="font-heading font-bold text-body truncate">{s.label}</div>
+                  <Badge tone={s.state === "locked" ? "neutral" : "muted"} className="shadow-none shrink-0">
                     {s.state === "locked" ? t("state.lockedIn") : t("state.learningUpper")}
-                  </Chip>
+                  </Badge>
                 </div>
                 <div className="mt-2">
-                  <MasteryBar value={s.mastery} tone={s.state === "locked" ? "success" : "primary"} />
+                  <MasteryBar value={s.mastery} locked={s.state === "locked"} />
                 </div>
-                <div className="mt-1.5 font-mono text-[10.5px] text-muted-foreground">
-                  {t("mastery.dueLine", { count: s.due })}
-                </div>
+                <div className="mt-1.5 text-meta text-muted-foreground">{t("mastery.dueLine", { count: s.due })}</div>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       </div>

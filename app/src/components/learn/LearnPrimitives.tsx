@@ -1,25 +1,28 @@
 /**
- * Learn v2 — shared presentational primitives, in the WARM `.theme-learn`
- * palette. `LearnShell` scopes the palette to the Learn pillar so the rest of
- * the shell keeps the UNIFIED palette.
+ * Learn v2 — the frame and the one Learn-only primitive.
+ *
+ * VerveQ ONE P4.3: Learn runs on the app's ONE ink ground. The warm
+ * `.theme-learn` palette is gone; teaching content sits on `.theme-paper`
+ * reading cards instead (TeachingReveal). The old Chip / Eyebrow / LadderDots
+ * duplicates were replaced by the ui primitives (Badge, Eyebrow) and the game
+ * frame's StepDots. What stays here is the hub frame and the mastery bar.
  */
 import { type ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import { ThemeScope } from "@/components/ui/theme-scope";
 
 /**
- * Full-height container that applies the Learn palette and the desktop
+ * Full-height container for the Learn hub screens with the desktop
  * never-scroll contract (mobile screens opt into vertical scroll per-region).
+ * A run uses the shared StageFrame instead.
  */
 export function LearnShell({ children }: { children: ReactNode }) {
   return (
-    <ThemeScope theme="theme-learn">
     <div
       className={cn(
-        "theme-learn bg-background text-foreground shell-canvas-bg flex flex-col",
+        "bg-background text-foreground shell-canvas-bg flex flex-col",
         // Fill the viewport and never scroll — on every device (matches
         // ShellLayout's discipline). Screens keep internal scroll valves.
-        "fixed inset-0 z-40 h-[100dvh] overflow-hidden",
+        "fixed inset-0 z-frame h-[100dvh] overflow-hidden",
         // iOS standalone insets (matches ShellLayout).
         "safe-pt safe-pb",
       )}
@@ -32,75 +35,15 @@ export function LearnShell({ children }: { children: ReactNode }) {
         {children}
       </div>
     </div>
-    </ThemeScope>
   );
 }
 
-/** Mono uppercase pill. */
-export function Chip({
-  children,
-  className = "",
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
+/** Horizontal mastery bar (0..1). Locked-in topics fill brighter than ones still learning. */
+export function MasteryBar({ value, locked = false }: { value: number; locked?: boolean }) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border-2 border-foreground bg-card px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-wider",
-        className,
-      )}
-    >
-      {children}
-    </span>
-  );
-}
-
-/** Mono uppercase eyebrow label. */
-export function Eyebrow({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return (
-    <span
-      className={cn(
-        "font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground",
-        className,
-      )}
-    >
-      {children}
-    </span>
-  );
-}
-
-/** Progress ladder (dots). */
-export function LadderDots({ total, current }: { total: number; current: number }) {
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {Array.from({ length: total }).map((_, i) => (
-        <span
-          key={i}
-          className={cn(
-            "h-3.5 w-3.5 rounded border-2 border-foreground",
-            i < current ? "bg-primary" : "bg-transparent",
-          )}
-        />
-      ))}
-    </div>
-  );
-}
-
-/** Horizontal mastery bar (0..1). */
-export function MasteryBar({
-  value,
-  tone = "primary",
-}: {
-  value: number;
-  tone?: "primary" | "success" | "accent";
-}) {
-  const fill =
-    tone === "success" ? "bg-success" : tone === "accent" ? "bg-accent" : "bg-primary";
-  return (
-    <div className="h-4 overflow-hidden rounded-full border-[3px] border-foreground bg-card">
+    <div className="h-3 overflow-hidden rounded-full neo-border bg-muted">
       <div
-        className={cn("h-full", fill)}
+        className={cn("h-full", locked ? "bg-foreground" : "bg-muted-foreground")}
         style={{ width: `${Math.round(Math.max(0, Math.min(1, value)) * 100)}%` }}
       />
     </div>

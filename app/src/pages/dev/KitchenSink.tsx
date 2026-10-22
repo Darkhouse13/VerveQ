@@ -41,7 +41,6 @@ const CANDIDATE_THEMES = [
   { id: "root", label: ":root", className: "" },
   { id: "ink", label: ".theme-ink", className: "theme-ink" },
   { id: "paper", label: ".theme-paper", className: "theme-paper" },
-  { id: "learn", label: ".theme-learn", className: "theme-learn" },
 ] as const;
 
 function themeDefined(className: string): boolean {

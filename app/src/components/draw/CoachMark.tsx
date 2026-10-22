@@ -4,13 +4,14 @@
  * nobody reads and nobody can act on while reading.
  *
  * Each fires the first time its surface appears — the draft row, the first
- * bench, the first bank/push — and never again after dismissal. The copy and
- * the dismissal state live in coachMarks.ts.
+ * bench, the first bank/push — and never again after dismissal. The copy (the
+ * `draw` locale's `coach.*`) and the dismissal state live in coachMarks.ts.
  */
 
 import { useEffect } from "react";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { COACH_COPY } from "./coachMarks";
+import { Lightbulb } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useDrawT } from "./drawI18n";
 import type { CoachId } from "./coachMarks";
 
 interface CoachMarkProps {
@@ -23,24 +24,17 @@ interface CoachMarkProps {
 /**
  * Renders nothing once dismissed.
  *
- * PLACEMENT (learned from driving the real screens at 390×844, which jsdom
- * cannot show): the mark pins to the BOTTOM of its stage, in the slack the
- * views leave under the primary button — the draft stacks to 618px and the
- * round to 628px of the 812px budget, so ~190px sits empty there.
- *
- * Anchoring it to the control it describes was tried first and was wrong every
- * time: over the draft row it collided with the pick prompt and the row dots,
- * and above BANK/PUSH it covered the stake panel — hiding the projected band
- * and BUST KEEPS, i.e. exactly the numbers the tip is telling the player to
- * weigh. A tip that obscures the decision it explains is worse than no tip.
- * Down here it covers nothing, still shares the screen with its control (and
- * sits directly under it for the bench and bank/push marks), and the copy names
- * the control anyway.
- *
- * Absolute either way, so it costs the layout budget NOTHING — a coach mark
- * must not be able to push S2/S3 into a scroll.
+ * PLACEMENT (VerveQ ONE P4.2): the mark sits IN FLOW at the bottom of its
+ * stage, under the primary button — it never overlays the board. It used to
+ * be absolutely positioned in the stage's bottom slack, which held at 390×844
+ * until the resolved round's ledger filled that slack: the first-run intro
+ * mark then sat on top of BANK/PUSH and the stake panel, i.e. on exactly the
+ * numbers it tells the player to weigh. In flow it covers nothing; on a short
+ * phone it is reached by scrolling the stage like any other row, and since it
+ * is the LAST row, dismissing it never moves anything above it.
  */
 export function CoachMark({ id, seen, onDismiss, onSkipAll }: CoachMarkProps) {
+  const t = useDrawT();
   const show = !seen.has(id);
 
   // Escape dismisses, like any transient overlay.
@@ -56,30 +50,27 @@ export function CoachMark({ id, seen, onDismiss, onSkipAll }: CoachMarkProps) {
   if (!show) return null;
   return (
     <div
-      className="absolute inset-x-0 bottom-0 z-30 flex justify-center pointer-events-none"
+      className="draw-outline-lime neo-border rounded-lg bg-card text-card-foreground p-2.5 shrink-0 draw-coach-in"
       data-testid={`draw-coach-${id}`}
       role="status"
     >
-      <div className="draw-coach-card neo-border neo-shadow rounded-lg bg-foreground text-background p-2.5 mx-1 pointer-events-auto max-w-full draw-coach-in">
-        <p className="text-[11px] leading-snug font-medium">{COACH_COPY[id]}</p>
-        <div className="flex items-center gap-2 mt-2">
-          <NeoButton
-            variant="primary"
-            className="h-7 px-3 text-[10px] flex-1"
-            onClick={() => onDismiss(id)}
-            data-testid={`draw-coach-${id}-got-it`}
-          >
-            GOT IT
-          </NeoButton>
-          <button
-            type="button"
-            className="font-heading font-bold text-[10px] underline opacity-70 px-1"
-            onClick={onSkipAll}
-            data-testid={`draw-coach-${id}-skip`}
-          >
-            SKIP ALL
-          </button>
-        </div>
+      <p className="flex items-start gap-2 text-meta font-medium">
+        <Lightbulb size={16} strokeWidth={2.5} className="mt-0.5 shrink-0 text-primary" aria-hidden="true" />
+        <span>{t(`coach.${id}`)}</span>
+      </p>
+      <div className="flex items-center gap-2 mt-2">
+        <Button
+          variant="secondary"
+          size="sm"
+          className="flex-1"
+          onClick={() => onDismiss(id)}
+          data-testid={`draw-coach-${id}-got-it`}
+        >
+          {t("coach.gotIt")}
+        </Button>
+        <Button variant="ghost" size="sm" onClick={onSkipAll} data-testid={`draw-coach-${id}-skip`}>
+          {t("coach.skipAll")}
+        </Button>
       </div>
     </div>
   );

@@ -184,43 +184,6 @@
   html.seo-static-page body {
     background-color: hsl(var(--cream));
   }
-
-  /*
-   * Learn keeps its warm palette until Phase 4 folds it into a paper card.
-   * Same rule as everywhere: ink text on every fill.
-   */
-  .theme-learn {
-    --background: 40 80% 94%;
-    --foreground: 20 30% 14%;
-
-    --card: 40 86% 97%;
-    --card-foreground: 20 30% 14%;
-
-    --primary: 22 95% 54%;
-    --primary-foreground: 0 0% 7%;
-
-    --accent: 92 60% 50%;
-    --accent-foreground: 20 30% 14%;
-
-    --success: 92 60% 46%;
-    --success-foreground: 0 0% 7%;
-
-    --hot-pink: 8 88% 66%;
-    --hot-pink-foreground: 0 0% 7%;
-
-    --destructive: 8 88% 60%;
-    --destructive-foreground: 0 0% 7%;
-
-    --muted: 38 40% 86%;
-    --muted-foreground: 22 18% 32%;
-
-    /* Ink chrome, as it had on the cream :root before the ink flip. */
-    --border: 0 0% 7%;
-    --input: 0 0% 7%;
-    --neo-shadow-color: 0 0% 7%;
-
-    --ring: 22 95% 54%;
-  }
 }
 
 @layer base {

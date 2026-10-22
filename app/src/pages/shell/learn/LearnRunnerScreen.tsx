@@ -4,11 +4,15 @@
  * no correctness logic of its own.
  *
  * Stage machine per question: answer → (branch) → reveal.
+ *
+ * VerveQ ONE P4.3: a run is played inside the shared StageFrame — ink ground,
+ * VERVEQ eyebrow, a 44px Quit back to Learn, the progress dots under the
+ * header — with the lesson itself on paper cards (TeachingReveal).
  */
 import { useMemo, useState } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { LearnShell, LadderDots, Eyebrow, Chip } from "@/components/learn/LearnPrimitives";
+import { LearnShell } from "@/components/learn/LearnPrimitives";
 import { QuestionRenderer } from "@/components/learn/QuestionTypes";
 import { canSubmit, draftToAnswer, type LearnDraft } from "@/lib/learn/draft";
 import { MistakeBranch, TeachingReveal } from "@/components/learn/TeachingReveal";
@@ -16,6 +20,12 @@ import { useLearnSession } from "@/lib/learn/useLearnSession";
 import { useLearnGrading } from "@/lib/learn/useLearnGrading";
 import { learnPath, LEARN_SUBJECT_PARAM } from "@/lib/learn/useLearnSubject";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
+import { StageFrame } from "@/components/shell/play/PlayStage";
+import { StepDots } from "@/components/shell/play/StageParts";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Eyebrow } from "@/components/ui/eyebrow";
 import type { LearnFelt, LearnQuestion, LearnRating, LearnVerdict } from "@/lib/learn/contract";
 
 type Stage = "answer" | "branch" | "reveal";
@@ -32,45 +42,43 @@ function SessionSummary({
   const navigate = useNavigate();
   const { t } = useTranslation("learn");
   return (
-    <div className="mx-auto flex max-w-md flex-col items-center gap-4 pt-2 text-center">
-      <span className="text-5xl" aria-hidden>
+    <div className="mx-auto flex max-w-md flex-col items-center gap-4 pt-2 text-center" data-testid="learn-summary">
+      <span className="text-display" aria-hidden>
         🌱
       </span>
-      <div className="font-heading text-3xl leading-none">{t("summary.title")}</div>
-      <p className="m-0 text-[15px] text-muted-foreground">
-        {t("summary.body", { count: total })}
-      </p>
-      <div className="flex w-full gap-2.5">
-        <div className="flex-1 neo-border rounded-xl bg-card p-3.5">
-          <div className="font-heading text-3xl">
+      <h1 className="font-heading font-bold text-title-lg">{t("summary.title")}</h1>
+      <p className="m-0 text-body-sm text-muted-foreground">{t("summary.body", { count: total })}</p>
+      <div className="grid w-full grid-cols-3 gap-2.5">
+        <Card padding="sm" elevation="flat">
+          <div className="font-heading font-bold text-title-lg">
             {firstTry}/{total}
           </div>
-          <div className="font-mono text-[10px] uppercase">{t("summary.firstTry")}</div>
-        </div>
-        <div className="flex-1 neo-border rounded-xl bg-success p-3.5 text-success-foreground">
-          <div className="font-heading text-3xl">+{firstTry}</div>
-          <div className="font-mono text-[10px] uppercase">{t("summary.lockedIn")}</div>
-        </div>
-        <div className="flex-1 neo-border rounded-xl bg-card p-3.5">
-          <div className="font-heading text-3xl">{total - firstTry}</div>
-          <div className="font-mono text-[10px] uppercase">{t("summary.scheduled")}</div>
-        </div>
+          <Eyebrow>{t("summary.firstTry")}</Eyebrow>
+        </Card>
+        <Card padding="sm" elevation="flat">
+          <div className="font-heading font-bold text-title-lg">+{firstTry}</div>
+          <Eyebrow>{t("summary.lockedIn")}</Eyebrow>
+        </Card>
+        <Card padding="sm" elevation="flat">
+          <div className="font-heading font-bold text-title-lg">{total - firstTry}</div>
+          <Eyebrow>{t("summary.scheduled")}</Eyebrow>
+        </Card>
       </div>
       <div className="flex w-full gap-2.5">
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          className="flex-1"
           onClick={() => navigate(learnPath(SHELL_ROUTES.learnMastery, subject))}
-          className="flex-1 neo-border neo-shadow-sm rounded-xl bg-card px-4 py-3 font-heading font-bold"
         >
           {t("summary.seeMastery")}
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="primary"
+          className="flex-1"
           onClick={() => navigate(learnPath(SHELL_ROUTES.learnReview, subject))}
-          className="flex-1 neo-border neo-shadow rounded-xl bg-primary px-4 py-3 font-heading font-bold text-primary-foreground"
         >
           {t("summary.reviewPlan")}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -102,10 +110,7 @@ export interface RunnerColumnProps {
 
 export function RunnerColumn({
   q,
-  total,
-  idx,
   stage,
-  typeLabel,
   draft,
   setDraft,
   verdict,
@@ -116,19 +121,17 @@ export function RunnerColumn({
   onRate,
   onFelt,
   onContinue,
+  idx,
+  total,
 }: RunnerColumnProps) {
   const { t } = useTranslation("learn");
   return (
-    <div className="flex min-h-0 flex-col gap-3 overflow-y-auto pr-0.5 md:gap-3.5">
-      <div className="flex items-center justify-between gap-2 md:hidden">
-        <Chip className="bg-foreground text-background">{typeLabel}</Chip>
-        <LadderDots total={total} current={idx + (stage === "reveal" ? 1 : 0)} />
-      </div>
-      {/* The concept line is desktop-only context. On the no-scroll mobile runner
-          it pushes the post-answer rating past the fold and is redundant with the
-          reveal, so it's hidden below md (mirrors the desktop rail drop, f555304). */}
+    <div className="flex flex-col gap-3 md:gap-3.5">
+      {/* The concept line is desktop-only context. On the mobile runner it
+          pushes the post-answer rating past the fold and is redundant with the
+          reveal, so it's hidden below md. */}
       <Eyebrow className="hidden break-words md:block">{q.subject}</Eyebrow>
-      <div className="font-heading text-xl leading-tight md:text-[27px]">{q.prompt}</div>
+      <h1 className="font-heading font-bold text-title leading-tight md:text-title-lg">{q.prompt}</h1>
 
       {stage !== "branch" && (
         <QuestionRenderer
@@ -142,26 +145,24 @@ export function RunnerColumn({
 
       {stage === "branch" && verdict && (
         <>
-          <QuestionRenderer
-            question={q}
-            draft={draft}
-            setDraft={setDraft}
-            reveal={false}
-            verdict={null}
-          />
+          <QuestionRenderer question={q} draft={draft} setDraft={setDraft} reveal={false} verdict={null} />
           <MistakeBranch verdict={verdict} onRetry={onBranchRetry} onShowWhy={onBranchShowWhy} />
         </>
       )}
 
       {stage === "answer" && (
-        <button
-          type="button"
-          disabled={!canSubmit(q, draft) || grading}
+        <Button
+          variant="primary"
+          size="lg"
+          block
+          className="mt-1"
+          disabled={!canSubmit(q, draft)}
+          loading={grading}
           onClick={onSubmit}
-          className="mt-1 w-full neo-border neo-shadow rounded-xl bg-primary px-4 py-3.5 font-heading font-bold text-primary-foreground transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none disabled:opacity-50 disabled:pointer-events-none"
+          data-testid="learn-check"
         >
           {grading ? t("run.checking") : t("run.check")}
-        </button>
+        </Button>
       )}
 
       {stage === "reveal" && verdict && (
@@ -203,6 +204,7 @@ export default function LearnRunnerScreen() {
   const q = questions[idx];
   const total = questions.length;
   const typeLabel = q ? t(`type.${q.type}`) : "";
+  const leave = () => navigate(learnPath(SHELL_ROUTES.learn, subject));
 
   const recordFirstTry = (correct: boolean) =>
     setResults((prev) => {
@@ -253,9 +255,7 @@ export default function LearnRunnerScreen() {
     return (
       <LearnShell>
         <div className="flex flex-1 items-center justify-center">
-          <p className="animate-pulse font-heading font-bold uppercase tracking-wide">
-            {t("run.loading")}
-          </p>
+          <p className="animate-pulse font-heading font-bold">{t("run.loading")}</p>
         </div>
       </LearnShell>
     );
@@ -270,24 +270,14 @@ export default function LearnRunnerScreen() {
     return (
       <LearnShell>
         <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-          <div className="font-heading text-2xl">{t("run.errorTitle")}</div>
-          <p className="m-0 max-w-sm text-sm text-muted-foreground">
-            {t("run.errorBody")}
-          </p>
-          <button
-            type="button"
-            onClick={session.retry}
-            className="neo-border neo-shadow rounded-xl bg-primary px-5 py-3 font-heading font-bold text-primary-foreground"
-          >
+          <h1 className="font-heading font-bold text-title">{t("run.errorTitle")}</h1>
+          <p className="m-0 max-w-sm text-body-sm text-muted-foreground">{t("run.errorBody")}</p>
+          <Button variant="primary" onClick={session.retry}>
             {t("run.retry")}
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate(learnPath(SHELL_ROUTES.learn, subject))}
-            className="font-heading text-[13px] font-bold text-muted-foreground"
-          >
+          </Button>
+          <Button variant="ghost" onClick={leave}>
             {t("run.backToLearn")}
-          </button>
+          </Button>
         </div>
       </LearnShell>
     );
@@ -295,77 +285,71 @@ export default function LearnRunnerScreen() {
 
   if (done || !q) {
     return (
-      <LearnShell>
-        <div className="flex flex-1 items-center justify-center overflow-y-auto px-4 py-8 md:px-6">
-          <SessionSummary total={total} firstTry={firstTryCount} subject={subject} />
-        </div>
-      </LearnShell>
+      <StageFrame title={t("entry.title")} onExit={leave} exitLabel={t("run.quit")}>
+        <SessionSummary total={total} firstTry={firstTryCount} subject={subject} />
+      </StageFrame>
     );
   }
 
   const onRate = (r: LearnRating) => void rateCard(q.id, r);
   const onFelt = (f: LearnFelt) => void recordFeltSignal(q.id, f);
 
-  // Left context rail (desktop only).
+  // Left context rail (desktop only): what kind of question, where you are,
+  // and the Learn promise.
   const rail = (
-    <div className="neo-border neo-shadow rounded-xl bg-card p-5 flex flex-col gap-4 min-h-0">
+    <Card className="flex flex-col gap-4 min-h-0" padding="md">
       <div className="flex items-start">
-        <Chip>{typeLabel}</Chip>
+        <Badge tone="neutral">{typeLabel}</Badge>
       </div>
       <div>
-        <Eyebrow className="mb-2 block">{t("run.progress")}</Eyebrow>
-        <LadderDots total={total} current={idx + (stage === "reveal" ? 1 : 0)} />
-        <p className="mt-2 font-mono text-xs text-muted-foreground">
-          {t("run.questionOf", { current: idx + 1, total })}
-        </p>
+        <Eyebrow className="mb-1">{t("run.progress")}</Eyebrow>
+        <p className="font-mono text-body-sm">{t("run.questionOf", { current: idx + 1, total })}</p>
       </div>
-      <div className="h-[3px] bg-foreground" />
+      <div className="h-0.5 bg-border/20" />
       <div className="mt-auto">
-        <Eyebrow className="mb-1.5 block">{t("run.promiseTitle")}</Eyebrow>
-        <p className="m-0 text-[13.5px] font-medium leading-relaxed text-muted-foreground">
-          {t("run.promiseBody")}
-        </p>
+        <Eyebrow className="mb-1.5">{t("run.promiseTitle")}</Eyebrow>
+        <p className="m-0 text-body-sm font-medium leading-relaxed text-muted-foreground">{t("run.promiseBody")}</p>
       </div>
-      <button
-        type="button"
-        onClick={() => navigate(learnPath(SHELL_ROUTES.learn, subject))}
-        className="text-left font-heading text-[13px] font-bold text-muted-foreground"
-      >
-        {t("run.leave")}
-      </button>
-    </div>
+    </Card>
   );
 
   return (
-    <LearnShell>
-      <div className="flex-1 min-h-0 p-3 md:p-6">
-        <div className="grid h-full min-h-0 gap-4 md:grid-cols-[340px_1fr] md:gap-5">
-          <div className="hidden md:block min-h-0">{rail}</div>
-          <div className="min-h-0 w-full md:max-w-3xl">
-            <RunnerColumn
-              q={q}
-              total={total}
-              idx={idx}
-              stage={stage}
-              typeLabel={typeLabel}
-              draft={draft}
-              setDraft={setDraft}
-              verdict={verdict}
-              grading={grading}
-              onSubmit={submit}
-              onBranchRetry={() => {
-                setDraft(null);
-                setVerdict(null);
-                setStage("answer");
-              }}
-              onBranchShowWhy={() => setStage("reveal")}
-              onRate={onRate}
-              onFelt={onFelt}
-              onContinue={() => void next()}
-            />
-          </div>
-        </div>
-      </div>
-    </LearnShell>
+    <StageFrame
+      title={t("entry.title")}
+      subtitle={typeLabel}
+      onExit={leave}
+      exitLabel={t("run.quit")}
+      progress={
+        <StepDots
+          total={total}
+          results={results}
+          current={idx}
+          label={t("run.questionOf", { current: idx + 1, total })}
+        />
+      }
+      left={rail}
+    >
+      <RunnerColumn
+        q={q}
+        total={total}
+        idx={idx}
+        stage={stage}
+        typeLabel={typeLabel}
+        draft={draft}
+        setDraft={setDraft}
+        verdict={verdict}
+        grading={grading}
+        onSubmit={submit}
+        onBranchRetry={() => {
+          setDraft(null);
+          setVerdict(null);
+          setStage("answer");
+        }}
+        onBranchShowWhy={() => setStage("reveal")}
+        onRate={onRate}
+        onFelt={onFelt}
+        onContinue={() => void next()}
+      />
+    </StageFrame>
   );
 }
