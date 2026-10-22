@@ -226,9 +226,15 @@ export default function ShellHomeScreen() {
     <ShellLayout>
       <div className="min-h-full md:min-h-0 flex flex-col">
         {/* Brand bar — lockup left, streak + identity right. From md up the
-            desktop top nav already carries the lockup, so it drops out here
-            (one logo per screen) and the row keeps streak + identity. */}
-        <div className="flex items-center justify-between md:justify-end pt-4 pb-3 md:pt-3 md:pb-1 shrink-0">
+            desktop top nav already carries the lockup and the Profile tab, so
+            both drop out here; the row stays only for a streak or the sign-in
+            and guest chips (otherwise it was a lone avatar under the nav). */}
+        <div
+          className={cn(
+            "flex items-center justify-between md:justify-end pt-4 pb-3 md:pt-3 md:pb-1 shrink-0",
+            streak <= 0 && !showSignIn && !showGuest && "md:hidden",
+          )}
+        >
           <BrandMark variant="lockup" size="md" className="md:hidden" />
           <div className="flex items-center gap-2">
             {streak > 0 && (
@@ -262,7 +268,7 @@ export default function ShellHomeScreen() {
               <IconButton
                 aria-label={displayName}
                 onClick={() => navigate(SHELL_ROUTES.profile)}
-                className="rounded-full enabled:hover:bg-transparent active:translate-x-0.5 active:translate-y-0.5"
+                className="rounded-full enabled:hover:bg-transparent active:translate-x-0.5 active:translate-y-0.5 md:hidden"
               >
                 <NeoAvatar
                   name={displayName}

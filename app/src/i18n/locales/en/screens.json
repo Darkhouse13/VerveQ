@@ -161,11 +161,11 @@
     "questionCount_one": "{{count}} question · async, no time pressure",
     "questionCount_other": "{{count}} questions · async, no time pressure",
     "playNow": "Play now",
-    "guestHint": "You can play as a guest. Sign up after to keep your score.",
+    "guestHint": "You can play as a guest. Create an account after to keep your score.",
     "niceRound": "Nice round",
     "claimScoreTitle": "Claim this score",
-    "claimScoreSubtitle": "Create a username so this counts towards your rivalry — and so you can send a rematch.",
-    "createAccount": "Create an account",
+    "claimScoreSubtitle": "Create an account so this counts towards your rivalry — and so you can send a rematch.",
+    "createAccount": "Create account",
     "maybeLater": "Maybe later"
   },
   "duelHistory": {
@@ -187,9 +187,9 @@
   },
   "challenge": {
     "title": "Duels",
-    "guestHeadline": "Async duels need an account",
-    "guestSubtitle": "Create a username so your duels and rivalries can stick.",
-    "createAccount": "Create an account",
+    "guestHeadline": "Duels need an account",
+    "guestSubtitle": "Create an account so your duels and rivalries stick.",
+    "createAccount": "Create account",
     "duelsTitle": "Duels",
     "duelsSubtitle": "Async head-to-heads with your friends.",
     "unreadNew_one": "{{count}} new",
@@ -387,7 +387,7 @@
     "versusUser": "vs @{{username}}"
   },
   "upgradeForm": {
-    "title": "Save your progress",
+    "title": "Create your account",
     "subtitleBefore": "Add an email and password to keep",
     "subtitleAfter": "and unlock ranked play and the global Ranks.",
     "usernameFallback": "your username",
@@ -405,8 +405,8 @@
     "passwordMismatch": "Passwords do not match.",
     "genericError": "Could not upgrade your account. Try again.",
     "saving": "Saving…",
-    "submit": "Create full account",
-    "footer": "Your username and casual progress carry over. Your ranked rating starts once you upgrade."
+    "submit": "Create account",
+    "footer": "Your name and everything you've played come with you. Your ranked rating starts as soon as the account is created."
   },
   "usernameOnboard": {
     "heading": "Pick a username",
@@ -421,7 +421,7 @@
     "invalid": "Username must be 3-24 lowercase letters, numbers, or underscores.",
     "genericError": "Could not claim that username. Try another one.",
     "settingUp": "Setting up…",
-    "footer": "Username-only play is casual and unranked. You can add an email and password later to save your progress and go ranked."
+    "footer": "Guests play everything except ranked games. Create an account any time to keep your name safe and play ranked."
   },
   "claimName": {
     "titleBoard": "You're not on the board yet",
@@ -507,8 +507,8 @@
     "lockedBodyBefore": "Reach ",
     "lockedGoal": "Gold tier (1,500 rating)",
     "lockedBodyAfter": " in ranked play to unlock the Forge and write questions for everyone.",
-    "lockedGuest": "Guests can't save progress here — create a username to use the Forge.",
-    "lockedUsernameOnly": "The Forge opens at Gold tier (1,500 rating). Ratings need a full account — create one to start climbing.",
+    "lockedGuest": "The Forge needs a name — pick one to use it.",
+    "lockedUsernameOnly": "The Forge opens at Gold tier (1,500 rating). Ratings need an account — create one to start climbing.",
     "currentRating": "Your rating",
     "toGo": "{{n}} points to go",
     "back": "Back",

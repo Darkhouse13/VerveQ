@@ -152,6 +152,7 @@
     "eyebrow": "The Draw · Board #{{n}}",
     "streak": "Streak {{n}}",
     "todaysBoard": "Today's board #{{n}}",
+    "stripHelp": "Draft six players, then beat five opponents in a row. Each number is the score you need to clear that opponent.",
     "runInProgress": "Run in progress",
     "draftRow": "Draft row {{row}} of {{rows}}",
     "roundProgress": "Round {{round}} of {{total}} · {{pts}} pts",

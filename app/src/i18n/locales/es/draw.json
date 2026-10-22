@@ -157,7 +157,8 @@
     "roundProgress": "Ronda {{round}} de {{total}} · {{pts}} pts",
     "pts": "pts",
     "rank": "Puesto n.º {{rank}}",
-    "nextBoard": "Próximo tablero {{time}}"
+    "nextBoard": "Próximo tablero {{time}}",
+    "stripHelp": "Ficha a seis jugadores y luego vence a cinco rivales seguidos. Cada número es la puntuación que necesitas para superar a ese rival."
   },
   "archetype": {
     "ARCH_WALL": "MURO",

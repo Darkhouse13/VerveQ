@@ -160,10 +160,10 @@ describe("Play tile targets (real config)", () => {
       COMPETE_KNOWLEDGE_TILES.map((tile) => [tile.key, tile.to("football")]),
     );
     expect(byKey.knowledgeQuiz).toBe(
-      "/difficulty?sport=knowledge&mode=quiz&target=v2",
+      "/difficulty?sport=knowledge&mode=quiz",
     );
     expect(byKey.cameFirst).toBe(
-      "/difficulty?sport=knowledge&mode=came_first&target=v2",
+      "/difficulty?sport=knowledge&mode=came_first",
     );
     // Sport-fixed: the carried sport must never leak into a knowledge target.
     for (const tile of COMPETE_KNOWLEDGE_TILES) {

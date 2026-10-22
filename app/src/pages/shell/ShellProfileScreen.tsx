@@ -8,6 +8,7 @@ import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { Eyebrow } from "@/components/ui/eyebrow";
+import { Skeleton } from "@/components/ui/skeleton";
 import { IconButton } from "@/components/ui/icon-button";
 import { ModeTile } from "@/components/ui/mode-tile";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -120,11 +121,15 @@ export default function ShellProfileScreen() {
   const handle = username ?? user?.username ?? "";
 
   if (profile === undefined) {
+    // Card shapes, like every other wait in the app, inside the tab's own
+    // frame so the nav stays put.
     return (
-      <ShellLayout title={t("profile.title")} subtitle={t("profile.eyebrow")} center>
-        <p className="font-heading font-bold uppercase tracking-wide animate-pulse text-center">
-          Loading…
-        </p>
+      <ShellLayout title={t("profile.title")} subtitle={t("profile.eyebrow")}>
+        <div role="status" aria-label={t("common.loading")} className="flex flex-col gap-4 md:grid md:grid-cols-3">
+          <Skeleton className="h-40 neo-border" />
+          <Skeleton className="h-56 neo-border" />
+          <Skeleton className="h-56 neo-border" />
+        </div>
       </ShellLayout>
     );
   }
@@ -392,7 +397,9 @@ export default function ShellProfileScreen() {
                   <p className="font-heading font-bold text-meta leading-tight truncate">
                     {a.name}
                   </p>
-                  <p className="font-mono text-eyebrow uppercase text-muted-foreground mt-0.5 truncate">
+                  {/* Wraps (two lines at most) — a cut-off goal ("COMPLETE YOU…")
+                      tells a new player nothing. */}
+                  <p className="text-meta leading-snug text-muted-foreground mt-0.5 line-clamp-2">
                     {locked ? a.description || t("profile.locked") : monthYear(unlockedAt)}
                   </p>
                 </div>
@@ -536,23 +543,16 @@ export default function ShellProfileScreen() {
     <ShellLayout
       title={t("profile.title")}
       subtitle={t("profile.eyebrow")}
-      back
-      onBack={() => navigate(SHELL_ROUTES.home)}
+      // A tab, not a sub-screen: no Back. The handle is already on the
+      // identity card, so the header carries only Settings.
       headerRight={
-        <div className="flex items-center gap-2">
-          <IconButton
-            variant="secondary"
-            aria-label={t("settings.openLabel")}
-            onClick={() => navigate(SHELL_ROUTES.settings)}
-          >
-            <Settings strokeWidth={2.5} />
-          </IconButton>
-          {handle && (
-            <NeoBadge color="muted">
-              @{handle}
-            </NeoBadge>
-          )}
-        </div>
+        <IconButton
+          variant="secondary"
+          aria-label={t("settings.openLabel")}
+          onClick={() => navigate(SHELL_ROUTES.settings)}
+        >
+          <Settings strokeWidth={2.5} />
+        </IconButton>
       }
     >
       {/* Desktop — never-scroll 3-column locker */}

@@ -48,11 +48,12 @@
   },
   "account": {
     "title": "Comment veux-tu jouer ?",
-    "body": "Sauvegarde ta progression et grimpe au classement avec un compte, ou lance-toi directement.",
+    "body": "Un compte garde ton pseudo et ta progression en sécurité et débloque le classé. Ou choisis juste un pseudo et joue.",
     "create": "Créer un compte",
     "signIn": "Se connecter",
     "guest": "Jouer en invité",
-    "guestNote": "Le mode invité ne demande qu'un pseudo — sans e-mail, sans mot de passe. Tu peux passer à un compte complet quand tu veux."
+    "guestNote": "Les invités choisissent juste un pseudo — sans e-mail, sans mot de passe. Tu peux créer un compte quand tu veux.",
+    "pickName": "Continuer — choisis juste un pseudo"
   },
   "home": {
     "more": {
@@ -194,12 +195,12 @@
     "newPlayersStart": "Les nouveaux joueurs démarrent ici",
     "seasonalCrown": "Couronne de la saison",
     "locked": {
-      "chip": "Comptes complets",
+      "chip": "Comptes",
       "title": "Le classé t'attend",
-      "body": "Les scores, paliers et classements de saison sont réservés aux comptes complets — pour que chaque rang soit gagné par un vrai joueur. Tes stats détente restent ; le placement démarre dès que tu passes au compte complet.",
+      "body": "Les scores, paliers et classements de saison demandent un compte, pour que chaque rang soit gagné par un vrai joueur. Tout ce que tu as déjà joué te suit.",
       "slot": "Ton score, ton palier et ton rang mondial apparaîtront ici",
-      "create": "Créer un compte complet →",
-      "keepCasual": "Continuer en détente"
+      "create": "Créer un compte",
+      "keepCasual": "Pas maintenant"
     }
   },
   "profile": {
@@ -210,8 +211,8 @@
     "eyebrow": "Ton vestiaire",
     "memberSince": "Membre depuis le {{date}}",
     "playingSince": "Tu joues depuis le {{date}} · cet appareil",
-    "fullAccount": "Compte complet",
-    "usernameOnly": "Pseudo uniquement",
+    "fullAccount": "Compte",
+    "usernameOnly": "Invité",
     "edit": "Modifier",
     "share": "Partager",
     "editSoon": "La modification du profil arrive bientôt !",
@@ -219,14 +220,14 @@
     "ranked": "Classé",
     "rankedSeason": "Classé · Saison {{n}}",
     "lockedChip": "Verrouillé",
-    "lockedTitle": "Les scores et paliers nécessitent un compte complet",
-    "lockedBody": "Les modes détente comptent quand même dans tes parties. Le placement démarre dès que tu passes au compte complet.",
+    "lockedTitle": "Les scores et paliers demandent un compte",
+    "lockedBody": "Chaque partie que tu joues compte quand même. Ton score démarre quand tu crées un compte.",
     "peekLadder": "Voir le classement →",
     "viewRanks": "Voir le classement →",
     "global": "mondial",
-    "upgradeTitle": "Sauvegarde ta progression — crée un compte complet",
-    "upgradeBody": "Ton pseudo et tes parties n'existent que sur cet appareil. Sauvegarde-les et débloque le classé.",
-    "upgradeCta": "Créer un compte →",
+    "upgradeTitle": "Garde ton pseudo et ta progression en sécurité",
+    "upgradeBody": "En invité, ton pseudo et tes parties n'existent que sur cet appareil. Un compte les sauvegarde et débloque le classé.",
+    "upgradeCta": "Créer un compte",
     "stats": {
       "games": "Parties jouées",
       "winRate": "Taux de victoire",
@@ -239,18 +240,18 @@
     "activity": "Activité récente",
     "activityRanked": "Classé",
     "activityEmpty": "Aucune partie classée pour l'instant",
-    "activityEmptyGuest": "L'historique classé se débloque avec un compte complet",
+    "activityEmptyGuest": "L'historique classé démarre quand tu crées un compte",
     "decay": "Baisse du score",
     "seasonReset": "Réinitialisation de saison",
     "seasons": "Historique des saisons",
     "seasonsPeak": "Palier final",
     "seasonsEmpty": "Historique des saisons — apparaît à la fin de ta première saison",
-    "seasonsGuest": "Historique des saisons — réservé aux comptes complets",
+    "seasonsGuest": "L'historique des saisons démarre quand tu crées un compte",
     "signOut": "Se déconnecter",
-    "signOutWarning": "⚠ Pseudo uniquement : te déconnecter efface ta progression sur cet appareil.",
+    "signOutWarning": "⚠ Invité : te déconnecter efface ton pseudo et ta progression sur cet appareil.",
     "signOutConfirmTitle": "Se déconnecter ?",
     "signOutConfirmBody": "Ton compte est sauvegardé. Reconnecte-toi quand tu veux pour retrouver ton score, tes succès et ton classement.",
-    "signOutConfirmBodyGuest": "Ce pseudo n'a ni mot de passe ni e-mail. Te déconnecter efface définitivement ce compte et sa progression — il n'y a aucun moyen de te reconnecter.",
+    "signOutConfirmBodyGuest": "En invité, tu n'as ni e-mail ni mot de passe : te déconnecter efface définitivement ce pseudo et sa progression — il n'y a aucun moyen de te reconnecter.",
     "signOutConfirmCta": "Se déconnecter",
     "signOutConfirmCtaGuest": "Effacer et se déconnecter",
     "cancel": "Annuler"
@@ -264,8 +265,8 @@
     "eyebrow": "Préférences et compte",
     "openLabel": "Ouvrir les paramètres",
     "accountHeading": "Compte",
-    "accountFull": "Compte complet",
-    "accountGuest": "Compte invité",
+    "accountFull": "Compte",
+    "accountGuest": "Invité",
     "accountNoHandle": "Connecté",
     "notSignedIn": "Tu n'es pas connecté.",
     "signInCta": "Se connecter ou créer un compte",
@@ -311,15 +312,17 @@
     "youSuffix": " (toi)"
   },
   "gate": {
-    "title": "Compte complet requis",
-    "bodyUpgrade": "Tu joues en pseudo uniquement, donc cette partie reste détente. Les parties classées et le classement mondial nécessitent un compte complet — passer au compte complet conserve ton pseudo et ta progression détente.",
-    "bodyCreate": "Les parties classées et le classement mondial nécessitent un compte complet. Crées-en un pour commencer à grimper.",
-    "ctaUpgrade": "Sauvegarder ma progression et passer en classé",
-    "ctaCreate": "Commencer",
-    "later": "Plus tard",
-    "usernameTitle": "Choisis d'abord un pseudo",
-    "usernameBody": "Les invités ne peuvent pas sauvegarder ici. Crée un pseudo — c'est gratuit et ça prend 10 secondes — pour jouer à ce mode.",
-    "usernameCta": "Créer un pseudo"
+    "title": "Le classé demande un compte",
+    "bodyUpgrade": "Tu joues en invité. Créer un compte garde ton pseudo et tout ce que tu as joué, et débloque les parties classées.",
+    "bodyCreate": "Les parties classées demandent un compte. C'est gratuit, et ça garde ton pseudo et ta progression en sécurité.",
+    "later": "Retour à Jouer",
+    "usernameTitle": "Il faut un compte pour ça",
+    "usernameBody": "C'est gratuit, et ça garde tes duels et tes scores en sécurité.",
+    "usernameCta": "Créer un compte",
+    "titleOther": "Il faut un compte pour ça",
+    "cta": "Créer un compte",
+    "altDaily": "Jouer au Quiz du jour à la place",
+    "altSurvival": "Jouer à la Survie du jour à la place"
   },
   "weekend": {
     "countdownDays": "{{d}} j {{h}} h",

@@ -220,6 +220,10 @@ describe("HomeDrawCard — three states", () => {
     const onOpen = renderView(UNPLAYED);
 
     expect(screen.getByText("Today's board #18")).toBeTruthy();
+    // The numbers are explained: a newcomer saw "WALL 1038" with no idea what it was.
+    expect(screen.getByTestId("home-draw-strip-help").textContent).toMatch(
+      /Each number is the score you need to clear that opponent/,
+    );
     const strip = screen.getByTestId("home-draw-strip");
     const labels = ["WALL", "BLITZ", "ENGINE", "THROWBACK", "FORTRESS"];
     const thresholds = ["220", "260", "300", "340", "420"];
