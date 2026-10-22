@@ -33,6 +33,7 @@ import { MetricsPanel } from "@/components/shell/play/ambient";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { cn } from "@/lib/utils";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
+import { firstRunDifficulty, markCareerPathPlayed } from "@/lib/careerPathFirstRun";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import type { CareerPathClub } from "../../../../convex/lib/careerPathClubs";
@@ -157,10 +158,13 @@ export default function CareerPathClassicGame() {
     }
 
     try {
+      // A newcomer's first path comes from the easy pool (lib/careerPathFirstRun).
+      const firstDifficulty = firstRunDifficulty();
       const res = await withTimeout(
-        startChallengeMut({ sport, guestToken }),
+        startChallengeMut({ sport, guestToken, ...(firstDifficulty ? { difficulty: firstDifficulty } : {}) }),
         START_CHALLENGE_TIMEOUT_MS,
       );
+      markCareerPathPlayed();
       if (!funnelStartedFired.current) {
         funnelStartedFired.current = true;
         // Source comes off this route's own URL (?ref / ?utm_source) — the

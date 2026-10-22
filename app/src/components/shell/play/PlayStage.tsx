@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { ThemeScope } from "@/components/ui/theme-scope";
 import { BrandMark } from "@/components/ui/BrandMark";
 import { ExitButton, type ExitConfirm } from "@/components/ui/icon-button";
+import { useTabRule } from "@/lib/tabRule";
 
 /** Modes whose frame carries a mode accent (`--mode-accent`). */
 export type StageMode =
@@ -136,6 +137,9 @@ export function StageFrame({
   const { t } = useTranslation("play");
   const resolvedExitLabel = exitLabel ?? t("stage.exit");
   const accent = mode ? ({ "--mode-accent": MODE_ACCENT[mode] } as CSSProperties) : undefined;
+  // The live game's tab rule (lib/tabRule): one quiet line under the header,
+  // so it can never cover a question the way a toast did.
+  const tabRule = useTabRule();
   return (
     <ThemeScope theme={theme}>
     <div
@@ -185,6 +189,11 @@ export function StageFrame({
             </div>
           </div>
           {progress && <div className="mx-auto w-full max-w-md flex justify-center px-4 pb-2">{progress}</div>}
+          {tabRule && (
+            <p className="mx-auto w-full max-w-md px-4 pb-1.5 text-center text-meta text-muted-foreground" data-testid="stage-tab-rule">
+              {tabRule}
+            </p>
+          )}
         </header>
       )}
 

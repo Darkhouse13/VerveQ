@@ -79,10 +79,12 @@ SEO pages.
    story image; below that the streak takes its place.
 8. **GA4 loads after first paint** (`app/src/lib/ga4.ts`), not from
    `index.html`. PostHog carries product events.
-9. **The anti-cheat reminder shows once per session**, on the first tap in a
-   live game, in the brand font. *Implementation note:* it sits under the
-   screen header, not at the bottom as first written — at the bottom it covered
-   Missing Letters' keyboard, Check and Give up. Owner to confirm.
+9. **The anti-cheat rule is stated once per session**, on the session's first
+   live game. *Placement, ruled 2026-10-22:* not a toast. A toast covered the
+   question either way (at the bottom, Missing Letters' keyboard; under the
+   header, its clue and Who's Older's first card), so the owner chose a quiet
+   line under the game frame's header, kept for that whole game and gone on
+   the result (`app/src/lib/tabRule.ts`).
 10. **Navigation = Play · Weekend · Ranks · Profile.** Play replaces Home and
     Compete, Today's dailies first. This REVERSES the 2026-08-21 ruling that
     THE WEEKEND leads Home; THE WEEKEND has its own tab.

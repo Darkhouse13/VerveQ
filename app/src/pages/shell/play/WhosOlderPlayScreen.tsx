@@ -31,7 +31,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { useTranslation } from "react-i18next";
-import { notify, warnTabSwitchOnce } from "@/lib/notify";
+import { notify } from "@/lib/notify";
 import { CalendarDays, Check, Share2, Flame, Infinity as InfinityIcon, Star, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -369,16 +369,10 @@ export default function WhosOlderPlayScreen() {
       notify.error(t("whosOlder.tabSwitchForfeit"));
       void answer("timeout");
     }, [status, view, reveal, answer, t]),
-    // The hook's mount-time toast would also greet a player re-opening a
-    // finished daily; warn once, when a round is actually live.
-    { warningMessage: null },
+    // The rule line counts only once a round is live, so re-opening a
+    // finished daily doesn't use up the session's one statement of it.
+    { warningMessage: t("whosOlder.tabSwitchWarning"), active: view?.status === "active" },
   );
-  // The anti-cheat reminder: once per session, on the first tap in a live round.
-  const live = view?.status === "active";
-  useEffect(() => {
-    if (!live) return;
-    return warnTabSwitchOnce(t("whosOlder.tabSwitchWarning"));
-  }, [live, t]);
 
   // Sharing a finished daily IS the challenge: the link replays the same ten
   // pairs for whoever opens it. If the challenge cannot be minted the plain
@@ -450,6 +444,7 @@ export default function WhosOlderPlayScreen() {
         <PlayStage mode="whos-older" theme={THEME} title={t("whosOlder.title")} subtitle={subtitle} onExit={exit} exitLabel={t("whosOlder.home")}>
           <ResultScreen
             testId="whos-older-result"
+            nameAsk
             top={
               challengeHere && challengeVerdict ? (
                 <HeadToHead challenge={challengeHere} myScore={daily.score} verdict={challengeVerdict} />
@@ -597,6 +592,7 @@ export default function WhosOlderPlayScreen() {
       <PlayStage mode="whos-older" theme={THEME} title={t("whosOlder.title")} subtitle={subtitle} onExit={exit} exitLabel={t("whosOlder.home")}>
         <ResultScreen
           testId="whos-older-run-over"
+          nameAsk
           hero={
             <ResultHero eyebrow={t("whosOlder.runOver")} score={view.score} caption={t("whosOlder.streakLabel")}>
               {bestEndless != null && <HeroPill>{t("whosOlder.bestStreak", { count: bestEndless })}</HeroPill>}
