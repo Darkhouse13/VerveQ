@@ -6,7 +6,8 @@
  *  - play a full taste round with NO signup wall and NO navigation away;
  *  - only AFTER the round, see the deferred username claim that routes into
  *    the existing /welcome username-only onboarding with ?next= threaded;
- *  - choose "Maybe later" and keep playing fresh rounds.
+ *  - decline the name ("Not now") and land on the games (Home) — never in
+ *    another taste round, which only dealt them repeats.
  *
  * i18n is passthrough-mocked (labels are raw keys) and navigation is spied so
  * the test asserts the flow and routing, not visual internals.
@@ -120,18 +121,27 @@ describe("cold-entry landing", () => {
     expect(navigateSpy).toHaveBeenLastCalledWith("/welcome?next=%2Fhome");
   });
 
-  it("'Maybe later' keeps them playing — a fresh round starts, no navigation", () => {
+  it("'Not now' goes to the games (Home), never another taste round", () => {
     renderColdEntry();
     fireEvent.click(screen.getByText("landing.play"));
     playThroughRound();
 
-    fireEvent.click(screen.getByText("landing.maybeLater"));
-    expect(navigateSpy).not.toHaveBeenCalled();
-    expect(screen.getAllByTestId("taste-option")).toHaveLength(4);
-    expect(screen.queryByText("landing.claimTitle")).toBeNull();
+    expect(screen.queryByText("landing.maybeLater")).toBeNull();
+    fireEvent.click(screen.getByText("landing.notNow"));
+    expect(navigateSpy).toHaveBeenLastCalledWith("/home");
   });
 
-  it("fires taste_round_started on Play and taste_round_completed at the end — once each, replay does not re-fire", () => {
+  it("offers exactly one primary and one secondary choice on the result", () => {
+    renderColdEntry();
+    fireEvent.click(screen.getByText("landing.play"));
+    playThroughRound();
+
+    expect(screen.getByText("landing.claimCta")).toBeTruthy();
+    expect(screen.getByText("landing.careerPathCta")).toBeTruthy();
+    expect(screen.queryByText("landing.explore")).toBeNull();
+  });
+
+  it("fires taste_round_started on Play and taste_round_completed at the end — once each", () => {
     renderColdEntry();
     expect(recordTasteRoundSpy).not.toHaveBeenCalled();
 
@@ -145,23 +155,12 @@ describe("cold-entry landing", () => {
     const stages = recordTasteRoundSpy.mock.calls.map((c) => c[0].stage);
     expect(stages.filter((s) => s === "started")).toHaveLength(1);
     expect(stages.filter((s) => s === "completed")).toHaveLength(1);
-
-    // "Maybe later" replays a fresh round but must NOT re-fire started — the
-    // per-mount ref dedupes (the server dedupes across reloads/tabs too).
-    fireEvent.click(screen.getByText("landing.maybeLater"));
-    fireEvent.click(screen.getAllByTestId("taste-option")[0]);
-    expect(
-      recordTasteRoundSpy.mock.calls.filter((c) => c[0].stage === "started"),
-    ).toHaveLength(1);
   });
 
-  it("the result card offers explore + sign-in escapes", () => {
+  it("the result card offers the sign-in escape", () => {
     renderColdEntry();
     fireEvent.click(screen.getByText("landing.play"));
     playThroughRound();
-
-    fireEvent.click(screen.getByText("landing.explore"));
-    expect(navigateSpy).toHaveBeenLastCalledWith("/home");
 
     fireEvent.click(screen.getByText("landing.signIn"));
     expect(navigateSpy).toHaveBeenLastCalledWith("/?mode=signin");
@@ -176,5 +175,19 @@ describe("cold-entry landing", () => {
     // separable from promo/short-link traffic in funnel.careerPathMetrics.
     fireEvent.click(screen.getByText("landing.careerPathCta"));
     expect(navigateSpy).toHaveBeenLastCalledWith("/career-path?ref=taste");
+  });
+});
+
+describe("taste-round result headline", () => {
+  it.each([
+    [0, "landing.resultTough"],
+    [1, "landing.resultTough"],
+    [2, "landing.resultOk"],
+    [3, "landing.resultOk"],
+    [4, "landing.resultGreat"],
+    [5, "landing.resultPerfect"],
+  ])("%i/5 correct reads %s", async (correct, key) => {
+    const { resultHeadlineKey } = await import("@/lib/tasteRound");
+    expect(resultHeadlineKey(correct, 5)).toBe(key);
   });
 });

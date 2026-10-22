@@ -29,6 +29,14 @@ export function scoreTasteAnswer(correct: boolean, elapsedMs: number): number {
   return 100 + bonus;
 }
 
+/** The result headline follows the score: never "Nice round" at 0/5. */
+export function resultHeadlineKey(correct: number, total: number): string {
+  if (correct >= total) return "landing.resultPerfect";
+  if (correct >= total - 1) return "landing.resultGreat";
+  if (correct >= 2) return "landing.resultOk";
+  return "landing.resultTough";
+}
+
 /** Max points a perfect, instant round can reach — used for result framing. */
 export const TASTE_ROUND_MAX_SCORE = TASTE_ROUND_SIZE * scoreTasteAnswer(true, 0);
 

@@ -30,7 +30,6 @@ import ChallengeScreen from "./pages/ChallengeScreen";
 import ForgeScreen from "./pages/ForgeScreen";
 import NotFound from "./pages/NotFound";
 import { ShellGate } from "./components/shell/ShellGate";
-import { FirstRunLanguagePrompt } from "./components/shell/FirstRunLanguagePrompt";
 import { RouteMeta } from "./components/RouteMeta";
 import { SeoPageHost, SeoRouteOutlet } from "./components/seo/SeoPageHost";
 import { isOnStaticPage } from "./lib/seoPages";
@@ -149,8 +148,6 @@ const AppRoutes = () => (
             block for them (position:relative doesn't), so they keep their own
             inset and never double up with this one. */}
         <AppFrame>
-          {/* One-time language chooser, overlays whatever screen loads first. */}
-          <FirstRunLanguagePrompt />
           {/* The add-to-home-screen bar is NOT mounted here: it renders in
               flow inside ShellLayout (hub screens only), so it can never sit
               on top of a game's bottom-docked buttons. */}

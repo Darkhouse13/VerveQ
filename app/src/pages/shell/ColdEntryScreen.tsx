@@ -7,7 +7,8 @@
  * questions, client scoring, no Convex session, no signup wall). Only AFTER
  * the round do we ask for anything: the claim card mirrors the duel
  * guest-claim pattern and routes into the existing `/welcome` username-only
- * onboarding. "Maybe later" keeps them playing fresh rounds, and the result
+ * onboarding. "Not now" takes them to Home (the Play tab) — never another
+ * taste round, which only dealt them repeats — and the result
  * card cross-sells Career Path (the guest-playable marketed mode) with
  * `?ref=taste` so those hops stay visible in funnel.careerPathMetrics.
  *
@@ -32,6 +33,7 @@ import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useMutation } from "convex/react";
 import {
   localizeTasteQuestion,
+  resultHeadlineKey,
   sampleTasteRound,
   scoreTasteAnswer,
   TASTE_ROUND_SIZE,
@@ -59,13 +61,13 @@ export default function ColdEntryScreen() {
   const [correctCount, setCorrectCount] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [lastPoints, setLastPoints] = useState(0);
-  // Per-visit memory so "keep playing" deals fresh questions until the pool
-  // runs dry; intentionally not persisted — a returning visitor starts clean.
+  // Per-visit memory so a replay deals fresh questions until the pool runs
+  // dry; intentionally not persisted — a returning visitor starts clean.
   const seenIds = useRef<Set<string>>(new Set());
   const questionStartedAt = useRef(0);
   // Cold-path funnel instrumentation. Fired at most once per mount via these
   // refs; the server also dedupes per session token across reloads/tabs, so a
-  // replay ("Maybe later") or a re-render never double-counts. Best-effort —
+  // replay or a re-render never double-counts. Best-effort —
   // a failed call must never block or break the serverless taste round.
   const tasteStartedFired = useRef(false);
   const tasteCompletedFired = useRef(false);
@@ -282,7 +284,7 @@ export default function ColdEntryScreen() {
         <NeoCard shadow="lg" className="w-full text-center py-8">
           <Sparkles size={28} strokeWidth={2.5} className="mx-auto mb-3" />
           <NeoBadge color="success" rotated size="md" className="text-body px-4">
-            {t("landing.resultBadge")}
+            {t(resultHeadlineKey(correctCount, TASTE_ROUND_SIZE))}
           </NeoBadge>
           <p className="font-mono font-bold text-display mt-4">{score}</p>
           <p className="text-meta text-muted-foreground mt-1">
@@ -312,13 +314,11 @@ export default function ColdEntryScreen() {
           >
             {t("landing.careerPathCta")}
           </NeoButton>
-          <NeoButton variant="ghost" size="full" onClick={startRound}>
-            {t("landing.maybeLater")}
-          </NeoButton>
         </div>
         <p className="mt-4 text-body-sm font-heading text-muted-foreground md:col-span-2 md:text-center md:mt-6">
+          {/* Declining the name goes to the games, not another taste round. */}
           <Button variant="link" onClick={() => navigate(SHELL_ROUTES.home)}>
-            {t("landing.explore")}
+            {t("landing.notNow")}
           </Button>
           {" · "}
           <Button variant="link" onClick={goSignIn}>

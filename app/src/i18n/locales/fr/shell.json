@@ -35,14 +35,16 @@
     "wrong": "Faux · aucun point",
     "next": "Question suivante",
     "seeScore": "Voir mon score",
-    "resultBadge": "Belle manche",
+    "resultTough": "Manche difficile",
+    "resultOk": "Pas mal",
+    "resultGreat": "Belle manche",
+    "resultPerfect": "Sans faute",
     "resultCorrect": "{{correct}} / {{total}} correctes",
     "claimTitle": "Choisis un pseudo",
-    "claimBody": "Garde ta série et défie un ami — sans e-mail ni mot de passe.",
+    "claimBody": "Mets ton nom sur tes scores et défie un ami — sans e-mail ni mot de passe.",
     "claimCta": "Choisir un pseudo",
-    "maybeLater": "Plus tard — je continue à jouer",
-    "careerPathCta": "Essaie Career Path — retrouve le joueur à partir de ses clubs",
-    "explore": "Explorer VerveQ"
+    "notNow": "Pas maintenant",
+    "careerPathCta": "Essaie Career Path — retrouve le joueur à partir de ses clubs"
   },
   "account": {
     "title": "Comment veux-tu jouer ?",

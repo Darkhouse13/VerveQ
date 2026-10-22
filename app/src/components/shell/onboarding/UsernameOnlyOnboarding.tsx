@@ -29,6 +29,7 @@ import { BrandMark } from "@/components/ui/BrandMark";
 import { useAuth, AuthError } from "@/contexts/AuthContext";
 import { track } from "@/lib/analytics";
 import { getEntrySource } from "@/lib/entrySource";
+import { notify } from "@/lib/notify";
 
 // Mirror the server's username rule (convex/lib/usernames.ts) for instant,
 // pre-submit feedback. The server remains the source of truth.
@@ -65,7 +66,7 @@ export function UsernameOnlyOnboarding({
       defaultValue: "That's all it takes to start playing. No email, no password.",
     });
   const submitText =
-    submitLabel ?? t("usernameOnboard.submit", { defaultValue: "Start playing" });
+    submitLabel ?? t("usernameOnboard.submit", { defaultValue: "Save my name" });
   const {
     accountState,
     hasUsername,
@@ -128,6 +129,14 @@ export function UsernameOnlyOnboarding({
           via_invite: !!inviteCode,
         });
         completedRef.current = true;
+        // Say it worked: the claim is otherwise silent (the next screen is
+        // just Home). The toaster outlives the navigation below.
+        notify.success(
+          t("usernameOnboard.claimed", {
+            defaultValue: "You're @{{handle}} — your name is saved.",
+            handle: normalized,
+          }),
+        );
         onComplete();
       } catch (err) {
         const message =
@@ -184,7 +193,7 @@ export function UsernameOnlyOnboarding({
               enterKeyHint="go"
               autoFocus
               placeholder={t("usernameOnboard.usernamePlaceholder", {
-                defaultValue: "username",
+                defaultValue: "e.g. kingkenny",
               })}
               aria-label={t("usernameOnboard.usernameLabel", {
                 defaultValue: "Username",
@@ -209,7 +218,7 @@ export function UsernameOnlyOnboarding({
                 defaultValue: "Your handle: @{{handle}}",
                 handle:
                   normalized ||
-                  t("usernameOnboard.handleFallback", { defaultValue: "username" }),
+                  t("usernameOnboard.handleFallback", { defaultValue: "…" }),
               })}
             </p>
           </div>

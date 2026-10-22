@@ -5,6 +5,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 // the language and records the explicit-choice flag.
 vi.mock("@/i18n", () => ({
   default: { changeLanguage: vi.fn().mockResolvedValue(undefined) },
+  SUPPORTED_LANGUAGES: ["en", "fr", "es"],
 }));
 
 import i18n from "@/i18n";
@@ -12,6 +13,8 @@ import {
   hasChosenLanguage,
   markLanguageChosen,
   chooseLanguage,
+  firstVisitLanguage,
+  settleFirstVisitLanguage,
 } from "@/lib/languagePref";
 
 describe("languagePref", () => {
@@ -35,5 +38,29 @@ describe("languagePref", () => {
     await chooseLanguage("fr");
     expect(i18n.changeLanguage).toHaveBeenCalledWith("fr");
     expect(hasChosenLanguage()).toBe(true);
+  });
+
+  // No language prompt: a first visit is settled from the URL, the page, or the
+  // browser — in that order — and English is the fallback.
+  it.each([
+    ["", ["fr-FR", "en"], null, "fr"],
+    ["", ["es-419"], null, "es"],
+    ["", ["de-DE", "es-ES", "fr"], null, "es"],
+    ["", ["de-DE", "ja"], null, "en"],
+    ["", [], null, "en"],
+    ["?lng=es", ["fr-FR"], null, "es"],
+    ["?lng=de", ["fr-FR"], null, "fr"],
+    ["", ["en-GB"], "fr", "fr"],
+  ] as const)("first visit %s with browser %j on a %s page gets %s", (search, browser, page, want) => {
+    expect(firstVisitLanguage(search, browser, page)).toBe(want);
+  });
+
+  it("settles a first visit once and leaves a settled one alone", async () => {
+    settleFirstVisitLanguage();
+    await Promise.resolve();
+    expect(i18n.changeLanguage).toHaveBeenCalledTimes(1);
+    expect(hasChosenLanguage()).toBe(true);
+    settleFirstVisitLanguage();
+    expect(i18n.changeLanguage).toHaveBeenCalledTimes(1);
   });
 });

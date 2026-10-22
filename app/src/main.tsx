@@ -10,7 +10,8 @@ import { captureEntrySource } from "./lib/entrySource";
 import { armExitAbandonReporting } from "./lib/gameAnalytics";
 import { armPerfVitals } from "./lib/perfVitals";
 import { registerServiceWorker } from "./lib/pwa";
-import { armInstallPromptCapture } from "./lib/installPrompt";
+import { armInstallPromptCapture, recordFirstVisitDay } from "./lib/installPrompt";
+import { settleFirstVisitLanguage } from "./lib/languagePref";
 import "./index.css";
 
 // Arms error capture now (errors are buffered) and loads the SDK after first
@@ -37,6 +38,12 @@ armPerfVitals();
 registerServiceWorker();
 // Chromium's one-shot install event, stashed for the hub-screen install bar.
 armInstallPromptCapture();
+// The install bar waits for a return visit on a later day.
+recordFirstVisitDay();
+
+// A first visit plays in the browser's language (or the FR/ES page it landed
+// on) with no prompt; the switch lives in Settings.
+settleFirstVisitLanguage();
 
 // Reel traffic lands on a daily game: fetch its screen alongside the guest
 // sign-in instead of after it.

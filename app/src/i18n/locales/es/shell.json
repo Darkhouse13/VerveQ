@@ -35,14 +35,16 @@
     "wrong": "Incorrecto · sin puntos",
     "next": "Siguiente pregunta",
     "seeScore": "Ver mi puntuación",
-    "resultBadge": "Buena ronda",
+    "resultTough": "Ronda difícil",
+    "resultOk": "Nada mal",
+    "resultGreat": "Gran ronda",
+    "resultPerfect": "Ronda perfecta",
     "resultCorrect": "{{correct}} / {{total}} correctas",
     "claimTitle": "Elige un nombre de usuario",
-    "claimBody": "Guarda tu racha y reta a un amigo — sin correo ni contraseña.",
+    "claimBody": "Pon tu nombre en tus puntuaciones y reta a un amigo — sin correo ni contraseña.",
     "claimCta": "Elegir nombre de usuario",
-    "maybeLater": "Quizá más tarde — seguir jugando",
-    "careerPathCta": "Prueba Career Path: adivina al jugador por sus clubes",
-    "explore": "Explorar VerveQ"
+    "notNow": "Ahora no",
+    "careerPathCta": "Prueba Career Path: adivina al jugador por sus clubes"
   },
   "account": {
     "title": "¿Cómo quieres jugar?",

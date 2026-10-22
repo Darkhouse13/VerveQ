@@ -19,8 +19,9 @@
  * `data-result-screen`), so a finished game is not a phone strip on an empty
  * canvas.
  */
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
+import { markGameFinished } from "@/lib/installPrompt";
 
 export interface ResultScreenProps {
   top?: ReactNode;
@@ -33,6 +34,11 @@ export interface ResultScreenProps {
 }
 
 export function ResultScreen({ top, hero, status, actions, details, footer, testId }: ResultScreenProps) {
+  // Every mode ends here, so this is where "has finished a game" is known
+  // (the install bar waits for it — lib/installPrompt).
+  useEffect(() => {
+    markGameFinished();
+  }, []);
   return (
     <div
       className="flex flex-col gap-3 py-2 md:grid md:grid-cols-2 md:items-start md:gap-x-6"

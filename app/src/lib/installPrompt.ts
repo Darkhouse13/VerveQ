@@ -13,9 +13,72 @@
  * lib/duel.ts and lib/languagePref.ts). Storage failures fail CLOSED: a
  * browser that can't record the dismissal is treated as already-dismissed
  * rather than being asked on every single load.
+ *
+ * When (onboarding walkthrough 2026-10-22): never on a first visit. The bar
+ * waits for a RETURN visit on a later calendar day, after the player has
+ * finished at least one game, and gets ONE session: shown and ignored counts
+ * as asked. Home only (InstallPrompt checks the route).
  */
 
 const INSTALL_DISMISSED_KEY = "verveq_install_dismissed";
+/** Local calendar day (YYYY-MM-DD) of this browser's first visit. */
+const FIRST_VISIT_DAY_KEY = "verveq_first_visit_day";
+/** Set once any game reaches its result screen. */
+const FINISHED_GAME_KEY = "verveq_finished_game";
+/** The bar has had its one session (localStorage), and it is this one (sessionStorage). */
+const INSTALL_SHOWN_KEY = "verveq_install_shown";
+
+function localDay(now: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
+/** Remember the first visit's day (boot). Never overwrites. */
+export function recordFirstVisitDay(now: Date = new Date()): void {
+  try {
+    if (!localStorage.getItem(FIRST_VISIT_DAY_KEY)) {
+      localStorage.setItem(FIRST_VISIT_DAY_KEY, localDay(now));
+    }
+  } catch {
+    // No storage: the bar stays off (eligibility fails closed).
+  }
+}
+
+/** A game reached its result screen (ResultScreen). */
+export function markGameFinished(): void {
+  try {
+    localStorage.setItem(FINISHED_GAME_KEY, "1");
+  } catch {
+    // Fails closed like the rest.
+  }
+}
+
+/**
+ * Whether the install bar may show now: a return visit on a later day, after a
+ * finished game, and either never shown before or shown earlier in THIS
+ * session (so it stays put while the session lasts, then never again).
+ */
+export function isInstallBarDue(now: Date = new Date()): boolean {
+  try {
+    const firstDay = localStorage.getItem(FIRST_VISIT_DAY_KEY);
+    if (!firstDay || firstDay === localDay(now)) return false;
+    if (localStorage.getItem(FINISHED_GAME_KEY) !== "1") return false;
+    if (localStorage.getItem(INSTALL_SHOWN_KEY) !== "1") return true;
+    return sessionStorage.getItem(INSTALL_SHOWN_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+/** The bar was shown: this session is its one chance. */
+export function markInstallShown(): void {
+  try {
+    localStorage.setItem(INSTALL_SHOWN_KEY, "1");
+    sessionStorage.setItem(INSTALL_SHOWN_KEY, "1");
+  } catch {
+    // Fails closed: isInstallBarDue reads false without storage.
+  }
+}
 
 /** iOS in-app webviews render a Share sheet with no "Add to Home Screen". */
 const IN_APP_BROWSER_MARKERS = [

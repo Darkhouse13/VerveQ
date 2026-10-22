@@ -12,8 +12,7 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { isOnStaticPage, isSeoPath, staticPageLanguage, staticSeoPath } from "@/lib/seoPages";
-import { chooseLanguage, hasChosenLanguage } from "@/lib/languagePref";
+import { isOnStaticPage, isSeoPath, staticSeoPath } from "@/lib/seoPages";
 import { startSeoFunnel } from "@/lib/seoFunnel";
 
 export function SeoPageHost() {
@@ -31,13 +30,6 @@ export function SeoPageHost() {
     // (seo/lib.mjs); only the standalone article pages get the cream ground.
     document.documentElement.classList.toggle("seo-static-page", visible && staticSeoPath() !== "/");
   }, [pathname]);
-
-  // A French/Spanish page is an explicit language signal: the game it
-  // launches should open in that language (unless the visitor already chose).
-  useEffect(() => {
-    const lang = staticPageLanguage();
-    if (lang && !hasChosenLanguage()) void chooseLanguage(lang);
-  }, []);
 
   // Client-side launch links.
   useEffect(() => {

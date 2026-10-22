@@ -35,14 +35,16 @@
     "wrong": "Wrong · no points",
     "next": "Next question",
     "seeScore": "See my score",
-    "resultBadge": "Nice round",
+    "resultTough": "Tough round",
+    "resultOk": "Not bad",
+    "resultGreat": "Great round",
+    "resultPerfect": "Perfect round",
     "resultCorrect": "{{correct}} / {{total}} correct",
     "claimTitle": "Claim a username",
-    "claimBody": "Keep your streak and challenge a friend — no email, no password.",
+    "claimBody": "Put your name on your scores and challenge a friend — no email, no password.",
     "claimCta": "Claim a username",
-    "maybeLater": "Maybe later — keep playing",
-    "careerPathCta": "Try Career Path — name the player from his clubs",
-    "explore": "Explore VerveQ"
+    "notNow": "Not now",
+    "careerPathCta": "Try Career Path — name the player from his clubs"
   },
   "account": {
     "title": "How do you want to play?",

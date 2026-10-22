@@ -17,9 +17,13 @@ import {
   armInstallPromptCapture,
   getDeferredInstallPrompt,
   hasDismissedInstall,
+  isInstallBarDue,
   isIosSafari,
   isStandalone,
+  markGameFinished,
   markInstallDismissed,
+  markInstallShown,
+  recordFirstVisitDay,
   subscribeInstallPrompt,
   takeDeferredInstallPrompt,
 } from "@/lib/installPrompt";
@@ -76,6 +80,74 @@ describe("install affordance gating", () => {
     } finally {
       Storage.prototype.getItem = getItem;
     }
+  });
+});
+
+// Onboarding walkthrough 2026-10-22: the bar met first-timers on their first
+// Home visit and trailed them across every tab. It now waits for a return
+// visit on a later day, after a finished game, and gets one session.
+describe("install bar timing", () => {
+  const day1 = new Date(2026, 9, 22, 10, 0);
+  const day1Late = new Date(2026, 9, 22, 23, 30);
+  const day2 = new Date(2026, 9, 23, 9, 0);
+  const src = (rel: string) =>
+    readFileSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", rel), "utf8");
+
+  beforeEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+
+  it("never shows on the first day, even after a finished game", () => {
+    recordFirstVisitDay(day1);
+    markGameFinished();
+    expect(isInstallBarDue(day1)).toBe(false);
+    expect(isInstallBarDue(day1Late)).toBe(false);
+  });
+
+  it("needs a finished game before it shows on a later day", () => {
+    recordFirstVisitDay(day1);
+    expect(isInstallBarDue(day2)).toBe(false);
+    markGameFinished();
+    expect(isInstallBarDue(day2)).toBe(true);
+  });
+
+  it("keeps the first visit's day (a later boot does not reset it)", () => {
+    recordFirstVisitDay(day1);
+    recordFirstVisitDay(day2);
+    markGameFinished();
+    expect(isInstallBarDue(day2)).toBe(true);
+  });
+
+  it("gets one session: stays while it lasts, never comes back after", () => {
+    recordFirstVisitDay(day1);
+    markGameFinished();
+    markInstallShown();
+    expect(isInstallBarDue(day2)).toBe(true); // same session
+    sessionStorage.clear(); // a new session
+    expect(isInstallBarDue(day2)).toBe(false);
+  });
+
+  it("is off without a recorded first visit or without storage", () => {
+    markGameFinished();
+    expect(isInstallBarDue(day2)).toBe(false);
+    const getItem = Storage.prototype.getItem;
+    Storage.prototype.getItem = () => {
+      throw new Error("private mode");
+    };
+    try {
+      expect(isInstallBarDue(day2)).toBe(false);
+    } finally {
+      Storage.prototype.getItem = getItem;
+    }
+  });
+
+  it("shows on Home only and records the finished game where every mode ends", () => {
+    const bar = src("components/InstallPrompt.tsx");
+    expect(bar).toContain("pathname === SHELL_ROUTES.home");
+    expect(bar).toContain("isInstallBarDue()");
+    expect(src("components/shell/play/result/ResultScreen.tsx")).toContain("markGameFinished()");
+    expect(src("main.tsx")).toContain("recordFirstVisitDay()");
   });
 });
 
