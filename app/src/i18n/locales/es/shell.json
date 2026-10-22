@@ -166,6 +166,7 @@
     "eyebrowSeason": "Partidas clasificatorias · Temporada {{n}}",
     "seasonChip": "Temporada {{n}}",
     "rankedChip": "Clasificatorio",
+    "accountChip": "Cuenta",
     "endsIn": "Termina en {{days}} días",
     "endsInShort": "Termina en {{days}} d",
     "seasonDatesSoon": "Fechas de temporada pronto",
@@ -254,7 +255,37 @@
     "signOutConfirmBodyGuest": "Como invitado no tienes correo ni contraseña, así que cerrar sesión borra para siempre este nombre y su progreso — no hay forma de volver a entrar.",
     "signOutConfirmCta": "Cerrar sesión",
     "signOutConfirmCtaGuest": "Borrar y cerrar sesión",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "badges": {
+      "first_quiz": {
+        "name": "Novato del quiz",
+        "desc": "Termina tu primer Quiz clasificatorio"
+      },
+      "first_survival": {
+        "name": "Superviviente",
+        "desc": "Termina tu primera partida de Supervivencia"
+      },
+      "quiz_master": {
+        "name": "Maestro del quiz",
+        "desc": "Acierta todas las preguntas de un Quiz"
+      },
+      "survival_legend": {
+        "name": "Leyenda de la supervivencia",
+        "desc": "Consigue 15 o más en Supervivencia"
+      },
+      "dedicated_player": {
+        "name": "Jugador constante",
+        "desc": "Juega 50 partidas"
+      },
+      "elo_champion": {
+        "name": "Campeón de la clasificación",
+        "desc": "Alcanza una puntuación de 1.500"
+      },
+      "the_architect": {
+        "name": "El Arquitecto",
+        "desc": "Consigue que aprueben en La Forja una pregunta tuya"
+      }
+    }
   },
   "forge": {
     "title": "La Forja",

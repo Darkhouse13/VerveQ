@@ -103,7 +103,7 @@ export default function ShellHomeScreen() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  const { user, hasUsername, accountState } = useAuth();
+  const { user, hasUsername, accountState, isFullAccount } = useAuth();
   // Any server identity with a username — anonymous (username-only) or full —
   // is an onboarded user whose home reflects them. `hasUsername` is the
   // server-authoritative signal; tab-local guests have no server identity and
@@ -215,6 +215,12 @@ export default function ShellHomeScreen() {
   // carries football (the only live sport).
   const targetFor = (key: string, to: (sport: string) => string) =>
     to(key === "daily" ? dailySport : "football");
+  // A ranked tile without an account opens the account choice at once (the
+  // mode's route shows it), not after a difficulty pick it would then refuse.
+  const moreTarget = (tile: { key: string; ranked?: boolean; to: (sport: string) => string }) => {
+    if (!tile.ranked || isFullAccount) return targetFor(tile.key, tile.to);
+    return `${tile.key === "quiz" ? SHELL_ROUTES.quizPlay : SHELL_ROUTES.survivalPlay}?sport=football`;
+  };
   const nameFor = (key: string) =>
     key === "daily" && dailyIsWorldCup ? t("modes.daily.worldCupName") : t(`modes.${key}.name`);
 
@@ -428,8 +434,8 @@ export default function ShellHomeScreen() {
                   line={t(`modes.${tile.key}.desc`)}
                   // Ranked-ness is the tile's own flag (it writes ELO), never
                   // a key list here.
-                  status={tile.ranked ? t("ranks.rankedChip") : null}
-                  onClick={() => navigate(targetFor(tile.key, tile.to))}
+                  status={tile.ranked ? t(isFullAccount ? "ranks.rankedChip" : "ranks.accountChip") : null}
+                  onClick={() => navigate(moreTarget(tile))}
                   className="min-h-[132px]"
                 />
               ))}

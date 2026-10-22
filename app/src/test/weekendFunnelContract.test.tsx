@@ -23,8 +23,8 @@
  *     and THE DRAW joins it; old `?w=1` links still cannot reorder anything.
  */
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { render, act } from "@testing-library/react";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { render, act, screen, fireEvent } from "@testing-library/react";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { getFunctionName, type FunctionReference } from "convex/server";
 
 import {
@@ -313,5 +313,43 @@ describe("Play order", () => {
     expect(draw).toBeGreaterThan(today);
     expect(featured).toBeGreaterThan(draw);
     expect(weekend).toBe(-1);
+  });
+});
+
+describe("Ranked tiles in More games", () => {
+  function Where() {
+    const loc = useLocation();
+    return <div data-testid="where">{`${loc.pathname}${loc.search}`}</div>;
+  }
+  async function openQuizTile(auth: Record<string, unknown>) {
+    authMock.value = auth;
+    render(
+      <MemoryRouter initialEntries={["/home#more"]}>
+        <Routes>
+          <Route path="/home" element={<ShellHomeScreen />} />
+          <Route path="*" element={<Where />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    await act(async () => {});
+    const grid = screen.getByTestId("home-more-games");
+    // The test i18n returns keys, so tiles read as their key paths.
+    return [...grid.querySelectorAll("button")].find((b) => b.textContent?.includes("modes.quiz.name"))!;
+  }
+
+  // Without an account a ranked tile says so and opens the account choice at
+  // once, instead of a difficulty pick the gate would then refuse.
+  it("a guest sees Account and goes straight to the ranked gate", async () => {
+    const quiz = await openQuizTile({ hasUsername: true, accountState: "usernameOnly", isFullAccount: false });
+    expect(quiz.textContent).toContain("ranks.accountChip");
+    fireEvent.click(quiz);
+    expect(screen.getByTestId("where").textContent).toBe("/quiz?sport=football");
+  });
+
+  it("a full account sees Ranked and picks a difficulty first", async () => {
+    const quiz = await openQuizTile({ hasUsername: true, accountState: "fullAccount", isFullAccount: true });
+    expect(quiz.textContent).toContain("ranks.rankedChip");
+    fireEvent.click(quiz);
+    expect(screen.getByTestId("where").textContent).toMatch(/^\/difficulty\?sport=football&mode=quiz/);
   });
 });

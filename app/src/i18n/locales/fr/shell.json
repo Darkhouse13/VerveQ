@@ -166,6 +166,7 @@
     "eyebrowSeason": "Parties classées · Saison {{n}}",
     "seasonChip": "Saison {{n}}",
     "rankedChip": "Classé",
+    "accountChip": "Compte",
     "endsIn": "Se termine dans {{days}} jours",
     "endsInShort": "Fin dans {{days}} j",
     "seasonDatesSoon": "Dates de la saison bientôt",
@@ -254,7 +255,37 @@
     "signOutConfirmBodyGuest": "En invité, tu n'as ni e-mail ni mot de passe : te déconnecter efface définitivement ce pseudo et sa progression — il n'y a aucun moyen de te reconnecter.",
     "signOutConfirmCta": "Se déconnecter",
     "signOutConfirmCtaGuest": "Effacer et se déconnecter",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "badges": {
+      "first_quiz": {
+        "name": "Recrue du quiz",
+        "desc": "Termine ton premier Quiz classé"
+      },
+      "first_survival": {
+        "name": "Survivant",
+        "desc": "Termine ta première partie de Survie"
+      },
+      "quiz_master": {
+        "name": "Maître du quiz",
+        "desc": "Réponds juste à toutes les questions d’un Quiz"
+      },
+      "survival_legend": {
+        "name": "Légende de la survie",
+        "desc": "Marque 15 points ou plus en Survie"
+      },
+      "dedicated_player": {
+        "name": "Joueur assidu",
+        "desc": "Joue 50 parties"
+      },
+      "elo_champion": {
+        "name": "Champion du classement",
+        "desc": "Atteins un classement de 1 500"
+      },
+      "the_architect": {
+        "name": "L’Architecte",
+        "desc": "Fais valider une question que tu as écrite dans La Forge"
+      }
+    }
   },
   "forge": {
     "title": "La Forge",

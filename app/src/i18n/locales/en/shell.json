@@ -166,6 +166,7 @@
     "eyebrowSeason": "Ranked play · Season {{n}}",
     "seasonChip": "Season {{n}}",
     "rankedChip": "Ranked",
+    "accountChip": "Account",
     "endsIn": "Ends in {{days}} days",
     "endsInShort": "Ends in {{days}} d",
     "seasonDatesSoon": "Season dates soon",
@@ -254,7 +255,37 @@
     "signOutConfirmBodyGuest": "As a guest you have no email or password, so signing out permanently erases this name and its progress — there is no way to sign back in.",
     "signOutConfirmCta": "Sign out",
     "signOutConfirmCtaGuest": "Erase & sign out",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "badges": {
+      "first_quiz": {
+        "name": "Quiz Rookie",
+        "desc": "Finish your first ranked Quiz"
+      },
+      "first_survival": {
+        "name": "Survivor",
+        "desc": "Finish your first Survival run"
+      },
+      "quiz_master": {
+        "name": "Quiz Master",
+        "desc": "Get every question right in a Quiz"
+      },
+      "survival_legend": {
+        "name": "Survival Legend",
+        "desc": "Score 15 or more in Survival"
+      },
+      "dedicated_player": {
+        "name": "Dedicated Player",
+        "desc": "Play 50 games"
+      },
+      "elo_champion": {
+        "name": "Rating Champion",
+        "desc": "Reach a 1,500 rating"
+      },
+      "the_architect": {
+        "name": "The Architect",
+        "desc": "Get a question you wrote approved in The Forge"
+      }
+    }
   },
   "forge": {
     "title": "The Forge",

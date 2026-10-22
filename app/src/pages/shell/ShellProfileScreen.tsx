@@ -395,12 +395,14 @@ export default function ShellProfileScreen() {
                 </span>
                 <div className="min-w-0">
                   <p className="font-heading font-bold text-meta leading-tight truncate">
-                    {a.name}
+                    {t(`profile.badges.${a.achievementId}.name`, { defaultValue: a.name })}
                   </p>
                   {/* Wraps (two lines at most) — a cut-off goal ("COMPLETE YOU…")
                       tells a new player nothing. */}
                   <p className="text-meta leading-snug text-muted-foreground mt-0.5 line-clamp-2">
-                    {locked ? a.description || t("profile.locked") : monthYear(unlockedAt)}
+                    {locked
+                      ? t(`profile.badges.${a.achievementId}.desc`, { defaultValue: a.description || t("profile.locked") })
+                      : monthYear(unlockedAt)}
                   </p>
                 </div>
               </div>
