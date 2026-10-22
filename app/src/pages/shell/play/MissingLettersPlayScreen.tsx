@@ -29,7 +29,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { useTranslation } from "react-i18next";
-import { notify, warnTabSwitchOnce } from "@/lib/notify";
+import { notify } from "@/lib/notify";
 import { CalendarDays, Check, Share2, Delete, Flame, Infinity as InfinityIcon, Star, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -342,9 +342,23 @@ export default function MissingLettersPlayScreen() {
   );
 
   const complete = typed.length > 0 && typed.every((c) => c !== null);
+  // Check on an unfinished board doesn't submit: it points at the blanks still
+  // empty (a greyed-out Check gave no reason) and puts the cursor on the first.
+  const [nudgeEmpty, setNudgeEmpty] = useState(false);
   const check = useCallback(() => {
-    if (complete) void submit({ letters: typed.join("") });
+    if (complete) {
+      void submit({ letters: typed.join("") });
+      return;
+    }
+    const firstEmpty = typed.findIndex((c) => c === null);
+    if (firstEmpty >= 0) setCursor(firstEmpty);
+    setNudgeEmpty(true);
   }, [complete, typed, submit]);
+  useEffect(() => {
+    if (!nudgeEmpty) return;
+    const id = window.setTimeout(() => setNudgeEmpty(false), 900);
+    return () => window.clearTimeout(id);
+  }, [nudgeEmpty]);
 
   const typeLetter = useCallback(
     (letter: string) => {
@@ -434,16 +448,10 @@ export default function MissingLettersPlayScreen() {
       notify.error(t("missingLetters.tabSwitchForfeit"));
       void submit({ forfeit: "timeout" });
     }, [status, view, reveal, submit, t]),
-    // The hook's mount-time toast would also greet a player re-opening a
-    // finished daily; warn once, when a round is actually live.
-    { warningMessage: null },
+    // The rule line counts only once a round is live, so re-opening a
+    // finished daily doesn't use up the session's one statement of it.
+    { warningMessage: t("missingLetters.tabSwitchWarning"), active: view?.status === "active" },
   );
-  // The anti-cheat reminder: once per session, on the first tap in a live round.
-  const live = view?.status === "active";
-  useEffect(() => {
-    if (!live) return;
-    return warnTabSwitchOnce(t("missingLetters.tabSwitchWarning"));
-  }, [live, t]);
 
   // Sharing a finished daily IS the challenge: the link replays the same ten
   // boards for whoever opens it. If the challenge cannot be minted the plain
@@ -514,6 +522,7 @@ export default function MissingLettersPlayScreen() {
         <PlayStage mode="missing-letters" theme={THEME} title={t("missingLetters.title")} subtitle={subtitle} onExit={exit} exitLabel={t("missingLetters.home")}>
           <ResultScreen
             testId="missing-letters-result"
+            nameAsk
             top={
               challengeHere && challengeVerdict ? (
                 <HeadToHead game="letters" challenge={challengeHere} myScore={daily.score} verdict={challengeVerdict} />
@@ -659,6 +668,7 @@ export default function MissingLettersPlayScreen() {
       <PlayStage mode="missing-letters" theme={THEME} title={t("missingLetters.title")} subtitle={subtitle} onExit={exit} exitLabel={t("missingLetters.home")}>
         <ResultScreen
           testId="missing-letters-run-over"
+          nameAsk
           hero={
             <ResultHero eyebrow={t("missingLetters.runOver")} score={view.score} caption={t("missingLetters.streakLabel")}>
               {last && !last.correct && (
@@ -759,7 +769,7 @@ export default function MissingLettersPlayScreen() {
           base,
           "border-2",
           letter ? "bg-foreground/10 text-foreground border-solid" : "bg-foreground/5 border-dashed",
-          active ? "border-ring letters-cursor" : letter ? "border-foreground/70" : "border-foreground/45",
+          active ? "border-ring letters-cursor" : letter ? "border-foreground/70" : nudgeEmpty ? "border-verdict-wrong" : "border-foreground/45",
         )}
         style={size}
       >
@@ -855,6 +865,14 @@ export default function MissingLettersPlayScreen() {
           ))}
         </div>
 
+        {/* The session's first board says the one rule a first-timer can't
+            guess: a wrong check loses the board. */}
+        {!reveal && view.history.length === 0 && (
+          <p className="shrink-0 pb-2 text-center text-meta text-muted-foreground" data-testid="missing-letters-one-try">
+            {t("missingLetters.oneTry")}
+          </p>
+        )}
+
         {reveal && verdict ? (
           <div className="shrink-0 min-h-[13rem] flex flex-col items-center justify-center gap-3" aria-live="polite">
             <Badge
@@ -872,7 +890,6 @@ export default function MissingLettersPlayScreen() {
             >
               {reveal.name}
             </span>
-            <span className="font-mono text-eyebrow uppercase text-muted-foreground">{t("missingLetters.tapToContinue")}</span>
           </div>
         ) : (
           <div className="shrink-0 flex flex-col gap-1.5" data-testid="missing-letters-keyboard">
@@ -918,7 +935,9 @@ export default function MissingLettersPlayScreen() {
               </Button>
               <Button
                 variant="primary"
-                disabled={busy || !complete}
+                disabled={busy}
+                aria-disabled={!complete || undefined}
+                className={cn(!complete && "is-dimmed")}
                 onClick={check}
                 data-testid="missing-letters-check"
               >

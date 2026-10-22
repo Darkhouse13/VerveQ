@@ -334,6 +334,7 @@ export function DailyQuizResult({ result, onExit }: { result: DailyQuizResultDat
   return (
     <ResultFrame mode="daily-quiz" title={t("dailyQuiz.title")} onExit={onExit}>
       <ResultScreen
+        nameAsk
         testId="daily-quiz-result"
         hero={
           <ResultHero
@@ -444,6 +445,7 @@ export function DailySurvivalResult({ result, onExit }: { result: DailySurvivalR
   return (
     <ResultFrame mode="daily-survival" title={t("survival.daily.title")} onExit={onExit}>
       <ResultScreen
+        nameAsk
         testId="daily-survival-result"
         hero={
           <ResultHero eyebrow={t("result.eyebrow.dailySurvival", { date })} score={result.score} caption={t("result.pointsCaption")}>

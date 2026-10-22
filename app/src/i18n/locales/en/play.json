@@ -550,8 +550,8 @@
     "check": "Check",
     "backspace": "Delete letter",
     "blankLabel": "Missing letter {{n}}",
-    "tapToContinue": "Tap to continue",
-    "itWas": "It was {{name}}"
+    "itWas": "It was {{name}}",
+    "oneTry": "One try per board — fill every blank, then check."
   },
   "dailyShare": {
     "cta": "Share result",
@@ -648,6 +648,12 @@
       "quiz": "VerveQ Quiz — {{correct}}/{{total}} · {{score}} pts\n{{emoji}}\nThink you can beat me? {{url}}",
       "survival": "VerveQ Survival — {{score}} pts · reached round {{round}}\nThink you can beat me? {{url}}",
       "blitz": "VerveQ Blitz — {{score}} pts in 60 seconds ({{correct}} right)\nThink you can beat me? {{url}}"
+    },
+    "nameAsk": {
+      "title": "Put your name on it",
+      "body": "Friends see who sent the challenge when you share. No email, no password.",
+      "pick": "Pick a name",
+      "skip": "Skip"
     }
   }
 }

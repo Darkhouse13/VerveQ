@@ -19,7 +19,9 @@
  * `data-result-screen`), so a finished game is not a phone strip on an empty
  * canvas.
  */
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, type ReactNode } from "react";
+import { suppressTabRule } from "@/lib/tabRule";
+import { NameAskCard } from "./NameAskCard";
 import { ChevronDown } from "lucide-react";
 import { markGameFinished } from "@/lib/installPrompt";
 
@@ -30,15 +32,24 @@ export interface ResultScreenProps {
   actions: ReactNode;
   details?: ReactNode;
   footer?: ReactNode;
+  /**
+   * Offer a nameless guest a name (NameAskCard), right under the actions so
+   * the primary stays where it is. The dailies pass it; it renders nothing for
+   * anyone who already has a name.
+   */
+  nameAsk?: boolean;
   testId?: string;
 }
 
-export function ResultScreen({ top, hero, status, actions, details, footer, testId }: ResultScreenProps) {
+export function ResultScreen({ top, hero, status, actions, details, footer, nameAsk = false, testId }: ResultScreenProps) {
   // Every mode ends here, so this is where "has finished a game" is known
   // (the install bar waits for it — lib/installPrompt).
   useEffect(() => {
     markGameFinished();
   }, []);
+  // The game is over: its tab rule line goes (before paint, so it never
+  // flashes over a result).
+  useLayoutEffect(() => suppressTabRule(), []);
   return (
     <div
       className="flex flex-col gap-3 py-2 md:grid md:grid-cols-2 md:items-start md:gap-x-6"
@@ -52,6 +63,7 @@ export function ResultScreen({ top, hero, status, actions, details, footer, test
       </div>
       <div className="flex flex-col gap-3">
         {actions}
+        {nameAsk && <NameAskCard />}
         {details && <div className="mt-2 flex flex-col gap-3">{details}</div>}
         {footer && (
           <div className="mt-1 flex flex-wrap items-center justify-center gap-x-2 border-t-2 border-border/20 pt-2">

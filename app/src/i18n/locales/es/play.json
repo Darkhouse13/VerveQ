@@ -550,8 +550,8 @@
     "check": "Comprobar",
     "backspace": "Borrar letra",
     "blankLabel": "Letra perdida {{n}}",
-    "tapToContinue": "Toca para continuar",
-    "itWas": "Era {{name}}"
+    "itWas": "Era {{name}}",
+    "oneTry": "Un intento por tablero: rellena todos los huecos y comprueba."
   },
   "dailyShare": {
     "cta": "Compartir resultado",
@@ -648,6 +648,12 @@
       "quiz": "VerveQ Quiz — {{correct}}/{{total}} · {{score}} pts\n{{emoji}}\n¿Crees que me ganas? {{url}}",
       "survival": "VerveQ Supervivencia — {{score}} pts · ronda {{round}} alcanzada\n¿Crees que me ganas? {{url}}",
       "blitz": "VerveQ Blitz — {{score}} pts en 60 segundos ({{correct}} aciertos)\n¿Crees que me ganas? {{url}}"
+    },
+    "nameAsk": {
+      "title": "Ponle tu nombre",
+      "body": "Tus amigos ven quién les reta cuando compartes. Sin correo ni contraseña.",
+      "pick": "Elegir un nombre",
+      "skip": "Omitir"
     }
   }
 }

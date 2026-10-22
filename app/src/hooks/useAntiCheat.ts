@@ -1,9 +1,19 @@
-import { useEffect } from "react";
-import { warnTabSwitchOnce } from "@/lib/notify";
+import { useEffect, useState } from "react";
+import { claimFirstTabRule, setTabRule } from "@/lib/tabRule";
 
 interface UseAntiCheatOptions {
-  /** Reminder shown once per session on the first tap. Pass null to suppress. */
+  /**
+   * The rule, stated as one quiet line under the game header (never a pop-up
+   * over the question). Shown on the browser session's first live game, for
+   * that whole game. Pass null to state nothing.
+   */
   warningMessage?: string | null;
+  /**
+   * Whether a round is live. A screen that can open on a finished game (a
+   * daily already played) passes false until play starts, so reopening a
+   * result never uses up the session's one statement of the rule.
+   */
+  active?: boolean;
   /** Delay before applying the penalty, so transient mobile visibility flickers do not count. */
   hiddenGraceMs?: number;
 }
@@ -13,21 +23,26 @@ const DEFAULT_WARNING =
 
 /**
  * Calls `onTabAway` whenever the user switches away from the tab.
- * Used to forfeit / mark wrong during active games. Shows the rule once per
- * session, on the first interaction, so it isn't a hidden gotcha.
+ * Used to forfeit / mark wrong during active games. The rule is stated in the
+ * game frame (lib/tabRule) so it isn't a hidden gotcha.
  */
 export function useAntiCheat(
   onTabAway: () => void,
-  { warningMessage = DEFAULT_WARNING, hiddenGraceMs = 1000 }: UseAntiCheatOptions = {},
+  { warningMessage = DEFAULT_WARNING, active = true, hiddenGraceMs = 1000 }: UseAntiCheatOptions = {},
 ) {
+  // Decided once per mount: this game states the rule, or it doesn't. Keeping
+  // it for the whole game means the stage never jumps mid-round.
+  const [states, setStates] = useState(false);
   useEffect(() => {
-    // Once per session, on the player's first tap or key in the game — not as
-    // it opens, where it covered the first question (owner decision 9).
-    if (!warningMessage) return;
-    return warnTabSwitchOnce(warningMessage);
-    // Arm once per mount; a new message string (locale switch) mustn't re-arm.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (!warningMessage || !active || states) return;
+    if (claimFirstTabRule()) setStates(true);
+  }, [warningMessage, active, states]);
+
+  useEffect(() => {
+    if (!states || !warningMessage) return;
+    setTabRule(warningMessage);
+    return () => setTabRule(null);
+  }, [states, warningMessage]);
 
   useEffect(() => {
     let penaltyTimer: number | undefined;

@@ -550,8 +550,8 @@
     "check": "Valider",
     "backspace": "Effacer la lettre",
     "blankLabel": "Lettre manquante {{n}}",
-    "tapToContinue": "Touchez pour continuer",
-    "itWas": "C'était {{name}}"
+    "itWas": "C'était {{name}}",
+    "oneTry": "Un seul essai par grille — remplis toutes les cases, puis vérifie."
   },
   "dailyShare": {
     "cta": "Partager le résultat",
@@ -648,6 +648,12 @@
       "quiz": "VerveQ Quiz — {{correct}}/{{total}} · {{score}} pts\n{{emoji}}\nTu crois pouvoir me battre ? {{url}}",
       "survival": "VerveQ Survie — {{score}} pts · manche {{round}} atteinte\nTu crois pouvoir me battre ? {{url}}",
       "blitz": "VerveQ Blitz — {{score}} pts en 60 secondes ({{correct}} bonnes réponses)\nTu crois pouvoir me battre ? {{url}}"
+    },
+    "nameAsk": {
+      "title": "Mets ton nom dessus",
+      "body": "Tes amis voient qui leur lance le défi quand tu partages. Pas d'e-mail, pas de mot de passe.",
+      "pick": "Choisir un pseudo",
+      "skip": "Passer"
     }
   }
 }
