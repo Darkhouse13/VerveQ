@@ -241,7 +241,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
           class="min-h-full md:min-h-0 flex flex-col"
         >
           <div
-            class="flex items-center justify-between md:justify-end pt-4 pb-3 md:pt-3 md:pb-1 shrink-0"
+            class="flex items-center justify-between md:justify-end pt-4 pb-3 md:pt-3 md:pb-1 shrink-0 md:hidden"
           >
             <span
               class="inline-flex items-center gap-2.5 md:hidden"
@@ -300,7 +300,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
             >
               <button
                 aria-label="zara"
-                class="inline-flex shrink-0 select-none items-center justify-center transition duration-press disabled:cursor-not-allowed disabled:text-muted-foreground border-2 border-transparent bg-transparent text-foreground h-11 w-11 [&_svg]:h-[18px] [&_svg]:w-[18px] rounded-full enabled:hover:bg-transparent active:translate-x-0.5 active:translate-y-0.5"
+                class="inline-flex shrink-0 select-none items-center justify-center transition duration-press disabled:cursor-not-allowed disabled:text-muted-foreground border-2 border-transparent bg-transparent text-foreground h-11 w-11 [&_svg]:h-[18px] [&_svg]:w-[18px] rounded-full enabled:hover:bg-transparent active:translate-x-0.5 active:translate-y-0.5 md:hidden"
                 type="button"
               >
                 <div

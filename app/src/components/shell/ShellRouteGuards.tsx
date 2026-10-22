@@ -134,6 +134,24 @@ export function FullAccountRoute({ children }: { children: ReactNode }) {
   return <FullAccountGate next={next} state={accountState} />;
 }
 
+/**
+ * What a visitor without an account can play instead of the ranked mode they
+ * asked for: that game's free daily. The server refuses ranked Quiz/Survival
+ * runs to guests (quizSessions.createSession and survivalSessions.startGame
+ * assert a full account), so the gate must never promise a casual run.
+ */
+export function freeAlternative(next: string): { to: string; key: "altDaily" | "altSurvival" } | null {
+  const url = new URL(next, "https://verveq.invalid");
+  if (url.pathname === SHELL_ROUTES.quizPlay) {
+    const sport = url.searchParams.get("sport") ?? "football";
+    return { to: `${SHELL_ROUTES.dailyPlay}?sport=${encodeURIComponent(sport)}`, key: "altDaily" };
+  }
+  if (url.pathname === SHELL_ROUTES.survivalPlay) {
+    return { to: SHELL_ROUTES.dailySurvival, key: "altSurvival" };
+  }
+  return null;
+}
+
 function FullAccountGate({
   next,
   state,
@@ -143,10 +161,10 @@ function FullAccountGate({
 }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  // Anonymous + username: the headline upgrade path — keep username + casual
-  // progress, unlock ranked. Otherwise (logged out / no username yet) the user
-  // needs a username first, so route them through onboarding.
+  // A guest (a name, no password) creates an account in place and keeps
+  // everything. Anyone else goes through the chooser first.
   const canUpgrade = state === "usernameOnly";
+  const alternative = freeAlternative(next);
 
   return (
     <ShellLayout hideNav center back onBack={() => navigate(SHELL_ROUTES.home)}>
@@ -156,39 +174,32 @@ function FullAccountGate({
             <Lock size={28} strokeWidth={2.5} />
           </div>
           <h1 className="text-title font-heading font-bold mb-2">
-            {t("gate.title", { defaultValue: "Full account required" })}
+            {alternative ? t("gate.title") : t("gate.titleOther")}
           </h1>
           <p className="text-body-sm text-muted-foreground mb-5">
-            {canUpgrade
-              ? t("gate.bodyUpgrade", {
-                  defaultValue:
-                    "You're playing username-only, so this run stays casual. Ranked modes and global leaderboards need a full account — upgrading keeps your username and casual progress.",
-                })
-              : t("gate.bodyCreate", {
-                  defaultValue:
-                    "Ranked modes and global leaderboards need a full account. Create one to start climbing.",
-                })}
+            {canUpgrade ? t("gate.bodyUpgrade") : t("gate.bodyCreate")}
           </p>
-          {canUpgrade ? (
+          <NeoButton
+            variant="primary"
+            size="full"
+            onClick={() => navigate(canUpgrade ? upgradeUrl(next) : accountChoiceUrl(next))}
+          >
+            {t("gate.cta")}
+          </NeoButton>
+          {alternative && (
             <NeoButton
-              variant="primary"
+              variant="secondary"
               size="full"
-              onClick={() => navigate(upgradeUrl(next))}
+              className="mt-3"
+              onClick={() => navigate(alternative.to)}
+              data-testid="gate-free-alternative"
             >
-              {t("gate.ctaUpgrade", { defaultValue: "Save my progress & go ranked" })}
-            </NeoButton>
-          ) : (
-            <NeoButton
-              variant="primary"
-              size="full"
-              onClick={() => navigate(accountChoiceUrl(next))}
-            >
-              {t("gate.ctaCreate", { defaultValue: "Get started" })}
+              {alternative.key === "altDaily" ? t("gate.altDaily") : t("gate.altSurvival")}
             </NeoButton>
           )}
           <p className="text-body-sm text-muted-foreground font-heading mt-3">
             <Button variant="link" onClick={() => navigate(SHELL_ROUTES.home)}>
-            {t("gate.later", { defaultValue: "Maybe later" })}
+              {t("gate.later")}
             </Button>
           </p>
         </NeoCard>

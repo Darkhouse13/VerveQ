@@ -156,7 +156,7 @@ export function LeaderboardBoard() {
         <div className="flex items-end gap-3 flex-1 min-w-max">
           <div>
             <p className="font-mono text-eyebrow font-bold uppercase text-muted-foreground mb-1 whitespace-nowrap">
-              {t("leaderboard.rankedElo", { defaultValue: "Ranked · ELO" })}
+              {t("leaderboard.rankedElo", { defaultValue: "Ranked · rating" })}
             </p>
             <div className="flex gap-1.5">
               {RANKED_MODES.map((m) => (

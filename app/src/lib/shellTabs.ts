@@ -30,7 +30,8 @@ export const SHELL_TABS: readonly ShellTab[] = [
   { key: "play", path: SHELL_ROUTES.play, match: [SHELL_ROUTES.play], exact: true, labelKey: "nav.play", icon: Gamepad2 },
   { key: "weekend", path: SHELL_ROUTES.weekend, match: [SHELL_ROUTES.weekend], labelKey: "nav.weekend", icon: CalendarRange },
   { key: "ranks", path: SHELL_ROUTES.ranks, match: [SHELL_ROUTES.ranks, SHELL_ROUTES.leaderboard], labelKey: "nav.ranks", icon: Trophy },
-  { key: "profile", path: SHELL_ROUTES.profile, match: [SHELL_ROUTES.profile], labelKey: "nav.profile", icon: User },
+  // Settings opens from Profile, so it keeps the Profile tab lit.
+  { key: "profile", path: SHELL_ROUTES.profile, match: [SHELL_ROUTES.profile, SHELL_ROUTES.settings], labelKey: "nav.profile", icon: User },
 ];
 
 /** The tab a pathname belongs to, or undefined (a non-tab shell screen). */

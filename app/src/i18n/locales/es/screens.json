@@ -161,11 +161,11 @@
     "questionCount_one": "{{count}} pregunta · asíncrono, sin presión de tiempo",
     "questionCount_other": "{{count}} preguntas · asíncrono, sin presión de tiempo",
     "playNow": "Jugar ahora",
-    "guestHint": "Puedes jugar como invitado. Regístrate después para conservar tu puntuación.",
+    "guestHint": "Puedes jugar como invitado. Crea una cuenta después para conservar tu puntuación.",
     "niceRound": "Buena ronda",
     "claimScoreTitle": "Reclama esta puntuación",
-    "claimScoreSubtitle": "Crea un nombre de usuario para que cuente en tu rivalidad — y para poder enviar una revancha.",
-    "createAccount": "Crear una cuenta",
+    "claimScoreSubtitle": "Crea una cuenta para que cuente en tu rivalidad — y para poder enviar una revancha.",
+    "createAccount": "Crear cuenta",
     "maybeLater": "Quizás más tarde"
   },
   "duelHistory": {
@@ -187,9 +187,9 @@
   },
   "challenge": {
     "title": "Duelos",
-    "guestHeadline": "Los duelos asíncronos necesitan una cuenta",
-    "guestSubtitle": "Crea un nombre de usuario para que tus duelos y rivalidades perduren.",
-    "createAccount": "Crear una cuenta",
+    "guestHeadline": "Los duelos necesitan una cuenta",
+    "guestSubtitle": "Crea una cuenta para que tus duelos y rivalidades perduren.",
+    "createAccount": "Crear cuenta",
     "duelsTitle": "Duelos",
     "duelsSubtitle": "Mano a mano asíncronos con tus amigos.",
     "unreadNew_one": "{{count}} nuevo",
@@ -387,7 +387,7 @@
     "versusUser": "vs @{{username}}"
   },
   "upgradeForm": {
-    "title": "Guarda tu progreso",
+    "title": "Crea tu cuenta",
     "subtitleBefore": "Añade un correo y una contraseña para conservar",
     "subtitleAfter": "y desbloquear las partidas clasificatorias y los rangos globales.",
     "usernameFallback": "tu nombre de usuario",
@@ -405,8 +405,8 @@
     "passwordMismatch": "Las contraseñas no coinciden.",
     "genericError": "No se pudo actualizar tu cuenta. Inténtalo de nuevo.",
     "saving": "Guardando…",
-    "submit": "Crear cuenta completa",
-    "footer": "Tu nombre de usuario y tu progreso casual se conservan. Tu puntuación clasificatoria empieza al actualizar."
+    "submit": "Crear cuenta",
+    "footer": "Tu nombre y todo lo que has jugado se quedan contigo. Tu puntuación clasificatoria empieza en cuanto se crea la cuenta."
   },
   "usernameOnboard": {
     "heading": "Elige un nombre de usuario",
@@ -420,7 +420,7 @@
     "invalid": "El nombre de usuario debe tener de 3 a 24 letras minúsculas, números o guiones bajos.",
     "genericError": "No se pudo reservar ese nombre de usuario. Prueba con otro.",
     "settingUp": "Configurando…",
-    "footer": "El juego solo con nombre de usuario es casual y sin clasificar. Puedes añadir un correo y una contraseña más tarde para guardar tu progreso y pasar a clasificatorio."
+    "footer": "Los invitados juegan a todo menos a las partidas clasificatorias. Crea una cuenta cuando quieras para mantener tu nombre a salvo y jugar clasificatorio."
   },
   "claimName": {
     "titleBoard": "Aún no estás en la tabla",
@@ -506,8 +506,8 @@
     "lockedBodyBefore": "Llega a ",
     "lockedGoal": "nivel Oro (1500 de puntuación)",
     "lockedBodyAfter": " en partidas clasificatorias para desbloquear la Forja y escribir preguntas para todos.",
-    "lockedGuest": "Los invitados no pueden guardar progreso aquí: crea un nombre de usuario para usar la Forja.",
-    "lockedUsernameOnly": "La Forja se abre en el nivel Oro (1500 de puntuación). La puntuación necesita una cuenta completa: crea una para empezar a subir.",
+    "lockedGuest": "La Forja necesita un nombre: elige uno para usarla.",
+    "lockedUsernameOnly": "La Forja se abre en el nivel Oro (1500 de puntuación). La puntuación necesita una cuenta: crea una para empezar a subir.",
     "currentRating": "Tu puntuación",
     "toGo": "Te faltan {{n}} puntos",
     "back": "Atrás",

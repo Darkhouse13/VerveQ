@@ -12,6 +12,10 @@
  * to an internal single-slash path (no open redirects) and threaded through
  * whichever path they pick. Visitors who already have a username are bounced
  * straight to `next`.
+ *
+ * A visitor already playing on a nameless session (`needsUsername`) isn't
+ * offered "Play as a guest" — they're doing that — but "Keep playing — just
+ * pick a name", which is the same step said truthfully.
  */
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -90,7 +94,7 @@ export default function AccountChoiceScreen() {
               }
             >
               <Zap size={18} strokeWidth={2.5} aria-hidden="true" />
-              {t("account.guest")}
+              {accountState === "needsUsername" ? t("account.pickName") : t("account.guest")}
             </Button>
           </div>
           <p className="mt-4 text-center text-meta text-muted-foreground">

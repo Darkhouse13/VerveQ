@@ -131,6 +131,10 @@ export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewP
             <p className="font-heading font-bold uppercase text-title-lg leading-none md:hidden">
               {t("homeCard.todaysBoard", { n: today.boardNumber })}
             </p>
+            {/* The five numbers mean nothing to a newcomer without this. */}
+            <p className="text-meta text-muted-foreground leading-snug" data-testid="home-draw-strip-help">
+              {t("homeCard.stripHelp")}
+            </p>
             {/* Design contract: the whole gauntlet (names + thresholds) is
                 visible before the first pick. Names are 12px like every text
                 (design floors; they were 8px and truncated), so a phone sets

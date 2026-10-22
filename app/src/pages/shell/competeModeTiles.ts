@@ -37,9 +37,9 @@ export interface ModeTile {
 // so the grid skips the redundant sport re-pick and lands directly in each mode.
 export const COMPETE_MODE_TILES: ModeTile[] = [
   // Quiz is migrated to the v2 shell's centered-column "prototype layout". It
-  // routes through the existing difficulty picker (target=v2) so the player
+  // routes through the difficulty picker so the player
   // chooses a difficulty rather than defaulting to intermediate.
-  { key: "quiz", icon: Brain, color: "orange", ranked: true, to: (s) => `/difficulty?sport=${s}&mode=quiz&target=v2` },
+  { key: "quiz", icon: Brain, color: "orange", ranked: true, to: (s) => `/difficulty?sport=${s}&mode=quiz` },
   // Arena and Duels are DISTINCT flows: Arena is the group-challenge-room
   // experience (create/join a room by code — its own shell hub), Duels is
   // head-to-head send-a-link via the Challenge hub embedded in the shell.
@@ -90,8 +90,8 @@ export const COMPETE_MODE_TILES: ModeTile[] = [
 // `came_first` variant, which the server pins to its seeded intermediate pool
 // regardless of the difficulty the picker hands it (quizSessions.getQuestion).
 export const COMPETE_KNOWLEDGE_TILES: ModeTile[] = [
-  { key: "knowledgeQuiz", icon: Lightbulb, color: "blue", to: () => `/difficulty?sport=knowledge&mode=quiz&target=v2` },
-  { key: "cameFirst", icon: Clock, color: "yellow", to: () => `/difficulty?sport=knowledge&mode=came_first&target=v2` },
+  { key: "knowledgeQuiz", icon: Lightbulb, color: "blue", to: () => `/difficulty?sport=knowledge&mode=quiz` },
+  { key: "cameFirst", icon: Clock, color: "yellow", to: () => `/difficulty?sport=knowledge&mode=came_first` },
 ];
 
 // ── PLAY's sections (decision 10) ─────────────────────────────────────────

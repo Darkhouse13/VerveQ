@@ -157,7 +157,8 @@
     "roundProgress": "Manche {{round}} sur {{total}} · {{pts}} pts",
     "pts": "pts",
     "rank": "Rang n°{{rank}}",
-    "nextBoard": "Prochain plateau {{time}}"
+    "nextBoard": "Prochain plateau {{time}}",
+    "stripHelp": "Recrute six joueurs, puis bats cinq adversaires à la suite. Chaque nombre est le score à atteindre pour battre cet adversaire."
   },
   "archetype": {
     "ARCH_WALL": "MUR",

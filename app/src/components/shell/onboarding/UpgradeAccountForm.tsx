@@ -140,7 +140,7 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
       <Card elevation="lifted" padding="lg">
         <div className="text-center mb-5">
           <h1 className="font-heading text-title font-bold">
-            {t("upgradeForm.title", { defaultValue: "Save your progress" })}
+            {t("upgradeForm.title", { defaultValue: "Create your account" })}
           </h1>
           <p className="mt-1 text-body-sm text-muted-foreground">
             {t("upgradeForm.subtitleBefore", {
@@ -259,14 +259,14 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
             loading={submitting}
             aria-label={submitting ? t("upgradeForm.saving", { defaultValue: "Saving…" }) : undefined}
           >
-            {t("upgradeForm.submit", { defaultValue: "Create full account" })}
+            {t("upgradeForm.submit", { defaultValue: "Create account" })}
           </Button>
         </form>
 
         <p className="mt-4 text-center text-meta text-muted-foreground">
           {t("upgradeForm.footer", {
             defaultValue:
-              "Your username and casual progress carry over. Ranked ELO starts once you upgrade.",
+              "Your name and everything you've played come with you. Your ranked rating starts as soon as the account is created.",
           })}
         </p>
       </Card>

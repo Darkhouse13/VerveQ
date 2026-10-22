@@ -161,10 +161,10 @@
     "questionCount_one": "{{count}} question · async, sans pression de temps",
     "questionCount_other": "{{count}} questions · async, sans pression de temps",
     "playNow": "Jouer maintenant",
-    "guestHint": "Tu peux jouer en invité. Inscris-toi après pour garder ton score.",
+    "guestHint": "Tu peux jouer en invité. Crée un compte ensuite pour garder ton score.",
     "niceRound": "Belle manche",
     "claimScoreTitle": "Revendique ce score",
-    "claimScoreSubtitle": "Crée un pseudo pour que ça compte dans ta rivalité — et que tu puisses envoyer une revanche.",
+    "claimScoreSubtitle": "Crée un compte pour que ça compte dans ta rivalité — et que tu puisses envoyer une revanche.",
     "createAccount": "Créer un compte",
     "maybeLater": "Plus tard peut-être"
   },
@@ -187,8 +187,8 @@
   },
   "challenge": {
     "title": "Duels",
-    "guestHeadline": "Les duels async nécessitent un compte",
-    "guestSubtitle": "Crée un pseudo pour que tes duels et tes rivalités restent.",
+    "guestHeadline": "Les duels demandent un compte",
+    "guestSubtitle": "Crée un compte pour que tes duels et tes rivalités restent.",
     "createAccount": "Créer un compte",
     "duelsTitle": "Duels",
     "duelsSubtitle": "Des face-à-face async avec tes amis.",
@@ -387,7 +387,7 @@
     "versusUser": "vs @{{username}}"
   },
   "upgradeForm": {
-    "title": "Sauvegarde ta progression",
+    "title": "Crée ton compte",
     "subtitleBefore": "Ajoute un e-mail et un mot de passe pour conserver",
     "subtitleAfter": "et débloquer les parties classées et le classement mondial.",
     "usernameFallback": "ton pseudo",
@@ -405,8 +405,8 @@
     "passwordMismatch": "Les mots de passe ne correspondent pas.",
     "genericError": "Impossible de mettre à niveau ton compte. Réessaie.",
     "saving": "Enregistrement…",
-    "submit": "Créer un compte complet",
-    "footer": "Ton pseudo et ta progression détente sont conservés. Ton score classé démarre dès la mise à niveau."
+    "submit": "Créer un compte",
+    "footer": "Ton pseudo et tout ce que tu as joué te suivent. Ton score classé démarre dès que le compte est créé."
   },
   "usernameOnboard": {
     "heading": "Choisis un pseudo",
@@ -420,7 +420,7 @@
     "invalid": "Le pseudo doit comporter 3 à 24 lettres minuscules, chiffres ou tirets bas.",
     "genericError": "Impossible de réserver ce pseudo. Essaies-en un autre.",
     "settingUp": "Configuration…",
-    "footer": "Le jeu en pseudo uniquement est détente et non classé. Tu pourras ajouter un e-mail et un mot de passe plus tard pour sauvegarder ta progression et passer en classé."
+    "footer": "Les invités peuvent tout jouer sauf les parties classées. Crée un compte quand tu veux pour garder ton pseudo en sécurité et jouer en classé."
   },
   "claimName": {
     "titleBoard": "Tu n'es pas encore au classement",
@@ -506,8 +506,8 @@
     "lockedBodyBefore": "Atteins ",
     "lockedGoal": "le palier Or (1 500 de classement)",
     "lockedBodyAfter": " en parties classées pour débloquer la Forge et écrire des questions pour tout le monde.",
-    "lockedGuest": "Les invités ne peuvent pas sauvegarder leur progression ici — crée un pseudo pour utiliser la Forge.",
-    "lockedUsernameOnly": "La Forge s'ouvre au palier Or (1 500 de classement). Le classement demande un compte complet — crée-en un pour commencer à grimper.",
+    "lockedGuest": "La Forge demande un pseudo — choisis-en un pour l'utiliser.",
+    "lockedUsernameOnly": "La Forge s'ouvre au palier Or (1 500 de classement). Le classement demande un compte — crée-en un pour commencer à grimper.",
     "currentRating": "Ton classement",
     "toGo": "Encore {{n}} points",
     "back": "Retour",
