@@ -4,8 +4,8 @@
   "loading": "Chargement…",
   "quit": "Quitter",
   "home": "Accueil",
-  "streakLabel": "Série : {{count}}",
-  "bankedLabel": "En banque : {{value}}",
+  "streakLabel": "Série : {{count}}",
+  "bankedLabel": "En banque : {{value}}",
   "error": {
     "title": "Impossible de charger le plateau",
     "guest": "Impossible de lancer une session invité. Vérifie ta connexion et réessaie.",
@@ -19,10 +19,10 @@
     "gauntletBody": "Cinq adversaires à la suite. Chacun fait marquer plus certains joueurs, et moins d'autres.",
     "clearsAt": "À battre",
     "howTitle": "Comment jouer",
-    "howDraft": "Recrute six joueurs : choisis une carte dans chaque rangée de trois.",
+    "howDraft": "Recrute six joueurs : choisis une carte dans chaque rangée de trois.",
     "howBench": "À chaque manche, mets un joueur sur le banc. Les cinq autres marquent contre l'adversaire.",
     "howClear": "Atteins le score de l'adversaire pour le passer. Ensuite, BANK pour garder tes points, ou PUSH pour affronter le suivant.",
-    "howBust": "Rate un score et c'est perdu : tu ne gardes que {{pct}} % de tes points.",
+    "howBust": "Rate un score et c'est perdu : tu ne gardes que {{pct}} % de tes points.",
     "play": "Jouer le plateau du jour",
     "resume": "Reprendre la partie",
     "seeResult": "Voir le résultat"
@@ -54,7 +54,7 @@
     "bank": "BANK",
     "push": "PUSH",
     "pts": "{{n}} pts",
-    "nextClearsAt": "suivant : {{n}}",
+    "nextClearsAt": "suivant : {{n}}",
     "seeResultBusted": "Perdu · voir le résultat",
     "seeResultFullClear": "Sans faute · voir le résultat",
     "seeResult": "Voir le résultat",
@@ -63,9 +63,9 @@
     "cleared": "PASSÉ",
     "busted": "PERDU",
     "hint": {
-      "HOT": "Indice de forme : en feu",
-      "NEUTRAL": "Indice de forme : neutre",
-      "COLD": "Indice de forme : à froid"
+      "HOT": "Indice de forme : en feu",
+      "NEUTRAL": "Indice de forme : neutre",
+      "COLD": "Indice de forme : à froid"
     }
   },
   "zone": {
@@ -97,7 +97,7 @@
     "ATT": "les attaquants"
   },
   "effect": {
-    "sentence": "{{subject}} : {{mult}}.",
+    "sentence": "{{subject}} : {{mult}}.",
     "positionCards": "Cartes {{pos}}",
     "eraUpTo": "Cartes des années {{era}} et avant",
     "eraFrom": "Cartes des années {{era}} et après",
@@ -110,10 +110,10 @@
   },
   "sheet": {
     "close": "Fermer",
-    "fixtureLabel": "Match {{n}}, {{label}}, à battre : {{threshold}}",
+    "fixtureLabel": "Match {{n}}, {{label}}, à battre : {{threshold}}",
     "rating": "NOTE {{n}}",
     "chainHelp": "Aligne au moins 3 cartes qui partagent un club, une nation ou une époque pour obtenir un multiplicateur.",
-    "bossHelp": "Le dernier match. Passe-le et toute la partie est payée : il n'y a plus rien à affronter ensuite."
+    "bossHelp": "Le dernier match. Passe-le et toute la partie est payée : il n'y a plus rien à affronter ensuite."
   },
   "coach": {
     "draft": "Choisis 1 carte sur 3. Enchaîne 3+ cartes du même CLUB, de la même NATION ou de la même ÉPOQUE pour des multiplicateurs.",
@@ -141,7 +141,7 @@
     "copyFailed": "Impossible de copier ton résultat.",
     "shareCard": "Ta carte de partage",
     "fullBoard": "Le plateau complet",
-    "fullBoardHelp": "Toutes les cartes du plateau du jour. Les tiennes sont entourées ; touche une carte pour les détails.",
+    "fullBoardHelp": "Toutes les cartes du plateau du jour. Les tiennes sont entourées ; touche une carte pour les détails.",
     "row": "R{{n}}",
     "leaderboard": "Classement du jour",
     "rarity": "SEULS {{pct}} % ONT CHOISI CETTE LIGNE",

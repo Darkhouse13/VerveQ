@@ -17,19 +17,19 @@
   },
   "auth": {
     "signIn": "Se connecter",
-    "haveAccount": "Tu as déjà un compte ?"
+    "haveAccount": "Tu as déjà un compte ?"
   },
   "landing": {
     "eyebrow": "Jeux de foot quotidiens",
-    "headline": "Tu peux le battre ?",
+    "headline": "Tu peux le battre ?",
     "subline": "De nouveaux jeux de foot chaque jour — Qui est le plus âgé ?, Lettres manquantes, le Quiz du jour et plus encore. Deux minutes par partie.",
     "play": "Jouer maintenant",
     "freeNote": "Gratuit · sans inscription — joue d'abord, choisis un pseudo après.",
-    "haveAccount": "Déjà sur VerveQ ?",
+    "haveAccount": "Déjà sur VerveQ ?",
     "signIn": "Se connecter",
     "roundBadge": "Manche découverte",
     "progress": "Q {{current}} / {{total}}",
-    "score": "Score : {{score}}",
+    "score": "Score : {{score}}",
     "speedHint": "Plus tu réponds vite, plus tu marques",
     "correct": "Correct · +{{points}} pts",
     "wrong": "Faux · aucun point",
@@ -47,7 +47,7 @@
     "careerPathCta": "Essaie Career Path — retrouve le joueur à partir de ses clubs"
   },
   "account": {
-    "title": "Comment veux-tu jouer ?",
+    "title": "Comment veux-tu jouer ?",
     "body": "Un compte garde ton pseudo et ta progression en sécurité et débloque le classé. Ou choisis juste un pseudo et joue.",
     "create": "Créer un compte",
     "signIn": "Se connecter",
@@ -86,7 +86,7 @@
     "stats": {
       "streak": "Série"
     },
-    "supportCoffeePrefix": "Vous aimez VerveQ ?",
+    "supportCoffeePrefix": "Vous aimez VerveQ ?",
     "supportCoffeeLink": "Offrez-nous un café ☕"
   },
   "compete": {
@@ -127,7 +127,7 @@
       "desc": "La partie du jour, la même pour tous — une tentative"
     },
     "whosOlder": {
-      "name": "Qui est le plus âgé ?",
+      "name": "Qui est le plus âgé ?",
       "desc": "Touchez le joueur le plus âgé — 10 par jour"
     },
     "missingLetters": {
@@ -215,8 +215,8 @@
     "usernameOnly": "Invité",
     "edit": "Modifier",
     "share": "Partager",
-    "editSoon": "La modification du profil arrive bientôt !",
-    "shareCopied": "Lien du profil copié !",
+    "editSoon": "La modification du profil arrive bientôt !",
+    "shareCopied": "Lien du profil copié !",
     "ranked": "Classé",
     "rankedSeason": "Classé · Saison {{n}}",
     "lockedChip": "Verrouillé",
@@ -248,10 +248,10 @@
     "seasonsEmpty": "Historique des saisons — apparaît à la fin de ta première saison",
     "seasonsGuest": "L'historique des saisons démarre quand tu crées un compte",
     "signOut": "Se déconnecter",
-    "signOutWarning": "⚠ Invité : te déconnecter efface ton pseudo et ta progression sur cet appareil.",
-    "signOutConfirmTitle": "Se déconnecter ?",
+    "signOutWarning": "⚠ Invité : te déconnecter efface ton pseudo et ta progression sur cet appareil.",
+    "signOutConfirmTitle": "Se déconnecter ?",
     "signOutConfirmBody": "Ton compte est sauvegardé. Reconnecte-toi quand tu veux pour retrouver ton score, tes succès et ton classement.",
-    "signOutConfirmBodyGuest": "En invité, tu n'as ni e-mail ni mot de passe : te déconnecter efface définitivement ce pseudo et sa progression — il n'y a aucun moyen de te reconnecter.",
+    "signOutConfirmBodyGuest": "En invité, tu n'as ni e-mail ni mot de passe : te déconnecter efface définitivement ce pseudo et sa progression — il n'y a aucun moyen de te reconnecter.",
     "signOutConfirmCta": "Se déconnecter",
     "signOutConfirmCtaGuest": "Effacer et se déconnecter",
     "cancel": "Annuler"
@@ -304,7 +304,7 @@
     "rankedBlurb": "Score des parties classées de {{mode}} — gagne pour grimper, de Bronze à Platine.",
     "loading": "Chargement du classement…",
     "emptyTitle": "Aucune entrée pour l'instant",
-    "emptyBody": "Sois le premier à jouer !",
+    "emptyBody": "Sois le premier à jouer !",
     "chase": "La poursuite",
     "rankedCount": "{{n}} classés",
     "chaseEmpty": "Le podium, c'est tout le terrain — va le gravir.",
@@ -350,7 +350,7 @@
     "bankEach": "banque chacun",
     "bestFinish": "Meilleur #{{rank}}",
     "boardBetween": "Un nouveau tableau ouvre chaque week-end",
-    "boardOpen": "Semaine de jeu {{gw}} : tableau ouvert",
+    "boardOpen": "Semaine de jeu {{gw}} : tableau ouvert",
     "budgetGrandfathered": "Les nouveaux prix placent cette équipe au-dessus du budget {{limit}}. Cela reste légal, mais un changement ne peut pas faire en sorte que cela coûte plus cher.",
     "budgetTitle": "Vos 13",
     "buildFor": "Construire pour",
@@ -386,7 +386,7 @@
     "doneKeepGoing": "Continuez – les paires supplémentaires ne comptent pas, elles aident simplement.",
     "doneTen": "Il est dix heures aujourd'hui.",
     "doneThanks": "La foule vous remercie.",
-    "doorCourtBodyShort": "Un joueur est mal positionné ? Votez pour corriger son poste.",
+    "doorCourtBodyShort": "Un joueur est mal positionné ? Votez pour corriger son poste.",
     "doorCourtTitle": "Tribunal des postes",
     "doorCrewsBodyShort": "Un code, des choix uniques.",
     "doorCrewsTitle": "Projet d'groupe",
@@ -469,7 +469,7 @@
     "leadingGlobal": "#{{rank}} au niveau mondial · leader",
     "ledgerCourtRescore": "{{name}} re-marqué suite à la décision du tribunal",
     "ledgerCourtRuled": "Le tribunal a statué : {{name}} joue à {{position}}.",
-    "ledgerCrowdVerdict": "Le verdict du public sur {{name}} : {{pct}}",
+    "ledgerCrowdVerdict": "Le verdict du public sur {{name}} : {{pct}}",
     "ledgerFootnote": "Chaque ligne renvoie à un fait stocké. Les points peuvent bouger jusqu'à ce que la semaine de jeu soit réglée ; les joueurs dont le match n'a pas été marqué ne sont tout simplement pas encore là.",
     "ledgerLocked": "{{name}} s'est verrouillé au coup d'envoi.",
     "ledgerMismatch": "joué à {{verdict}} dans une machine à sous {{slot}} — ×0,75 du côté positif",
@@ -500,7 +500,7 @@
     "nextPlace": "Lieu suivant",
     "noBoard": "Aucun tableau n’est ouvert pour le moment.",
     "noBoardBody": "Un nouveau tableau s'ouvre pour chaque week-end. Revenez bientôt.",
-    "noCrewsBody": "Créez une équipe, partagez le code et recrutez une nouvelle équipe chaque week-end. Des choix uniques : quand un joueur est parti, il est parti.",
+    "noCrewsBody": "Créez une équipe, partagez le code et recrutez une nouvelle équipe chaque week-end. Des choix uniques : quand un joueur est parti, il est parti.",
     "noCrewsTitle": "Un code, un groupe, 13 choix",
     "noEligibleResults": "Personne n'a de match ce week-end – Tout afficher inclut le reste.",
     "noFixture": "Aucun match",
@@ -519,13 +519,13 @@
     "per90ClubNote": "par 90 · tarifs club par match",
     "per90Note": "par 90 minutes",
     "pick": "Prendre",
-    "pickAny": "Qui compose vos 13 ?",
-    "pickAtt": "Qui mène l’attaque ?",
-    "pickDef": "Qui tient la défense ?",
+    "pickAny": "Qui compose vos 13 ?",
+    "pickAtt": "Qui mène l’attaque ?",
+    "pickDef": "Qui tient la défense ?",
     "pickFailed": "Ce choix n’a pas été pris en compte.",
-    "pickFinisher": "Qui change la donne tardivement ?",
-    "pickGk": "Qui gardera les buts ?",
-    "pickMid": "Qui dirige le milieu ?",
+    "pickFinisher": "Qui change la donne tardivement ?",
+    "pickGk": "Qui gardera les buts ?",
+    "pickMid": "Qui dirige le milieu ?",
     "pickerBody": "Nous ne poserons de questions que sur les joueurs que vous avez réellement vus.",
     "pickerContinue": "Continuer",
     "pickerFailed": "Impossible de sauvegarder vos jeux.",
@@ -533,7 +533,7 @@
     "pickerNotFinished": "pas fini",
     "pickerRetired": "tu n'as pas vu celui-ci",
     "pickerSave": "Sauvegarder",
-    "pickerTitle": "Quels matchs avez-vous vus ce week-end ?",
+    "pickerTitle": "Quels matchs avez-vous vus ce week-end ?",
     "playTitle": "Jouer le week-end",
     "played": "Joué",
     "playerGone": "Ce joueur n'est plus enregistré.",
@@ -542,7 +542,7 @@
     "position": "Poste",
     "provisional": "Provisoire",
     "pts": "points",
-    "pulseLine": "Matchs : {{inPlay}} en cours · {{played}} terminés · {{scored}} avec points",
+    "pulseLine": "Matchs : {{inPlay}} en cours · {{played}} terminés · {{scored}} avec points",
     "quorumNote": "quorum {{quorum}} · 60 % pour réussir",
     "railTitle": "Cette semaine de jeu",
     "rank": "Rang",
@@ -579,7 +579,7 @@
     "scoredOfThirteen": "{{scored}}/13 marqué",
     "searchClubs": "Rechercher des clubs…",
     "searchMarket": "Rechercher un nom ou un club…",
-    "searchPlayer": "Quel joueur ?",
+    "searchPlayer": "Quel joueur ?",
     "searchPool": "Rechercher parmi 2 895 joueurs…",
     "season": "Saison",
     "seasonScale": "Applications {{apps}} · {{minutes}}′",
@@ -592,7 +592,7 @@
     "shapeConfirmBody": "Cette forme n'a pas de place pour {{names}} – ils attendront sur la ligne de touche, à une pression de revenir.",
     "shapeConfirmCancel": "Garder le schéma",
     "shapeConfirmGo": "Changer de schéma",
-    "shapeConfirmTitle": "Passer à {{label}} ?",
+    "shapeConfirmTitle": "Passer à {{label}} ?",
     "shapeFailed": "Impossible de changer de schéma.",
     "shapeLine": "Schéma — {{label}}",
     "shapeLockedLine": "Installé dans un {{label}}",
@@ -632,8 +632,8 @@
     "thisGw": "Cette semaine de jeu",
     "thisSeason": "Cette saison",
     "thisWeekend": "Cette semaine de jeu",
-    "thisWeekendLine": "Cette semaine de jeu : {{leagues}}",
-    "thisWeekendMany": "Cette semaine de jeu : {{n}} championnats",
+    "thisWeekendLine": "Cette semaine de jeu : {{leagues}}",
+    "thisWeekendMany": "Cette semaine de jeu : {{n}} championnats",
     "tied": "lié",
     "topHalfStreak": "Série dans la première moitié {{count}}",
     "topPercent": "Haut {{percent}}%",
@@ -669,7 +669,7 @@
     "weekendPlayedTeaser": "rencontres avec des points décrochés",
     "weekendsPlayed": "{{count}} week-end",
     "weeklyPodiums": "Podiums hebdomadaires",
-    "whoBetter": "Qui a fait le meilleur match ?",
+    "whoBetter": "Qui a fait le meilleur match ?",
     "you": "toi",
     "yourGameweeks": "Vos semaines de jeu",
     "yourPick": "Votre choix",
@@ -726,11 +726,11 @@
     "howBudgetLabel": "Équipe budget.",
     "howCardsBody": "jaune −1, rouge −4 (un deuxième licenciement jaune totalise −6).",
     "howCardsLabel": "Cartes :",
-    "howClubCapBody": "au maximum 3 joueurs d'un même club — 4 pour votre club préféré. Définissez-le une seule fois depuis la carte Club préféré sur l'accueil Weekend. C'est définitif : il ne pourra jamais être changé, alors choisissez le club que vous soutenez vraiment.",
+    "howClubCapBody": "au maximum 3 joueurs d'un même club — 4 pour votre club préféré. Définissez-le une seule fois depuis la carte Club préféré sur l'accueil Weekend. C'est définitif : il ne pourra jamais être changé, alors choisissez le club que vous soutenez vraiment.",
     "favoriteClubTitle": "Club préféré",
     "favoriteClubLockedBody": "4 joueurs autorisés au lieu de 3. Définitif — il ne peut pas être changé.",
-    "favoriteClubWarning": "Choisissez bien : votre club préféré est définitif. Il ne pourra jamais être changé — ni la prochaine journée, ni la saison prochaine.",
-    "favoriteClubConfirmTitle": "{{club}}, pour de bon ?",
+    "favoriteClubWarning": "Choisissez bien : votre club préféré est définitif. Il ne pourra jamais être changé — ni la prochaine journée, ni la saison prochaine.",
+    "favoriteClubConfirmTitle": "{{club}}, pour de bon ?",
     "favoriteClubConfirmBody": "Vous pourrez désormais aligner 4 joueurs de {{club}} au lieu de 3 dans chaque équipe. Ce choix est définitif et ne pourra jamais être changé.",
     "favoriteClubBack": "Retour",
     "favoriteClubConfirm": "Confirmer, pour de bon",
@@ -741,40 +741,40 @@
     "favoriteClubSet": "{{club}} est votre club préféré — pour de bon.",
     "favoriteClubFailed": "Impossible d'enregistrer votre club préféré.",
     "noClubsMatch": "Aucun club ne correspond.",
-    "howClubCapLabel": "Casquette du club :",
+    "howClubCapLabel": "Casquette du club :",
     "howCourt": "Le tribunal des postes",
-    "howCourtBody": "Vous pensez que le signal indiquant la position d'un joueur est erroné ? Déposez une réclamation – vous obtenez 2 dépôts par semaine de jeu, et le dépôt compte comme la première approbation. Une réclamation qui recueille suffisamment de soutiens (au moins 15, ou 0,5 % des actifs de la semaine de jeu) est soumise à un procès ; un procès se déroule sur une part de 60 % avec quorum (au moins 30, soit 1 %). Le dépôt se termine lundi 23h59 ; les verdicts tombent mardi soir et marquent à nouveau le joueur avant que les scores ne deviennent définitifs.",
-    "howCrewBody": "2 à 8 amis, code de partage pour rejoindre, draft serpent où chaque joueur peut appartenir une fois par salle. Chaque participant dispose d’une banque de 30 secondes par tour — 390 secondes à dépenser librement sur les 13 choix ; une banque vide sélectionne automatiquement le reste.",
+    "howCourtBody": "Vous pensez que le signal indiquant la position d'un joueur est erroné ? Déposez une réclamation – vous obtenez 2 dépôts par semaine de jeu, et le dépôt compte comme la première approbation. Une réclamation qui recueille suffisamment de soutiens (au moins 15, ou 0,5 % des actifs de la semaine de jeu) est soumise à un procès ; un procès se déroule sur une part de 60 % avec quorum (au moins 30, soit 1 %). Le dépôt se termine lundi 23h59 ; les verdicts tombent mardi soir et marquent à nouveau le joueur avant que les scores ne deviennent définitifs.",
+    "howCrewBody": "2 à 8 amis, code de partage pour rejoindre, draft serpent où chaque joueur peut appartenir une fois par salle. Chaque participant dispose d’une banque de 30 secondes par tour — 390 secondes à dépenser librement sur les 13 choix ; une banque vide sélectionne automatiquement le reste.",
     "howCrewLabel": "Projet d'groupe.",
     "howCrowdBody": "Les votes en face-à-face du public sur les performances réelles font varier le score d'un joueur jusqu'à ± 15 %. Les performances avec trop peu de votes conservent leur score de base.",
-    "howCrowdLabel": "Verdict de la foule :",
-    "howDefendingBody": "Les clean sheets rapportent GK +5 / DEF +4 / MID +1 (60+ minutes) ; les gardiens et défenseurs perdent 1 point par tranche de 2 buts encaissés. Les tacles, interceptions, blocs, arrêts, passes clés et dribbles rapportent de petites quantités, chacune plafonnée pour éviter l’exploitation du volume. L’excellence régulière est récompensée : la domination des duels des défenseurs et la réussite des passes des milieux rapportent chacune jusqu’à +2.",
-    "howDefendingLabel": "Défense :",
+    "howCrowdLabel": "Verdict de la foule :",
+    "howDefendingBody": "Les clean sheets rapportent GK +5 / DEF +4 / MID +1 (60+ minutes) ; les gardiens et défenseurs perdent 1 point par tranche de 2 buts encaissés. Les tacles, interceptions, blocs, arrêts, passes clés et dribbles rapportent de petites quantités, chacune plafonnée pour éviter l’exploitation du volume. L’excellence régulière est récompensée : la domination des duels des défenseurs et la réussite des passes des milieux rapportent chacune jusqu’à +2.",
+    "howDefendingLabel": "Défense :",
     "howDuplicatesBody": "une équipe est composée de 13 joueurs et non de 13 emplacements.",
-    "howDuplicatesLabel": "Pas de doublons :",
+    "howDuplicatesLabel": "Pas de doublons :",
     "howFinalityBody": "les scores seront définitifs à 23h59 (heure de Paris) le lendemain de la fermeture de la fenêtre.",
-    "howFinalityLabel": "Clôture :",
+    "howFinalityLabel": "Clôture :",
     "howFinishersBody": "ne marquent qu'à partir de leur minute d'entrée, et leurs buts et passes décisives après la 75e minute sont multipliés par 1,25 – le multiplicateur du moment décisif.",
-    "howFinishersLabel": "Finisseurs :",
+    "howFinishersLabel": "Finisseurs :",
     "howGoalsBody": "les buts paient de +5 à +8 et les passes décisives de +3 à +6 — plus la position est profonde, plus ils paient (un but de GK vaut +8, celui d'un attaquant +5).",
-    "howGoalsLabel": "Buts et passes décisives :",
+    "howGoalsLabel": "Buts et passes décisives :",
     "howLocks": "Verrouillage",
-    "howLocksBody": "Chaque joueur se verrouille individuellement à son propre coup d’envoi. Jusque-là, échangez, repositionnez et réorganisez librement ; ensuite, la place est gelée et le coût engagé. Un joueur dont le match a déjà commencé ne peut pas être ajouté — pas de choix après coup. Modifier le dimanche autour d’un samedi verrouillé est la compétence recherchée.",
+    "howLocksBody": "Chaque joueur se verrouille individuellement à son propre coup d’envoi. Jusque-là, échangez, repositionnez et réorganisez librement ; ensuite, la place est gelée et le coût engagé. Un joueur dont le match a déjà commencé ne peut pas être ajouté — pas de choix après coup. Modifier le dimanche autour d’un samedi verrouillé est la compétence recherchée.",
     "howModes": "Deux façons de jouer",
     "howScoring": "Le score, en clair",
     "howShapeBody": "exactement 1 GK, 3-5 DEF, 2-5 MID, 1-3 ATT dans le XI. Les finishers occupent leur propre position, choisie librement.",
-    "howShapeLabel": "Tout schéma dont le total est :",
+    "howShapeLabel": "Tout schéma dont le total est :",
     "howShowingBody": "+1 pour toutes les minutes jouées.",
-    "howShowingLabel": "Présence :",
+    "howShowingLabel": "Présence :",
     "howSquad": "Votre équipe",
     "howTableBody": "classé par points cumulés ; les points égaux sont brisés par des victoires face-à-face le week-end ; toujours le niveau est une égalité affichée.",
-    "howTableLabel": "Classement du groupe :",
+    "howTableLabel": "Classement du groupe :",
     "howTeamBody": "+1 pour une victoire, +0,5 pour un match nul, si le joueur a joué plus de 60 minutes.",
-    "howTeamLabel": "Résultat de l’équipe :",
+    "howTeamLabel": "Résultat de l’équipe :",
     "howTemplatesBody": "un joueur marque selon le modèle de l'emplacement dans lequel VOUS l'avez aligné. Si le verdict du match indique qu'il a réellement joué à une position différente, un score positif est atténué × 0,75 — un mauvais placement ne surpasse jamais un placement honnête.",
-    "howTemplatesLabel": "Modèles de poste :",
+    "howTemplatesLabel": "Modèles de poste :",
     "howThirteenBody": "un XI plus 2 finisseurs (votre banc avec intention).",
-    "howThirteenLabel": "Treize joueurs :",
+    "howThirteenLabel": "Treize joueurs :",
     "howTies": "Égalités et clôture",
     "howWeekend": "Le Week-end",
     "howWeekendBody": "Une équipe pour tout le week-end de football européen. Huit championnats, chaque match de la fenêtre compte, et le tableau repart de zéro à chaque journée — les fenêtres du week-end vont du vendredi au lundi, celles de milieu de semaine du mardi au jeudi. Pas de course sur toute la saison.",
@@ -786,7 +786,7 @@
     "loadingStandings": "Chargement des classements…",
     "markRead": "Marquer comme lu · {{count}}",
     "memberRemoved": "{{name}} a été supprimé.",
-    "membersLabel": "Membres :",
+    "membersLabel": "Membres :",
     "membershipNote": "Le nombre de membres est illimité. Chaque week-end dispose de huit places de draft.",
     "moveDown": "Descendre",
     "moveUp": "Monter",
@@ -856,8 +856,8 @@
     "roomStatus": "État de la salle",
     "shareJoinText": "Rejoins mon groupe du week-end sur VerveQ.",
     "draftTurnLive": "C’est ton tour de draft.",
-    "shareReceiptHeader": "LE WEEK-END — J{{gw}} réglée : {{points}} pts.",
-    "shareReceiptBest": "Meilleur choix : {{name}} {{points}}.",
+    "shareReceiptHeader": "LE WEEK-END — J{{gw}} réglée : {{points}} pts.",
+    "shareReceiptBest": "Meilleur choix : {{name}} {{points}}.",
     "shareReceiptBeat": "Vous avez battu {{pct}} % des équipes budget.",
     "shareReceiptRank": "{{rank}} sur {{of}} dans la salle.",
     "draftTurnNext": "Vous êtes le prochain à choisir.",
@@ -869,7 +869,7 @@
     "crewRecapTitle": "Récapitulatif de {{name}}",
     "gameweekRecap": "J{{gw}} · récapitulatif",
     "recapClimbed": "{{name}} a gagné {{count}} places",
-    "recapMvp": "MVP : {{player}} · {{points}} ({{owner}})",
+    "recapMvp": "MVP : {{player}} · {{points}} ({{owner}})",
     "availability": "Disponibilité",
     "availabilityRead": "Données lues {{when}}",
     "availabilityClear": "Aucun souci de disponibilité signalé ce week-end.",
@@ -887,8 +887,8 @@
     "boardCountLabel": "équipes avec des points",
     "fitsBudget": "Jusqu'à {{price}}",
     "cheapestFirst": "Moins chers d'abord",
-    "pickerCountFits": "Dans votre budget : {{n}}",
-    "pickerCount": "Joueurs : {{n}}",
+    "pickerCountFits": "Dans votre budget : {{n}}",
+    "pickerCount": "Joueurs : {{n}}",
     "narrowSearchCheap": "Les {{cap}} moins chers sur {{n}}. Cherchez ou choisissez un championnat pour affiner.",
     "narrowSearchTop": "Les {{cap}} plus chers sur {{n}}. Touchez Moins chers d'abord, cherchez ou choisissez un championnat.",
     "pickerDescription": "Cherchez sur le marché et choisissez un joueur pour ce poste.",
@@ -897,7 +897,7 @@
     "introTitle": "Comment marche The Weekend",
     "introPickLeagues": "Choisissez 13 vrais joueurs de {{n}} championnats, pour {{budget}} au total.",
     "introPick": "Choisissez 13 vrais joueurs, pour {{budget}} au total.",
-    "introScore": "Ils marquent des points grâce aux vrais matchs de ce week-end : buts, passes décisives, clean sheets et plus.",
+    "introScore": "Ils marquent des points grâce aux vrais matchs de ce week-end : buts, passes décisives, clean sheets et plus.",
     "introTable": "Votre total entre au classement du week-end. Le week-end suivant, on repart de zéro.",
     "introStart": "Créer mes 13",
     "introRules": "Toutes les règles",
@@ -924,11 +924,11 @@
   "meta": {
     "default": {
       "title": "Jeux de quiz football — Gratuits | VerveQ",
-      "description": "Des jeux de quiz football gratuits : un quiz du jour, devine le joueur par son parcours, une grille foot, plus ou moins et des duels. Sans inscription."
+      "description": "Des jeux de quiz football gratuits : un quiz du jour, devine le joueur par son parcours, une grille foot, plus ou moins et des duels. Sans inscription."
     },
     "compete": {
       "title": "Jouer aux quiz football — Classé et détente | VerveQ",
-      "description": "Tous les jeux de foot VerveQ au même endroit : quiz et survie classés, quiz du jour, duels et salons d'arène entre amis. Gratuit, sans téléchargement."
+      "description": "Tous les jeux de foot VerveQ au même endroit : quiz et survie classés, quiz du jour, duels et salons d'arène entre amis. Gratuit, sans téléchargement."
     },
     "daily": {
       "title": "Quiz du jour — 10 questions de foot | VerveQ",
@@ -936,11 +936,11 @@
     },
     "dailySurvival": {
       "title": "Survie du jour — Une partie pour tous | VerveQ",
-      "description": "Une partie de survie par jour, la même pour tous : trouve des joueurs à partir de leurs initiales jusqu'à ne plus avoir de vies. Une tentative."
+      "description": "Une partie de survie par jour, la même pour tous : trouve des joueurs à partir de leurs initiales jusqu'à ne plus avoir de vies. Une tentative."
     },
     "whosOlder": {
       "title": "Who's Older? — Le jeu d'âge foot du jour | VerveQ",
-      "description": "Deux footballeurs : touche le plus âgé. Dix manches par jour, et l'écart passe des années aux jours. Les mêmes duos pour tous, puis le mode sans fin."
+      "description": "Deux footballeurs : touche le plus âgé. Dix manches par jour, et l'écart passe des années aux jours. Les mêmes duos pour tous, puis le mode sans fin."
     },
     "missingLetters": {
       "title": "Missing Letters — Trouve le footballeur du jour | VerveQ",
@@ -952,7 +952,7 @@
     },
     "higherLower": {
       "title": "Higher or Lower — Le jeu des stats foot | VerveQ",
-      "description": "La stat du joueur suivant est-elle plus haute ou plus basse ? Buts, matchs et trophées, un choix à la fois. Une erreur et la série s'arrête."
+      "description": "La stat du joueur suivant est-elle plus haute ou plus basse ? Buts, matchs et trophées, un choix à la fois. Une erreur et la série s'arrête."
     },
     "careerPath": {
       "title": "Career Path — Trouve le joueur par ses clubs | VerveQ",
@@ -972,11 +972,11 @@
     },
     "ranks": {
       "title": "Classement — Scores et meilleurs joueurs | VerveQ",
-      "description": "Ta place dans les quiz foot VerveQ : scores mondiaux, les meilleurs joueurs de chaque mode classé et qui se trouve juste devant toi."
+      "description": "Ta place dans les quiz foot VerveQ : scores mondiaux, les meilleurs joueurs de chaque mode classé et qui se trouve juste devant toi."
     },
     "weekendTable": {
       "title": "The Weekend — Classement en direct | VerveQ",
-      "description": "Le classement mondial en direct du jeu fantasy The Weekend : les points provisoires des équipes à budget évoluent à chaque match noté."
+      "description": "Le classement mondial en direct du jeu fantasy The Weekend : les points provisoires des équipes à budget évoluent à chaque match noté."
     }
   },
   "app": {
@@ -996,7 +996,7 @@
   },
   "taste": {
     "wc-most-titles": {
-      "question": "Quel pays a remporté le plus de Coupes du monde ?",
+      "question": "Quel pays a remporté le plus de Coupes du monde ?",
       "explanation": "Le Brésil compte cinq titres — 1958, 1962, 1970, 1994 et 2002.",
       "o0": "Brésil",
       "o1": "Allemagne",
@@ -1004,11 +1004,11 @@
       "o3": "Argentine"
     },
     "messi-club": {
-      "question": "Dans quel club Lionel Messi a-t-il passé la majeure partie de sa carrière ?",
+      "question": "Dans quel club Lionel Messi a-t-il passé la majeure partie de sa carrière ?",
       "explanation": "Formé à la Masia, Messi a joué 17 saisons au Barça."
     },
     "wc-2022-winner": {
-      "question": "Qui a gagné la Coupe du monde 2022 au Qatar ?",
+      "question": "Qui a gagné la Coupe du monde 2022 au Qatar ?",
       "explanation": "L'Argentine a battu la France aux tirs au but après une finale à 3–3.",
       "o0": "Argentine",
       "o1": "France",
@@ -1016,23 +1016,23 @@
       "o3": "Croatie"
     },
     "red-devils": {
-      "question": "Quel club anglais est surnommé « les Diables rouges » ?",
+      "question": "Quel club anglais est surnommé « les Diables rouges » ?",
       "explanation": "Manchester United, le club d'Old Trafford, porte le surnom de Red Devils."
     },
     "ucl-most-titles": {
-      "question": "Quel club a remporté le plus de Coupes des clubs champions / Ligues des champions ?",
+      "question": "Quel club a remporté le plus de Coupes des clubs champions / Ligues des champions ?",
       "explanation": "Le Real Madrid domine l'Europe de loin — l'AC Milan suit."
     },
     "el-clasico": {
-      "question": "« El Clásico » oppose le Real Madrid à quel club ?",
+      "question": "« El Clásico » oppose le Real Madrid à quel club ?",
       "explanation": "Real Madrid contre Barcelone — la grande rivalité du football espagnol."
     },
     "hand-of-god": {
-      "question": "La « main de Dieu » de Maradona, c'était lors de quelle Coupe du monde ?",
+      "question": "La « main de Dieu » de Maradona, c'était lors de quelle Coupe du monde ?",
       "explanation": "Mexique 1986, contre l'Angleterre — quelques minutes avant son chef-d'œuvre en solo."
     },
     "wc-1966": {
-      "question": "Quel pays a organisé ET remporté la Coupe du monde 1966 ?",
+      "question": "Quel pays a organisé ET remporté la Coupe du monde 1966 ?",
       "explanation": "La seule Coupe du monde de l'Angleterre — 4–2 contre la RFA à Wembley.",
       "o0": "Angleterre",
       "o1": "RFA",
@@ -1040,19 +1040,19 @@
       "o3": "Italie"
     },
     "ronaldo-sporting": {
-      "question": "Cristiano Ronaldo a quitté quel club portugais pour Manchester United ?",
+      "question": "Cristiano Ronaldo a quitté quel club portugais pour Manchester United ?",
       "explanation": "United l'a recruté au Sporting CP en 2003, à 18 ans."
     },
     "henry-arsenal": {
-      "question": "Thierry Henry est le meilleur buteur de l’histoire de quel club ?",
+      "question": "Thierry Henry est le meilleur buteur de l’histoire de quel club ?",
       "explanation": "228 buts pour Arsenal — personne n'a marqué plus pour le club."
     },
     "pele-santos": {
-      "question": "Pour quel club brésilien Pelé a-t-il joué la majeure partie de sa carrière ?",
+      "question": "Pour quel club brésilien Pelé a-t-il joué la majeure partie de sa carrière ?",
       "explanation": "Pelé a passé près de vingt ans à Santos avant le New York Cosmos."
     },
     "old-lady": {
-      "question": "Quel club italien aux rayures noires et blanches est « la Vieille Dame » ?",
+      "question": "Quel club italien aux rayures noires et blanches est « la Vieille Dame » ?",
       "explanation": "La Juventus — « la Vecchia Signora » de Turin.",
       "o0": "Juventus",
       "o1": "Inter Milan",
@@ -1060,7 +1060,7 @@
       "o3": "Naples"
     },
     "players-per-side": {
-      "question": "Combien de joueurs chaque équipe aligne-t-elle au coup d'envoi ?",
+      "question": "Combien de joueurs chaque équipe aligne-t-elle au coup d'envoi ?",
       "explanation": "Onze par équipe — dix joueurs de champ et un gardien."
     },
     "ballon-dor": {
@@ -1072,7 +1072,7 @@
       "o3": "Le meilleur jeune joueur"
     },
     "invincibles": {
-      "question": "Quel club a terminé la Premier League 2003–04 invaincu ?",
+      "question": "Quel club a terminé la Premier League 2003–04 invaincu ?",
       "explanation": "Les « Invincibles » d'Arsène Wenger — 26 victoires, 12 nuls, 0 défaite."
     }
   }

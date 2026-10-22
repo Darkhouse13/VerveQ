@@ -32,6 +32,23 @@ Newest first.
 
 ---
 
+## DECISION 2026-10-22 — First-time player rulings
+
+From a fresh-browser walkthrough of every way a new player arrives. The owner
+picked all four recommendations:
+
+1. **Language:** no first-visit language popup. The app uses the browser's
+   language (en, fr or es, else English); Settings and the FR/ES pages still
+   switch it.
+2. **Tab-switch rule:** a quiet line inside the game frame during the first
+   game, never a pop-up over the question (resolves decision 9's placement).
+3. **Name ask:** players who never picked a name get one soft card on the
+   result after a finished game, with Skip. Never before or during play.
+4. **Install bar:** never on the first visit. Shown once, on Home, on a later
+   day after a finished game; dismissing hides it for good.
+
+---
+
 ## DECISION 2026-10-22 — No `/v2` in URLs
 
 The owner asked for the `/v2` prefix to go ("it about time we get rid of it
