@@ -31,6 +31,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useConvex } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
@@ -43,7 +44,7 @@ import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { Card } from "@/components/ui/card";
 import { archetypeMeta } from "./meta";
-import { OUTCOME_LABEL } from "./share";
+import { DRAW_NS, enDrawT, type DrawT } from "./drawI18n";
 
 /** The raw convex/draw.ts getToday payload (union incl. the not-ready shape). */
 type ServerToday = FunctionReturnType<typeof api.draw.getToday>;
@@ -60,13 +61,29 @@ function formatCountdown(ms: number): string {
   return [h, m, s].map((n) => String(n).padStart(2, "0")).join(":");
 }
 
+/**
+ * THE DRAW's copy on Home without suspending Home: the lazy `draw` namespace
+ * is read with `useSuspense: false`, and until it has loaded (or with no
+ * initialised i18n, as in an isolated test render) the card reads English
+ * straight from the en locale file.
+ */
+function useHomeDrawT(): DrawT {
+  const { t, i18n, ready } = useTranslation(DRAW_NS, { useSuspense: false });
+  if (!i18n?.isInitialized || !ready) return enDrawT;
+  return t as unknown as DrawT;
+}
+
 /** Server-passthrough progress: draft row mid-draft, else round + banked pts. */
-function progressLine(run: ServerRun, today: ReadyToday): string {
+function progressLine(run: ServerRun, today: ReadyToday, t: DrawT): string {
   if (run.phase === "draft") {
-    return `Draft row ${run.rowIndex + 1} of ${today.rules.rows}`;
+    return t("homeCard.draftRow", { row: run.rowIndex + 1, rows: today.rules.rows });
   }
   const round = Math.min(run.fixtureIndex + 1, today.fixtures.length);
-  return `Round ${round} of ${today.fixtures.length} · ${Math.round(run.cumulative).toLocaleString("en-US")} pts`;
+  return t("homeCard.roundProgress", {
+    round,
+    total: today.fixtures.length,
+    pts: Math.round(run.cumulative).toLocaleString("en-US"),
+  });
 }
 
 export interface HomeDrawCardViewProps {
@@ -80,13 +97,14 @@ export interface HomeDrawCardViewProps {
 
 /** Pure renderer — no hooks, no data access; the contract tests drive this. */
 export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewProps) {
+  const t = useHomeDrawT();
   const run = today.run;
   const cta =
     today.playState === "unplayed"
-      ? "Play today's board"
+      ? t("entry.play")
       : today.playState === "in_progress"
-        ? "Resume run"
-        : "See result";
+        ? t("entry.resume")
+        : t("entry.seeResult");
   return (
     // The bottom spacing lives on the card's own root so its absence leaves
     // no trace in the Play column. Decision 12: a lime OUTLINE on the raised
@@ -96,12 +114,12 @@ export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewP
       <Card elevation="lifted" padding="md" className="!border-lime h-full flex flex-col gap-3">
         <div className="flex items-center justify-between gap-2">
           <p className="font-mono text-eyebrow font-bold uppercase text-lime">
-            The Draw · Board #{today.boardNumber}
+            {t("homeCard.eyebrow", { n: today.boardNumber })}
           </p>
           {today.playState === "done" && (
             <NeoBadge color="yellow" data-testid="home-draw-streak">
               <Flame size={10} strokeWidth={3} className="mr-1" />
-              Streak {today.streak}
+              {t("homeCard.streak", { n: today.streak })}
             </NeoBadge>
           )}
         </div>
@@ -111,7 +129,7 @@ export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewP
             {/* From md up the eyebrow already names the board: the headline
                 drops out there to keep Play inside its height budget. */}
             <p className="font-heading font-bold uppercase text-title-lg leading-none md:hidden">
-              Today's board #{today.boardNumber}
+              {t("homeCard.todaysBoard", { n: today.boardNumber })}
             </p>
             {/* Design contract: the whole gauntlet (names + thresholds) is
                 visible before the first pick. Names are 12px like every text
@@ -119,7 +137,7 @@ export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewP
                 the five fixtures on two rows instead of squeezing one. */}
             <div className="grid grid-cols-3 md:grid-cols-5 gap-1.5" data-testid="home-draw-strip">
               {today.fixtures.map((fixture) => {
-                const { label, Icon } = archetypeMeta(fixture.archetypeId);
+                const { label, Icon } = archetypeMeta(fixture.archetypeId, t);
                 return (
                   <div
                     key={fixture.index}
@@ -146,11 +164,11 @@ export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewP
         {today.playState === "in_progress" && run && (
           <>
             <p className="font-heading font-bold uppercase text-title-lg leading-none">
-              Run in progress
+              {t("homeCard.runInProgress")}
             </p>
             <div data-testid="home-draw-progress">
               <p className="font-mono text-eyebrow font-bold uppercase text-muted-foreground">
-                {progressLine(run, today)}
+                {progressLine(run, today, t)}
               </p>
               <div className="flex gap-1 mt-1.5" aria-hidden>
                 {today.fixtures.map((fixture) => (
@@ -174,14 +192,14 @@ export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewP
                 className="font-heading font-bold uppercase text-title-lg leading-none"
                 data-testid="home-draw-outcome"
               >
-                {OUTCOME_LABEL[run.outcome ?? "banked"]}
+                {t(`outcome.${run.outcome ?? "banked"}`)}
               </p>
               <p
                 className="font-mono font-bold text-display leading-none mt-1"
                 data-testid="home-draw-score"
               >
                 {Math.round(run.finalScore ?? 0).toLocaleString("en-US")}
-                <span className="ml-1 text-sm font-bold">PTS</span>
+                <span className="ml-1 text-sm font-bold">{t("homeCard.pts")}</span>
               </p>
             </div>
             <div className="flex items-center justify-between gap-2">
@@ -190,7 +208,7 @@ export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewP
                   color="muted"
                   data-testid="home-draw-rank"
                 >
-                  Rank #{rank.toLocaleString("en-US")}
+                  {t("homeCard.rank", { rank: rank.toLocaleString("en-US") })}
                 </NeoBadge>
               ) : (
                 <span />
@@ -199,7 +217,7 @@ export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewP
                 className="font-mono font-bold text-meta text-muted-foreground"
                 data-testid="home-draw-countdown"
               >
-                Next board {formatCountdown(today.nextBoardAt - now)}
+                {t("homeCard.nextBoard", { time: formatCountdown(today.nextBoardAt - now) })}
               </span>
             </div>
           </>

@@ -357,7 +357,7 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
     return (
       <PlayStage
         mode="career-path"
-        title="Career Path"
+        title={t("careerPath.title")}
         subtitle={t("careerPath.ladderModeTitle")}
         onExit={exit}
         exitLabel={t("careerPath.quit")}
@@ -384,7 +384,7 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
 
   if (loading) {
     return (
-      <PlayStage mode="career-path" title="Career Path" subtitle={t("careerPath.ladderModeTitle")} onExit={exit} exitLabel={t("careerPath.quit")}>
+      <PlayStage mode="career-path" title={t("careerPath.title")} subtitle={t("careerPath.ladderModeTitle")} onExit={exit} exitLabel={t("careerPath.quit")}>
         <div className="flex items-center justify-center py-16">
           <p className="animate-pulse motion-reduce:animate-none font-heading text-title-sm font-bold">
             {t("careerPath.loadingLadder", { round: roundIndex + 1 })}
@@ -396,7 +396,7 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
 
   if (startupError) {
     return (
-      <PlayStage mode="career-path" title="Career Path" subtitle={t("careerPath.ladderModeTitle")} onExit={exit} exitLabel={t("careerPath.quit")}>
+      <PlayStage mode="career-path" title={t("careerPath.title")} subtitle={t("careerPath.ladderModeTitle")} onExit={exit} exitLabel={t("careerPath.quit")}>
         <div className="flex min-h-full flex-col justify-center py-8">
           <Card elevation="lifted" padding="lg" className="text-center">
             <p className="font-heading text-title font-bold">{t("careerPath.startFailedTitle")}</p>
@@ -429,7 +429,7 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
   return (
     <PlayStage
       mode="career-path"
-      title="Career Path"
+      title={t("careerPath.title")}
       subtitle={t("careerPath.ladderModeTitle")}
       onExit={exit}
       exitLabel={t("careerPath.quit")}

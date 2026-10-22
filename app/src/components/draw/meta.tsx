@@ -8,6 +8,7 @@ import { Shield, Zap, Cog, History, Sparkles, Hand, Swords } from "lucide-react"
 import type { LucideIcon } from "lucide-react";
 import { eraTag } from "@/lib/drawEngine";
 import type { FixtureModifier, SynergyFamily } from "@/lib/drawEngine";
+import type { DrawT } from "./drawI18n";
 
 export const ARCHETYPE_META: Record<string, { label: string; Icon: LucideIcon }> = {
   ARCH_WALL: { label: "WALL", Icon: Shield },
@@ -18,8 +19,20 @@ export const ARCHETYPE_META: Record<string, { label: string; Icon: LucideIcon }>
   ARCH_FORTRESS_KEEPER: { label: "FORTRESS", Icon: Hand },
 };
 
-export function archetypeMeta(id: string): { label: string; Icon: LucideIcon } {
-  return ARCHETYPE_META[id] ?? { label: id.replace(/^ARCH_/, ""), Icon: Swords };
+/**
+ * Archetype label + icon. Pass the caller's draw translator to localise the
+ * label (`draw:archetype.<ID>`); without one — or for a key the locale lacks —
+ * the English table above is used.
+ */
+export function archetypeMeta(
+  id: string,
+  t?: DrawT,
+): { label: string; Icon: LucideIcon } {
+  const meta = ARCHETYPE_META[id] ?? { label: id.replace(/^ARCH_/, ""), Icon: Swords };
+  if (!t || !ARCHETYPE_META[id]) return meta;
+  const key = `archetype.${id}`;
+  const label = t(key);
+  return label && label !== key ? { label, Icon: meta.Icon } : meta;
 }
 
 /** Family → house palette slot (matches the meter + tag chip colors). */

@@ -375,7 +375,9 @@ export function useSoloQuiz(onFinish: (result: QuizResultData) => void): SoloQui
     checkResult,
     verdicts: scoreBreakdown.map((r) => r.correct),
     isCameFirst,
-    badgeLabel: isCameFirst ? t("quiz.cameFirstBadge") : difficulty,
+    badgeLabel: isCameFirst
+      ? t("quiz.cameFirstBadge")
+      : t(`tier.${difficulty}`, { defaultValue: difficulty }),
     zoomImage,
     setZoomImage,
     onOption,

@@ -56,7 +56,7 @@ export function DraftProjection({ squad, fixtures, rules }: DraftProjectionProps
 
       <div className="flex" style={{ gap: LAYOUT.fixtureChipGap }}>
         {fixtures.map((fixture) => {
-          const { label, Icon } = archetypeMeta(fixture.archetypeId);
+          const { label, Icon } = archetypeMeta(fixture.archetypeId, t);
           const value = projectBestFive(squad, fixture, config);
           const cleared = value !== null && value >= fixture.threshold;
           return (

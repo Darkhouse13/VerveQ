@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ShellNav, ShellTopNav } from "./ShellNav";
 import { prefetchShellTabs } from "@/lib/shellPrefetch";
 import { InstallPrompt } from "@/components/InstallPrompt";
@@ -75,6 +76,7 @@ export function ShellLayout({
   children,
 }: ShellLayoutProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation("shell", { useSuspense: false });
 
   // Warm the other tab chunks once the shell is on screen, so tab taps swap
   // instantly instead of waiting on a lazy-chunk fetch (idempotent, idle-time).
@@ -143,7 +145,7 @@ export function ShellLayout({
               <button
                 type="button"
                 onClick={onBack ?? (() => navigate(-1))}
-                aria-label="Back"
+                aria-label={t("common.back")}
                 className="neo-border neo-shadow rounded-lg bg-card p-2 shrink-0 transition-all active:neo-shadow-pressed"
               >
                 <ArrowLeft size={20} strokeWidth={2.5} />

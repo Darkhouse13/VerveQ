@@ -54,7 +54,7 @@ describe("knowledge expansion contract", () => {
     // i18n: the "New Duel" CTA moved to a locale key; verify both the key
     // wiring in source and that the English copy is intact.
     expect(challenge).toContain("challenge.newDuel");
-    expect(screens.challenge.newDuel).toBe("New Duel");
+    expect(screens.challenge.newDuel).toBe("New duel");
     expect(createDuel).toContain('type DuelKind = "knowledge" | "came_first" | "sports"');
     expect(createDuel).toContain('handleSelectKind("knowledge")');
     expect(createDuel).toContain('mode: kind === "came_first" ? "came_first" : "quiz"');

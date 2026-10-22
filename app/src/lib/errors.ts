@@ -10,6 +10,8 @@
  * reaches a player. Use `friendlyError` for everything shown to users; reserve
  * `humanizeServerError` for diagnostics (e.g. the render-crash ErrorBoundary).
  */
+import i18next from "i18next";
+
 const CONVEX_NOISE = [
   /\[CONVEX [^\]]*\]/g,
   /\[Request ID: [^\]]*\]/g,
@@ -19,9 +21,50 @@ const CONVEX_NOISE = [
   /Called by client/g,
 ];
 
+/**
+ * English copy for every curated message, keyed as `shell:errors.<key>`. The
+ * locale files carry the translations; this table is the fallback when the
+ * shell namespace has not loaded yet (and what tests without i18n see).
+ */
+export const ERROR_COPY = {
+  generic: "Something went wrong. Please try again.",
+  connection: "Connection problem. Check your internet and try again.",
+  signIn: "Please sign in to continue.",
+  noAccess: "You don’t have access to this.",
+  usernameFirst: "Choose a username first.",
+  usernameTaken: "That username is already taken.",
+  alreadyPlayed: "You’ve already played today’s game.",
+  alreadyClaimed: "Someone’s already taken this one.",
+  duelYourself: "You can’t duel yourself.",
+  notFound: "This isn’t available anymore — it may have expired.",
+  expired: "Time’s up — this round is over.",
+  declined: "This duel was declined.",
+  roomFull: "This room is already full.",
+  rateLimited: "Too many tries from your network. Please try again in a bit.",
+  outOfSync: "This got out of sync — please refresh and try again.",
+} as const;
+export type ErrorKey = keyof typeof ERROR_COPY;
+
+/**
+ * The player-facing copy for `key`, in the active UI language. Reads the
+ * global i18next instance (the one `@/i18n` initialises) instead of importing
+ * `@/i18n`, so this lib carries none of the provider's side effects; before
+ * init — or if a lookup throws — it falls back to English.
+ */
+export function errorCopy(key: ErrorKey): string {
+  const fallback = ERROR_COPY[key];
+  try {
+    if (!i18next.isInitialized) return fallback;
+    const value = i18next.t(`errors.${key}`, { ns: "shell", defaultValue: fallback });
+    return typeof value === "string" && value ? value : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export function humanizeServerError(
   error: unknown,
-  fallback = "Something went wrong. Please try again.",
+  fallback: string = errorCopy("generic"),
 ): string {
   const raw =
     error instanceof Error
@@ -39,75 +82,76 @@ export function humanizeServerError(
 
 /**
  * Ordered rules matched against the de-noised server message (case-insensitive,
- * first match wins). `message` is the copy the player sees. An empty `message`
- * means "recognised but never show the server text" — the call-site fallback is
- * used instead (for leaky internals like question counts or config names).
+ * first match wins). `key` names the copy the player sees (`errors.<key>` in the
+ * shell namespace, English default in ERROR_COPY). An empty `key` means
+ * "recognised but never show the server text" — the call-site fallback is used
+ * instead (for leaky internals like question counts or config names).
  */
-type ErrorRule = { test: RegExp; message: string; passthrough?: true };
+type ErrorRule = { test: RegExp; key: ErrorKey | ""; passthrough?: true };
 
 const ERROR_RULES: ErrorRule[] = [
   // — Connectivity (Convex client / fetch failures) —
   {
     test: /failed to fetch|network ?error|connection|websocket|offline|timed out|timeout/i,
-    message: "Connection problem. Check your internet and try again.",
+    key: "connection",
   },
 
   // — Auth & access —
   {
     test: /not authenticated|must be (a registered account|signed in)|please sign in|requires authentication/i,
-    message: "Please sign in to continue.",
+    key: "signIn",
   },
   {
     test: /not authorized|don.?t have access|forbidden|permission|cannot claim their own/i,
-    message: "You don’t have access to this.",
+    key: "noAccess",
   },
   {
     test: /must have a username|username is required/i,
-    message: "Choose a username first.",
+    key: "usernameFirst",
   },
   {
     test: /username.*(taken|already in use|unavailable)|already taken/i,
-    message: "That username is already taken.",
+    key: "usernameTaken",
   },
 
   // — Already done / duplicates —
   {
     test: /already (been )?(attempted|played|completed today)/i,
-    message: "You’ve already played today’s challenge.",
+    key: "alreadyPlayed",
   },
   {
     test: /already (been )?claimed|already (held|taken)|already attached/i,
-    message: "Someone’s already taken this challenge.",
+    key: "alreadyClaimed",
   },
   {
     test: /cannot duel yourself|duel yourself/i,
-    message: "You can’t duel yourself.",
+    key: "duelYourself",
   },
 
   // — Not found / expired / closed —
   {
     test: /(duel|arena|room|lobby|match|session|game|challenge|question|user|player) not found|does not exist|no longer exists/i,
-    message: "This isn’t available anymore — it may have expired.",
+    key: "notFound",
   },
   {
     test: /expired|time.?s? (up|expired)|no longer (open|active|available)|has ended|is over|round is over/i,
-    message: "Time’s up — this round is over.",
+    key: "expired",
   },
   {
     test: /declined/i,
-    message: "This challenge was declined.",
+    key: "declined",
   },
 
   // — Capacity —
   {
     test: /arena is full|room is full|lobby is full|is full|already full/i,
-    message: "This room is already full.",
+    key: "roomFull",
   },
 
   // — Rate limits —
   {
     test: /too many .*(attempts|requests|tries)|rate.?limit|slow down/i,
-    message: "Too many tries from your network. Please try again in a bit.",
+    key: "rateLimited",
   },
 
   // — Weekend fantasy (fantasySquads / fantasySquadRules) —
@@ -118,20 +162,20 @@ const ERROR_RULES: ErrorRule[] = [
   // pass through verbatim (matched on their distinctive phrasings only).
   {
     test: /of a .* budget|players from one club|match has (already )?kicked off|no editorial price|already have a squad for this gameweek|gameweek is no longer open|squad belongs to another|created by the draft|set by the draft|finisher|formation must|may not occupy two slots/i,
-    message: "",
+    key: "",
     passthrough: true,
   },
 
   // — Out of sync / locked state —
   {
     test: /out of order|is not active|is locked|already (completed|finished|answered)|must be answered|not your turn|out of range/i,
-    message: "This got out of sync — please refresh and try again.",
+    key: "outOfSync",
   },
 
   // — Leaky internals: recognised, but never surface the server text —
   {
     test: /not enough .*questions|no (more )?questions|RESEND_API_KEY|not configured|checksum|schema|index|allowlist|approval|seed|crypto|undefined|null|TypeError|ENOENT|ECONNREFUSED/i,
-    message: "",
+    key: "",
   },
 ];
 
@@ -141,14 +185,14 @@ const ERROR_RULES: ErrorRule[] = [
  */
 export function friendlyError(
   error: unknown,
-  fallback = "Something went wrong. Please try again.",
+  fallback: string = errorCopy("generic"),
 ): string {
   const cleaned = humanizeServerError(error, "");
   if (cleaned) {
     for (const rule of ERROR_RULES) {
       if (rule.test.test(cleaned)) {
         if (rule.passthrough) return cleaned;
-        return rule.message || fallback;
+        return rule.key ? errorCopy(rule.key) : fallback;
       }
     }
   }

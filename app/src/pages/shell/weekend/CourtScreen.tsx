@@ -30,6 +30,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { friendlyError } from "@/lib/errors";
+import { roleLabel } from "@/lib/weekendRoles";
 
 export type CourtDocket = NonNullable<
   FunctionReturnType<typeof api.fantasyCourt.getCourtDocket>
@@ -221,7 +222,7 @@ export function FileClaimDialog({
                 >
                   <span className="font-heading font-bold text-sm truncate">{p.name}</span>
                   <span className="font-mono text-eyebrow text-muted-foreground shrink-0">
-                    {p.position} · {p.clubName ?? p.clubId}
+                    {roleLabel(p.position, t)} · {p.clubName ?? p.clubId}
                   </span>
                 </Card>
               ))}

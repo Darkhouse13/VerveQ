@@ -22,7 +22,7 @@ interface NextFixtureLineProps {
 
 export function NextFixtureLine({ fixture, onSelect }: NextFixtureLineProps) {
   const t = useDrawT();
-  const { label, Icon } = archetypeMeta(fixture.archetypeId);
+  const { label, Icon } = archetypeMeta(fixture.archetypeId, t);
   return (
     <button
       type="button"

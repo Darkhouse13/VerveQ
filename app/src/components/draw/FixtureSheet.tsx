@@ -26,7 +26,7 @@ interface FixtureSheetProps {
 export function FixtureSheet({ fixture, fixtureCount, onClose }: FixtureSheetProps) {
   const t = useDrawT();
   if (fixture === null) return null;
-  const { label, Icon } = archetypeMeta(fixture.archetypeId);
+  const { label, Icon } = archetypeMeta(fixture.archetypeId, t);
   const tokens = effectTokens(fixture);
   const sentences = effectSentences(fixture, t);
 

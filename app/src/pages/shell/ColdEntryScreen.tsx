@@ -28,6 +28,7 @@ import { StaticSeoSlot } from "@/components/seo/StaticSeoSlot";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useMutation } from "convex/react";
 import {
+  localizeTasteQuestion,
   sampleTasteRound,
   scoreTasteAnswer,
   TASTE_ROUND_SIZE,
@@ -141,7 +142,9 @@ export default function ColdEntryScreen() {
   }
 
   if (phase === "playing") {
-    const question = round[qIndex];
+    const question = round[qIndex]
+      ? localizeTasteQuestion(round[qIndex], (key, options) => String(t(key, options)))
+      : undefined;
     if (!question) return null;
     const revealed = picked !== null;
     const correctIdx = question.correctIndex;

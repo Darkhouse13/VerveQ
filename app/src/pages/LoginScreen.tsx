@@ -34,11 +34,12 @@ const MODES: readonly Mode[] = [
   "reset-confirm",
 ];
 
-const HEADINGS: Record<Mode, string> = {
-  signin: "Welcome back",
-  signup: "Create your account",
-  "reset-request": "Reset your password",
-  "reset-confirm": "Check your email",
+/** Locale keys (screens ns), resolved with t() at render. */
+const HEADING_KEYS: Record<Mode, string> = {
+  signin: "login.headingSignIn",
+  signup: "login.headingSignUp",
+  "reset-request": "login.headingResetRequest",
+  "reset-confirm": "login.headingResetConfirm",
 };
 
 function isMode(value: string | null): value is Mode {
@@ -111,20 +112,27 @@ export default function LoginScreen() {
     setCode("");
   };
 
+  const passwordReasonText = (reason: Parameters<typeof describePasswordReason>[0]) =>
+    t(`passwordReason.${reason}`, {
+      defaultValue: describePasswordReason(reason),
+      min: PASSWORD_MIN_LENGTH,
+      max: PASSWORD_MAX_LENGTH,
+    });
+
   const reportError = (e: unknown) => {
     if (e instanceof AuthError) {
-      setError(e.message);
+      setError(t(`authError.${e.code}`, { defaultValue: e.message }));
     } else if (e instanceof Error) {
-      setError(friendlyError(e, "Something went wrong. Please try again."));
+      setError(friendlyError(e, t("authError.unknown")));
     } else {
-      setError("Something went wrong. Please try again.");
+      setError(t("authError.unknown"));
     }
   };
 
   const handleSignIn = async () => {
     setError(null);
     if (!email || !password) {
-      setError("Please enter your email and password.");
+      setError(t("login.errorEmailPassword"));
       return;
     }
     setLoading(true);
@@ -141,21 +149,21 @@ export default function LoginScreen() {
   const handleSignUp = async () => {
     setError(null);
     if (!email) {
-      setError("Please enter your email.");
+      setError(t("login.errorEmail"));
       return;
     }
     const normalizedUsername = username.trim().toLowerCase();
     if (!/^[a-z0-9_]{3,24}$/.test(normalizedUsername)) {
-      setError("Username must be 3-24 lowercase letters, numbers, or underscores.");
+      setError(t("authError.invalid_username"));
       return;
     }
     const pw = validatePassword(password);
     if (!pw.ok && pw.reason) {
-      setError(describePasswordReason(pw.reason));
+      setError(passwordReasonText(pw.reason));
       return;
     }
     if (password !== confirmPwd) {
-      setError("Passwords do not match.");
+      setError(t("login.errorMismatch"));
       return;
     }
     setLoading(true);
@@ -177,13 +185,13 @@ export default function LoginScreen() {
   const handleRequestReset = async () => {
     setError(null);
     if (!email) {
-      setError("Please enter your email.");
+      setError(t("login.errorEmail"));
       return;
     }
     setLoading(true);
     try {
       await requestPasswordReset(email);
-      notify.success("If that email is registered, a reset code is on its way.");
+      notify.success(t("login.resetSent"));
       switchMode("reset-confirm");
       setEmail(email); // preserve email into next step
     } catch (e: unknown) {
@@ -196,22 +204,22 @@ export default function LoginScreen() {
   const handleConfirmReset = async () => {
     setError(null);
     if (!code.trim()) {
-      setError("Please enter the reset code from your email.");
+      setError(t("login.errorCode"));
       return;
     }
     const pw = validatePassword(password);
     if (!pw.ok && pw.reason) {
-      setError(describePasswordReason(pw.reason));
+      setError(passwordReasonText(pw.reason));
       return;
     }
     if (password !== confirmPwd) {
-      setError("Passwords do not match.");
+      setError(t("login.errorMismatch"));
       return;
     }
     setLoading(true);
     try {
       await confirmPasswordReset(email, code, password);
-      notify.success("Password updated. You're signed in.");
+      notify.success(t("login.resetDone"));
       navigate("/home");
     } catch (e: unknown) {
       reportError(e);
@@ -249,7 +257,7 @@ export default function LoginScreen() {
 
   const passwordHint =
     mode === "signup" || mode === "reset-confirm"
-      ? `At least ${PASSWORD_MIN_LENGTH} characters. Up to ${PASSWORD_MAX_LENGTH}.`
+      ? t("login.passwordHint", { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH })
       : null;
 
   const submit =
@@ -284,11 +292,11 @@ export default function LoginScreen() {
           <h1>
             <BrandMark variant="wordmark" size="lg" />
           </h1>
-          <p className="font-heading text-body text-muted-foreground">Prove your football IQ</p>
+          <p className="font-heading text-body text-muted-foreground">{t("login.tagline")}</p>
         </div>
 
         <Card padding="lg" elevation="lifted">
-          <h2 className="mb-4 font-heading text-title-sm font-bold">{HEADINGS[mode]}</h2>
+          <h2 className="mb-4 font-heading text-title-sm font-bold">{t(HEADING_KEYS[mode])}</h2>
           <form
             noValidate
             className="flex flex-col gap-3"
@@ -317,11 +325,11 @@ export default function LoginScreen() {
                 />
                 {errorLine}
                 <Button type="submit" variant="primary" size="lg" block loading={loading}>
-                  Sign in
+                  {t("login.signIn")}
                 </Button>
                 <div className="flex items-center justify-between gap-2">
                   <Button variant="ghost" size="sm" className="px-2" onClick={() => switchMode("signup")} disabled={loading}>
-                    Create account
+                    {t("login.createAccount")}
                   </Button>
                   <Button
                     variant="ghost"
@@ -330,7 +338,7 @@ export default function LoginScreen() {
                     onClick={() => switchMode("reset-request")}
                     disabled={loading}
                   >
-                    Forgot password?
+                    {t("login.forgotPassword")}
                   </Button>
                 </div>
               </>
@@ -340,7 +348,7 @@ export default function LoginScreen() {
               <>
                 {fromGuestUpgrade && (
                   <p data-testid="guest-upgrade-notice" className="text-center text-meta text-muted-foreground">
-                    Guest progress is not carried over.
+                    {t("login.guestNotice")}
                   </p>
                 )}
                 <Input
@@ -362,7 +370,7 @@ export default function LoginScreen() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value.toLowerCase())}
                   />
-                  {hint(`Your challenge handle: @${username.trim().toLowerCase() || "username"}`)}
+                  {hint(t("login.handleHint", { handle: username.trim().toLowerCase() || t("login.handleFallback") }))}
                 </div>
                 <Input
                   type="text"
@@ -391,10 +399,10 @@ export default function LoginScreen() {
                 {passwordHint && hint(passwordHint)}
                 {errorLine}
                 <Button type="submit" variant="primary" size="lg" block loading={loading}>
-                  Create account
+                  {t("login.createAccount")}
                 </Button>
                 <Button variant="ghost" size="sm" block onClick={() => switchMode("signin")} disabled={loading}>
-                  Back to sign in
+                  {t("login.backToSignIn")}
                 </Button>
               </>
             )}
@@ -409,13 +417,13 @@ export default function LoginScreen() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
-                {hint("We'll email you a 6-digit code valid for 10 minutes.")}
+                {hint(t("login.resetHint"))}
                 {errorLine}
                 <Button type="submit" variant="primary" size="lg" block loading={loading}>
-                  Send reset code
+                  {t("login.sendCode")}
                 </Button>
                 <Button variant="ghost" size="sm" block onClick={() => switchMode("signin")} disabled={loading}>
-                  Back to sign in
+                  {t("login.backToSignIn")}
                 </Button>
               </>
             )}
@@ -451,10 +459,10 @@ export default function LoginScreen() {
                 {passwordHint && hint(passwordHint)}
                 {errorLine}
                 <Button type="submit" variant="primary" size="lg" block loading={loading}>
-                  Reset password
+                  {t("login.resetPassword")}
                 </Button>
                 <Button variant="ghost" size="sm" block onClick={() => switchMode("reset-request")} disabled={loading}>
-                  Request a new code
+                  {t("login.newCode")}
                 </Button>
               </>
             )}
@@ -463,7 +471,7 @@ export default function LoginScreen() {
 
         {mode === "signin" && (
           <Button variant="secondary" size="md" block onClick={handleGuest} disabled={loading}>
-            Play as guest
+            {t("login.playAsGuest")}
           </Button>
         )}
       </div>

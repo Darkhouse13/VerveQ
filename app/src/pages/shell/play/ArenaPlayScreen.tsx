@@ -225,7 +225,7 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
 
   const handleShare = useCallback(async () => {
     if (!room) return;
-    const res = await shareArenaLink(room.code);
+    const res = await shareArenaLink(room.code, undefined, t);
     if (res === "copied") notify.success(t("arena.linkCopied"));
     if (res === "failed") notify.error(t("arena.shareFailed"));
   }, [room, t]);
@@ -689,7 +689,7 @@ function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> |
     <div className="space-y-3">
       <Card elevation="lifted">
         <p className="font-mono text-eyebrow uppercase text-muted-foreground mb-1">
-          {arenaCategoryEmoji(question.category)} {arenaCategoryLabel(question.category)}
+          {arenaCategoryEmoji(question.category)} {arenaCategoryLabel(question.category, t)}
         </p>
         {question.imageUrl && (
           <div className="mb-3 mt-2">

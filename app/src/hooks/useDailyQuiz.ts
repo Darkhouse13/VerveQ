@@ -368,7 +368,7 @@ export function useDailyQuiz(onFinish: (result: DailyQuizResultData) => void): D
       : null,
     verdicts: results.map((r) => r.correct),
     isCameFirst: false,
-    badgeLabel: "Daily Challenge",
+    badgeLabel: t("dailyQuiz.title"),
     zoomImage,
     setZoomImage,
     onOption,

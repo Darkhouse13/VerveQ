@@ -14,6 +14,6 @@ describe("image upload control", () => {
     expect(source).not.toContain('className="sr-only"');
     expect(source).toContain('className="absolute inset-0 h-full w-full cursor-pointer opacity-0"');
     expect(source).toContain('accept="image/*"');
-    expect(source).toContain('aria-label="Add a question image"');
+    expect(source).toContain('aria-label={t("imageDropzone.inputLabel")}');
   });
 });

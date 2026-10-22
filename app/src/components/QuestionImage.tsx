@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface QuestionImageProps {
   imageUrl: string | null | undefined;
@@ -21,12 +22,15 @@ interface QuestionImageProps {
  */
 export function QuestionImage({
   imageUrl,
-  alt = "Question image",
+  alt,
   onZoom,
   maxRetries = 2,
   imgClassName = "",
   boxClassName = "h-[22dvh] md:h-[clamp(140px,24vh,320px)]",
 }: QuestionImageProps) {
+  // No suspense: this sits inside screens that may not have loaded `play`.
+  const { t } = useTranslation("play", { useSuspense: false });
+  const altText = alt ?? t("quizView.imageAltGeneric", { defaultValue: "Question image" });
   const [loading, setLoading] = useState(true);
   const [errored, setErrored] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -79,7 +83,7 @@ export function QuestionImage({
       {errored ? (
         <div className="absolute inset-0 flex items-center justify-center">
           <p className="font-heading font-bold text-xs uppercase tracking-wide text-muted-foreground">
-            Image unavailable
+            {t("quizView.imageUnavailable")}
           </p>
         </div>
       ) : (
@@ -95,7 +99,7 @@ export function QuestionImage({
             key={`${imageUrl}::${attempt}`}
             ref={imgRef}
             src={imageUrl}
-            alt={alt}
+            alt={altText}
             decoding="async"
             loading="eager"
             className={`w-full h-full object-contain ${imgClassName} ${loading ? "invisible" : ""}`}

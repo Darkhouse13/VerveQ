@@ -32,18 +32,19 @@ import { useAuth } from "@/contexts/AuthContext";
 type Tab = "submit" | "review" | "submissions";
 
 // Football-only: submissions target the one live sport.
-const SPORTS = [{ name: "football", label: "Football" }];
+const SPORTS = [{ name: "football", labelKey: "forge.sportFootball" }];
 
 const DIFFICULTIES = ["easy", "intermediate", "hard"] as const;
-const DIFFICULTY_LABELS: Record<(typeof DIFFICULTIES)[number], string> = {
-  easy: "Easy",
-  intermediate: "Medium",
-  hard: "Hard",
+/** Locale keys (screens ns), resolved with t() at render. */
+const DIFFICULTY_LABEL_KEYS: Record<(typeof DIFFICULTIES)[number], string> = {
+  easy: "forge.difficultyEasy",
+  intermediate: "forge.difficultyMedium",
+  hard: "forge.difficultyHard",
 };
 
 const LETTERS = ["A", "B", "C", "D"];
 
-const TITLE = "The Forge";
+const TITLE_KEY = "forge.title";
 
 function useBackToProfile() {
   const navigate = useNavigate();
@@ -51,6 +52,7 @@ function useBackToProfile() {
 }
 
 export default function ForgeScreen() {
+  const { t } = useTranslation("screens");
   const { isGuest, isUsernameOnly } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("submit");
   const back = useBackToProfile();
@@ -58,7 +60,7 @@ export default function ForgeScreen() {
   const access = useQuery(api.forge.canAccess, isGuest ? "skip" : {});
 
   if (isGuest) {
-    return <ForgeLockScreen currentElo={0} hideElo message="Create a username account to use The Forge. Guest progress is tab-local and is not stored." />;
+    return <ForgeLockScreen currentElo={0} hideElo message={t("forge.lockedGuest")} />;
   }
 
   // Username-only players have no ELO yet — showing "1,200 CURRENT ELO" here
@@ -68,15 +70,15 @@ export default function ForgeScreen() {
       <ForgeLockScreen
         currentElo={0}
         hideElo
-        message="The Forge unlocks at Gold Tier (1500 ELO), and ELO needs a full account. Create one to start climbing."
+        message={t("forge.lockedUsernameOnly")}
       />
     );
   }
 
   if (access === undefined) {
     return (
-      <ShellLayout title={TITLE} back onBack={back}>
-        <LoadingLine>Loading The Forge…</LoadingLine>
+      <ShellLayout title={t(TITLE_KEY)} back onBack={back}>
+        <LoadingLine>{t("forge.loading")}</LoadingLine>
       </ShellLayout>
     );
   }
@@ -86,17 +88,17 @@ export default function ForgeScreen() {
   }
 
   return (
-    <ShellLayout title={TITLE} subtitle="Write questions for everyone to play" back onBack={back}>
+    <ShellLayout title={t(TITLE_KEY)} subtitle={t("forge.subtitle")} back onBack={back}>
       <div className="flex flex-col gap-4 py-1 md:mx-auto md:max-w-xl" data-testid="forge">
         <Segmented<Tab>
-          aria-label="The Forge"
+          aria-label={t(TITLE_KEY)}
           block
           value={activeTab}
           onChange={setActiveTab}
           options={[
-            { value: "submit", label: "Submit" },
-            { value: "review", label: "Review" },
-            { value: "submissions", label: "My submissions" },
+            { value: "submit", label: t("forge.tabSubmit") },
+            { value: "review", label: t("forge.tabReview") },
+            { value: "submissions", label: t("forge.tabSubmissions") },
           ]}
           className="[&>button]:px-2"
         />
@@ -120,24 +122,24 @@ function ForgeLockScreen({
   message?: string;
   hideElo?: boolean;
 }) {
+  const { t } = useTranslation("screens");
   const back = useBackToProfile();
   const displayElo = Math.max(Math.round(currentElo), 1200);
   // Contract marker: const displayElo = Math.round(currentElo);
   const progress = Math.min((displayElo / 1500) * 100, 100);
 
   return (
-    <ShellLayout title={TITLE} back onBack={back}>
+    <ShellLayout title={t(TITLE_KEY)} back onBack={back}>
       <div className="flex min-h-full flex-col justify-center py-2 md:mx-auto md:max-w-md">
         <Card elevation="lifted" padding="lg" className="text-center" data-testid="forge-locked">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted neo-border">
             <Lock size={30} strokeWidth={2.5} aria-hidden="true" />
           </div>
-          <h2 className="mb-2 font-heading text-title font-bold">The Forge is locked</h2>
+          <h2 className="mb-2 font-heading text-title font-bold">{t("forge.lockedTitle")}</h2>
           <p className="mb-5 text-body-sm text-muted-foreground">
             {message ?? (
               <>
-                Reach <span className="font-bold text-foreground">Gold Tier (1500 ELO)</span> in any sport to unlock
-                The Forge and create questions for the community.
+                {t("forge.lockedBodyBefore")}<span className="font-bold text-foreground">{t("forge.lockedGoal")}</span>{t("forge.lockedBodyAfter")}
               </>
             )}
           </p>
@@ -145,7 +147,7 @@ function ForgeLockScreen({
           {!hideElo && (
             <div className="mb-5">
               <p className="font-mono text-title-lg font-bold tabular-nums">{displayElo.toLocaleString()}</p>
-              <p className="font-mono text-eyebrow uppercase text-muted-foreground">Current ELO</p>
+              <p className="font-mono text-eyebrow uppercase text-muted-foreground">{t("forge.currentRating")}</p>
               <div
                 className="mt-3 h-3 rounded-full bg-muted neo-border"
                 role="progressbar"
@@ -156,13 +158,13 @@ function ForgeLockScreen({
                 <div className="h-full rounded-full bg-foreground" style={{ width: `${progress}%` }} />
               </div>
               <p className="mt-1.5 text-meta text-muted-foreground">
-                {Math.max(1500 - displayElo, 0).toLocaleString()} ELO to go
+                {t("forge.toGo", { n: Math.max(1500 - displayElo, 0).toLocaleString() })}
               </p>
             </div>
           )}
 
           <Button variant="secondary" size="md" block onClick={back}>
-            Go back
+            {t("forge.back")}
           </Button>
         </Card>
       </div>
@@ -199,12 +201,12 @@ function SubmitTab({ onSuccess }: { onSuccess: () => void }) {
   };
 
   const handleSubmit = async () => {
-    if (!questionText.trim()) return notify.error("Question is required");
-    if (!category.trim()) return notify.error("Category is required");
-    if (options.some((o) => !o.trim())) return notify.error("All 4 options are required");
+    if (!questionText.trim()) return notify.error(t("forge.errorQuestion"));
+    if (!category.trim()) return notify.error(t("forge.errorCategory"));
+    if (options.some((o) => !o.trim())) return notify.error(t("forge.errorOptions"));
 
     const uniqueOptions = new Set(options.map((o) => o.trim().toLowerCase()));
-    if (uniqueOptions.size !== 4) return notify.error("All options must be unique");
+    if (uniqueOptions.size !== 4) return notify.error(t("forge.errorUnique"));
 
     setSubmitting(true);
     try {
@@ -218,7 +220,7 @@ function SubmitTab({ onSuccess }: { onSuccess: () => void }) {
         difficulty,
         imageId: imageId ?? undefined,
       });
-      notify.success("Question submitted for review!");
+      notify.success(t("forge.submitted"));
       // Reset form
       setQuestionText("");
       setCategory("");
@@ -228,7 +230,7 @@ function SubmitTab({ onSuccess }: { onSuccess: () => void }) {
       setImageId(null);
       onSuccess();
     } catch (e) {
-      notify.error(friendlyError(e, "Submission failed"));
+      notify.error(friendlyError(e, t("forge.submitFailed")));
     } finally {
       setSubmitting(false);
     }
@@ -237,12 +239,12 @@ function SubmitTab({ onSuccess }: { onSuccess: () => void }) {
   return (
     <div className="flex flex-col gap-4" data-testid="forge-submit">
       <div className="flex items-center gap-2">
-        <span className="font-heading text-body-sm font-bold">Sport</span>
-        <Badge tone="neutral" shape="tag">{SPORTS[0].label}</Badge>
+        <span className="font-heading text-body-sm font-bold">{t("forge.sport")}</span>
+        <Badge tone="neutral" shape="tag">{t(SPORTS[0].labelKey)}</Badge>
       </div>
 
       <div>
-        <FieldLabel htmlFor="forge-category">Category</FieldLabel>
+        <FieldLabel htmlFor="forge-category">{t("forge.category")}</FieldLabel>
         <Input
           id="forge-category"
           placeholder={t("forge.topicPlaceholder")}
@@ -252,18 +254,18 @@ function SubmitTab({ onSuccess }: { onSuccess: () => void }) {
       </div>
 
       <div>
-        <FieldLabel>Difficulty</FieldLabel>
+        <FieldLabel>{t("forge.difficulty")}</FieldLabel>
         <Segmented<(typeof DIFFICULTIES)[number]>
-          aria-label="Difficulty"
+          aria-label={t("forge.difficulty")}
           block
           value={difficulty}
           onChange={setDifficulty}
-          options={DIFFICULTIES.map((d) => ({ value: d, label: DIFFICULTY_LABELS[d] }))}
+          options={DIFFICULTIES.map((d) => ({ value: d, label: t(DIFFICULTY_LABEL_KEYS[d]) }))}
         />
       </div>
 
       <div>
-        <FieldLabel htmlFor="forge-question">Question</FieldLabel>
+        <FieldLabel htmlFor="forge-question">{t("forge.question")}</FieldLabel>
         <Textarea
           id="forge-question"
           value={questionText}
@@ -275,7 +277,7 @@ function SubmitTab({ onSuccess }: { onSuccess: () => void }) {
       </div>
 
       <div>
-        <FieldLabel>Answers (tap a letter to mark the correct one)</FieldLabel>
+        <FieldLabel>{t("forge.answers")}</FieldLabel>
         <div className="flex flex-col gap-2.5">
           {options.map((opt, idx) => {
             const isCorrect = correctIdx === idx;
@@ -283,7 +285,7 @@ function SubmitTab({ onSuccess }: { onSuccess: () => void }) {
               <div key={idx} className="flex items-center gap-2">
                 <IconButton
                   variant="secondary"
-                  aria-label={`Mark answer ${LETTERS[idx]} correct`}
+                  aria-label={t("forge.markCorrect", { letter: LETTERS[idx] })}
                   aria-pressed={isCorrect}
                   onClick={() => setCorrectIdx(idx)}
                   className={cn("font-heading text-body-sm font-bold", isCorrect && "bg-verdict-right text-ink enabled:hover:bg-verdict-right")}
@@ -303,7 +305,7 @@ function SubmitTab({ onSuccess }: { onSuccess: () => void }) {
       </div>
 
       <div>
-        <FieldLabel htmlFor="forge-explanation">Explanation (optional)</FieldLabel>
+        <FieldLabel htmlFor="forge-explanation">{t("forge.explanation")}</FieldLabel>
         <Textarea
           id="forge-explanation"
           value={explanation}
@@ -315,13 +317,13 @@ function SubmitTab({ onSuccess }: { onSuccess: () => void }) {
       </div>
 
       <div>
-        <FieldLabel>Image (optional)</FieldLabel>
+        <FieldLabel>{t("forge.image")}</FieldLabel>
         <ImageDropzone imageId={imageId} onUpload={setImageId} onRemove={() => setImageId(null)} />
       </div>
 
       <Button variant="primary" size="lg" block onClick={handleSubmit} loading={submitting} data-testid="forge-submit-button">
         <Send size={18} strokeWidth={2.5} aria-hidden="true" />
-        Submit question
+        {t("forge.submit")}
       </Button>
     </div>
   );
@@ -330,6 +332,7 @@ function SubmitTab({ onSuccess }: { onSuccess: () => void }) {
 // ── Review Tab ──
 
 function ReviewTab() {
+  const { t } = useTranslation("screens");
   const queue = useQuery(api.forge.getReviewQueue, { limit: 20 });
   const voteMut = useMutation(api.forge.vote);
   const [voting, setVoting] = useState<string | null>(null);
@@ -340,28 +343,28 @@ function ReviewTab() {
     try {
       const res = await voteMut({ submissionId, vote });
       if (res.newStatus === "approved") {
-        notify.success("Question approved and added to the pool!");
+        notify.success(t("forge.approvedToast"));
       } else if (res.newStatus === "rejected") {
-        notify("Question rejected and archived.");
+        notify(t("forge.rejectedToast"));
       } else {
-        notify.success(`Vote recorded (${vote})`);
+        notify.success(vote === "approve" ? t("forge.voteApprove") : t("forge.voteReject"));
       }
     } catch (e) {
-      notify.error(friendlyError(e, "Vote failed"));
+      notify.error(friendlyError(e, t("forge.voteFailed")));
     } finally {
       setVoting(null);
     }
   };
 
   if (queue === undefined) {
-    return <LoadingLine>Loading review queue…</LoadingLine>;
+    return <LoadingLine>{t("forge.loadingQueue")}</LoadingLine>;
   }
 
   if (queue.length === 0) {
     return (
       <Card elevation="flat" padding="lg" className="text-center">
-        <p className="font-heading text-body-sm font-bold">No questions to review right now</p>
-        <p className="mt-1 text-meta text-muted-foreground">Check back later for new submissions</p>
+        <p className="font-heading text-body-sm font-bold">{t("forge.queueEmpty")}</p>
+        <p className="mt-1 text-meta text-muted-foreground">{t("forge.queueEmptyBody")}</p>
       </Card>
     );
   }
@@ -371,9 +374,13 @@ function ReviewTab() {
       {queue.map((s) => (
         <Card key={s._id} elevation="raised" className="flex flex-col gap-3">
           <div className="flex flex-wrap gap-2">
-            <Badge tone="neutral">{s.sport}</Badge>
+            <Badge tone="neutral">{s.sport === "football" ? t("forge.sportFootball") : s.sport}</Badge>
             <Badge tone="neutral">{s.category}</Badge>
-            <Badge tone="muted">{s.difficulty}</Badge>
+            <Badge tone="muted">
+              {s.difficulty in DIFFICULTY_LABEL_KEYS
+                ? t(DIFFICULTY_LABEL_KEYS[s.difficulty as (typeof DIFFICULTIES)[number]])
+                : s.difficulty}
+            </Badge>
           </div>
 
           {s.imageUrl && <QuestionImage imageUrl={s.imageUrl} onZoom={() => setZoomImage(s.imageUrl)} />}
@@ -393,7 +400,7 @@ function ReviewTab() {
                 >
                   <span className="font-heading text-meta font-bold text-muted-foreground">{LETTERS[idx]}</span>
                   <span className="min-w-0 flex-1">{opt}</span>
-                  {right && <CheckCircle size={16} strokeWidth={3} className="shrink-0 text-verdict-right" aria-label="Correct answer" />}
+                  {right && <CheckCircle size={16} strokeWidth={3} className="shrink-0 text-verdict-right" aria-label={t("forge.correctAnswer")} />}
                 </li>
               );
             })}
@@ -402,10 +409,9 @@ function ReviewTab() {
           {s.explanation && <p className="text-meta italic text-muted-foreground">{s.explanation}</p>}
 
           <div className="flex items-center justify-between text-meta text-muted-foreground">
-            <span>by @{s.authorUsername}</span>
+            <span>{t("forge.byAuthor", { username: s.authorUsername })}</span>
             <span className="font-mono font-bold">
-              Score: {s.netVotes > 0 ? "+" : ""}
-              {s.netVotes}
+              {t("forge.score", { score: `${s.netVotes > 0 ? "+" : ""}${s.netVotes}` })}
             </span>
           </div>
 
@@ -420,7 +426,7 @@ function ReviewTab() {
               className={cn(s.userVote === "approve" && "bg-verdict-right text-ink")}
             >
               <ThumbsUp size={18} strokeWidth={2.5} aria-hidden="true" />
-              Approve
+              {t("forge.approve")}
             </Button>
             <Button
               variant="secondary"
@@ -432,7 +438,7 @@ function ReviewTab() {
               className={cn(s.userVote === "reject" && "bg-verdict-wrong text-ink")}
             >
               <ThumbsDown size={18} strokeWidth={2.5} aria-hidden="true" />
-              Reject
+              {t("forge.reject")}
             </Button>
           </div>
         </Card>
@@ -446,17 +452,18 @@ function ReviewTab() {
 // ── My Submissions Tab ──
 
 function MySubmissionsTab() {
+  const { t } = useTranslation("screens");
   const submissions = useQuery(api.forge.getMySubmissions);
 
   if (submissions === undefined) {
-    return <LoadingLine>Loading submissions…</LoadingLine>;
+    return <LoadingLine>{t("forge.loadingSubmissions")}</LoadingLine>;
   }
 
   if (submissions.length === 0) {
     return (
       <Card elevation="flat" padding="lg" className="text-center">
-        <p className="font-heading text-body-sm font-bold">You haven't submitted any questions yet</p>
-        <p className="mt-1 text-meta text-muted-foreground">Switch to the Submit tab to create your first question</p>
+        <p className="font-heading text-body-sm font-bold">{t("forge.submissionsEmpty")}</p>
+        <p className="mt-1 text-meta text-muted-foreground">{t("forge.submissionsEmptyBody")}</p>
       </Card>
     );
   }
@@ -467,21 +474,21 @@ function MySubmissionsTab() {
         return (
           <Badge tone="neutral">
             <Clock size={12} strokeWidth={3} aria-hidden="true" />
-            Pending
+            {t("forge.statusPending")}
           </Badge>
         );
       case "approved":
         return (
           <Badge tone="right">
             <CheckCircle size={12} strokeWidth={3} aria-hidden="true" />
-            Approved
+            {t("forge.statusApproved")}
           </Badge>
         );
       case "rejected":
         return (
           <Badge tone="wrong">
             <XCircle size={12} strokeWidth={3} aria-hidden="true" />
-            Rejected
+            {t("forge.statusRejected")}
           </Badge>
         );
       default:
@@ -495,18 +502,17 @@ function MySubmissionsTab() {
         <Card key={s._id} elevation="flat">
           <div className="mb-2 flex items-start justify-between gap-2">
             <div className="flex flex-wrap gap-1.5">
-              <Badge tone="neutral">{s.sport}</Badge>
+              <Badge tone="neutral">{s.sport === "football" ? t("forge.sportFootball") : s.sport}</Badge>
               {statusBadge(s.status)}
             </div>
             <span className="shrink-0 font-mono text-meta font-bold">
-              {s.netVotes > 0 ? "+" : ""}
-              {s.netVotes} votes
+              {t("forge.votes", { count: s.netVotes, signed: `${s.netVotes > 0 ? "+" : ""}${s.netVotes}` })}
             </span>
           </div>
           <p className="font-heading text-body-sm font-bold">{s.question}</p>
           <div className="mt-1.5 flex gap-3 text-meta text-muted-foreground">
-            <span>{s.approveCount} approvals</span>
-            <span>{s.rejectCount} rejections</span>
+            <span>{t("forge.approvals", { count: s.approveCount })}</span>
+            <span>{t("forge.rejections", { count: s.rejectCount })}</span>
           </div>
         </Card>
       ))}

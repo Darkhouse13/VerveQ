@@ -85,7 +85,7 @@ function Cell({
         <div className="flex items-center gap-1 pt-1 flex-wrap">
           {style && (
             <span className={cn("neo-border rounded-full px-1.5 font-mono font-bold text-eyebrow tracking-normal leading-tight", style.badgeClass)}>
-              {style.label}
+              {t(style.labelKey)}
             </span>
           )}
           <span className="font-mono font-bold text-eyebrow tracking-normal">{cell.points ?? 0}p</span>

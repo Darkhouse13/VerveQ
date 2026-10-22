@@ -105,7 +105,7 @@ export function GridStage({ vm, subtitle, onExit, header }: GridStageProps) {
   return (
     <PlayStage
       mode="grid"
-      title="VerveGrid"
+      title={t("verveGrid.title")}
       subtitle={subtitle}
       onExit={onExit}
       exitLabel={t("grid.quit")}

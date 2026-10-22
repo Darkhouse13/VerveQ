@@ -10,6 +10,7 @@
 import { useCallback, useEffect } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { UpgradeAccountForm } from "@/components/shell/onboarding/UpgradeAccountForm";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -25,6 +26,7 @@ export default function UpgradeScreen() {
   const [params] = useSearchParams();
   const next = safeInternalPath(params.get("next"));
   const { accountState, isFullAccount } = useAuth();
+  const { t } = useTranslation("shell");
 
   // Finished upgrading (or already full): continue to the original destination.
   useEffect(() => {
@@ -39,7 +41,7 @@ export default function UpgradeScreen() {
     return (
       <ShellLayout hideNav center>
         <div className="flex justify-center">
-          <Loader2 className="animate-spin" size={28} strokeWidth={2.5} aria-label="Loading" />
+          <Loader2 className="animate-spin" size={28} strokeWidth={2.5} aria-label={t("common.loading")} />
         </div>
       </ShellLayout>
     );

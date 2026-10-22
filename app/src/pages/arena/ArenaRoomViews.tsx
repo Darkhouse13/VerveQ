@@ -3,6 +3,8 @@
  * by the shell Arena play screen.
  */
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { useMutation, useQuery } from "convex/react";
 import {
   ArrowRight,
@@ -63,6 +65,7 @@ export function LobbyView({
   room: Room;
   userId: Id<"users"> | undefined;
 }) {
+  const { t } = useTranslation("screens");
   const setReady = useMutation(api.challengeArenas.setReady);
   const setTeam = useMutation(api.challengeArenas.setTeam);
   const startMut = useMutation(api.challengeArenas.start);
@@ -94,6 +97,7 @@ export function LobbyView({
     allReady,
     teamsValid,
     mode: room.mode,
+    t,
   });
 
   const handleReady = async () => {
@@ -101,7 +105,7 @@ export function LobbyView({
     try {
       await setReady({ arenaId: room.arenaId, ready: !me.ready });
     } catch (e) {
-      notify.error(friendlyError(e, "Could not update ready"));
+      notify.error(friendlyError(e, t("arenaRoom.readyFailed")));
     }
   };
 
@@ -109,7 +113,7 @@ export function LobbyView({
     try {
       await setTeam({ arenaId: room.arenaId, team });
     } catch (e) {
-      notify.error(friendlyError(e, "Could not set team"));
+      notify.error(friendlyError(e, t("arenaRoom.teamFailed")));
     }
   };
 
@@ -117,22 +121,22 @@ export function LobbyView({
     try {
       await startMut({ arenaId: room.arenaId, force });
     } catch (e) {
-      notify.error(friendlyError(e, "Could not start"));
+      notify.error(friendlyError(e, t("arenaRoom.startFailed")));
     }
   };
 
   const handleShare = async () => {
-    const res = await shareArenaLink(room.code);
-    if (res === "copied") notify.success("Link copied");
-    if (res === "failed") notify.error("Could not share link");
+    const res = await shareArenaLink(room.code, undefined, t);
+    if (res === "copied") notify.success(t("arenaRoom.linkCopied"));
+    if (res === "failed") notify.error(t("arenaRoom.shareLinkFailed"));
   };
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(buildArenaUrl(room.code));
-      notify.success("Link copied");
+      notify.success(t("arenaRoom.linkCopied"));
     } catch {
-      notify.error("Could not copy");
+      notify.error(t("arenaRoom.copyFailed"));
     }
   };
 
@@ -147,20 +151,20 @@ export function LobbyView({
       <div className="space-y-5">
         <NeoCard shadow="lg" className="text-center py-5">
           <p className="text-[10px] font-heading uppercase text-muted-foreground mb-1">
-            Arena code
+            {t("arenaRoom.code")}
           </p>
           <p className="font-mono font-bold text-4xl tracking-[0.4em]">{room.code}</p>
           <p className="text-xs text-muted-foreground mt-1">
-            {active.length}/{capacity} joined · {arenaModeLabel(room.mode)}
+            {t("arenaRoom.joined", { count: active.length, capacity })} · {arenaModeLabel(room.mode)}
           </p>
           <div className="mt-4 grid grid-cols-2 gap-2">
             <NeoButton variant="blue" size="md" onClick={handleShare}>
               <Share2 size={14} strokeWidth={3} />
-              Share
+              {t("arenaRoom.share")}
             </NeoButton>
             <NeoButton variant="secondary" size="md" onClick={handleCopy}>
               <Copy size={14} strokeWidth={3} />
-              Copy link
+              {t("arenaRoom.copyLink")}
             </NeoButton>
           </div>
         </NeoCard>
@@ -185,8 +189,7 @@ export function LobbyView({
         {!isHost && (
           <NeoCard className="text-center">
             <p className="text-xs text-muted-foreground">
-              Waiting for the host to start. Mark yourself ready when you&apos;re good
-              to go.
+              {t("arenaRoom.waitingForHost")}
             </p>
           </NeoCard>
         )}
@@ -194,7 +197,7 @@ export function LobbyView({
         {isHost && blockedReasons.length > 0 && (
           <NeoCard color="default" className="text-xs">
             <p className="font-heading font-bold uppercase mb-1.5">
-              Waiting on
+              {t("arenaRoom.waitingOn")}
             </p>
             <ul className="space-y-1 list-disc list-inside text-muted-foreground">
               {blockedReasons.map((r) => (
@@ -212,10 +215,10 @@ export function LobbyView({
           >
             {me?.ready ? (
               <>
-                <Check size={16} strokeWidth={3} /> Ready
+                <Check size={16} strokeWidth={3} /> {t("arenaRoom.ready")}
               </>
             ) : (
-              "Mark me ready"
+              t("arenaRoom.markReady")
             )}
           </NeoButton>
 
@@ -226,7 +229,7 @@ export function LobbyView({
               disabled={!canStartNormal}
               onClick={() => void handleStart(false)}
             >
-              Start arena
+              {t("arenaRoom.start")}
             </NeoButton>
           )}
 
@@ -238,11 +241,13 @@ export function LobbyView({
               onClick={() => void handleStart(true)}
             >
               {forceAvailable
-                ? "Force start (drops unready)"
-                : `Force start available in ${formatCountdown(
-                    Math.max(0, room.forceStartAvailableAt - tick),
-                    FORCE_START_GRACE_LABEL_MS,
-                  )}`}
+                ? t("arenaRoom.forceStart")
+                : t("arenaRoom.forceStartIn", {
+                    time: formatCountdown(
+                      Math.max(0, room.forceStartAvailableAt - tick),
+                      FORCE_START_GRACE_LABEL_MS,
+                    ),
+                  })}
             </NeoButton>
           )}
         </div>
@@ -266,21 +271,23 @@ function startBlockedReasons({
   allReady,
   teamsValid,
   mode,
+  t,
 }: {
   active: RoomPlayer[];
   allReady: boolean;
   teamsValid: boolean;
   mode: string;
+  t: TFunction;
 }) {
   const reasons: string[] = [];
-  if (active.length < 2) reasons.push("At least 2 players need to be in the lobby");
+  if (active.length < 2) reasons.push(t("arenaRoom.needTwoPlayers"));
   if (mode === "2v2" && !teamsValid) {
-    reasons.push("Each team needs at least one player (cap 2)");
+    reasons.push(t("arenaRoom.needTeams"));
   }
   if (active.length >= 2) {
     const unready = active.filter((p) => !p.ready).map((p) => p.nameSnapshot);
     if (unready.length > 0) {
-      reasons.push(`Unready: ${unready.join(", ")}`);
+      reasons.push(t("arenaRoom.notReadyList", { names: unready.join(", ") }));
     }
   }
   if (active.length >= 2 && allReady && teamsValid) return [];
@@ -298,9 +305,10 @@ function TeamPicker({
   teamCounts: { A: number; B: number; none: number };
   onPick: (team: "A" | "B") => void;
 }) {
+  const { t } = useTranslation("screens");
   return (
     <div>
-      <p className="text-[11px] font-heading font-bold uppercase mb-2">Teams</p>
+      <p className="text-[11px] font-heading font-bold uppercase mb-2">{t("arenaRoom.teams")}</p>
       <div className="grid grid-cols-2 gap-2">
         {(["A", "B"] as const).map((team) => {
           const members = active.filter((p) => p.team === team);
@@ -314,7 +322,7 @@ function TeamPicker({
               className={`py-3 ${full ? "opacity-60" : ""}`}
             >
               <div className="flex items-center justify-between mb-1">
-                <p className="font-heading font-bold text-sm">Team {team}</p>
+                <p className="font-heading font-bold text-sm">{t("arenaRoom.team", { team })}</p>
                 <NeoBadge
                   color={isMine ? "accent" : "muted"}
                   size="sm"
@@ -324,7 +332,7 @@ function TeamPicker({
               </div>
               <div className="space-y-0.5">
                 {members.length === 0 && (
-                  <p className="text-[10px] text-muted-foreground">Empty</p>
+                  <p className="text-[10px] text-muted-foreground">{t("arenaRoom.empty")}</p>
                 )}
                 {members.map((m) => (
                   <p
@@ -352,12 +360,13 @@ function Roster({
   userId: Id<"users"> | undefined;
   capacity: number;
 }) {
+  const { t } = useTranslation("screens");
   const active = room.players.filter((p) => !p.left);
   const slotsToFill = Math.max(0, capacity - active.length);
   return (
     <div>
       <p className="text-[11px] font-heading font-bold uppercase mb-2 flex items-center gap-1.5">
-        <Users size={12} strokeWidth={3} /> Players
+        <Users size={12} strokeWidth={3} /> {t("arenaRoom.players")}
       </p>
       <div className="space-y-1.5">
         {active.map((p) => (
@@ -372,7 +381,7 @@ function Roster({
             key={`empty-${i}`}
             className="py-2.5 text-xs text-muted-foreground"
           >
-            <span className="font-heading uppercase">Waiting for player…</span>
+            <span className="font-heading uppercase">{t("arenaRoom.waitingForPlayer")}</span>
           </NeoCard>
         ))}
       </div>
@@ -387,6 +396,7 @@ function PlayerRow({
   player: RoomPlayer;
   isMe: boolean;
 }) {
+  const { t } = useTranslation("screens");
   return (
     <NeoCard color={isMe ? "primary" : "default"} className="py-2.5">
       <div className="flex items-center justify-between gap-2">
@@ -396,7 +406,7 @@ function PlayerRow({
           )}
           <span className="font-heading font-bold text-sm truncate">
             {player.nameSnapshot}
-            {isMe && " (you)"}
+            {isMe && t("arenaRoom.youSuffix")}
           </span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -406,7 +416,7 @@ function PlayerRow({
             </NeoBadge>
           )}
           <NeoBadge color={player.ready ? "success" : "muted"} size="sm">
-            {player.ready ? "Ready" : "Idle"}
+            {player.ready ? t("arenaRoom.ready") : t("arenaRoom.notReady")}
           </NeoBadge>
         </div>
       </div>
@@ -417,6 +427,7 @@ function PlayerRow({
 // ───────────────────────── COUNTDOWN ─────────────────────────
 
 export function CountdownView({ room }: { room: Room }) {
+  const { t } = useTranslation("screens");
   const anchor = usePhaseAnchor(`${room.arenaId}:countdown`);
   const tick = useTick(120);
   const elapsed = anchor ? Math.max(0, tick - anchor) : 0;
@@ -428,14 +439,14 @@ export function CountdownView({ room }: { room: Room }) {
     <div className="space-y-4 pt-6">
       <NeoCard shadow="lg" className="text-center py-10">
         <p className="text-xs font-heading uppercase text-muted-foreground mb-3">
-          Get ready
+          {t("arenaRoom.getReady")}
         </p>
         <p className="font-mono font-bold text-7xl">{seconds}</p>
         <p className="text-xs font-heading uppercase text-muted-foreground mt-4">
-          Round 1 / {room.config.rounds}
+          {t("arenaRoom.roundOf", { round: 1, rounds: room.config.rounds })}
         </p>
         <NeoBadge color="primary" rotated size="md" className="mt-2 text-base">
-          {arenaCategoryEmoji(firstCategory)} {arenaCategoryLabel(firstCategory)}
+          {arenaCategoryEmoji(firstCategory)} {arenaCategoryLabel(firstCategory, t)}
         </NeoBadge>
       </NeoCard>
     </div>
@@ -451,6 +462,7 @@ export function RoundBreakView({
   room: Room;
   userId: Id<"users"> | undefined;
 }) {
+  const { t } = useTranslation("screens");
   const readyNextRound = useMutation(api.challengeArenas.readyNextRound);
   const anchor = usePhaseAnchor(
     `${room.arenaId}:break:${room.currentRound}`,
@@ -470,7 +482,7 @@ export function RoundBreakView({
     try {
       await readyNextRound({ arenaId: room.arenaId });
     } catch (e) {
-      notify.error(friendlyError(e, "Could not ready"));
+      notify.error(friendlyError(e, t("arenaRoom.readyFailed")));
     }
   };
 
@@ -478,7 +490,7 @@ export function RoundBreakView({
     <div className="space-y-5">
       <NeoCard shadow="lg" className="text-center py-5">
         <p className="text-[10px] font-heading uppercase text-muted-foreground mb-1">
-          Round {room.currentRound + 1} complete
+          {t("arenaRoom.roundComplete", { round: room.currentRound + 1 })}
         </p>
         <NeoBadge color="primary" rotated size="md" className="text-base">
           {arenaCategoryEmoji(
@@ -486,6 +498,7 @@ export function RoundBreakView({
           )}{" "}
           {arenaCategoryLabel(
             room.config.categories[room.currentRound] ?? "football_quiz",
+            t,
           )}
         </NeoBadge>
       </NeoCard>
@@ -493,16 +506,16 @@ export function RoundBreakView({
       <LeaderboardCard
         room={room}
         rows={room.roundLeaderboard ?? []}
-        title="Round leaderboard"
+        title={t("arenaRoom.roundStandings")}
       />
 
       {nextCategory && (
         <NeoCard color="blue" className="text-center">
           <p className="text-[10px] font-heading uppercase opacity-80 mb-1">
-            Next round
+            {t("arenaRoom.nextRound")}
           </p>
           <p className="font-heading font-bold text-base">
-            {arenaCategoryEmoji(nextCategory)} {arenaCategoryLabel(nextCategory)}
+            {arenaCategoryEmoji(nextCategory)} {arenaCategoryLabel(nextCategory, t)}
           </p>
         </NeoCard>
       )}
@@ -515,18 +528,18 @@ export function RoundBreakView({
       >
         {me?.ready ? (
           <>
-            <Check size={16} strokeWidth={3} /> Ready
+            <Check size={16} strokeWidth={3} /> {t("arenaRoom.ready")}
           </>
         ) : (
           <>
-            <ChevronRight size={16} strokeWidth={3} /> Ready for next round
+            <ChevronRight size={16} strokeWidth={3} /> {t("arenaRoom.readyNextRound")}
           </>
         )}
       </NeoButton>
 
       <p className="text-center text-[11px] text-muted-foreground inline-flex items-center justify-center gap-1.5 w-full">
         <Hourglass size={12} strokeWidth={3} />
-        Auto-advance in {seconds}s — or once everyone&apos;s ready
+        {t("arenaRoom.autoAdvance", { seconds })}
       </p>
     </div>
   );
@@ -545,6 +558,7 @@ export function FinalView({
   rematching: boolean;
   onRematch: () => void;
 }) {
+  const { t } = useTranslation("screens");
   const summary = useQuery(api.challengeArenas.getArenaSummary, {
     arenaId: room.arenaId,
   });
@@ -554,7 +568,7 @@ export function FinalView({
       <Card elevation="lifted" className="text-center py-10">
         <Trophy size={24} strokeWidth={2.5} className="mx-auto mb-2 text-muted-foreground" aria-hidden="true" />
         <p className="font-heading font-bold text-body-sm animate-pulse motion-reduce:animate-none">
-          Tallying the final podium…
+          {t("arenaRoom.tallying")}
         </p>
       </Card>
     );
@@ -582,13 +596,18 @@ export function FinalView({
 }
 
 /** Rematch, in its three states — the result screen's next action. */
-function rematchAction(room: Room, rematching: boolean, onRematch: () => void) {
+function rematchAction(
+  room: Room,
+  rematching: boolean,
+  onRematch: () => void,
+  t: TFunction,
+) {
   return {
     label: room.rematchArenaCode
-      ? "Join rematch lobby"
+      ? t("arenaRoom.joinRematch")
       : rematching
-        ? "Building lobby…"
-        : "Rematch, same crew",
+        ? t("arenaRoom.buildingLobby")
+        : t("arenaRoom.rematch"),
     icon: <RotateCcw size={18} aria-hidden="true" />,
     onClick: onRematch,
     disabled: rematching,
@@ -605,33 +624,33 @@ function FinalUnavailable({
   rematching: boolean;
   onRematch: () => void;
 }) {
+  const { t } = useTranslation("screens");
   return (
     <ResultScreen
       testId="arena-result"
       hero={
         <Card elevation="lifted" padding="lg" className="text-center">
           <Trophy size={24} strokeWidth={2.5} className="mx-auto mb-3 text-muted-foreground" aria-hidden="true" />
-          <p className="font-heading font-bold text-body">Final results unavailable</p>
+          <p className="font-heading font-bold text-body">{t("arenaRoom.finalUnavailable")}</p>
           <p className="text-meta text-muted-foreground mt-2 max-w-xs mx-auto">
-            We couldn&apos;t load the podium for this arena yet. Try again from the
-            rematch, or head back and rejoin.
+            {t("arenaRoom.finalUnavailableBody")}
           </p>
         </Card>
       }
       actions={
         <ResultActions
           primary={{
-            label: "Share arena",
+            label: t("arenaRoom.shareArena"),
             icon: <Share2 size={18} aria-hidden="true" />,
             onClick: () => {
-              void shareArenaLink(room.code).then((res) => {
-                if (res === "copied") notify.success("Link copied");
-                if (res === "failed") notify.error("Could not share");
+              void shareArenaLink(room.code, undefined, t).then((res) => {
+                if (res === "copied") notify.success(t("arenaRoom.linkCopied"));
+                if (res === "failed") notify.error(t("arenaRoom.shareFailed"));
               });
             },
             testId: "arena-share",
           }}
-          secondary={[rematchAction(room, rematching, onRematch)]}
+          secondary={[rematchAction(room, rematching, onRematch, t)]}
         />
       }
     />
@@ -691,6 +710,7 @@ function FinalSummaryView({
   rematching: boolean;
   onRematch: () => void;
 }) {
+  const { t } = useTranslation("screens");
   const playerStatsById = useMemo(() => {
     const map = new Map<Id<"users">, ArenaSummaryPlayerStats>();
     for (const player of summary.players) {
@@ -717,20 +737,30 @@ function FinalSummaryView({
     let text: string;
     if (summary.isTeamMode && topTeam) {
       const myTeamScore = myTeamRow?.totalScore ?? 0;
-      text = `VerveQ arena ${code} — ${topTeam.label} wins (${topTeam.totalScore}). My team scored ${myTeamScore}. Rematch?`;
+      text = t("arenaRoom.shareTextTeam", {
+        code,
+        team: topTeam.label,
+        score: topTeam.totalScore,
+        mine: myTeamScore,
+      });
     } else if (topPlayer) {
       const myScore = meAsPlayer?.totalScore ?? 0;
-      text = `VerveQ arena ${code} — ${topPlayer.nameSnapshot} wins with ${topPlayer.totalScore}. I scored ${myScore}. Rematch?`;
+      text = t("arenaRoom.shareTextSolo", {
+        code,
+        name: topPlayer.nameSnapshot,
+        score: topPlayer.totalScore,
+        mine: myScore,
+      });
     } else {
-      text = `VerveQ arena ${code} — rematch?`;
+      text = t("arenaRoom.shareTextEmpty", { code });
     }
     const res = await shareArenaLink(code, text);
-    if (res === "shared") notify.success("Result shared");
-    if (res === "copied") notify.success("Result copied");
-    if (res === "failed") notify.error("Could not share");
+    if (res === "shared") notify.success(t("arenaRoom.resultShared"));
+    if (res === "copied") notify.success(t("arenaRoom.resultCopied"));
+    if (res === "failed") notify.error(t("arenaRoom.shareFailed"));
   };
 
-  const modeLabel = arenaModeVerboseLabel(summary.mode);
+  const modeLabel = arenaModeVerboseLabel(summary.mode, t);
   const subTitle = `${room.config.rounds}R×${room.config.perRound}Q · ${summary.totalQuestions}Q`;
 
   // Your place: your team's in 2v2, your own otherwise.
@@ -740,25 +770,25 @@ function FinalSummaryView({
   const won = myRank === 1;
   const winnerLine = summary.isTeamMode
     ? topTeam
-      ? `${topTeam.label} wins with ${topTeam.totalScore}`
-      : "No score recorded"
+      ? t("arenaRoom.winsWith", { name: topTeam.label, score: topTeam.totalScore })
+      : t("arenaRoom.noScore")
     : topPlayer
-      ? `${topPlayer.nameSnapshot} wins with ${topPlayer.totalScore}`
-      : "No score recorded";
+      ? t("arenaRoom.winsWith", { name: topPlayer.nameSnapshot, score: topPlayer.totalScore })
+      : t("arenaRoom.noScore");
 
   return (
     <ResultScreen
       testId="arena-result"
       hero={
         <ResultHero
-          eyebrow={`Arena ${room.code} · Final`}
+          eyebrow={t("arenaRoom.finalEyebrow", { code: room.code })}
           score={myScore}
-          caption={summary.isTeamMode ? "Your team" : "Your score"}
+          caption={summary.isTeamMode ? t("arenaRoom.yourTeam") : t("arenaRoom.yourScore")}
           testId="arena-result-hero"
         >
           {myRank != null && (
             <HeroPill testId="arena-result-rank">
-              {won ? "You win" : `#${myRank} of ${field}`}
+              {won ? t("arenaRoom.youWin") : t("arenaRoom.rankOf", { rank: myRank, field })}
             </HeroPill>
           )}
         </ResultHero>
@@ -772,16 +802,16 @@ function FinalSummaryView({
       actions={
         <ResultActions
           primary={{
-            label: "Share result",
+            label: t("arenaRoom.shareResult"),
             icon: <Share2 size={18} aria-hidden="true" />,
             onClick: () => void handleShareCard(),
             testId: "arena-share",
           }}
-          secondary={[rematchAction(room, rematching, onRematch)]}
+          secondary={[rematchAction(room, rematching, onRematch, t)]}
         />
       }
       details={
-        <ResultDetails summary="Final standings" testId="arena-result-standings">
+        <ResultDetails summary={t("arenaRoom.finalStandings")} testId="arena-result-standings">
           <div className="space-y-3 pt-1">
             <FinalAwards summary={summary} />
             <FinalStandingsCard
@@ -799,6 +829,7 @@ function FinalSummaryView({
 }
 
 function FinalAwards({ summary }: { summary: ArenaSummary }) {
+  const { t } = useTranslation("screens");
   const fastestNames = formatSummaryNames(summary.superlatives.fastest, "—");
   const sharpshooterNames = formatSummaryNames(
     summary.superlatives.sharpshooter,
@@ -821,9 +852,9 @@ function FinalAwards({ summary }: { summary: ArenaSummary }) {
 
   return (
     <div className="grid grid-cols-3 gap-2">
-      <AwardChip label="Fastest" names={fastestNames} stat={fastestStat} />
-      <AwardChip label="Accuracy" names={sharpshooterNames} stat={sharpshooterStat} />
-      <AwardChip label="Hot streak" names={hotStreakNames} stat={hotStreakStat} />
+      <AwardChip label={t("arenaRoom.awardFastest")} names={fastestNames} stat={fastestStat} />
+      <AwardChip label={t("arenaRoom.awardAccuracy")} names={sharpshooterNames} stat={sharpshooterStat} />
+      <AwardChip label={t("arenaRoom.awardStreak")} names={hotStreakNames} stat={hotStreakStat} />
     </div>
   );
 }
@@ -884,13 +915,14 @@ function FinalStandingsCard({
 }
 
 function StandingsHeader() {
+  const { t } = useTranslation("screens");
   return (
     <div className="grid grid-cols-[28px_1fr_56px_44px_56px] items-center gap-2 px-2 pb-1 mb-1 border-b-2 border-border font-mono text-eyebrow uppercase text-muted-foreground">
       <span>#</span>
-      <span>Player</span>
-      <span className="text-right">Score</span>
-      <span className="text-right">Acc</span>
-      <span className="text-right">Avg</span>
+      <span>{t("arenaRoom.colPlayer")}</span>
+      <span className="text-right">{t("arenaRoom.colScore")}</span>
+      <span className="text-right">{t("arenaRoom.colAccuracy")}</span>
+      <span className="text-right">{t("arenaRoom.colAvg")}</span>
     </div>
   );
 }
@@ -982,6 +1014,7 @@ function TeamHeaderRow({
   score: number;
   isWinner: boolean;
 }) {
+  const { t } = useTranslation("screens");
   return (
     <div
       className={cn(
@@ -996,7 +1029,7 @@ function TeamHeaderRow({
         {label}
       </span>
       <span className="font-mono font-bold text-body-sm text-right">{score}</span>
-      <span className="font-mono text-eyebrow tracking-normal text-right">team</span>
+      <span className="font-mono text-eyebrow tracking-normal text-right">{t("arenaRoom.teamTag")}</span>
       <span className="font-mono text-eyebrow tracking-normal text-right">·</span>
     </div>
   );
@@ -1023,6 +1056,7 @@ function StandingsRow({
   left: boolean;
   indented?: boolean;
 }) {
+  const { t } = useTranslation("screens");
   return (
     <div
       className={cn(
@@ -1032,12 +1066,12 @@ function StandingsRow({
       )}
     >
       <span className="font-mono font-bold text-eyebrow tracking-normal text-center">
-        {isWinner ? <Crown size={14} className="mx-auto" aria-label="Winner" /> : rankBadge}
+        {isWinner ? <Crown size={14} className="mx-auto" aria-label={t("arenaRoom.winner")} /> : rankBadge}
       </span>
       <span className="font-heading font-bold text-body-sm truncate inline-flex items-center gap-1.5">
         <span className="truncate">{name}</span>
-        {isMe && <span className="font-mono text-eyebrow uppercase">you</span>}
-        {left && <span className="font-mono text-eyebrow uppercase">left</span>}
+        {isMe && <span className="font-mono text-eyebrow uppercase">{t("arenaRoom.youTag")}</span>}
+        {left && <span className="font-mono text-eyebrow uppercase">{t("arenaRoom.leftTag")}</span>}
       </span>
       <span className="font-mono font-bold text-body-sm text-right">{score}</span>
       <span className="font-mono text-eyebrow tracking-normal text-right">{acc}</span>
@@ -1061,6 +1095,7 @@ function LeaderboardCard({
   }>;
   title: string;
 }) {
+  const { t } = useTranslation("screens");
   if (rows.length === 0) {
     return (
       <div>
@@ -1068,7 +1103,7 @@ function LeaderboardCard({
           {title}
         </p>
         <NeoCard className="text-center text-xs text-muted-foreground py-3">
-          No scores yet
+          {t("arenaRoom.noScoresYet")}
         </NeoCard>
       </div>
     );
@@ -1117,13 +1152,14 @@ export function NotInRoom({
   title,
   detail,
   onBack,
-  backLabel = "Back to Challenge",
+  backLabel,
 }: {
   title: string;
   detail?: string;
   onBack?: () => void;
   backLabel?: string;
 }) {
+  const { t } = useTranslation("screens");
   return (
     <div className="min-h-screen bg-background px-5 py-8 flex flex-col items-center justify-center">
       <NeoCard shadow="lg" className="w-full max-w-md text-center py-8">
@@ -1139,7 +1175,7 @@ export function NotInRoom({
           onClick={onBack ?? (() => (window.location.pathname = "/challenge"))}
         >
           <ArrowRight size={14} strokeWidth={3} />
-          {backLabel}
+          {backLabel ?? t("arenaRoom.back")}
         </NeoButton>
       </NeoCard>
     </div>

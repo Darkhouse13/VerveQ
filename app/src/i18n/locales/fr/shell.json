@@ -1,13 +1,7 @@
 {
   "common": {
     "back": "Retour",
-    "play": "Jouer",
-    "new": "Nouveau",
-    "soon": "Bientôt",
-    "comingSoon": "Bientôt disponible",
-    "enter": "Entrer",
     "cancel": "Annuler",
-    "inLearn": "Dans Apprendre",
     "close": "Fermer",
     "exit": "Quitter",
     "copied": "Copié",
@@ -18,10 +12,7 @@
   "nav": {
     "weekend": "Weekend",
     "play": "Jouer",
-    "home": "Accueil",
-    "compete": "Affronter",
     "ranks": "Classement",
-    "learn": "Apprendre",
     "profile": "Profil"
   },
   "auth": {
@@ -29,9 +20,9 @@
     "haveAccount": "Tu as déjà un compte ?"
   },
   "landing": {
-    "eyebrow": "Quiz football · en duel",
-    "headline": "Tranchons-en.",
-    "subline": "Prouve que tu en sais plus que tes potes — le football d'abord, le reste ensuite.",
+    "eyebrow": "Jeux de foot quotidiens",
+    "headline": "Tu peux le battre ?",
+    "subline": "De nouveaux jeux de foot chaque jour — Qui est le plus âgé ?, Lettres manquantes, le Quiz du jour et plus encore. Deux minutes par partie.",
     "play": "Jouer maintenant",
     "freeNote": "Gratuit · sans inscription — joue d'abord, choisis un pseudo après.",
     "haveAccount": "Déjà sur VerveQ ?",
@@ -47,7 +38,7 @@
     "resultBadge": "Belle manche",
     "resultCorrect": "{{correct}} / {{total}} correctes",
     "claimTitle": "Choisis un pseudo",
-    "claimBody": "Lance la compétition et défie un pote — sans e-mail, sans mot de passe.",
+    "claimBody": "Garde ta série et défie un ami — sans e-mail ni mot de passe.",
     "claimCta": "Choisir un pseudo",
     "maybeLater": "Plus tard — je continue à jouer",
     "careerPathCta": "Essaie Career Path — retrouve le joueur à partir de ses clubs",
@@ -77,94 +68,88 @@
       "eyebrow": "À la une"
     },
     "pillars": {
-      "competeTitle": "Affronter",
-      "competeChip": "Classé",
-      "competeBody": "Arènes en direct, duels et casse-têtes football. Choisis une catégorie, grimpe au classement.",
-      "rankChip": "Rang : {{tier}}",
-      "learnTitle": "Apprendre",
-      "learnChip": "Voie douce",
-      "learnBody": "Construis de vraies connaissances. Questions adaptatives, explications pédagogiques, révisions espacées — pas un examen.",
-      "lockedInChip": "{{count}} acquis",
-      "dueChip": "{{count}} à réviser aujourd'hui"
+      "learnTitle": "Apprendre"
     },
-    "today": { "eyebrow": "Les jeux du jour — les mêmes pour tous", "score": "{{score}}/{{total}} aujourd'hui", "inProgress": "En cours" },
+    "today": {
+      "eyebrow": "Jeux du jour — les mêmes pour tous",
+      "score": "{{score}}/{{total}} aujourd'hui",
+      "inProgress": "En cours"
+    },
     "guestChip": "Invité",
-    "mostPlayed": { "eyebrow": "Les plus joués" },
     "hooks": {
-      "eyebrow": "Défis du jour · garde la série",
-      "eyebrowShort": "Défis du jour",
-      "resetsIn": "Réinitialisation dans {{time}}",
-      "played": "Joué ✓",
-      "quizSub": "10 Q · choisis ton niveau"
-    },
-    "ranksCard": {
-      "view": "Voir le classement"
+      "resetsIn": "Nouveaux jeux dans {{time}}",
+      "played": "Joué ✓"
     },
     "stats": {
-      "streak": "Série",
-      "unranked": "Non classé"
+      "streak": "Série"
     },
     "supportCoffeePrefix": "Vous aimez VerveQ ?",
     "supportCoffeeLink": "Offrez-nous un café ☕"
   },
   "compete": {
-    "title": "Affronter",
-    "chooseCategory": "Choisis une catégorie",
-    "categoryHint": "Géographie, Histoire et Science ont aussi un parcours guidé dans Apprendre.",
-    "categories": {
-      "sport": "Sport",
-      "sportDesc": "Football",
-      "history": "Histoire",
-      "geography": "Géographie",
-      "science": "Science"
-    },
-    "chooseSport": "Choisis un sport",
-    "sports": {
-      "football": "Football",
-      "basketball": "Basketball",
-      "tennis": "Tennis"
-    },
-    "chooseMode": "Choisis un mode",
-    "modeGridHint": "{{sport}} · choisis comment jouer",
-    "sections": {
-      "popular": "Les plus joués",
-      "today": "Aujourd'hui",
-      "solo": "Modes solo",
-      "ranked": "Classé",
-      "casual": "Juste pour le plaisir",
-      "knowledge": "Culture générale",
-      "friends": "Entre amis"
-    },
-    "rankedBadge": "Compte pour ton ELO",
-    "casualHint": "Sans effet sur ton classement."
+    "title": "Affronter"
   },
   "modes": {
-    "quiz": { "name": "Quiz", "desc": "10 questions, score au temps" },
-    "survival": { "name": "Survival", "desc": "Devine les joueurs par leurs initiales" },
-    "blitz": { "name": "Blitz", "desc": "Manche éclair de 60 secondes" },
-    "higherLower": { "name": "Plus ou Moins", "desc": "Compare les stats des joueurs" },
-    "verveGrid": { "name": "VerveGrid", "desc": "Remplis la grille 3x3" },
-    "careerPath": { "name": "Parcours de carrière", "desc": "Trouve le joueur d'après ses clubs" },
-    "daily": { "name": "Défi du jour", "desc": "Les mêmes questions pour tous", "worldCupName": "Quotidien Coupe du Monde", "worldCupDesc": "Des questions Coupe du Monde tout le tournoi — les mêmes pour tous" },
-    "dailySurvival": { "name": "Survie du jour", "desc": "La partie du jour, la même pour tous — une tentative" },
-    "whosOlder": {"name": "Qui est le plus âgé ?", "desc": "Touchez le joueur le plus âgé — 10 par jour", "playedDesc": "Joué · mode infini débloqué"},
-    "missingLetters": {"name": "Lettres manquantes", "desc": "Trouvez le joueur — 10 par jour", "playedDesc": "Joué · mode infini débloqué"},
-    "arena": { "name": "Arène", "desc": "Salons de défi en groupe" },
-    "duel": { "name": "Duels", "desc": "En tête-à-tête, envoie un lien" },
-    "knowledgeQuiz": { "name": "Quiz culture", "desc": "Science, histoire et découvertes" },
-    "cameFirst": { "name": "Lequel d'abord", "desc": "Place les événements sur la frise" }
+    "quiz": {
+      "name": "Quiz",
+      "desc": "10 questions — plus tu es rapide, plus tu marques"
+    },
+    "survival": {
+      "name": "Survival",
+      "desc": "Trouve des joueurs à partir de leurs initiales"
+    },
+    "blitz": {
+      "name": "Blitz",
+      "desc": "Manche éclair de 60 secondes"
+    },
+    "higherLower": {
+      "name": "Plus ou Moins",
+      "desc": "Compare les stats des joueurs"
+    },
+    "verveGrid": {
+      "name": "VerveGrid",
+      "desc": "Remplis la grille 3x3"
+    },
+    "careerPath": {
+      "name": "Parcours de carrière",
+      "desc": "Trouve le joueur d'après ses clubs"
+    },
+    "daily": {
+      "name": "Quiz du jour",
+      "desc": "10 questions, les mêmes pour tous",
+      "worldCupName": "Quotidien Coupe du Monde"
+    },
+    "dailySurvival": {
+      "name": "Survie du jour",
+      "desc": "La partie du jour, la même pour tous — une tentative"
+    },
+    "whosOlder": {
+      "name": "Qui est le plus âgé ?",
+      "desc": "Touchez le joueur le plus âgé — 10 par jour"
+    },
+    "missingLetters": {
+      "name": "Lettres manquantes",
+      "desc": "Trouvez le joueur — 10 par jour"
+    },
+    "arena": {
+      "name": "Arène",
+      "desc": "Des salons de quiz en direct entre amis"
+    },
+    "duel": {
+      "name": "Duels",
+      "desc": "En tête-à-tête, envoie un lien"
+    },
+    "knowledgeQuiz": {
+      "name": "Quiz culture",
+      "desc": "Science, histoire et découvertes"
+    },
+    "cameFirst": {
+      "name": "Lequel d'abord",
+      "desc": "Place les événements sur la frise"
+    }
   },
   "drawer": {
-    "title": "Choisis une catégorie",
-    "subtitle": "Choisis le thème sur lequel tu seras testé",
-    "categories": {
-      "whichCameFirst": "Lequel d'abord",
-      "whichCameFirstDesc": "Place les événements sur la frise",
-      "knowledge": "Culture",
-      "knowledgeDesc": "Science, histoire et découvertes",
-      "mixedBag": "Pot-pourri",
-      "mixedBagDesc": "Un peu de tout"
-    }
+    "title": "Choisis une catégorie"
   },
   "ranks": {
     "weekendTable": "Tableau Weekend",
@@ -174,14 +159,14 @@
     },
     "segmentsAria": "Vue du classement",
     "title": "Classement",
-    "eyebrow": "Échelle compétitive",
-    "eyebrowSeason": "Échelle compétitive · Saison {{n}}",
+    "eyebrow": "Parties classées",
+    "eyebrowSeason": "Parties classées · Saison {{n}}",
     "seasonChip": "Saison {{n}}",
     "rankedChip": "Classé",
     "endsIn": "Se termine dans {{days}} jours",
-    "endsInShort": "FIN DANS {{days}}J",
+    "endsInShort": "Fin dans {{days}} j",
     "seasonDatesSoon": "Dates de la saison bientôt",
-    "eloRating": "Score ELO",
+    "eloRating": "Score",
     "unranked": "Non classé",
     "tiers": {
       "bronze": "Bronze",
@@ -189,9 +174,9 @@
       "gold": "Or",
       "platinum": "Platine"
     },
-    "tierRange": "{{min}}–{{max}} ELO",
-    "tierRangeTop": "{{min}}+ ELO",
-    "progressTo": "{{elo}} / {{next}} ELO pour {{tier}}",
+    "tierRange": "{{min}}–{{max}} pts",
+    "tierRangeTop": "{{min}}+ pts",
+    "progressTo": "{{elo}} / {{next}} pour atteindre {{tier}}",
     "topTier": "Palier max — défends ta couronne",
     "allTimeRecord": "Record absolu",
     "playRanked": "Jouer en classé →",
@@ -201,23 +186,16 @@
     "globalRankOf": "#{{rank}} sur {{total}}",
     "globalRankShort": "#{{rank}} mondial",
     "globalRankUnplaced": "Aucune partie classée pour l'instant",
-    "ladder": "L'échelle",
+    "ladder": "Paliers",
     "ladderHint": "Grimpe ↑ · Bronze → Platine",
     "youAreHere": "Tu es ici",
     "newPlayersStart": "Les nouveaux joueurs démarrent ici",
     "seasonalCrown": "Couronne de la saison",
-    "board": "Classement",
-    "boardScope": "⚽ Football · Quiz",
-    "boardTop": "Top {{n}}",
-    "boardEmpty": "Le classement ouvre bientôt",
-    "boardYou": "Toi",
-    "boardLockedRow": "Ta ligne se débloque avec un compte complet",
-    "fullBoard": "Classement complet →",
     "locked": {
       "chip": "Comptes complets",
       "title": "Le classé t'attend",
-      "body": "L'ELO, les paliers et l'échelle de la saison sont réservés aux comptes complets — pour que chaque rang soit gagné par un vrai joueur. Tes stats détente restent ; le placement démarre dès que tu passes au compte complet.",
-      "slot": "Ton ELO · ton palier · ton rang mondial — ils apparaîtront ici",
+      "body": "Les scores, paliers et classements de saison sont réservés aux comptes complets — pour que chaque rang soit gagné par un vrai joueur. Tes stats détente restent ; le placement démarre dès que tu passes au compte complet.",
+      "slot": "Ton score, ton palier et ton rang mondial apparaîtront ici",
       "create": "Créer un compte complet →",
       "keepCasual": "Continuer en détente"
     }
@@ -239,9 +217,9 @@
     "ranked": "Classé",
     "rankedSeason": "Classé · Saison {{n}}",
     "lockedChip": "Verrouillé",
-    "lockedTitle": "L'ELO et les paliers nécessitent un compte complet",
+    "lockedTitle": "Les scores et paliers nécessitent un compte complet",
     "lockedBody": "Les modes détente comptent quand même dans tes parties. Le placement démarre dès que tu passes au compte complet.",
-    "peekLadder": "Jeter un œil à l'échelle →",
+    "peekLadder": "Voir le classement →",
     "viewRanks": "Voir le classement →",
     "global": "mondial",
     "upgradeTitle": "Sauvegarde ta progression — crée un compte complet",
@@ -251,8 +229,7 @@
       "games": "Parties jouées",
       "winRate": "Taux de victoire",
       "bestStreak": "Meilleure série",
-      "favTopic": "Thème préféré",
-      "rankedOnly": "Classé uniquement"
+      "favTopic": "Thème préféré"
     },
     "achievements": "Succès",
     "achievementsNone": "Les succès se chargeront une fois initialisés",
@@ -261,7 +238,7 @@
     "activityRanked": "Classé",
     "activityEmpty": "Aucune partie classée pour l'instant",
     "activityEmptyGuest": "L'historique classé se débloque avec un compte complet",
-    "decay": "Déclin ELO",
+    "decay": "Baisse du score",
     "seasonReset": "Réinitialisation de saison",
     "seasons": "Historique des saisons",
     "seasonsPeak": "Palier final",
@@ -270,7 +247,7 @@
     "signOut": "Se déconnecter",
     "signOutWarning": "⚠ Pseudo uniquement : te déconnecter efface ta progression sur cet appareil.",
     "signOutConfirmTitle": "Se déconnecter ?",
-    "signOutConfirmBody": "Ton compte est sauvegardé. Reconnecte-toi quand tu veux pour retrouver ton ELO, tes succès et ton classement.",
+    "signOutConfirmBody": "Ton compte est sauvegardé. Reconnecte-toi quand tu veux pour retrouver ton score, tes succès et ton classement.",
     "signOutConfirmBodyGuest": "Ce pseudo n'a ni mot de passe ni e-mail. Te déconnecter efface définitivement ce compte et sa progression — il n'y a aucun moyen de te reconnecter.",
     "signOutConfirmCta": "Se déconnecter",
     "signOutConfirmCtaGuest": "Effacer et se déconnecter",
@@ -278,8 +255,7 @@
   },
   "forge": {
     "title": "La Forge",
-    "subtitle": "Créer et relire des questions",
-    "enter": "Entrer dans la Forge"
+    "subtitle": "Créer et relire des questions"
   },
   "settings": {
     "title": "Paramètres",
@@ -291,7 +267,7 @@
     "accountNoHandle": "Connecté",
     "notSignedIn": "Tu n'es pas connecté.",
     "signInCta": "Se connecter ou créer un compte",
-    "dailyHeading": "Défi du jour",
+    "dailyHeading": "Quiz du jour",
     "dailyDescription": "Choisis le sujet de ton quiz quotidien.",
     "dailySaved": "Sujet du défi mis à jour",
     "dailySubjects": {
@@ -300,11 +276,12 @@
       "tennis": "Tennis",
       "knowledge": "Culture générale"
     },
-    "supportHeading": "Aide & Communauté",
+    "supportHeading": "Aide & communauté",
     "supportDescription": "Contactez-nous pour de l'aide ou suivez-nous pour les actualités.",
     "supportFollowX": "Suivre sur X",
     "supportContact": "Contacter le support",
-    "supportCoffee": "Offrez-nous un café"
+    "supportCoffee": "Offrez-nous un café",
+    "dailySaveFailed": "Impossible d'enregistrer le thème de ton Quiz du jour."
   },
   "arenaHub": {
     "cardTitle": "Des salons en direct, un seul code",
@@ -314,16 +291,15 @@
   },
   "leaderboard": {
     "title": "Classement",
-    "subtitle": "Qui domine l'échelle",
-    "rankedElo": "Classé · ELO",
+    "rankedElo": "Classé · score",
     "highScore": "Meilleur score",
     "allTime": "Absolu",
     "seasonAria": "Saison",
     "liveSeason": "S{{n}} · En direct",
     "seasonOption": "Saison {{n}}",
     "blitzBlurb": "La meilleure manche Blitz de 60 secondes de chaque joueur — en absolu, pas par saison.",
-    "rankedBlurb": "Score ELO des parties classées de {{mode}} — gagne pour grimper, de Bronze à Platine.",
-    "loading": "Chargement de l'échelle…",
+    "rankedBlurb": "Score des parties classées de {{mode}} — gagne pour grimper, de Bronze à Platine.",
+    "loading": "Chargement du classement…",
     "emptyTitle": "Aucune entrée pour l'instant",
     "emptyBody": "Sois le premier à jouer !",
     "chase": "La poursuite",
@@ -334,11 +310,14 @@
   },
   "gate": {
     "title": "Compte complet requis",
-    "bodyUpgrade": "Tu joues en pseudo uniquement, donc cette partie reste détente. Les modes classés et les classements mondiaux nécessitent un compte complet — passer au compte complet conserve ton pseudo et ta progression détente.",
-    "bodyCreate": "Les modes classés et les classements mondiaux nécessitent un compte complet. Crées-en un pour commencer à grimper.",
+    "bodyUpgrade": "Tu joues en pseudo uniquement, donc cette partie reste détente. Les parties classées et le classement mondial nécessitent un compte complet — passer au compte complet conserve ton pseudo et ta progression détente.",
+    "bodyCreate": "Les parties classées et le classement mondial nécessitent un compte complet. Crées-en un pour commencer à grimper.",
     "ctaUpgrade": "Sauvegarder ma progression et passer en classé",
     "ctaCreate": "Commencer",
-    "later": "Plus tard"
+    "later": "Plus tard",
+    "usernameTitle": "Choisis d'abord un pseudo",
+    "usernameBody": "Les invités ne peuvent pas sauvegarder ici. Crée un pseudo — c'est gratuit et ça prend 10 secondes — pour jouer à ce mode.",
+    "usernameCta": "Créer un pseudo"
   },
   "weekend": {
     "countdownDays": "{{d}} j {{h}} h",
@@ -367,9 +346,8 @@
     "bestFinish": "Meilleur #{{rank}}",
     "boardBetween": "Un nouveau tableau ouvre chaque week-end",
     "boardOpen": "Semaine de jeu {{gw}} : tableau ouvert",
-    "budget": "budget",
     "budgetGrandfathered": "Les nouveaux prix placent cette équipe au-dessus du budget {{limit}}. Cela reste légal, mais un changement ne peut pas faire en sorte que cela coûte plus cher.",
-    "budgetTitle": "Votre week-end 13",
+    "budgetTitle": "Vos 13",
     "buildFor": "Construire pour",
     "change": "Changement",
     "chipDnp": "DNP",
@@ -381,7 +359,7 @@
     "clearSlot": "Clair",
     "climbedPlaces": "Vous avez gravi les places {{count}}",
     "committedCost": "{{cost}} verrouillé",
-    "courtTitle": "Tribunal de réclamation",
+    "courtTitle": "Tribunal des postes",
     "courtVoteFailed": "Ce vote n’a pas abouti.",
     "create": "Créer",
     "createCrew": "Créer un groupe",
@@ -403,8 +381,8 @@
     "doneKeepGoing": "Continuez – les paires supplémentaires ne comptent pas, elles aident simplement.",
     "doneTen": "Il est dix heures aujourd'hui.",
     "doneThanks": "La foule vous remercie.",
-    "doorCourtBodyShort": "Discutez de la position réelle d'un joueur.",
-    "doorCourtTitle": "Tribunal de réclamation",
+    "doorCourtBodyShort": "Un joueur est mal positionné ? Votez pour corriger son poste.",
+    "doorCourtTitle": "Tribunal des postes",
     "doorCrewsBodyShort": "Un code, des choix uniques.",
     "doorCrewsTitle": "Projet d'groupe",
     "doorSquadBodyShort": "Un nouveau 13 sous le budget.",
@@ -445,7 +423,7 @@
     "fixtureLocked": "Fermé",
     "fixturePointsIn": "points dans",
     "fixturePostponed": "Reporté",
-    "fixtureVoid": "DÉSACTIVÉ",
+    "fixtureVoid": "Annulé",
     "fixturesSubtitle": "Gameweek {{gw}} · chaque coup d'envoi à votre rythme",
     "fixturesTitle": "Calendrier",
     "fullStandings": "Classement complet",
@@ -478,7 +456,7 @@
     "leaderboardLiveBody": "Les totaux provisoires sont mis à jour au fur et à mesure que les points arrivent.",
     "leaderboardScored": "{{scored}}/13 marqué",
     "leaderboardSubtitle": "Gameweek {{gw}} · escouades budgétaires mondiales",
-    "leaderboardTitle": "Classement",
+    "leaderboardTitle": "Tableau Weekend",
     "leaderboardWaiting": "En attente des premiers points",
     "leaderboardWaitingBody": "Le tableau apparaît dès que le score d'un joueur apparaît.",
     "leaderboardYou": "Vous",
@@ -620,7 +598,6 @@
     "sheetTitle": "Votre feuille d’équipe",
     "showAll": "Tout afficher",
     "showLog": "Draft de journal",
-    "slots": "joueurs",
     "slotsAwaiting": "{{count}} en attente",
     "slotsAwaitingBody": "{{count}} en attente · les points arrivent ~2h après le temps plein",
     "snakeNote": "Ordre du serpent – ​​derniers choix deux fois.",
@@ -701,13 +678,6 @@
     "claim_failed": "refusée",
     "claim_died": "abandonnée",
     "claim_expired": "expirée",
-    "homeEyebrow": "Fantasy · cette semaine de jeu",
-    "homeBulletLeagues": "Huit championnats, une équipe",
-    "homeBulletCrowd": "La foule évalue les joueurs, pas un algorithme",
-    "homeBulletFresh": "Nouveau draft chaque semaine, sans course sur toute la saison",
-    "homeHeadline": "Faites le draft de tout le week-end de football européen.",
-    "homePlay": "Jouer maintenant",
-    "homeNote": "Équipe budget ou draft de groupe — nouveau tableau chaque week-end.",
     "activity": "Activité",
     "ahead": "{{points}} en avance",
     "allSeatsClaimed": "Les 8 sièges sont revendiqués",
@@ -732,7 +702,7 @@
     "crewCommandInviteBody": "partager le lien ou le code de l’groupe permanent.",
     "crewCommandMembersBody": "supprimer les personnes inactives sans effacer les résultats passés.",
     "crewCommandOwnershipBody": "quitter le contrôle des transferts ; la suppression n’est disponible qu’avant le premier draft terminé.",
-    "crewCommandTitle": "Commande du groupe",
+    "crewCommandTitle": "Réglages du groupe",
     "crewCompetition": "Compétition de groupe",
     "crewRecapReady": "Récapitulatif de l'groupe prêt à partager.",
     "crewTitle": "Groupe",
@@ -768,7 +738,7 @@
     "favoriteClubFailed": "Impossible d'enregistrer votre club préféré.",
     "noClubsMatch": "Aucun club ne correspond.",
     "howClubCapLabel": "Casquette du club :",
-    "howCourt": "Le tribunal",
+    "howCourt": "Le tribunal des postes",
     "howCourtBody": "Vous pensez que le signal indiquant la position d'un joueur est erroné ? Déposez une réclamation – vous obtenez 2 dépôts par semaine de jeu, et le dépôt compte comme la première approbation. Une réclamation qui recueille suffisamment de soutiens (au moins 15, ou 0,5 % des actifs de la semaine de jeu) est soumise à un procès ; un procès se déroule sur une part de 60 % avec quorum (au moins 30, soit 1 %). Le dépôt se termine lundi 23h59 ; les verdicts tombent mardi soir et marquent à nouveau le joueur avant que les scores ne deviennent définitifs.",
     "howCrewBody": "2 à 8 amis, code de partage pour rejoindre, draft serpent où chaque joueur peut appartenir une fois par salle. Chaque participant dispose d’une banque de 30 secondes par tour — 390 secondes à dépenser librement sur les 13 choix ; une banque vide sélectionne automatiquement le reste.",
     "howCrewLabel": "Projet d'groupe.",
@@ -820,7 +790,7 @@
     "myRecord": "Mon dossier",
     "noDraftOpen": "Aucun draft ouvert",
     "noDraftsYet": "pas encore de drafts",
-    "openCrewCommand": "Commande d'groupe ouvert",
+    "openCrewCommand": "Ouvrir les réglages du groupe",
     "openDraftFailed": "Impossible d’ouvrir la salle de draft.",
     "openNextFromCommand": "Ouvrez le suivant depuis Crew Command.",
     "ownershipLabel": "Possession:",
@@ -837,9 +807,9 @@
     "replace": "Remplacer…",
     "replacePlayer": "Remplacer {{name}}",
     "roleAtt": "ATT",
-    "roleDef": "DEF",
-    "roleGk": "GK",
-    "roleMid": "MILIEU",
+    "roleDef": "DÉF",
+    "roleGk": "GB",
+    "roleMid": "MIL",
     "save": "Enregistrer",
     "searchAddPlayers": "Rechercher pour ajouter des joueurs…",
     "seasonTitles": "Titres de saison",
@@ -895,6 +865,192 @@
     "crewRecapTitle": "Récapitulatif de {{name}}",
     "gameweekRecap": "J{{gw}} · récapitulatif",
     "recapClimbed": "{{name}} a gagné {{count}} places",
-    "recapMvp": "MVP : {{player}} · {{points}} ({{owner}})"
+    "recapMvp": "MVP : {{player}} · {{points}} ({{owner}})",
+    "availability": "Disponibilité",
+    "availabilityRead": "Données lues {{when}}",
+    "availabilityClear": "Aucun souci de disponibilité signalé ce week-end.",
+    "availabilityNoReport": "Sa ligue ne publie pas de rapport de disponibilité — nous ne savons pas s'il est apte.",
+    "availabilityOut": "Forfait",
+    "availabilityDoubt": "Incertain",
+    "availabilityOutLong": "Devrait manquer ce match",
+    "availabilityDoubtLong": "Incertain pour ce match",
+    "squadFlaggedOut_one": "{{count}} joueur de votre équipe devrait manquer ce week-end.",
+    "squadFlaggedOut_other": "{{count}} joueurs de votre équipe devraient manquer ce week-end.",
+    "squadFlaggedDoubt_one": "{{count}} joueur de votre équipe est incertain ce week-end.",
+    "squadFlaggedDoubt_other": "{{count}} joueurs de votre équipe sont incertains ce week-end.",
+    "hideFlagged": "Masquer les signalés",
+    "receiptSettledLine": "{{season}} · clôturé le {{date}}"
+  },
+  "errors": {
+    "generic": "Un problème est survenu. Réessaie.",
+    "connection": "Problème de connexion. Vérifie ta connexion internet et réessaie.",
+    "signIn": "Connecte-toi pour continuer.",
+    "noAccess": "Tu n’as pas accès à ceci.",
+    "usernameFirst": "Choisis d’abord un pseudo.",
+    "usernameTaken": "Ce pseudo est déjà pris.",
+    "alreadyPlayed": "Tu as déjà joué au jeu du jour.",
+    "alreadyClaimed": "Quelqu’un l’a déjà pris.",
+    "duelYourself": "Tu ne peux pas te défier toi-même.",
+    "notFound": "Ce n’est plus disponible — ça a peut-être expiré.",
+    "expired": "Temps écoulé — cette manche est terminée.",
+    "declined": "Ce duel a été refusé.",
+    "roomFull": "Ce salon est déjà complet.",
+    "rateLimited": "Trop de tentatives depuis ton réseau. Réessaie dans un moment.",
+    "outOfSync": "Désynchronisé — actualise la page et réessaie."
+  },
+  "meta": {
+    "default": {
+      "title": "Jeux de quiz football — Gratuits | VerveQ",
+      "description": "Des jeux de quiz football gratuits : un quiz du jour, devine le joueur par son parcours, une grille foot, plus ou moins et des duels. Sans inscription."
+    },
+    "compete": {
+      "title": "Jouer aux quiz football — Classé et détente | VerveQ",
+      "description": "Tous les jeux de foot VerveQ au même endroit : quiz et survie classés, quiz du jour, duels et salons d'arène entre amis. Gratuit, sans téléchargement."
+    },
+    "daily": {
+      "title": "Quiz du jour — 10 questions de foot | VerveQ",
+      "description": "Les dix questions de foot du jour, les mêmes pour tous les joueurs. Une seule tentative, des points pour la vitesse et une série à protéger. Nouveau à minuit UTC."
+    },
+    "dailySurvival": {
+      "title": "Survie du jour — Une partie pour tous | VerveQ",
+      "description": "Une partie de survie par jour, la même pour tous : trouve des joueurs à partir de leurs initiales jusqu'à ne plus avoir de vies. Une tentative."
+    },
+    "whosOlder": {
+      "title": "Who's Older? — Le jeu d'âge foot du jour | VerveQ",
+      "description": "Deux footballeurs : touche le plus âgé. Dix manches par jour, et l'écart passe des années aux jours. Les mêmes duos pour tous, puis le mode sans fin."
+    },
+    "missingLetters": {
+      "title": "Missing Letters — Trouve le footballeur du jour | VerveQ",
+      "description": "Trouve le footballeur à partir des lettres manquantes. Dix noms par jour, du facile à l'impossible, avec sa nation en indice. Puis le mode sans fin."
+    },
+    "blitz": {
+      "title": "Blitz — Quiz foot en 60 secondes | VerveQ",
+      "description": "Soixante secondes pour répondre à un maximum de questions de foot. Pas de joker, pas de seconde chance — juste ta vitesse de réflexion. Gratuit."
+    },
+    "higherLower": {
+      "title": "Higher or Lower — Le jeu des stats foot | VerveQ",
+      "description": "La stat du joueur suivant est-elle plus haute ou plus basse ? Buts, matchs et trophées, un choix à la fois. Une erreur et la série s'arrête."
+    },
+    "careerPath": {
+      "title": "Career Path — Trouve le joueur par ses clubs | VerveQ",
+      "description": "Lis le parcours d'un footballeur club par club et trouve-le avant d'épuiser tes essais. Les fautes de frappe passent, des centaines de carrières."
+    },
+    "verveGrid": {
+      "title": "VerveGrid — La grille foot | VerveQ",
+      "description": "Neuf cases, neuf essais. Trouve un joueur qui colle à la ligne et à la colonne — club, pays ou poste. Jamais deux fois le même joueur."
+    },
+    "arena": {
+      "title": "Arène — Quiz en direct entre amis | VerveQ",
+      "description": "Crée un salon, partage le code, et tout le monde répond aux mêmes questions de foot en même temps. Score en direct, jusqu'à tout un groupe."
+    },
+    "duels": {
+      "title": "Duels — Quiz foot en face à face | VerveQ",
+      "description": "Envoie un lien, vous répondez tous les deux aux mêmes questions de foot, et on verra qui gagne. Ton adversaire n'a pas besoin de compte."
+    },
+    "ranks": {
+      "title": "Classement — Scores et meilleurs joueurs | VerveQ",
+      "description": "Ta place dans les quiz foot VerveQ : scores mondiaux, les meilleurs joueurs de chaque mode classé et qui se trouve juste devant toi."
+    },
+    "weekendTable": {
+      "title": "The Weekend — Classement en direct | VerveQ",
+      "description": "Le classement mondial en direct du jeu fantasy The Weekend : les points provisoires des équipes à budget évoluent à chaque match noté."
+    }
+  },
+  "app": {
+    "notFound": {
+      "title": "Cette page est hors du terrain",
+      "body": "Le lien est peut-être ancien, ou la page a changé d'adresse. Reviens en arrière et choisis un jeu.",
+      "cta": "Retour à l'accueil"
+    },
+    "install": {
+      "title": "Installer VerveQ",
+      "iosTitle": "Ajoute VerveQ à ton écran d'accueil",
+      "iosShare": "Partager",
+      "iosAdd": "→ Sur l'écran d'accueil",
+      "cta": "Installer",
+      "dismiss": "Fermer la proposition d'installation"
+    }
+  },
+  "taste": {
+    "wc-most-titles": {
+      "question": "Quel pays a remporté le plus de Coupes du monde ?",
+      "explanation": "Le Brésil compte cinq titres — 1958, 1962, 1970, 1994 et 2002.",
+      "o0": "Brésil",
+      "o1": "Allemagne",
+      "o2": "Italie",
+      "o3": "Argentine"
+    },
+    "messi-club": {
+      "question": "Dans quel club Lionel Messi a-t-il passé la majeure partie de sa carrière ?",
+      "explanation": "Formé à la Masia, Messi a joué 17 saisons au Barça."
+    },
+    "wc-2022-winner": {
+      "question": "Qui a gagné la Coupe du monde 2022 au Qatar ?",
+      "explanation": "L'Argentine a battu la France aux tirs au but après une finale à 3–3.",
+      "o0": "Argentine",
+      "o1": "France",
+      "o2": "Brésil",
+      "o3": "Croatie"
+    },
+    "red-devils": {
+      "question": "Quel club anglais est surnommé « les Diables rouges » ?",
+      "explanation": "Manchester United, le club d'Old Trafford, porte le surnom de Red Devils."
+    },
+    "ucl-most-titles": {
+      "question": "Quel club a remporté le plus de Coupes des clubs champions / Ligues des champions ?",
+      "explanation": "Le Real Madrid domine l'Europe de loin — l'AC Milan suit."
+    },
+    "el-clasico": {
+      "question": "« El Clásico » oppose le Real Madrid à quel club ?",
+      "explanation": "Real Madrid contre Barcelone — la grande rivalité du football espagnol."
+    },
+    "hand-of-god": {
+      "question": "La « main de Dieu » de Maradona, c'était lors de quelle Coupe du monde ?",
+      "explanation": "Mexique 1986, contre l'Angleterre — quelques minutes avant son chef-d'œuvre en solo."
+    },
+    "wc-1966": {
+      "question": "Quel pays a organisé ET remporté la Coupe du monde 1966 ?",
+      "explanation": "La seule Coupe du monde de l'Angleterre — 4–2 contre la RFA à Wembley.",
+      "o0": "Angleterre",
+      "o1": "RFA",
+      "o2": "Brésil",
+      "o3": "Italie"
+    },
+    "ronaldo-sporting": {
+      "question": "Cristiano Ronaldo a quitté quel club portugais pour Manchester United ?",
+      "explanation": "United l'a recruté au Sporting CP en 2003, à 18 ans."
+    },
+    "henry-arsenal": {
+      "question": "Thierry Henry est le meilleur buteur de l’histoire de quel club ?",
+      "explanation": "228 buts pour Arsenal — personne n'a marqué plus pour le club."
+    },
+    "pele-santos": {
+      "question": "Pour quel club brésilien Pelé a-t-il joué la majeure partie de sa carrière ?",
+      "explanation": "Pelé a passé près de vingt ans à Santos avant le New York Cosmos."
+    },
+    "old-lady": {
+      "question": "Quel club italien aux rayures noires et blanches est « la Vieille Dame » ?",
+      "explanation": "La Juventus — « la Vecchia Signora » de Turin.",
+      "o0": "Juventus",
+      "o1": "Inter Milan",
+      "o2": "AC Milan",
+      "o3": "Naples"
+    },
+    "players-per-side": {
+      "question": "Combien de joueurs chaque équipe aligne-t-elle au coup d'envoi ?",
+      "explanation": "Onze par équipe — dix joueurs de champ et un gardien."
+    },
+    "ballon-dor": {
+      "question": "Le Ballon d'Or récompense…",
+      "explanation": "Le trophée de France Football pour le meilleur joueur du monde.",
+      "o0": "Le meilleur joueur du monde",
+      "o1": "Le meilleur buteur de la saison",
+      "o2": "Le meilleur gardien",
+      "o3": "Le meilleur jeune joueur"
+    },
+    "invincibles": {
+      "question": "Quel club a terminé la Premier League 2003–04 invaincu ?",
+      "explanation": "Les « Invincibles » d'Arsène Wenger — 26 victoires, 12 nuls, 0 défaite."
+    }
   }
 }

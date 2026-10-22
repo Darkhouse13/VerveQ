@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { TFunction } from "i18next";
 
 export type ArenaMode = "1v1" | "2v2" | "ffa3" | "ffa4" | "ffa5";
 
@@ -159,16 +160,22 @@ export function arenaModeLabel(mode: string) {
   }
 }
 
-export function arenaModeVerboseLabel(mode: string) {
+/**
+ * Long mode name for the final standings eyebrow (CSS uppercases it). Pass the
+ * caller's `t` to localise; without it the English sentence-case name is used.
+ */
+export function arenaModeVerboseLabel(mode: string, t?: TFunction) {
+  const tr = (key: string, fallback: string) =>
+    t ? t(`createArena.verbose_${key}`, { ns: "screens", defaultValue: fallback }) : fallback;
   switch (mode) {
     case "1v1":
-      return "1V1 DUEL";
+      return tr("1v1", "1v1 duel");
     case "2v2":
-      return "TEAM 2V2";
+      return tr("2v2", "Team 2v2");
     case "ffa3":
     case "ffa4":
     case "ffa5":
-      return "FREE-FOR-ALL";
+      return tr("ffa", "Free-for-all");
     default:
       return mode.toUpperCase();
   }
@@ -206,8 +213,17 @@ const CATEGORY_LABELS: Record<string, string> = {
   video_games: "Video Games",
 };
 
-export function arenaCategoryLabel(slug: string) {
-  if (CATEGORY_LABELS[slug]) return CATEGORY_LABELS[slug];
+/**
+ * A subject's display name. Pass the caller's `t` to localise it through the
+ * same `screens:createArena.subject_<slug>` keys the create sheet uses; the
+ * English table stays the fallback.
+ */
+export function arenaCategoryLabel(slug: string, t?: TFunction) {
+  if (CATEGORY_LABELS[slug]) {
+    return t
+      ? t(`createArena.subject_${slug}`, { ns: "screens", defaultValue: CATEGORY_LABELS[slug] })
+      : CATEGORY_LABELS[slug];
+  }
   return slug
     .split("_")
     .filter(Boolean)
@@ -257,12 +273,21 @@ export function buildArenaUrl(code: string) {
 export async function shareArenaLink(
   code: string,
   customText?: string,
+  t?: TFunction,
 ): Promise<"shared" | "copied" | "failed"> {
   const url = buildArenaUrl(code);
-  const text = customText ?? `Join my VerveQ arena — code ${code}`;
+  const text =
+    customText ??
+    (t
+      ? t("arenaRoom.inviteText", { ns: "screens", code, defaultValue: `Join my VerveQ arena — code ${code}` })
+      : `Join my VerveQ arena — code ${code}`);
   if (typeof navigator !== "undefined" && navigator.share) {
     try {
-      await navigator.share({ title: "VerveQ arena", text, url });
+      await navigator.share({
+        title: t ? t("arenaRoom.inviteTitle", { ns: "screens", defaultValue: "VerveQ arena" }) : "VerveQ arena",
+        text,
+        url,
+      });
       return "shared";
     } catch {
       /* user cancelled — fall through to copy */
