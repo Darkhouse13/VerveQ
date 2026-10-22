@@ -87,6 +87,12 @@ export const ALLOWLIST = [
     reason: "LearnShell IS the Learn hub fixed-inset frame (Learn runs use StageFrame)",
   },
   {
+    file: "src/components/shell/InkLoader.tsx",
+    pattern: "fixedInset",
+    count: 1,
+    reason: "the one loading state covers the viewport like the index.html boot skeleton it continues (in flow it was a phone-width column on desktop)",
+  },
+  {
     file: "src/components/ui/overlay.tsx",
     pattern: "fixedInset",
     count: 1,

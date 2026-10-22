@@ -20,7 +20,7 @@
 import { Suspense, type ReactNode } from "react";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 import { Navigate, useLocation, useSearchParams } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { InkLoader } from "@/components/shell/InkLoader";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { isColdLanding } from "@/lib/coldLanding";
 import {
@@ -37,13 +37,10 @@ import LoginScreen from "@/pages/LoginScreen";
 const ColdEntryScreen = lazyWithRetry(() => import("@/pages/shell/ColdEntryScreen"));
 
 /** Neutral splash while auth settles / the cold-entry chunk loads — never
- * flash the cold-entry at a signed-in user or vice versa. */
+ * flash the cold-entry at a signed-in user or vice versa. The app's one
+ * loading state, so it continues the boot skeleton without a change. */
 function EntrySettling() {
-  return (
-    <div className="min-h-[100dvh] bg-background flex items-center justify-center">
-      <Loader2 className="animate-spin" size={28} strokeWidth={2.5} />
-    </div>
-  );
+  return <InkLoader />;
 }
 
 /** `/` — a param-less visit resolves by account state: signed-out cold

@@ -26,7 +26,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Loader2, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { Button } from "@/components/ui/button";
@@ -34,16 +34,10 @@ import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { ANONYMOUS_FIRST_ENABLED } from "@/lib/flags";
 import { useAuth, type AccountState } from "@/contexts/AuthContext";
-import { isInkEntryPath } from "@/lib/inkEntry";
 import { InkLoader } from "@/components/shell/InkLoader";
 
 function ShellLoader() {
-  if (isInkEntryPath(window.location.pathname)) return <InkLoader />;
-  return (
-    <div className="min-h-[100dvh] bg-background flex items-center justify-center">
-      <Loader2 className="animate-spin" size={28} strokeWidth={2.5} />
-    </div>
-  );
+  return <InkLoader />;
 }
 
 function currentTarget(pathname: string, search: string): string {

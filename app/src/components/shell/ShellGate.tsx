@@ -1,4 +1,5 @@
 import { Suspense, type ReactNode } from "react";
+import { InkLoader } from "@/components/shell/InkLoader";
 
 /**
  * Wraps every shell route in a local Suspense boundary, so a screen suspending
@@ -6,13 +7,7 @@ import { Suspense, type ReactNode } from "react";
  * whole app.
  */
 function ShellFallback() {
-  return (
-    <div className="min-h-[100dvh] bg-background flex items-center justify-center">
-      <p className="font-heading font-bold uppercase tracking-wide animate-pulse">
-        Loading…
-      </p>
-    </div>
-  );
+  return <InkLoader />;
 }
 
 export function ShellGate({ children }: { children: ReactNode }) {

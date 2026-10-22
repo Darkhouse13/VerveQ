@@ -52,9 +52,11 @@
     <!--
       Ink first paint: every app route runs on the ink ground (VerveQ ONE
       decision 1), so the page and a skeleton paint ink until React renders
-      into #root (main.tsx then drops the class). The static SEO pages are the
-      one exception: they are cream documents whose content sits after #root,
-      so the skeleton must not cover them.
+      into #root (main.tsx then drops the class). The skeleton is opaque and
+      matches InkLoader, the app's loading state, so the wait is one screen.
+      The homepage `/` gets it too: its SEO text sits after #root and must not
+      flash before the app's hero covers it. The other static SEO pages are
+      the exception: they are cream documents meant to be read as they are.
     -->
     <script>
       if (!/^\/(games|football-quiz|who-played-for|career-path-quiz|fr|es|about)(\/|$)/.test(location.pathname)) {
@@ -63,7 +65,7 @@
     </script>
     <style>
       html.boot-ink, html.boot-ink body { background: #121212; }
-      html.boot-ink #root:empty { position: fixed; inset: 0; padding: 72px 20px 0; }
+      html.boot-ink #root:empty { position: fixed; inset: 0; z-index: 1; overflow: hidden; padding: 72px 20px 0; background: #121212; }
       html.boot-ink #root:empty::before,
       html.boot-ink #root:empty::after {
         content: ""; display: block; height: 36vh; max-height: 300px; margin: 0 auto 16px;
