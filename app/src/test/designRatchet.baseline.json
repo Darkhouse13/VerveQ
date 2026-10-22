@@ -14,91 +14,26 @@
   "src/components/ProtectedRoute.tsx": {
     "roundedXl": 1
   },
-  "src/components/draw/CardDetailSheet.tsx": {
-    "textPx": 2
-  },
-  "src/components/draw/ClearanceMeter.tsx": {
-    "textPx": 4
-  },
-  "src/components/draw/CoachMark.tsx": {
-    "textPx": 3,
-    "rawButton": 1,
-    "opacityText": 1
-  },
-  "src/components/draw/DraftProjection.tsx": {
-    "textPx": 4
-  },
   "src/components/draw/DraftStage.tsx": {
-    "textPx": 3,
     "rawButton": 1
-  },
-  "src/components/draw/DrawCardFace.tsx": {
-    "textPx": 10
-  },
-  "src/components/draw/DrawTopBar.tsx": {
-    "textPx": 1,
-    "rawButton": 1
-  },
-  "src/components/draw/FixtureSheet.tsx": {
-    "textPx": 2
   },
   "src/components/draw/FixtureStrip.tsx": {
-    "textPx": 4,
     "rawButton": 1
   },
   "src/components/draw/NextFixtureLine.tsx": {
-    "textPx": 4,
     "rawButton": 1
   },
-  "src/components/draw/PickImpact.tsx": {
-    "textPx": 4,
-    "opacityText": 1
-  },
-  "src/components/draw/ResolutionLedger.tsx": {
-    "textPx": 2
-  },
   "src/components/draw/ResultStage.tsx": {
-    "textPx": 3,
-    "rawButton": 1,
-    "fontBlack": 1,
-    "opacityText": 2
+    "rawButton": 1
   },
   "src/components/draw/RoundStage.tsx": {
-    "textPx": 14,
     "rawButton": 2
   },
-  "src/components/draw/ShareCard.tsx": {
-    "textPx": 3,
-    "roundedXl": 1,
-    "fontBlack": 1,
-    "opacityText": 2
-  },
-  "src/components/draw/SynergyMeters.tsx": {
-    "textPx": 2
-  },
-  "src/components/draw/draw.css": {
-    "colorFn": 7
-  },
   "src/components/learn/LearnPrimitives.tsx": {
-    "textPx": 2,
-    "fixedInset": 1,
-    "trackingArbitrary": 1
+    "fixedInset": 1
   },
   "src/components/learn/QuestionTypes.tsx": {
-    "textPx": 2,
-    "rawButton": 3,
-    "roundedXl": 4,
-    "transitionAll": 1,
-    "fontBlack": 1,
-    "opacityText": 1
-  },
-  "src/components/learn/TeachingReveal.tsx": {
-    "textPx": 10,
-    "colorFn": 1,
-    "rawButton": 6,
-    "roundedXl": 7,
-    "transitionAll": 2,
-    "opacityText": 1
+    "rawButton": 1
   },
   "src/components/shell/FirstRunLanguagePrompt.tsx": {
     "textPx": 1,
@@ -238,10 +173,7 @@
     "opacityText": 1
   },
   "src/pages/draw/DrawScreen.tsx": {
-    "textPx": 3,
-    "fixedInset": 2,
-    "fontBlack": 1,
-    "opacityText": 2
+    "fixedInset": 1
   },
   "src/pages/draw/DrawShareLanding.tsx": {
     "textPx": 1
@@ -284,31 +216,7 @@
     "opacityText": 1
   },
   "src/pages/shell/learn/LearnEntryScreen.tsx": {
-    "textPx": 11,
-    "rawButton": 6,
-    "roundedXl": 6,
-    "fontBlack": 2,
-    "opacityText": 2
-  },
-  "src/pages/shell/learn/LearnMasteryScreen.tsx": {
-    "textPx": 5,
-    "rawButton": 3,
-    "roundedXl": 4,
-    "fontBlack": 3,
-    "opacityText": 1
-  },
-  "src/pages/shell/learn/LearnReviewScreen.tsx": {
-    "textPx": 2,
-    "rawButton": 2,
-    "roundedXl": 4,
-    "opacityText": 1
-  },
-  "src/pages/shell/learn/LearnRunnerScreen.tsx": {
-    "textPx": 8,
-    "rawButton": 6,
-    "roundedXl": 8,
-    "transitionAll": 1,
-    "opacityText": 1
+    "rawButton": 1
   },
   "src/pages/shell/play/MissingLettersPlayScreen.tsx": {
     "rawButton": 1
