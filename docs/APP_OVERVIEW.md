@@ -824,28 +824,44 @@ signed-out visitor). Source of truth for both tables is
 
 ## Design System
 
-> **Being unified (Oct 2026).** The owner approved the "VerveQ ONE" plan on
-> 2026-10-21: one ink `#121212` ground for the whole app with cream as a
-> reading card, one lime action color `#C6FF1A`, ink text on every colored
-> fill, Space Grotesk + JetBrains Mono only, one SVG brand mark, and one set
-> of primitives under `components/ui`. Until that lands, this section
-> describes what ships today.
+One brand for the whole app (owner decisions of 2026-10-21, recorded in
+[DECISIONS.md](DECISIONS.md); brand reference in [BRAND.md](BRAND.md)).
 
-VerveQ uses a **neo-brutalist** look: 2px borders, hard 4px offset shadows,
-8px radius. Tokens are HSL CSS variables in `app/src/index.css`, re-skinned
-per surface by a wrapper class:
+- **Ground:** ink `#121212` everywhere; cream `#FFF7F0` text. Long reading
+  content may sit on a cream `.theme-paper` card. Tokens are HSL CSS variables
+  at the top of `app/src/index.css`; `src/styles/tokens.json` is generated from
+  them for canvas painters and the content factory.
+- **Color roles:** lime `#C6FF1A` = the one main action (never a large fill);
+  green / red = right / wrong only; mode accents identify modes (blue Who's
+  Older + Higher/Lower, pink Missing Letters + Duels/Arena, yellow dailies +
+  Blitz, orange Career Path + Quiz + Survival + Grid, lime outline WEEKEND +
+  DRAW). Text on any fill is ink.
+- **Type:** Space Grotesk + JetBrains Mono, self-hosted. Named scale in
+  `tailwind.config.ts`: `text-eyebrow` 12 · `meta` 13 · `body-sm` 14 ·
+  `body` 16 · `title-sm` 18 · `title` 22 · `title-lg` 28 · `display` 40 ·
+  `score` 64. Nothing under 12px.
+- **Shape:** 2px borders, hard 4px near-black offset shadow, 8px radius;
+  named z-layers and motion durations; one global focus ring and reduced-motion
+  rule.
 
-- `:root` — cream ground, orange primary `hsl(25 100% 50%)` (hubs, quizzes)
-- `.theme-weekend` — near-black ground, lime (THE WEEKEND)
-- `.theme-older`, `.theme-letters` — ink ground, lime (the daily games;
-  Letters runs a desaturated variant)
-- `.theme-learn` — warm cream (Learn)
-- `.theme-draw` / `.draw-surface-dark` — THE DRAW (`components/draw/draw.css`)
+**Primitives** (`app/src/components/ui/`): `Button` (primary / secondary /
+danger / ghost; 44–56px), `IconButton` + `BackButton` / `CloseButton` /
+`ExitButton`, `Card`, `Badge`, `Eyebrow`, `Input` / `Textarea`, `Segmented`,
+`Select`, `Skeleton`, `Avatar`, `ModeTile`, `BrandMark`, and one overlay system
+(`Dialog`, `Sheet`, `ConfirmDialog`, `FullscreenFlow`) that carries the theme
+into portals. Toasts go through `notify` (`src/lib/notify.ts`). The old `Neo*`
+components are deprecated aliases.
 
-Fonts: Space Grotesk (headings), Inter (body), JetBrains Mono (numbers).
+**Frames:** hubs use `ShellLayout`; every game uses `StageFrame`
+(`components/shell/play/PlayStage.tsx`: 44px Quit, mode accent, score and
+progress slots) and ends on `ResultScreen` (`components/shell/play/result/`:
+score → streak → one Share → next game). Navigation is Play · Weekend · Ranks ·
+Profile.
 
-**Primitives (`components/neo/`):** `NeoButton` (11 variants, 4 sizes),
-`NeoCard`, `NeoBadge`, `NeoInput`, `NeoAvatar`, `NeoLogo` (PNG "VQ" mark).
+**Guardrails:** the design ratchet (`npm run design:baseline`), ESLint
+restricted imports, `/dev/kitchen-sink` with a screenshot spec,
+`npm run design:floors <url>` (contrast, 12px, 44px), and
+`e2e/journey.spec.ts` (reel → game → result → next daily → Play).
 
 ---
 

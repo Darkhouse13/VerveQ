@@ -32,6 +32,57 @@ Newest first.
 
 ---
 
+## DECISION 2026-10-21 — VerveQ ONE: one brand for the whole app
+
+**Plan.** "VerveQ ONE: the unification plan" (claude.ai doc
+W3A4W3iZhsbLqGVbDUevCa), built from two design audits. The owner approved all
+twelve decisions on 2026-10-21 ("approved all 12. proceed executing"). They
+bind every visible surface: app, reels, share images, preview cards, email,
+SEO pages.
+
+1. **One ink ground.** Ink `#121212` is the ground everywhere; cream
+   `#FFF7F0` survives only as a reading card (`.theme-paper`). The cream
+   "Settle it." identity is retired. Tokens: top of `app/src/index.css`.
+2. **One lime.** `#C6FF1A` is the one action color. Lime is for the single
+   main action and small accents, never a large fill (R4). This supersedes the
+   2026-10-12 "Missing Letters too bright" ruling: it is calmed by the usage
+   rule, not by its own palette.
+3. **One logo.** `BrandMark` (`app/src/components/ui/BrandMark.tsx`): an ink
+   square tilted −4° with a lime "VQ", plus the VERVEQ mono wordmark. App icons,
+   preview cards, share images, email and SEO header derive from it; the
+   Instagram avatar export is `app/public/brand/instagram-avatar.png`.
+4. **Two fonts.** Space Grotesk + JetBrains Mono, self-hosted
+   (`app/public/fonts`). Inter is retired.
+5. **Targets.** Shares 5% of finished dailies; same-day second-mode crossover
+   +50%; 7-day return 10%. Baselines need a PostHog read (open).
+6. **No first-visit language modal** on the reel routes (`/older`, `/letters`,
+   `/draw`, `/weekend`); the detected language is used and Settings keeps the
+   switch.
+7. **"Better than X%" shows only at X ≥ 50**, on the result screen and in the
+   story image; below that the streak takes its place.
+8. **GA4 loads after first paint** (`app/src/lib/ga4.ts`), not from
+   `index.html`. PostHog carries product events.
+9. **The anti-cheat reminder shows once per session**, on the first tap in a
+   live game, in the brand font. *Implementation note:* it sits under the
+   screen header, not at the bottom as first written — at the bottom it covered
+   Missing Letters' keyboard, Check and Give up. Owner to confirm.
+10. **Navigation = Play · Weekend · Ranks · Profile.** Play replaces Home and
+    Compete, Today's dailies first. This REVERSES the 2026-08-21 ruling that
+    THE WEEKEND leads Home; THE WEEKEND has its own tab.
+11. **Learn and Forge live under Profile → Labs;** Blitz and Higher/Lower sit
+    in "More games" (their routes stay for SEO).
+12. **Mode accents:** blue — Who's Older, Higher/Lower; pink — Missing
+    Letters, Duels, Arena; yellow — Daily Quiz, Daily Survival, Blitz; orange —
+    Career Path, Quiz, Survival, VerveGrid; lime outline — THE WEEKEND, THE
+    DRAW. Text on any colored fill is ink, never white.
+
+**Enforcement.** The design ratchet (`app/scripts/designRatchet.mjs`,
+`app/src/test/designRatchet.test.ts`) only lets off-system counts fall;
+ESLint blocks `sonner` and `@radix-ui/react-dialog` outside
+`app/src/components/ui`. Brand reference: [BRAND.md](BRAND.md).
+
+---
+
 ## DECISION 2026-08-20 — Availability is a REPORT, never a gate; and silence is never an all-clear
 
 **Ticket FW-AVAIL.** THE WEEKEND now shows what the feed says about a player's
