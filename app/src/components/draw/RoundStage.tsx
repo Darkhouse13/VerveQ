@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Crown, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Card as UiCard } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Card, Fixture, FormHint, RoundBreakdown } from "@/lib/drawEngine";
@@ -296,10 +297,12 @@ export function RoundStage({
         {/* Fixture card — archetype, effect line, modifiers, threshold. The
             resolution math is the staged ledger below. Tappable for the same
             sheet the strip opens (F1b). Wears THE DRAW's lime outline. */}
-        <button
-          type="button"
+        <UiCard
+          interactive
+          elevation="flat"
+          padding="none"
           onClick={() => setSheetFixture(fixture)}
-          className="draw-outline-lime neo-border neo-shadow rounded-lg bg-card text-card-foreground flex flex-col justify-center gap-1.5 p-3 shrink-0 text-left w-full cursor-pointer active:neo-shadow-pressed"
+          className="draw-outline-lime neo-shadow flex flex-col justify-center gap-1.5 p-3 shrink-0 text-left w-full cursor-pointer"
           style={{ height: LAYOUT.fixtureCardH }}
           data-testid="draw-fixture-card"
         >
@@ -350,7 +353,7 @@ export function RoundStage({
               </span>
             ))}
           </div>
-        </button>
+        </UiCard>
 
         {/* D1 — the staged resolution ledger. Present only for the fixture
             just played (never while benching the next one), at its full
@@ -387,8 +390,10 @@ export function RoundStage({
             const hint = hintByCard?.[card.id];
             return (
               <div key={card.id} className="relative flex-1 min-w-0 flex flex-col" style={{ gap: 4 }}>
-                <button
-                  type="button"
+                <UiCard
+                  interactive
+                  elevation="flat"
+                  padding="none"
                   disabled={locked}
                   onClick={() => tapChip(i)}
                   onPointerDown={() => startPress(card)}
@@ -397,8 +402,8 @@ export function RoundStage({
                   onContextMenu={(e) => e.preventDefault()}
                   aria-pressed={mode === "select" ? selected === i : undefined}
                   className={cn(
-                    "relative neo-border rounded-lg bg-card text-card-foreground flex flex-col items-center justify-center gap-0.5 min-w-0 px-0.5 touch-none",
-                    mode === "select" && "cursor-pointer neo-shadow-sm active:neo-shadow-pressed",
+                    "relative flex flex-col items-center justify-center gap-0.5 min-w-0 px-0.5 text-center touch-none",
+                    mode === "select" && "cursor-pointer neo-shadow-sm",
                     benchedNow && "draw-benched",
                   )}
                   style={{ height: 64 }}
@@ -429,7 +434,7 @@ export function RoundStage({
                       {Math.round(stat.contribution)}
                     </span>
                   )}
-                </button>
+                </UiCard>
                 <div className="h-5 relative">
                   {benchedNow && (
                     // Wider than its 52px column: centred and allowed to

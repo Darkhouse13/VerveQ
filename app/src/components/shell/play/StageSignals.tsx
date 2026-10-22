@@ -46,7 +46,7 @@ export function StageTimer({
       </span>
       <span aria-hidden="true" className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
         <span
-          className="block h-full rounded-full bg-mode-accent transition-[width] duration-200 ease-linear motion-reduce:transition-none"
+          className="block h-full rounded-full bg-mode-accent transition-[width] duration-ui ease-linear motion-reduce:transition-none"
           style={{ width: `${pct}%` }}
         />
       </span>

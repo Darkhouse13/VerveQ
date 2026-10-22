@@ -71,7 +71,7 @@ export function ClaimCard({
     <Card className="py-3">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="font-heading font-bold text-sm">
+          <p className="font-heading font-bold text-body-sm">
             {claim.playerName}
             <span className="font-mono text-eyebrow text-muted-foreground ml-2">
               {claim.positionAtFiling ?? "?"} → {claim.claimedPosition}
@@ -220,7 +220,7 @@ export function FileClaimDialog({
                   className="flex items-center justify-between py-2"
                   onClick={() => setPlayerId(p.playerId)}
                 >
-                  <span className="font-heading font-bold text-sm truncate">{p.name}</span>
+                  <span className="font-heading font-bold text-body-sm truncate">{p.name}</span>
                   <span className="font-mono text-eyebrow text-muted-foreground shrink-0">
                     {roleLabel(p.position, t)} · {p.clubName ?? p.clubId}
                   </span>
@@ -231,7 +231,7 @@ export function FileClaimDialog({
         ) : (
           <>
             <Card className="py-2 flex items-center justify-between">
-              <span className="font-heading font-bold text-sm">{selected.name}</span>
+              <span className="font-heading font-bold text-body-sm">{selected.name}</span>
               <Button variant="ghost" size="sm" onClick={() => setPlayerId(null)}>
                 {t("weekend.change", { defaultValue: "Change" })}
               </Button>
@@ -374,7 +374,7 @@ export default function CourtScreen() {
       <div className="flex flex-col gap-4 md:max-w-md md:mx-auto md:w-full">
         {gate === "checking" || (gate === "open" && docket === undefined) ? (
           <Card className="text-center py-6">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-body-sm text-muted-foreground">
               {t("common.loading", { defaultValue: "Loading…" })}
             </p>
           </Card>
@@ -413,7 +413,7 @@ export default function CourtScreen() {
 
             {docket.claims.length === 0 && (
               <Card className="text-center py-6">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-body-sm text-muted-foreground">
                   {t("weekend.emptyDocket", {
                     defaultValue:
                       "No claims this weekend. See a position the feed got wrong? File it.",

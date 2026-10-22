@@ -61,7 +61,7 @@ export function DrawShareLandingView({ payload, slug, onConvert }: DrawShareLand
   return (
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-sm flex flex-col gap-4" data-testid="draw-share-landing">
-        <p className="text-center font-heading font-bold text-[11px] tracking-widest text-muted-foreground">
+        <p className="text-center font-heading font-bold text-meta tracking-widest text-muted-foreground">
           A FRIEND TOOK ON BOARD #{payload.boardNumber}
         </p>
         <ShareCard data={data} />
@@ -88,8 +88,8 @@ function NotFound() {
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-sm flex flex-col gap-4" data-testid="draw-share-landing-missing">
         <NeoCard color="destructive" shadow="lg" className="text-center py-6 px-4">
-          <p className="font-heading font-bold text-sm">THIS LINK LEADS NOWHERE</p>
-          <p className="text-xs text-muted-foreground mt-2 leading-snug">
+          <p className="font-heading font-bold text-body-sm">THIS LINK LEADS NOWHERE</p>
+          <p className="text-meta text-muted-foreground mt-2 leading-snug">
             The shared run doesn't exist (or its link was mistyped).
           </p>
         </NeoCard>

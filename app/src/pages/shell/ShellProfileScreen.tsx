@@ -8,6 +8,7 @@ import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { Eyebrow } from "@/components/ui/eyebrow";
+import { IconButton } from "@/components/ui/icon-button";
 import { ModeTile } from "@/components/ui/mode-tile";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useAuth } from "@/contexts/AuthContext";
@@ -156,14 +157,14 @@ export default function ShellProfileScreen() {
   const identity = (
     <NeoCard className="flex flex-col gap-3.5 md:shrink-0">
       <div className="flex items-center gap-4">
-        <div className="neo-border neo-shadow rounded-xl bg-hot-pink text-hot-pink-foreground w-[72px] h-[72px] md:w-[84px] md:h-[84px] shrink-0 -rotate-3 flex items-center justify-center font-heading font-bold text-3xl uppercase">
+        <div className="neo-border neo-shadow rounded-lg bg-hot-pink text-hot-pink-foreground w-[72px] h-[72px] md:w-[84px] md:h-[84px] shrink-0 -rotate-3 flex items-center justify-center font-heading font-bold text-title-lg uppercase">
           {handle.slice(0, 2) || "?"}
         </div>
         <div className="min-w-0">
-          <p className="font-heading font-bold text-2xl md:text-[27px] leading-none truncate">
+          <p className="font-heading font-bold text-title md:text-title-lg leading-none truncate">
             {handle}
           </p>
-          <p className="font-mono text-[11px] text-muted-foreground mt-1.5 uppercase tracking-wide">
+          <p className="font-mono text-eyebrow text-muted-foreground mt-1.5 uppercase ">
             {profile
               ? guest
                 ? t("profile.playingSince", { date: monthYear(profile.createdAt) })
@@ -203,11 +204,11 @@ export default function ShellProfileScreen() {
       className="flex flex-col gap-2.5 md:flex-1 md:min-h-fit md:justify-center"
       style={{
         background:
-          "repeating-linear-gradient(45deg, rgba(0,0,0,.045) 0 10px, transparent 10px 20px)",
+          "repeating-linear-gradient(45deg, hsl(var(--ink) / 0.045) 0 10px, transparent 10px 20px)",
       }}
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        <span className="font-mono text-eyebrow font-bold uppercase text-muted-foreground">
           {seasonNumber != null
             ? t("profile.rankedSeason", { n: seasonNumber })
             : t("profile.ranked")}
@@ -216,10 +217,10 @@ export default function ShellProfileScreen() {
           <Lock size={11} strokeWidth={3} className="mr-1" /> {t("profile.lockedChip")}
         </NeoBadge>
       </div>
-      <p className="font-heading font-bold text-lg leading-tight">
+      <p className="font-heading font-bold text-title-sm leading-tight">
         {t("profile.lockedTitle")}
       </p>
-      <p className="text-xs text-muted-foreground">{t("profile.lockedBody")}</p>
+      <p className="text-meta text-muted-foreground">{t("profile.lockedBody")}</p>
       <NeoButton
         variant="ghost"
         size="sm"
@@ -236,7 +237,7 @@ export default function ShellProfileScreen() {
       onClick={() => navigate(SHELL_ROUTES.ranks)}
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-yellow">
+        <span className="font-mono text-eyebrow font-bold uppercase text-yellow">
           {seasonNumber != null
             ? t("profile.rankedSeason", { n: seasonNumber })
             : t("profile.ranked")}
@@ -250,16 +251,16 @@ export default function ShellProfileScreen() {
       <div className="flex flex-col gap-3.5 my-auto">
         <div className="flex items-center gap-3.5">
           <div
-            className="neo-border rounded-xl w-14 h-14 shrink-0 -rotate-6 flex items-center justify-center"
+            className="neo-border rounded-lg w-14 h-14 shrink-0 -rotate-6 flex items-center justify-center"
             style={{ background: tierKey ? tierColors[tierKey] : undefined }}
           >
             <Crown size={28} strokeWidth={2.5} className="text-ink" />
           </div>
           <div>
-            <p className="font-heading font-bold text-[27px] leading-none">
+            <p className="font-heading font-bold text-title-lg leading-none">
               {tierKey ? t(`ranks.tiers.${tierKey}`) : t("ranks.unranked")}
             </p>
-            <p className="font-mono text-[11px] mt-1.5 text-yellow uppercase">
+            <p className="font-mono text-eyebrow mt-1.5 text-yellow uppercase">
               {elo?.toLocaleString()} ELO
               {RANKED_CAPABILITIES.globalRank ? (
                 globalRank ? (
@@ -282,7 +283,7 @@ export default function ShellProfileScreen() {
                 style={{ width: `${Math.round(progress.pct * 100)}%` }}
               />
             </div>
-            <p className="font-mono text-[10.5px] text-muted-foreground mt-1.5 uppercase">
+            <p className="font-mono text-eyebrow text-muted-foreground mt-1.5 uppercase">
               {progress.next
                 ? t("ranks.progressTo", {
                     elo: elo?.toLocaleString(),
@@ -293,7 +294,7 @@ export default function ShellProfileScreen() {
             </p>
           </div>
         )}
-        <p className="font-mono text-[10.5px] text-muted-foreground border-t-2 border-border/20 pt-2.5 uppercase">
+        <p className="font-mono text-eyebrow text-muted-foreground border-t-2 border-border/20 pt-2.5 uppercase">
           {t("ranks.allTimeRecord")} ·{" "}
           <b className="text-foreground">
             {wins}W — {losses}L
@@ -301,12 +302,12 @@ export default function ShellProfileScreen() {
         </p>
       </div>
       <div className="flex items-center justify-between">
-        <span className="font-mono text-[10.5px] text-muted-foreground uppercase">
+        <span className="font-mono text-eyebrow text-muted-foreground uppercase">
           {seasonDaysLeft != null
             ? t("ranks.endsInShort", { days: seasonDaysLeft })
             : t("ranks.seasonDatesSoon")}
         </span>
-        <span className="font-heading font-bold text-sm text-yellow uppercase">
+        <span className="font-heading font-bold text-body-sm text-yellow uppercase">
           {t("profile.viewRanks")}
         </span>
       </div>
@@ -342,10 +343,10 @@ export default function ShellProfileScreen() {
           key={tile.label}
           className="neo-border rounded-lg bg-card text-center px-3 py-3.5 flex flex-col justify-center min-w-0"
         >
-          <p className="font-mono text-[9.5px] font-bold uppercase tracking-widest text-muted-foreground">
+          <p className="font-mono text-eyebrow font-bold uppercase text-muted-foreground">
             {tile.label}
           </p>
-          <p className="font-heading font-bold text-2xl mt-1.5 whitespace-nowrap truncate">
+          <p className="font-heading font-bold text-title mt-1.5 whitespace-nowrap truncate">
             {tile.value}
           </p>
         </div>
@@ -356,16 +357,16 @@ export default function ShellProfileScreen() {
   const badgeGrid = (
     <div className="flex flex-col gap-2.5 md:flex-1 md:min-h-fit">
       <div className="flex items-center justify-between">
-        <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        <span className="font-mono text-eyebrow font-bold uppercase text-muted-foreground">
           {t("profile.achievements")}
         </span>
-        <span className="font-mono text-[10.5px] text-muted-foreground">
+        <span className="font-mono text-meta text-muted-foreground">
           {unlockedCount} / {badges.length}
         </span>
       </div>
       {badges.length === 0 ? (
         <div className="neo-border border-dashed rounded-lg flex items-center justify-center py-6">
-          <span className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
+          <span className="font-mono text-eyebrow uppercase text-muted-foreground">
             {t("profile.achievementsNone")}
           </span>
         </div>
@@ -380,18 +381,18 @@ export default function ShellProfileScreen() {
                 className={
                   "rounded-lg px-3 py-2.5 flex items-center gap-2.5 min-w-0 " +
                   (locked
-                    ? "border-2 border-dashed border-muted-foreground opacity-60"
+                    ? "border-2 border-dashed border-muted-foreground is-dimmed"
                     : "neo-border bg-card")
                 }
               >
-                <span className={"text-xl shrink-0" + (locked ? " grayscale" : "")}>
+                <span className={"text-title-sm shrink-0" + (locked ? " grayscale" : "")}>
                   {achievementEmojis[a.achievementId] ?? "🏅"}
                 </span>
                 <div className="min-w-0">
-                  <p className="font-heading font-bold text-[13px] leading-tight truncate">
+                  <p className="font-heading font-bold text-meta leading-tight truncate">
                     {a.name}
                   </p>
-                  <p className="font-mono text-[9px] uppercase tracking-wide text-muted-foreground mt-0.5 truncate">
+                  <p className="font-mono text-eyebrow uppercase text-muted-foreground mt-0.5 truncate">
                     {locked ? a.description || t("profile.locked") : monthYear(unlockedAt)}
                   </p>
                 </div>
@@ -406,16 +407,16 @@ export default function ShellProfileScreen() {
   const activityCard = (
     <NeoCard className="p-0 flex flex-col md:flex-1 md:min-h-fit">
       <div className="flex items-center justify-between px-4 pt-3 pb-2.5">
-        <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        <span className="font-mono text-eyebrow font-bold uppercase text-muted-foreground">
           {t("profile.activity")}
         </span>
-        <span className="font-mono text-[10px] text-muted-foreground uppercase">
+        <span className="font-mono text-eyebrow text-muted-foreground uppercase">
           {t("profile.activityRanked")}
         </span>
       </div>
       {activity.length === 0 ? (
         <div className="border-t-2 border-border px-4 py-6 text-center">
-          <span className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
+          <span className="font-mono text-eyebrow uppercase text-muted-foreground">
             {guest ? t("profile.activityEmptyGuest") : t("profile.activityEmpty")}
           </span>
         </div>
@@ -432,20 +433,20 @@ export default function ShellProfileScreen() {
               key={g.id}
               className="border-t-2 border-border px-4 py-2.5 flex items-center gap-3 md:flex-1 md:min-h-0"
             >
-              <div className="neo-border rounded-lg w-9 h-9 shrink-0 flex items-center justify-center bg-muted text-base">
+              <div className="neo-border rounded-lg w-9 h-9 shrink-0 flex items-center justify-center bg-muted text-body">
                 {emoji}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-heading font-bold text-[13px] leading-tight capitalize truncate">
+                <p className="font-heading font-bold text-meta leading-tight capitalize truncate">
                   {name}
                 </p>
-                <p className="font-mono text-[9px] uppercase tracking-wide text-muted-foreground mt-0.5 truncate">
+                <p className="font-mono text-eyebrow uppercase text-muted-foreground mt-0.5 truncate">
                   {g.sport} · {timeAgo(g.playedAt)}
                 </p>
               </div>
               <span
                 className={
-                  "font-mono text-[11px] font-bold rounded-full border-2 px-2.5 py-0.5 shrink-0 " +
+                  "font-mono text-meta font-bold rounded-full border-2 px-2.5 py-0.5 shrink-0 " +
                   (delta >= 0
                     ? "text-success border-success"
                     : "text-destructive border-destructive")
@@ -465,17 +466,17 @@ export default function ShellProfileScreen() {
   const seasonsCard =
     guest || pastSeasons.length === 0 ? (
       <div className="neo-border border-dashed rounded-lg flex items-center justify-center py-6 px-4 md:shrink-0">
-        <span className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground text-center">
+        <span className="font-mono text-eyebrow uppercase text-muted-foreground text-center">
           {guest ? t("profile.seasonsGuest") : t("profile.seasonsEmpty")}
         </span>
       </div>
     ) : (
       <NeoCard className="md:shrink-0">
         <div className="flex items-center justify-between">
-          <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          <span className="font-mono text-eyebrow font-bold uppercase text-muted-foreground">
             {t("profile.seasons")}
           </span>
-          <span className="font-mono text-[10px] text-muted-foreground uppercase">
+          <span className="font-mono text-eyebrow text-muted-foreground uppercase">
             {t("profile.seasonsPeak")}
           </span>
         </div>
@@ -487,14 +488,14 @@ export default function ShellProfileScreen() {
             >
               <div className="flex items-center justify-center gap-1.5">
                 <span
-                  className="w-3 h-3 rounded-[3px] border-2 border-border -rotate-6 inline-block"
+                  className="w-3 h-3 rounded-sm border-2 border-border -rotate-6 inline-block"
                   style={{
-                    background: tierColors[s.tier.toLowerCase()] ?? "#9AA1A8",
+                    background: tierColors[s.tier.toLowerCase()] ?? "hsl(var(--tier-silver))",
                   }}
                 />
-                <span className="font-mono text-[10px] font-bold">S{s.seasonNumber}</span>
+                <span className="font-mono text-meta font-bold">S{s.seasonNumber}</span>
               </div>
-              <p className="font-heading font-bold text-xs mt-1 whitespace-nowrap truncate">
+              <p className="font-heading font-bold text-meta mt-1 whitespace-nowrap truncate">
                 {s.tier}
               </p>
             </div>
@@ -539,14 +540,13 @@ export default function ShellProfileScreen() {
       onBack={() => navigate(SHELL_ROUTES.home)}
       headerRight={
         <div className="flex items-center gap-2">
-          <button
-            type="button"
+          <IconButton
+            variant="secondary"
             aria-label={t("settings.openLabel")}
             onClick={() => navigate(SHELL_ROUTES.settings)}
-            className="neo-border neo-shadow rounded-lg bg-card p-2 shrink-0 transition-all active:neo-shadow-pressed"
           >
-            <Settings size={18} strokeWidth={2.5} />
-          </button>
+            <Settings strokeWidth={2.5} />
+          </IconButton>
           {handle && (
             <NeoBadge color="muted">
               @{handle}

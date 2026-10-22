@@ -50,7 +50,7 @@ export function DrawCardFace({ card, size = "offer" }: DrawCardFaceProps) {
   return (
     <div className="flex flex-col h-full w-full min-w-0 p-1.5">
       <div className="flex items-start justify-between gap-1">
-        <span className="font-mono font-bold leading-none text-2xl">{card.rating}</span>
+        <span className="font-mono font-bold leading-none text-title">{card.rating}</span>
         <span className={cn(TAG, "neo-border", POSITION_CLASS[card.position] ?? "bg-muted")}>
           {t(`positionShort.${card.position}`)}
         </span>

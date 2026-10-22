@@ -180,9 +180,9 @@ export default function CreateDuelModal({
             >
               <div>
                 <p className="font-heading font-bold">{t("createDuel.kindSportsTitle")}</p>
-                <p className="text-xs opacity-90">{t("createDuel.kindSportsDesc")}</p>
+                <p className="text-meta opacity-90">{t("createDuel.kindSportsDesc")}</p>
               </div>
-              <span className="text-2xl">🏆</span>
+              <span className="text-title">🏆</span>
             </NeoCard>
             <NeoCard
               color="blue"
@@ -191,9 +191,9 @@ export default function CreateDuelModal({
             >
               <div>
                 <p className="font-heading font-bold">{t("createDuel.kindKnowledgeTitle")}</p>
-                <p className="text-xs opacity-90">{t("createDuel.kindKnowledgeDesc")}</p>
+                <p className="text-meta opacity-90">{t("createDuel.kindKnowledgeDesc")}</p>
               </div>
-              <span className="text-2xl">🧠</span>
+              <span className="text-title">🧠</span>
             </NeoCard>
             <NeoCard
               color="accent"
@@ -202,9 +202,9 @@ export default function CreateDuelModal({
             >
               <div>
                 <p className="font-heading font-bold">{t("createDuel.kindCameFirstTitle")}</p>
-                <p className="text-xs opacity-90">{t("createDuel.kindCameFirstDesc")}</p>
+                <p className="text-meta opacity-90">{t("createDuel.kindCameFirstDesc")}</p>
               </div>
-              <span className="text-2xl">⏳</span>
+              <span className="text-title">⏳</span>
             </NeoCard>
           </div>
         )}
@@ -220,8 +220,8 @@ export default function CreateDuelModal({
                     onClick={() => handleSelectTopic(s.key)}
                     className="flex flex-col items-center gap-2 py-6"
                   >
-                    <span className="text-4xl">{s.emoji}</span>
-                    <p className="font-heading font-bold text-sm">
+                    <span className="text-display">{s.emoji}</span>
+                    <p className="font-heading font-bold text-body-sm">
                       {t(`createDuel.sport_${s.key}`, { defaultValue: s.label })}
                     </p>
                   </NeoCard>
@@ -235,8 +235,8 @@ export default function CreateDuelModal({
                   onClick={() => handleSelectTopic("")}
                   className="text-center py-4"
                 >
-                  <p className="font-heading font-bold text-sm">{t("createDuel.categoryMixed")}</p>
-                  <p className="text-[10px] opacity-80">{t("createDuel.categoryMixedDesc")}</p>
+                  <p className="font-heading font-bold text-body-sm">{t("createDuel.categoryMixed")}</p>
+                  <p className="text-meta text-muted-foreground">{t("createDuel.categoryMixedDesc")}</p>
                 </NeoCard>
                 {KNOWLEDGE_CATEGORIES.map((c) => (
                   <NeoCard
@@ -245,7 +245,7 @@ export default function CreateDuelModal({
                     onClick={() => handleSelectTopic(c)}
                     className="text-center py-4"
                   >
-                    <p className="font-heading font-bold text-xs">
+                    <p className="font-heading font-bold text-meta">
                       {formatCategoryLabel(c)}
                     </p>
                   </NeoCard>
@@ -274,8 +274,8 @@ export default function CreateDuelModal({
             {/* Set expectations: there is no "choose opponent" step — you
                 play first and invite afterwards from the results screen. */}
             <NeoCard color="default" className="text-left">
-              <p className="font-heading font-bold text-sm">{t("createDuel.playNowInviteAfterTitle")}</p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="font-heading font-bold text-body-sm">{t("createDuel.playNowInviteAfterTitle")}</p>
+              <p className="text-meta text-muted-foreground mt-1">
                 {t("createDuel.playNowInviteAfterDesc")}
               </p>
             </NeoCard>

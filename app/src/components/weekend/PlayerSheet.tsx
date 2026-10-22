@@ -132,7 +132,7 @@ export function PlayerSheet({
             {t("weekend.unpriced", { defaultValue: "No price yet" })}
           </Badge>
         ) : (
-          <span className="neo-border rounded bg-card px-2 py-0.5 font-mono text-title-sm font-bold tabular-nums">
+          <span className="neo-border rounded-sm bg-card px-2 py-0.5 font-mono text-title-sm font-bold tabular-nums">
             {price(card.price)}
           </span>
         )
@@ -271,7 +271,7 @@ function WeekendBlock({ card }: { card: Card }) {
   return (
     <Section label={t("weekend.thisWeekend", { defaultValue: "This gameweek" })}>
       <div className="flex items-center justify-between gap-2" data-testid="player-sheet-weekend">
-        <p className="font-heading font-bold text-sm truncate">
+        <p className="font-heading font-bold text-body-sm truncate">
           {isHome ? "vs " : "at "}
           {opponentName ?? t("weekend.unknownClub", { defaultValue: "(unnamed club)" })}
           <span className="ml-1.5 font-mono text-eyebrow text-muted-foreground uppercase">
@@ -392,7 +392,7 @@ function SeasonBlock({
         {stats.map((stat) => (
           <div key={stat.key} className="flex items-baseline justify-between gap-2">
             <span className="text-meta text-muted-foreground truncate">{stat.label}</span>
-            <span className="font-mono font-bold text-sm tabular-nums">{stat.value}</span>
+            <span className="font-mono font-bold text-body-sm tabular-nums">{stat.value}</span>
           </div>
         ))}
       </div>
@@ -470,7 +470,7 @@ function HistoryBlock({ card }: { card: Card }) {
                     ×{row.appearances}
                   </span>
                 )}
-                <span className="font-mono font-bold text-sm tabular-nums">
+                <span className="font-mono font-bold text-body-sm tabular-nums">
                   {formatPoints(row.points)}
                 </span>
               </div>

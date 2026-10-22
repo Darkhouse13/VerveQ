@@ -27,15 +27,15 @@ function RaceCard({ scope }: { scope: Scope }) {
       <p className="font-mono text-eyebrow font-bold uppercase text-muted-foreground">{t("weekend.yourCrewRace", { defaultValue: "Your crew race" })}</p>
       <div className="mt-2 grid grid-cols-3 gap-2 text-center">
         <div>
-          <p className="font-heading font-bold text-2xl">#{me.rank}</p>
+          <p className="font-heading font-bold text-title">#{me.rank}</p>
           <p className="text-meta text-muted-foreground">{t("weekend.position", { defaultValue: "position" })}</p>
         </div>
         <div>
-          <p className="font-mono font-bold text-lg">{me.gapAbove === null ? "—" : formatPoints(me.gapAbove)}</p>
+          <p className="font-mono font-bold text-title-sm">{me.gapAbove === null ? "—" : formatPoints(me.gapAbove)}</p>
           <p className="text-meta text-muted-foreground">{t("weekend.nextPlace", { defaultValue: "to next" })}</p>
         </div>
         <div>
-          <p className="font-mono font-bold text-lg">{movementLabel(me.movement) ?? "—"}</p>
+          <p className="font-mono font-bold text-title-sm">{movementLabel(me.movement) ?? "—"}</p>
           <p className="text-meta text-muted-foreground">{t("weekend.movement", { defaultValue: "movement" })}</p>
         </div>
       </div>
@@ -50,7 +50,7 @@ function RaceCard({ scope }: { scope: Scope }) {
 function Standings({ scope }: { scope: Scope }) {
   const { t } = useTranslation("shell");
   if (scope.rows.length === 0) {
-    return <Card className="py-4 text-center text-sm text-muted-foreground">{t("weekend.standingsEmpty", { defaultValue: "Standings appear once a weekend has been drafted and scored." })}</Card>;
+    return <Card className="py-4 text-center text-body-sm text-muted-foreground">{t("weekend.standingsEmpty", { defaultValue: "Standings appear once a weekend has been drafted and scored." })}</Card>;
   }
   return (
     <Card className="p-0 overflow-hidden">
@@ -58,10 +58,10 @@ function Standings({ scope }: { scope: Scope }) {
         <div key={row.userId} className={`px-3 py-2.5 ${index > 0 ? "border-t-2 border-border" : ""}`}>
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
-              <span className="w-8 shrink-0 font-mono text-xs font-bold text-muted-foreground">
+              <span className="w-8 shrink-0 font-mono text-meta font-bold text-muted-foreground">
                 {row.tied ? `T${row.rank}` : row.rank}
               </span>
-              <span className="font-heading font-bold text-sm truncate">{row.name}</span>
+              <span className="font-heading font-bold text-body-sm truncate">{row.name}</span>
               {movementLabel(row.movement) !== null && (
                 <span className={`font-mono text-eyebrow ${row.movement! > 0 ? "text-success" : "text-destructive"}`}>
                   {movementLabel(row.movement)}
@@ -107,7 +107,7 @@ function TrophyCabinet({ scope }: { scope: Scope }) {
       <div className="grid grid-cols-2 gap-2">
         {items.map((item) => (
           <Card key={item.label} className="py-2.5 text-center">
-            <p className="font-heading font-bold text-xl">{item.value}</p>
+            <p className="font-heading font-bold text-title-sm">{item.value}</p>
             <p className="text-meta text-muted-foreground">{item.label}</p>
           </Card>
         ))}
@@ -142,7 +142,7 @@ function WeeklyResults({ scope }: { scope: Scope }) {
               {expanded && (
                 <div className="mt-2 border-t-2 border-border pt-2">
                   {week.rows.map((row) => (
-                    <div key={row.userId} className="flex items-center justify-between py-1 text-xs">
+                    <div key={row.userId} className="flex items-center justify-between py-1 text-meta">
                       <span className="truncate"><span className="mr-2 font-mono text-muted-foreground">{row.rank === null ? "—" : row.tied ? `T${row.rank}` : row.rank}</span>{row.name}</span>
                       <span className="font-mono font-bold">{row.points === null ? t("weekend.awaiting", { defaultValue: "awaiting" }) : formatPoints(row.points)}</span>
                     </div>
@@ -187,11 +187,11 @@ function Recap({ dashboard }: { dashboard: Dashboard }) {
           <p className="font-mono text-eyebrow font-bold uppercase text-muted-foreground">
             {t("weekend.gameweekRecap", { defaultValue: "GW {{gw}} recap", gw: recap.gwNumber })}
           </p>
-          <p className="font-heading font-bold text-lg">{t("weekend.weekendWrapped", { defaultValue: "Weekend wrapped" })}</p>
+          <p className="font-heading font-bold text-title-sm">{t("weekend.weekendWrapped", { defaultValue: "Weekend wrapped" })}</p>
         </div>
         <Button variant="secondary" size="sm" onClick={() => void share()}><Share2 size={13} className="mr-1" />{t("common.share", { defaultValue: "Share" })}</Button>
       </div>
-      <div className="mt-2 flex flex-col gap-1 text-xs">
+      <div className="mt-2 flex flex-col gap-1 text-meta">
         {recap.podium.map((row) => <p key={`${row.rank}:${row.name}`}><Medal size={12} className="mr-1 inline" />#{row.rank} {row.name} · {formatPoints(row.points)}</p>)}
         {recap.biggestClimb !== null && (
           <p>
@@ -223,7 +223,7 @@ export function CrewCompetitionPanel({ dashboard }: { dashboard: Dashboard | nul
   const { t } = useTranslation("shell");
   const [tab, setTab] = useState<"season" | "allTime">("season");
   const [section, setSection] = useState<"standings" | "record" | "results">("standings");
-  if (dashboard === undefined) return <Card className="py-5 text-center text-sm text-muted-foreground">{t("weekend.loadingStandings", { defaultValue: "Loading standings…" })}</Card>;
+  if (dashboard === undefined) return <Card className="py-5 text-center text-body-sm text-muted-foreground">{t("weekend.loadingStandings", { defaultValue: "Loading standings…" })}</Card>;
   if (dashboard === null) return null;
   const scope = dashboard[tab];
   return (
@@ -285,7 +285,7 @@ export function CrewCompetitionPanel({ dashboard }: { dashboard: Dashboard | nul
               <p className="mb-2 font-mono text-eyebrow font-bold uppercase text-muted-foreground">{t("weekend.yourRivalries", { defaultValue: "Your rivalries" })}</p>
               <Card className="py-2">
                 {dashboard.rivalries.slice(0, 5).map((rival) => (
-                  <div key={rival.userId} className="flex items-center justify-between py-1.5 text-xs">
+                  <div key={rival.userId} className="flex items-center justify-between py-1.5 text-meta">
                     <span className="font-heading font-bold"><Swords size={12} className="mr-1 inline" />{rival.name}</span>
                     <span className="font-mono">{rival.wins}–{rival.losses}–{rival.draws}{rival.streak === null ? "" : ` · ${rival.streak.result} ${rival.streak.length}`}</span>
                   </div>

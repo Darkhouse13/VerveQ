@@ -150,11 +150,11 @@ export function LobbyView({
     <div className="md:grid md:grid-cols-2 md:gap-5 md:items-start">
       <div className="space-y-5">
         <NeoCard shadow="lg" className="text-center py-5">
-          <p className="text-[10px] font-heading uppercase text-muted-foreground mb-1">
+          <p className="text-eyebrow font-heading uppercase text-muted-foreground mb-1">
             {t("arenaRoom.code")}
           </p>
-          <p className="font-mono font-bold text-4xl tracking-[0.4em]">{room.code}</p>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="font-mono font-bold text-display tracking-code">{room.code}</p>
+          <p className="text-meta text-muted-foreground mt-1">
             {t("arenaRoom.joined", { count: active.length, capacity })} · {arenaModeLabel(room.mode)}
           </p>
           <div className="mt-4 grid grid-cols-2 gap-2">
@@ -188,14 +188,14 @@ export function LobbyView({
       <div className="space-y-5 mt-5 md:mt-0">
         {!isHost && (
           <NeoCard className="text-center">
-            <p className="text-xs text-muted-foreground">
+            <p className="text-meta text-muted-foreground">
               {t("arenaRoom.waitingForHost")}
             </p>
           </NeoCard>
         )}
 
         {isHost && blockedReasons.length > 0 && (
-          <NeoCard color="default" className="text-xs">
+          <NeoCard color="default" className="text-meta">
             <p className="font-heading font-bold uppercase mb-1.5">
               {t("arenaRoom.waitingOn")}
             </p>
@@ -308,7 +308,7 @@ function TeamPicker({
   const { t } = useTranslation("screens");
   return (
     <div>
-      <p className="text-[11px] font-heading font-bold uppercase mb-2">{t("arenaRoom.teams")}</p>
+      <p className="text-eyebrow font-heading font-bold uppercase mb-2">{t("arenaRoom.teams")}</p>
       <div className="grid grid-cols-2 gap-2">
         {(["A", "B"] as const).map((team) => {
           const members = active.filter((p) => p.team === team);
@@ -319,10 +319,10 @@ function TeamPicker({
               key={team}
               color={isMine ? "primary" : "default"}
               onClick={full ? undefined : () => onPick(team)}
-              className={`py-3 ${full ? "opacity-60" : ""}`}
+              className={`py-3 ${full ? "is-dimmed" : ""}`}
             >
               <div className="flex items-center justify-between mb-1">
-                <p className="font-heading font-bold text-sm">{t("arenaRoom.team", { team })}</p>
+                <p className="font-heading font-bold text-body-sm">{t("arenaRoom.team", { team })}</p>
                 <NeoBadge
                   color={isMine ? "accent" : "muted"}
                   size="sm"
@@ -332,12 +332,12 @@ function TeamPicker({
               </div>
               <div className="space-y-0.5">
                 {members.length === 0 && (
-                  <p className="text-[10px] text-muted-foreground">{t("arenaRoom.empty")}</p>
+                  <p className="text-meta text-muted-foreground">{t("arenaRoom.empty")}</p>
                 )}
                 {members.map((m) => (
                   <p
                     key={m.userId}
-                    className="text-[11px] font-mono truncate"
+                    className="text-meta font-mono truncate"
                   >
                     @{m.nameSnapshot}
                   </p>
@@ -365,7 +365,7 @@ function Roster({
   const slotsToFill = Math.max(0, capacity - active.length);
   return (
     <div>
-      <p className="text-[11px] font-heading font-bold uppercase mb-2 flex items-center gap-1.5">
+      <p className="text-eyebrow font-heading font-bold uppercase mb-2 flex items-center gap-1.5">
         <Users size={12} strokeWidth={3} /> {t("arenaRoom.players")}
       </p>
       <div className="space-y-1.5">
@@ -379,7 +379,7 @@ function Roster({
         {Array.from({ length: slotsToFill }).map((_, i) => (
           <NeoCard
             key={`empty-${i}`}
-            className="py-2.5 text-xs text-muted-foreground"
+            className="py-2.5 text-meta text-muted-foreground"
           >
             <span className="font-heading uppercase">{t("arenaRoom.waitingForPlayer")}</span>
           </NeoCard>
@@ -404,7 +404,7 @@ function PlayerRow({
           {player.isHost && (
             <Crown size={14} strokeWidth={3} className="shrink-0" />
           )}
-          <span className="font-heading font-bold text-sm truncate">
+          <span className="font-heading font-bold text-body-sm truncate">
             {player.nameSnapshot}
             {isMe && t("arenaRoom.youSuffix")}
           </span>
@@ -438,14 +438,14 @@ export function CountdownView({ room }: { room: Room }) {
   return (
     <div className="space-y-4 pt-6">
       <NeoCard shadow="lg" className="text-center py-10">
-        <p className="text-xs font-heading uppercase text-muted-foreground mb-3">
+        <p className="text-eyebrow font-heading uppercase text-muted-foreground mb-3">
           {t("arenaRoom.getReady")}
         </p>
-        <p className="font-mono font-bold text-7xl">{seconds}</p>
-        <p className="text-xs font-heading uppercase text-muted-foreground mt-4">
+        <p className="font-mono font-bold text-score">{seconds}</p>
+        <p className="text-eyebrow font-heading uppercase text-muted-foreground mt-4">
           {t("arenaRoom.roundOf", { round: 1, rounds: room.config.rounds })}
         </p>
-        <NeoBadge color="primary" rotated size="md" className="mt-2 text-base">
+        <NeoBadge color="primary" rotated size="md" className="mt-2 text-body">
           {arenaCategoryEmoji(firstCategory)} {arenaCategoryLabel(firstCategory, t)}
         </NeoBadge>
       </NeoCard>
@@ -489,10 +489,10 @@ export function RoundBreakView({
   return (
     <div className="space-y-5">
       <NeoCard shadow="lg" className="text-center py-5">
-        <p className="text-[10px] font-heading uppercase text-muted-foreground mb-1">
+        <p className="text-eyebrow font-heading uppercase text-muted-foreground mb-1">
           {t("arenaRoom.roundComplete", { round: room.currentRound + 1 })}
         </p>
-        <NeoBadge color="primary" rotated size="md" className="text-base">
+        <NeoBadge color="primary" rotated size="md" className="text-body">
           {arenaCategoryEmoji(
             room.config.categories[room.currentRound] ?? "football_quiz",
           )}{" "}
@@ -511,10 +511,10 @@ export function RoundBreakView({
 
       {nextCategory && (
         <NeoCard color="blue" className="text-center">
-          <p className="text-[10px] font-heading uppercase opacity-80 mb-1">
+          <p className="text-eyebrow font-heading uppercase text-muted-foreground mb-1">
             {t("arenaRoom.nextRound")}
           </p>
-          <p className="font-heading font-bold text-base">
+          <p className="font-heading font-bold text-body">
             {arenaCategoryEmoji(nextCategory)} {arenaCategoryLabel(nextCategory, t)}
           </p>
         </NeoCard>
@@ -537,7 +537,7 @@ export function RoundBreakView({
         )}
       </NeoButton>
 
-      <p className="text-center text-[11px] text-muted-foreground inline-flex items-center justify-center gap-1.5 w-full">
+      <p className="text-center text-meta text-muted-foreground inline-flex items-center justify-center gap-1.5 w-full">
         <Hourglass size={12} strokeWidth={3} />
         {t("arenaRoom.autoAdvance", { seconds })}
       </p>
@@ -1022,7 +1022,7 @@ function TeamHeaderRow({
         isWinner ? "bg-mode-accent text-ink" : "bg-muted",
       )}
     >
-      <span className="font-mono font-bold text-eyebrow tracking-normal text-center neo-border rounded bg-background text-foreground px-1 py-0.5">
+      <span className="font-mono font-bold text-eyebrow tracking-normal text-center neo-border rounded-sm bg-background text-foreground px-1 py-0.5">
         {teamMarker}
       </span>
       <span className="font-heading font-bold text-body-sm truncate uppercase">
@@ -1099,10 +1099,10 @@ function LeaderboardCard({
   if (rows.length === 0) {
     return (
       <div>
-        <p className="text-[11px] font-heading font-bold uppercase mb-2">
+        <p className="text-eyebrow font-heading font-bold uppercase mb-2">
           {title}
         </p>
-        <NeoCard className="text-center text-xs text-muted-foreground py-3">
+        <NeoCard className="text-center text-meta text-muted-foreground py-3">
           {t("arenaRoom.noScoresYet")}
         </NeoCard>
       </div>
@@ -1111,21 +1111,21 @@ function LeaderboardCard({
   const teamMode = room.mode === "2v2";
   return (
     <div>
-      <p className="text-[11px] font-heading font-bold uppercase mb-2">{title}</p>
+      <p className="text-eyebrow font-heading font-bold uppercase mb-2">{title}</p>
       <div className="space-y-1.5">
         {rows.map((row) => (
           <NeoCard key={`${row.id}`} className="py-2">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="font-mono font-bold text-sm w-6 text-center">
+                <span className="font-mono font-bold text-body-sm w-6 text-center">
                   #{row.rank}
                 </span>
                 <div className="min-w-0">
-                  <p className="font-heading font-bold text-sm truncate">
+                  <p className="font-heading font-bold text-body-sm truncate">
                     {row.label}
                   </p>
                   {teamMode && (
-                    <p className="text-[10px] font-mono text-muted-foreground truncate">
+                    <p className="text-meta font-mono text-muted-foreground truncate">
                       {row.playerIds
                         .map(
                           (id) =>
@@ -1137,7 +1137,7 @@ function LeaderboardCard({
                   )}
                 </div>
               </div>
-              <span className="font-mono font-bold text-base">{row.score}</span>
+              <span className="font-mono font-bold text-body">{row.score}</span>
             </div>
           </NeoCard>
         ))}
@@ -1163,9 +1163,9 @@ export function NotInRoom({
   return (
     <div className="min-h-screen bg-background px-5 py-8 flex flex-col items-center justify-center">
       <NeoCard shadow="lg" className="w-full max-w-md text-center py-8">
-        <p className="font-heading font-bold text-lg mb-2">{title}</p>
+        <p className="font-heading font-bold text-title-sm mb-2">{title}</p>
         {detail && (
-          <p className="text-xs text-muted-foreground mb-5 break-words">
+          <p className="text-meta text-muted-foreground mb-5 break-words">
             {detail}
           </p>
         )}

@@ -15,10 +15,10 @@ function UsernameRequiredScreen() {
 
   return (
     <div className="min-h-screen bg-background px-5 py-6">
-      <div className="neo-border neo-shadow rounded-2xl bg-card p-6 text-center mt-20">
+      <div className="neo-border neo-shadow rounded-lg bg-card p-6 text-center mt-20">
         <Lock size={34} strokeWidth={2.5} className="mx-auto mb-3" />
-        <h1 className="text-2xl font-heading font-bold mb-2">{t("gate.usernameTitle")}</h1>
-        <p className="text-sm text-muted-foreground mb-5">
+        <h1 className="text-title font-heading font-bold mb-2">{t("gate.usernameTitle")}</h1>
+        <p className="text-body-sm text-muted-foreground mb-5">
           {t("gate.usernameBody")}
         </p>
         <NeoButton variant="primary" size="full" onClick={() => navigate("/?mode=signup&from=guest")}>

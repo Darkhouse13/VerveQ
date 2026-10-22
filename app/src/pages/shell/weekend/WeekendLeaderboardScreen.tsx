@@ -48,7 +48,7 @@ function LeaderboardRow({ row }: { row: Row }) {
         {row.rank}
       </Badge>
       <div className="min-w-0 flex-1">
-        <p className="font-heading font-bold text-sm truncate">
+        <p className="font-heading font-bold text-body-sm truncate">
           {row.name}
           {row.isYou && (
             <span className="font-mono text-eyebrow uppercase text-primary ml-1.5">
@@ -69,7 +69,7 @@ function LeaderboardRow({ row }: { row: Row }) {
         </p>
       </div>
       <div className="shrink-0 text-right">
-        <p className="font-mono font-bold text-lg tabular-nums leading-none">
+        <p className="font-mono font-bold text-title-sm tabular-nums leading-none">
           {formatPoints(row.total)}
         </p>
         <p className="font-mono text-eyebrow uppercase text-muted-foreground mt-1">
@@ -117,7 +117,7 @@ function YourRaceCard({ board }: { board: Board }) {
               ? t("weekend.position", { defaultValue: "Position" })
               : t("weekend.nextPlace", { defaultValue: "Next place" })}
           </p>
-          <p className="font-heading font-bold text-sm mt-0.5">
+          <p className="font-heading font-bold text-body-sm mt-0.5">
             {above === null
               ? t("weekend.leading", { defaultValue: "Leading the field" })
               : gap === 0
@@ -133,7 +133,7 @@ function YourRaceCard({ board }: { board: Board }) {
           <p className="font-mono text-eyebrow uppercase text-muted-foreground">
             {t("weekend.squadProgress", { defaultValue: "Squad progress" })}
           </p>
-          <p className="font-heading font-bold text-sm mt-0.5">
+          <p className="font-heading font-bold text-body-sm mt-0.5">
             {t("weekend.scoredOfThirteen", {
               defaultValue: "{{scored}}/13 scored",
               scored: me.scoredSlots,
@@ -209,7 +209,7 @@ function WeekendStandings({ board }: { board: Board }) {
           <p className="font-heading font-bold mt-2">
             {t("weekend.leaderboardWaiting", { defaultValue: "Waiting for the first points" })}
           </p>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-body-sm text-muted-foreground mt-1">
             {t("weekend.leaderboardWaitingBody", {
               defaultValue: "The table appears as soon as a player score lands.",
             })}
@@ -258,7 +258,7 @@ function SeasonLeaderboardRow({ row }: { row: SeasonRow }) {
         {row.rank}
       </Badge>
       <div className="min-w-0 flex-1">
-        <p className="font-heading font-bold text-sm truncate">
+        <p className="font-heading font-bold text-body-sm truncate">
           {row.name}
           {row.isYou && (
             <span className="font-mono text-eyebrow uppercase text-primary ml-1.5">
@@ -275,7 +275,7 @@ function SeasonLeaderboardRow({ row }: { row: SeasonRow }) {
         </p>
       </div>
       <div className="shrink-0 text-right">
-        <p className="font-mono font-bold text-lg tabular-nums leading-none">
+        <p className="font-mono font-bold text-title-sm tabular-nums leading-none">
           {formatPoints(row.total)}
         </p>
         <p className="font-mono text-eyebrow uppercase text-muted-foreground mt-1">
@@ -298,19 +298,19 @@ function SeasonStandings({ board }: { board: SeasonBoard }) {
           </p>
           <div className="grid grid-cols-3 gap-2 mt-2 text-center">
             <div className="neo-border rounded-lg bg-background/90 text-foreground px-2 py-2">
-              <p className="font-heading font-bold text-lg">#{board.me.rank}</p>
+              <p className="font-heading font-bold text-title-sm">#{board.me.rank}</p>
               <p className="font-mono text-eyebrow uppercase text-muted-foreground">
                 {t("weekend.rank", { defaultValue: "Rank" })}
               </p>
             </div>
             <div className="neo-border rounded-lg bg-background/90 text-foreground px-2 py-2">
-              <p className="font-heading font-bold text-lg">{formatPoints(board.me.total)}</p>
+              <p className="font-heading font-bold text-title-sm">{formatPoints(board.me.total)}</p>
               <p className="font-mono text-eyebrow uppercase text-muted-foreground">
                 {t("weekend.points", { defaultValue: "Points" })}
               </p>
             </div>
             <div className="neo-border rounded-lg bg-background/90 text-foreground px-2 py-2">
-              <p className="font-heading font-bold text-lg">{board.me.playedWeekends}</p>
+              <p className="font-heading font-bold text-title-sm">{board.me.playedWeekends}</p>
               <p className="font-mono text-eyebrow uppercase text-muted-foreground">
                 {t("weekend.played", { defaultValue: "Played" })}
               </p>
@@ -380,7 +380,7 @@ function SeasonStandings({ board }: { board: SeasonBoard }) {
                 className="grid grid-cols-[1fr_auto_auto] gap-3 items-center px-3 py-3 border-b-2 border-border last:border-b-0"
               >
                 <div>
-                  <p className="font-heading font-bold text-sm">GW {week.gwNumber}</p>
+                  <p className="font-heading font-bold text-body-sm">GW {week.gwNumber}</p>
                   <p className="font-mono text-eyebrow uppercase text-muted-foreground">
                     {t("weekend.topPercent", {
                       defaultValue: "Top {{percent}}%",
@@ -388,8 +388,8 @@ function SeasonStandings({ board }: { board: SeasonBoard }) {
                     })}
                   </p>
                 </div>
-                <p className="font-mono font-bold text-sm">#{week.rank}</p>
-                <p className="font-mono font-bold text-sm tabular-nums">
+                <p className="font-mono font-bold text-body-sm">#{week.rank}</p>
+                <p className="font-mono font-bold text-body-sm tabular-nums">
                   {formatPoints(week.total)}
                 </p>
               </div>
@@ -424,8 +424,8 @@ function SeasonStandings({ board }: { board: SeasonBoard }) {
                       <Badge tone={rankColor(entry.rank)} className="w-8 justify-center px-1">
                         {entry.rank}
                       </Badge>
-                      <span className="font-heading font-bold text-sm truncate flex-1">{entry.name}</span>
-                      <span className="font-mono font-bold text-sm tabular-nums">
+                      <span className="font-heading font-bold text-body-sm truncate flex-1">{entry.name}</span>
+                      <span className="font-mono font-bold text-body-sm tabular-nums">
                         {formatPoints(entry.total)}
                       </span>
                     </div>
@@ -485,7 +485,7 @@ export default function WeekendLeaderboardScreen() {
             <p className="font-heading font-bold">
               {t("weekend.noBoard", { defaultValue: "No board is open right now." })}
             </p>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-body-sm text-muted-foreground mt-1">
               {t("weekend.noBoardBody", {
                 defaultValue: "A fresh board opens for each weekend. Check back soon.",
               })}
@@ -510,7 +510,7 @@ export default function WeekendLeaderboardScreen() {
               <WeekendStandings board={board} />
             ) : season === undefined ? (
               <Card className="text-center py-6">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-body-sm text-muted-foreground">
                   {t("common.loading", { defaultValue: "Loading…" })}
                 </p>
               </Card>

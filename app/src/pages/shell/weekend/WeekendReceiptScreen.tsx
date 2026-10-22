@@ -81,7 +81,7 @@ export function ReceiptCard({ receipt }: { receipt: SquadReceipt }) {
         <p className="font-mono text-eyebrow font-bold uppercase text-primary">
           {t("weekend.receiptEyebrow", { defaultValue: "The Weekend — settled" })}
         </p>
-        <h2 className="font-heading font-bold text-2xl leading-tight mt-1">
+        <h2 className="font-heading font-bold text-title leading-tight mt-1">
           {t("weekend.receiptTitle", {
             defaultValue: "Gameweek {{gw}} receipt",
             gw: receipt.gwNumber,
@@ -99,7 +99,7 @@ export function ReceiptCard({ receipt }: { receipt: SquadReceipt }) {
 
       <div className="neo-border rounded-lg bg-card px-4 py-3 flex items-baseline gap-2">
         <span
-          className="font-mono font-bold text-5xl tabular-nums text-primary"
+          className="font-mono font-bold text-display tabular-nums text-primary"
           data-testid="receipt-total"
         >
           {formatPoints(receipt.total)}
@@ -119,7 +119,7 @@ export function ReceiptCard({ receipt }: { receipt: SquadReceipt }) {
               {roleLabel(slot.slotRole, t)}
               {slot.isFinisher ? "·F" : ""}
             </span>
-            <span className="font-heading font-bold text-xs min-w-0 flex-1 truncate">
+            <span className="font-heading font-bold text-meta min-w-0 flex-1 truncate">
               {slot.playerName ?? "—"}
             </span>
             {slot.points === null ? (
@@ -128,7 +128,7 @@ export function ReceiptCard({ receipt }: { receipt: SquadReceipt }) {
               </span>
             ) : (
               <span
-                className={`font-mono font-bold text-xs tabular-nums shrink-0 ${
+                className={`font-mono font-bold text-meta tabular-nums shrink-0 ${
                   slot.points < 0 ? "text-destructive" : ""
                 }`}
               >
@@ -141,20 +141,20 @@ export function ReceiptCard({ receipt }: { receipt: SquadReceipt }) {
 
       {receipt.best !== null && receipt.worst !== null && (
         <div className="neo-border rounded-lg bg-card px-4 py-3 flex flex-col gap-1.5">
-          <p className="text-sm flex items-baseline justify-between gap-2">
+          <p className="text-body-sm flex items-baseline justify-between gap-2">
             <span className="font-mono text-eyebrow font-bold uppercase text-primary shrink-0">
               {t("weekend.receiptBest", { defaultValue: "Best call" })}
             </span>
-            <span className="font-heading font-bold text-sm min-w-0 truncate" data-testid="receipt-best">
+            <span className="font-heading font-bold text-body-sm min-w-0 truncate" data-testid="receipt-best">
               {receipt.best.playerName}{" "}
               <span className="font-mono">{signed(receipt.best.points)}</span>
             </span>
           </p>
-          <p className="text-sm flex items-baseline justify-between gap-2">
+          <p className="text-body-sm flex items-baseline justify-between gap-2">
             <span className="font-mono text-eyebrow font-bold uppercase text-muted-foreground shrink-0">
               {t("weekend.receiptWorst", { defaultValue: "Worst call" })}
             </span>
-            <span className="font-heading font-bold text-sm min-w-0 truncate" data-testid="receipt-worst">
+            <span className="font-heading font-bold text-body-sm min-w-0 truncate" data-testid="receipt-worst">
               {receipt.worst.playerName}{" "}
               <span className="font-mono">{signed(receipt.worst.points)}</span>
             </span>
@@ -310,7 +310,7 @@ export default function WeekendReceiptScreen() {
       <div className="flex flex-col gap-4 max-w-sm mx-auto w-full pb-6">
         {receipt === undefined ? (
           <Card className="text-center py-6">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-body-sm text-muted-foreground">
               {t("common.loading", { defaultValue: "Loading…" })}
             </p>
           </Card>
@@ -319,7 +319,7 @@ export default function WeekendReceiptScreen() {
             <p className="font-heading font-bold">
               {t("weekend.receiptNotReady", { defaultValue: "No receipt yet." })}
             </p>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-body-sm text-muted-foreground mt-1">
               {t("weekend.receiptNotReadyBody", {
                 defaultValue:
                   "A receipt prints when the gameweek settles — until then the ledger tells the story.",

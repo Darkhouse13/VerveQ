@@ -1,5 +1,6 @@
 import { Crown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
 import type { Fixture } from "@/lib/drawEngine";
 import { archetypeMeta } from "./meta";
 import { DIR_ARROW, descriptorLine, effectTokens } from "./fixtureEffects";
@@ -138,15 +139,17 @@ export function FixtureStrip({
         const busted = bustedIndex === fixture.index;
         const active = !cleared && !busted && fixture.index === activeIndex;
         return (
-          <button
+          <Card
             key={fixture.index}
-            type="button"
+            interactive
+            elevation="flat"
+            padding="none"
             disabled={!onSelect}
             onClick={() => onSelect?.(fixture)}
             aria-label={t("sheet.fixtureLabel", { n: fixture.index + 1, label, threshold: fixture.threshold })}
             className={cn(
-              "relative neo-border rounded-lg flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 px-0.5 leading-none",
-              onSelect && "cursor-pointer active:neo-shadow-pressed",
+              "relative flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 px-0.5 leading-none text-center disabled:cursor-default",
+              onSelect && "cursor-pointer",
               cleared
                 ? "bg-success text-success-foreground"
                 : busted
@@ -174,7 +177,7 @@ export function FixtureStrip({
               testId={`draw-fixture-effect-${fixture.index}`}
               className={cn("text-center max-w-full", !cleared && !busted && "text-muted-foreground")}
             />
-          </button>
+          </Card>
         );
       })}
     </div>

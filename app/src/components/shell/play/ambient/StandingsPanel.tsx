@@ -16,7 +16,7 @@ export function StandingsPanel({
   const { t } = useTranslation("play");
   return (
     <section className="space-y-2">
-      <p className="font-heading font-bold text-[11px] uppercase tracking-wide text-muted-foreground">
+      <p className="font-heading font-bold text-eyebrow uppercase text-muted-foreground">
         {title ?? t("ambient.standings")}
       </p>
       <ol className="space-y-1.5">
@@ -28,18 +28,18 @@ export function StandingsPanel({
               s.isMe ? "bg-primary text-primary-foreground" : "bg-card",
             )}
           >
-            <span className="font-mono font-bold text-xs w-5 shrink-0 inline-flex items-center gap-0.5">
+            <span className="font-mono font-bold text-meta w-5 shrink-0 inline-flex items-center gap-0.5">
               {s.rank === 1 ? <Crown size={12} strokeWidth={3} /> : s.rank}
             </span>
-            <span className="font-heading font-bold text-xs truncate min-w-0 flex-1">
+            <span className="font-heading font-bold text-meta truncate min-w-0 flex-1">
               {s.name}
               {s.isMe && ` ${t("ambient.youSuffix")}`}
             </span>
-            <span className="font-mono font-bold text-xs shrink-0">{s.score}</span>
+            <span className="font-mono font-bold text-meta shrink-0">{s.score}</span>
           </li>
         ))}
         {entries.length === 0 && (
-          <li className="text-[11px] text-muted-foreground">{t("ambient.noScoresYet")}</li>
+          <li className="text-meta text-muted-foreground">{t("ambient.noScoresYet")}</li>
         )}
       </ol>
     </section>

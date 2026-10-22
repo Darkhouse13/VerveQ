@@ -67,7 +67,7 @@ export function PickImpact({ card, fixtures, hidden = false }: PickImpactProps) 
                 <div
                   key={fixture.index}
                   className={cn(
-                    "neo-border rounded flex-1 min-w-0 flex items-center justify-center gap-1 h-5",
+                    "neo-border rounded-sm flex-1 min-w-0 flex items-center justify-center gap-1 h-5",
                     DIR_CLASS[dir],
                   )}
                   data-testid={`draw-pick-impact-${fixture.index}`}

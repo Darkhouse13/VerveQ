@@ -29,6 +29,7 @@ import { useTranslation } from "react-i18next";
 import { Loader2, Lock } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
+import { Button } from "@/components/ui/button";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { ANONYMOUS_FIRST_ENABLED } from "@/lib/flags";
@@ -157,13 +158,13 @@ function FullAccountGate({
     <ShellLayout hideNav center back onBack={() => navigate(SHELL_ROUTES.home)}>
       <div className="w-full max-w-sm mx-auto">
         <NeoCard shadow="lg" className="p-6 text-center">
-          <div className="neo-border rounded-xl bg-muted w-fit p-3 mx-auto mb-4">
+          <div className="neo-border rounded-lg bg-muted w-fit p-3 mx-auto mb-4">
             <Lock size={28} strokeWidth={2.5} />
           </div>
-          <h1 className="text-2xl font-heading font-bold mb-2">
+          <h1 className="text-title font-heading font-bold mb-2">
             {t("gate.title", { defaultValue: "Full account required" })}
           </h1>
-          <p className="text-sm text-muted-foreground mb-5">
+          <p className="text-body-sm text-muted-foreground mb-5">
             {canUpgrade
               ? t("gate.bodyUpgrade", {
                   defaultValue:
@@ -191,13 +192,11 @@ function FullAccountGate({
               {t("gate.ctaCreate", { defaultValue: "Get started" })}
             </NeoButton>
           )}
-          <button
-            type="button"
-            onClick={() => navigate(SHELL_ROUTES.home)}
-            className="w-full text-sm text-muted-foreground font-heading underline underline-offset-4 hover:text-foreground mt-3"
-          >
+          <p className="text-body-sm text-muted-foreground font-heading mt-3">
+            <Button variant="link" onClick={() => navigate(SHELL_ROUTES.home)}>
             {t("gate.later", { defaultValue: "Maybe later" })}
-          </button>
+            </Button>
+          </p>
         </NeoCard>
       </div>
     </ShellLayout>

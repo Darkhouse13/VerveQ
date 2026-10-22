@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import type { ReactNode } from "react";
-import { ArrowLeft } from "lucide-react";
+import { BackButton } from "@/components/ui/icon-button";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ShellNav, ShellTopNav } from "./ShellNav";
@@ -93,7 +93,7 @@ export function ShellLayout({
         theme,
         "w-full bg-background text-foreground shell-canvas-bg",
         // Fill the viewport and never scroll — on every device.
-        "fixed inset-0 z-40 h-[100dvh] overflow-hidden",
+        "fixed inset-0 z-frame h-[100dvh] overflow-hidden",
         "flex flex-col",
         // iOS standalone runs this frame under the status bar. Padding the
         // frame (not the header) keeps the inset strip painted in the frame's
@@ -142,23 +142,16 @@ export function ShellLayout({
             )}
           >
             {back && (
-              <button
-                type="button"
-                onClick={onBack ?? (() => navigate(-1))}
-                aria-label={t("common.back")}
-                className="neo-border neo-shadow rounded-lg bg-card p-2 shrink-0 transition-all active:neo-shadow-pressed"
-              >
-                <ArrowLeft size={20} strokeWidth={2.5} />
-              </button>
+              <BackButton variant="secondary" onClick={onBack ?? (() => navigate(-1))} />
             )}
             <div className="min-w-0 flex-1">
               {title && (
-                <h1 className="font-heading font-bold text-xl md:text-2xl truncate">
+                <h1 className="font-heading font-bold text-title-sm md:text-title truncate">
                   {title}
                 </h1>
               )}
               {subtitle && (
-                <p className="text-xs md:text-sm text-muted-foreground truncate">
+                <p className="text-meta md:text-body-sm text-muted-foreground truncate">
                   {subtitle}
                 </p>
               )}

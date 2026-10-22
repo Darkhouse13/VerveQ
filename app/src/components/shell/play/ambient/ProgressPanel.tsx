@@ -14,10 +14,10 @@ export function ProgressPanel({ progress }: { progress: PlayProgress }) {
   return (
     <section className="space-y-2">
       <div className="flex items-center justify-between">
-        <p className="font-heading font-bold text-[11px] uppercase tracking-wide text-muted-foreground">
+        <p className="font-heading font-bold text-eyebrow uppercase text-muted-foreground">
           {t("ambient.progress")}
         </p>
-        <p className="font-mono font-bold text-xs">
+        <p className="font-mono font-bold text-meta">
           {progress.roundLabel ? `${progress.roundLabel} · ` : ""}
           {current}/{total}
         </p>

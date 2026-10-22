@@ -8,6 +8,7 @@ import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { BrandMark } from "@/components/ui/BrandMark";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
 import { Card } from "@/components/ui/card";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { ModeTile } from "@/components/ui/mode-tile";
@@ -258,18 +259,17 @@ export default function ShellHomeScreen() {
                 {t("home.guestChip")}
               </NeoButton>
             ) : hasUsername ? (
-              <button
-                type="button"
+              <IconButton
                 aria-label={displayName}
                 onClick={() => navigate(SHELL_ROUTES.profile)}
-                className="rounded-full transition-transform duration-press active:translate-x-0.5 active:translate-y-0.5"
+                className="rounded-full enabled:hover:bg-transparent active:translate-x-0.5 active:translate-y-0.5"
               >
                 <NeoAvatar
                   name={displayName}
                   size="sm"
                   className="md:w-10 md:h-10 bg-hot-pink text-hot-pink-foreground"
                 />
-              </button>
+              </IconButton>
             ) : null}
           </div>
         </div>

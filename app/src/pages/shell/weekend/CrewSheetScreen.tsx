@@ -213,7 +213,7 @@ export default function CrewSheetScreen() {
       <div className="flex flex-col gap-4 md:max-w-md md:mx-auto md:w-full">
         {gate === "checking" || (gate === "open" && sheet === undefined) ? (
           <Card className="text-center py-6">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-body-sm text-muted-foreground">
               {t("common.loading", { defaultValue: "Loading…" })}
             </p>
           </Card>

@@ -9,6 +9,7 @@
 
 import { ChevronRight, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
 import type { Fixture } from "@/lib/drawEngine";
 import { archetypeMeta } from "./meta";
 import { effectLine } from "./fixtureEffects";
@@ -24,12 +25,14 @@ export function NextFixtureLine({ fixture, onSelect }: NextFixtureLineProps) {
   const t = useDrawT();
   const { label, Icon } = archetypeMeta(fixture.archetypeId, t);
   return (
-    <button
-      type="button"
+    <Card
+      interactive
+      elevation="flat"
+      padding="none"
       onClick={() => onSelect(fixture)}
       className={cn(
-        "neo-border rounded-lg bg-card text-card-foreground shrink-0",
-        "flex items-center gap-2 px-2.5 w-full cursor-pointer active:neo-shadow-pressed",
+        "shrink-0",
+        "flex items-center gap-2 px-2.5 w-full cursor-pointer",
       )}
       style={{ height: NEXT_FIXTURE_H }}
       data-testid="draw-next-fixture"
@@ -46,6 +49,6 @@ export function NextFixtureLine({ fixture, onSelect }: NextFixtureLineProps) {
       </span>
       <span className="ml-auto font-mono font-bold text-body-sm leading-none shrink-0">{fixture.threshold}</span>
       <ChevronRight size={14} strokeWidth={3} className="shrink-0 text-muted-foreground" aria-hidden="true" />
-    </button>
+    </Card>
   );
 }

@@ -151,7 +151,7 @@ export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewP
                     <span className="font-heading font-bold text-eyebrow leading-none tracking-normal uppercase truncate max-w-full">
                       {label}
                     </span>
-                    <span className="font-mono font-bold text-xs leading-none">
+                    <span className="font-mono font-bold text-meta leading-none">
                       {fixture.threshold}
                     </span>
                   </div>
@@ -199,7 +199,7 @@ export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewP
                 data-testid="home-draw-score"
               >
                 {Math.round(run.finalScore ?? 0).toLocaleString("en-US")}
-                <span className="ml-1 text-sm font-bold">{t("homeCard.pts")}</span>
+                <span className="ml-1 text-body-sm font-bold">{t("homeCard.pts")}</span>
               </p>
             </div>
             <div className="flex items-center justify-between gap-2">

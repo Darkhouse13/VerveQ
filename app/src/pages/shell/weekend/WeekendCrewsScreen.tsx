@@ -80,7 +80,7 @@ export default function WeekendCrewsScreen() {
       <div className="flex flex-col gap-4 md:max-w-md md:mx-auto md:w-full">
         {crews === undefined ? (
           <Card className="text-center py-6">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-body-sm text-muted-foreground">
               {t("common.loading", { defaultValue: "Loading…" })}
             </p>
           </Card>
@@ -90,10 +90,10 @@ export default function WeekendCrewsScreen() {
               <Users size={24} strokeWidth={2.5} className="text-foreground" />
             </div>
             <div>
-              <p className="font-heading font-bold text-lg leading-tight">
+              <p className="font-heading font-bold text-title-sm leading-tight">
                 {t("weekend.noCrewsTitle", { defaultValue: "One code, one crew, 13 picks" })}
               </p>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-body-sm text-muted-foreground mt-1">
                 {t("weekend.noCrewsBody", {
                   defaultValue:
                     "Start a crew, share the code, and draft a fresh squad every weekend. Unique picks — when a player's gone, he's gone.",

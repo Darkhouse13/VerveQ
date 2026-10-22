@@ -24,10 +24,10 @@ function Stat({
     <div className="neo-border rounded-lg bg-card px-2.5 py-2 flex items-center gap-2">
       <span className={cn("shrink-0", tint)}>{icon}</span>
       <div className="min-w-0">
-        <p className="text-[9px] font-heading font-bold uppercase tracking-wide text-muted-foreground leading-none">
+        <p className="text-eyebrow font-heading font-bold uppercase text-muted-foreground leading-none">
           {label}
         </p>
-        <p className="font-mono font-bold text-sm leading-tight">{value}</p>
+        <p className="font-mono font-bold text-body-sm leading-tight">{value}</p>
       </div>
     </div>
   );
@@ -48,7 +48,7 @@ export function MetricsPanel({ metrics }: { metrics: PlayMetrics }) {
             <div className="neo-border rounded-lg bg-card overflow-hidden h-2.5">
               <div
                 className={cn(
-                  "h-full transition-[width] duration-200 ease-linear",
+                  "h-full transition-[width] duration-ui ease-linear",
                   pct < 0.25 ? "bg-destructive" : pct < 0.5 ? "bg-accent" : "bg-success",
                 )}
                 style={{ width: `${pct * 100}%` }}
@@ -56,7 +56,7 @@ export function MetricsPanel({ metrics }: { metrics: PlayMetrics }) {
             </div>
           )}
           {metrics.seconds !== undefined && (
-            <p className="font-mono font-bold text-sm inline-flex items-center gap-1">
+            <p className="font-mono font-bold text-body-sm inline-flex items-center gap-1">
               <Clock size={12} strokeWidth={3} />
               {t("ambient.seconds", { seconds: metrics.seconds })}
             </p>

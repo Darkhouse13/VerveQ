@@ -19,6 +19,7 @@ import { notify } from "@/lib/notify";
 import { ArrowUp, CalendarDays, Coffee, LifeBuoy, LogIn, LogOut, Mail, User } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { friendlyError } from "@/lib/errors";
 import { api } from "../../../convex/_generated/api";
@@ -90,7 +91,9 @@ export default function SettingsScreen() {
       scroll
       onBack={() => navigate(SHELL_ROUTES.profile)}
     >
-      <div className="mx-auto w-full max-w-md flex flex-col gap-4 pt-1">
+      {/* Phone: one column. Desktop: two columns, so the page is a settings
+          board rather than a phone-width strip on an empty canvas. */}
+      <div className="mx-auto w-full max-w-md flex flex-col gap-4 pt-1 md:max-w-4xl md:grid md:grid-cols-2 md:items-start md:gap-6">
         {/* Language */}
         <NeoCard>
           <LanguageSwitcher />
@@ -100,11 +103,11 @@ export default function SettingsScreen() {
             it on; logged-out visitors don't see it. */}
         {signedIn && (
           <NeoCard className="flex flex-col gap-2">
-            <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+            <span className="font-mono text-eyebrow font-bold uppercase text-muted-foreground flex items-center gap-1.5">
               <CalendarDays size={13} strokeWidth={2.5} />
               {t("settings.dailyHeading")}
             </span>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-meta text-muted-foreground">
               {t("settings.dailyDescription")}
             </p>
             <div
@@ -115,21 +118,18 @@ export default function SettingsScreen() {
               {DAILY_SUBJECTS.map((subject) => {
                 const selected = selectedDailySport === subject;
                 return (
-                  <button
+                  <Button
                     key={subject}
-                    type="button"
+                    variant={selected ? "primary" : "secondary"}
+                    size="sm"
                     aria-pressed={selected}
-                    disabled={savingDailySport !== null}
+                    loading={savingDailySport === subject}
+                    disabled={savingDailySport !== null && savingDailySport !== subject}
                     onClick={() => void handlePickDailySport(subject)}
-                    className={cn(
-                      "neo-border rounded-lg px-2 py-2 font-heading font-bold text-[13px] transition-all disabled:opacity-60",
-                      selected
-                        ? "bg-primary text-primary-foreground neo-shadow"
-                        : "bg-card active:neo-shadow-pressed",
-                    )}
+                    className="px-2"
                   >
                     {t(`settings.dailySubjects.${subject}`)}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -138,7 +138,7 @@ export default function SettingsScreen() {
 
         {/* Account — controls when signed in, a sign-in CTA when not. */}
         <NeoCard className="flex flex-col gap-3.5">
-          <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+          <span className="font-mono text-eyebrow font-bold uppercase text-muted-foreground flex items-center gap-1.5">
             <User size={13} strokeWidth={2.5} />
             {t("settings.accountHeading")}
           </span>
@@ -147,10 +147,10 @@ export default function SettingsScreen() {
             <>
               <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="font-heading font-bold text-base truncate">
+                  <p className="font-heading font-bold text-body truncate">
                     {handle ? `@${handle}` : t("settings.accountNoHandle")}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-meta text-muted-foreground">
                     {guest ? t("settings.accountGuest") : t("settings.accountFull")}
                   </p>
                 </div>
@@ -173,7 +173,7 @@ export default function SettingsScreen() {
               )}
 
               {guest && (
-                <p className="font-mono text-[10px] uppercase tracking-wide text-destructive">
+                <p className="font-mono text-eyebrow uppercase text-destructive">
                   {t("profile.signOutWarning")}
                 </p>
               )}
@@ -189,7 +189,7 @@ export default function SettingsScreen() {
             </>
           ) : (
             <>
-              <p className="text-sm text-muted-foreground">{t("settings.notSignedIn")}</p>
+              <p className="text-body-sm text-muted-foreground">{t("settings.notSignedIn")}</p>
               <NeoButton
                 variant="primary"
                 size="full"
@@ -208,34 +208,34 @@ export default function SettingsScreen() {
         </NeoCard>
 
         {/* Support & Community — universal; shown signed in or out. */}
-        <NeoCard className="flex flex-col gap-3">
-          <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+        <NeoCard className={cn("flex flex-col gap-3", !signedIn && "md:col-span-2")}>
+          <span className="font-mono text-eyebrow font-bold uppercase text-muted-foreground flex items-center gap-1.5">
             <LifeBuoy size={13} strokeWidth={2.5} />
             {t("settings.supportHeading")}
           </span>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-meta text-muted-foreground">
             {t("settings.supportDescription")}
           </p>
-          <div className="flex flex-col gap-2">
+          <div className={cn("flex flex-col gap-2", !signedIn && "md:grid md:grid-cols-3")}>
             <a
               href={X_URL}
               target="_blank"
               rel="noreferrer noopener"
-              className="neo-border rounded-lg bg-card px-3 py-2.5 flex items-center gap-2 font-heading font-bold text-[13px] transition-all active:neo-shadow-pressed"
+              className="neo-border rounded-lg bg-card px-3 py-2.5 flex items-center gap-2 font-heading font-bold text-meta transition duration-press active:neo-shadow-pressed"
             >
               <XLogo className="h-4 w-4 shrink-0" />
               <span className="flex-1 text-left">{t("settings.supportFollowX")}</span>
-              <span className="font-mono text-[11px] text-muted-foreground">
+              <span className="font-mono text-meta text-muted-foreground">
                 {X_HANDLE}
               </span>
             </a>
             <a
               href={`mailto:${SUPPORT_EMAIL}`}
-              className="neo-border rounded-lg bg-card px-3 py-2.5 flex items-center gap-2 font-heading font-bold text-[13px] transition-all active:neo-shadow-pressed"
+              className="neo-border rounded-lg bg-card px-3 py-2.5 flex items-center gap-2 font-heading font-bold text-meta transition duration-press active:neo-shadow-pressed"
             >
               <Mail size={16} strokeWidth={2.5} className="shrink-0" />
               <span className="flex-1 text-left">{t("settings.supportContact")}</span>
-              <span className="font-mono text-[11px] text-muted-foreground">
+              <span className="font-mono text-meta text-muted-foreground">
                 {SUPPORT_EMAIL}
               </span>
             </a>
@@ -243,11 +243,11 @@ export default function SettingsScreen() {
               href={COFFEE_URL}
               target="_blank"
               rel="noreferrer noopener"
-              className="neo-border rounded-lg bg-card px-3 py-2.5 flex items-center gap-2 font-heading font-bold text-[13px] transition-all active:neo-shadow-pressed"
+              className="neo-border rounded-lg bg-card px-3 py-2.5 flex items-center gap-2 font-heading font-bold text-meta transition duration-press active:neo-shadow-pressed"
             >
               <Coffee size={16} strokeWidth={2.5} className="shrink-0" />
               <span className="flex-1 text-left">{t("settings.supportCoffee")}</span>
-              <span className="font-mono text-[11px] text-muted-foreground">
+              <span className="font-mono text-meta text-muted-foreground">
                 ☕
               </span>
             </a>

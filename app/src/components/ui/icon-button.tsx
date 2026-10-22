@@ -3,7 +3,6 @@ import { cva } from "class-variance-authority";
 import { ArrowLeft, LogOut, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
-import { SHELL_NS } from "@/i18n";
 import { Button } from "./button";
 import {
   Dialog,
@@ -12,6 +11,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./dialog";
+
+/**
+ * The shell namespace (`SHELL_NS` in @/i18n), named here rather than imported:
+ * importing @/i18n initializes i18next as a side effect, and a primitive the
+ * whole shell renders must not pull that into every screen's module graph.
+ */
+const SHELL_NS = "shell";
 
 /**
  * IconButton — a square, icon-only control with a ≥44px hit area.

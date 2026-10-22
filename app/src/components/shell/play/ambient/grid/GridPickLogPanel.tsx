@@ -18,19 +18,21 @@ export function GridPickLogPanel({
 }) {
   const { t } = useTranslation("play");
   return (
-    <div className="neo-border neo-shadow rounded-xl bg-background p-3.5 flex flex-col h-full min-h-0">
+    // Sized to its picks, capped at the rail: an empty log is a short card,
+    // not a rail-tall empty box (desktop pass, VerveQ ONE P5.2).
+    <div className="neo-border neo-shadow rounded-lg bg-background p-3.5 flex flex-col max-h-full min-h-0">
       <div className="flex items-center justify-between shrink-0">
-        <p className="text-[10px] font-heading font-bold uppercase tracking-wide text-muted-foreground">
+        <p className="text-eyebrow font-heading font-bold uppercase text-muted-foreground">
           {t("ambient.yourPickLog")}
         </p>
-        <span className="neo-border rounded-full bg-card px-2 py-0.5 font-mono font-bold text-[9px]">
+        <span className="neo-border rounded-full bg-card px-2 py-0.5 font-mono font-bold text-meta">
           {picks.length}/{totalCells}
         </span>
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none mt-3 space-y-2">
         {picks.length === 0 ? (
-          <p className="font-mono text-[11px] leading-relaxed text-muted-foreground px-0.5 py-1">
+          <p className="font-mono text-meta leading-relaxed text-muted-foreground px-0.5 py-1">
             {t("ambient.noPicksYet")}
           </p>
         ) : (
@@ -41,15 +43,15 @@ export function GridPickLogPanel({
                 key={pick.id}
                 className="neo-border rounded-lg bg-card p-2 flex items-center gap-2.5"
               >
-                <div className="neo-border rounded-md bg-background w-7 h-7 shrink-0 grid place-items-center font-heading font-bold text-[10px]">
+                <div className="neo-border rounded-md bg-background w-7 h-7 shrink-0 grid place-items-center font-heading font-bold text-meta">
                   {monogram(pick.name)}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-heading font-bold text-xs truncate">{pick.name}</p>
-                  <p className="font-mono text-[9px] text-muted-foreground truncate">{pick.label}</p>
+                  <p className="font-heading font-bold text-meta truncate">{pick.name}</p>
+                  <p className="font-mono text-meta text-muted-foreground truncate">{pick.label}</p>
                 </div>
                 {style && (
-                  <span className={`font-mono text-[10px] font-bold ${style.textClass}`}>
+                  <span className={`font-mono text-meta font-bold ${style.textClass}`}>
                     {t("ambient.pointsShort", { points: pick.points ?? 0 })}
                   </span>
                 )}

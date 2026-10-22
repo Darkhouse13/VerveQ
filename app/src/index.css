@@ -79,6 +79,18 @@
     --cream: 30 100% 97%;
     --lime: 75 100% 55%;       /* the one lime */
     --orange: 25 100% 50%;     /* mode accent (decision 12), no longer the primary */
+
+    /* Muted-cream scrollbar thumb on the ink ground (alpha set per use). */
+    --scrollbar-thumb: 30 30% 62%;
+    --scrollbar-thumb-hover: 30 35% 70%;
+
+    /* Ranked ladder tiers (lib/rankedLadder.ts) and the Ranks hero band. */
+    --tier-bronze: 30 45% 48%;
+    --tier-silver: 210 7% 63%;
+    --tier-gold: 43 74% 56%;
+    --tier-platinum: 176 55% 59%;
+    --rank-hero-from: 43 9% 15%;
+    --rank-hero-to: 45 8% 9%;
   }
 
   :root,
@@ -171,7 +183,7 @@
   :root,
   :root * {
     scrollbar-width: thin;
-    scrollbar-color: hsl(30 30% 62% / 0.35) transparent;
+    scrollbar-color: hsl(var(--scrollbar-thumb) / 0.35) transparent;
   }
 
   /*
@@ -275,7 +287,20 @@
    * ground's pair and stay legible as a dark chip on the fill.
    */
   .on-fill {
-    --muted-foreground: 0 0% 18%;
+    /* 10%, not 18%: 18% measured 3.7:1 on the blue and 4.3:1 on the pink
+       mode fills (design floors); 10% clears 4.5:1 on every fill. */
+    --muted-foreground: 0 0% 10%;
+  }
+
+  /*
+   * Out of play: a taken seat, a retired card, a pick the budget can't reach,
+   * a control that is disabled. The ONE dimming value — call sites write
+   * `is-dimmed` (or `disabled:is-dimmed`, `active:is-dimmed` for press
+   * feedback) instead of a one-off opacity-NN, which the design ratchet
+   * reserves for nothing. Muted TEXT is `text-muted-foreground`, not this.
+   */
+  .is-dimmed {
+    opacity: 0.45;
   }
 
   /*
@@ -324,7 +349,7 @@
   .theme-weekend,
   .theme-weekend * {
     scrollbar-width: thin;
-    scrollbar-color: hsl(30 30% 62% / 0.4) transparent;
+    scrollbar-color: hsl(var(--scrollbar-thumb) / 0.4) transparent;
   }
   .theme-weekend::-webkit-scrollbar,
   .theme-weekend ::-webkit-scrollbar {
@@ -338,14 +363,14 @@
   }
   .theme-weekend::-webkit-scrollbar-thumb,
   .theme-weekend ::-webkit-scrollbar-thumb {
-    background-color: hsl(30 30% 62% / 0.4);
+    background-color: hsl(var(--scrollbar-thumb) / 0.4);
     border-radius: 999px;
     border: 2px solid transparent;
     background-clip: padding-box;
   }
   .theme-weekend::-webkit-scrollbar-thumb:hover,
   .theme-weekend ::-webkit-scrollbar-thumb:hover {
-    background-color: hsl(30 35% 70% / 0.6);
+    background-color: hsl(var(--scrollbar-thumb-hover) / 0.6);
   }
   .theme-weekend::-webkit-scrollbar-button,
   .theme-weekend ::-webkit-scrollbar-button {
@@ -402,7 +427,7 @@
   }
 
   .on-fire-input {
-    box-shadow: 0 0 12px 2px hsl(1 100% 60% / 0.5),
+    box-shadow: 0 0 12px 2px hsl(var(--wrong) / 0.5),
       var(--neo-shadow-x) var(--neo-shadow-y) 0px 0px
         hsl(var(--neo-shadow-color));
     border-color: hsl(var(--destructive));
@@ -436,7 +461,7 @@
   @media (min-width: 768px) {
     .scrollbar-shell {
       scrollbar-width: thin;
-      scrollbar-color: hsl(30 30% 62% / 0.4) transparent;
+      scrollbar-color: hsl(var(--scrollbar-thumb) / 0.4) transparent;
       /* Reserve the (transparent) gutter so content doesn't shift sideways
          between tabs that scroll and tabs that don't. */
       scrollbar-gutter: stable;
@@ -487,8 +512,8 @@
 }
 
 @keyframes pulse-urgent {
-  0%, 100% { opacity: 1; text-shadow: 0 0 8px hsl(1 100% 60%); }
-  50% { opacity: 0.7; text-shadow: 0 0 20px hsl(1 100% 60%), 0 0 40px hsl(1 100% 60%); }
+  0%, 100% { opacity: 1; text-shadow: 0 0 8px hsl(var(--wrong)); }
+  50% { opacity: 0.7; text-shadow: 0 0 20px hsl(var(--wrong)), 0 0 40px hsl(var(--wrong)); }
 }
 
 @keyframes slide-up {
@@ -498,7 +523,7 @@
 
 @keyframes fire-pulse {
   0%, 100% { background-color: hsl(var(--background)); }
-  50% { background-color: hsl(25 100% 50% / 0.08); }
+  50% { background-color: hsl(var(--orange) / 0.08); }
 }
 
 @keyframes shake-horizontal {
@@ -570,8 +595,8 @@
 
 /* MISSING LETTERS — the blank the next key fills breathes lime. */
 @keyframes letters-cursor {
-  0%, 100% { box-shadow: 0 0 0 0 hsl(75 100% 55% / 0.55); }
-  50% { box-shadow: 0 0 0 4px hsl(75 100% 55% / 0); }
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--lime) / 0.55); }
+  50% { box-shadow: 0 0 0 4px hsl(var(--lime) / 0); }
 }
 .letters-cursor { animation: letters-cursor 1.1s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {

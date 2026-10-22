@@ -60,17 +60,17 @@ export class ErrorBoundary extends Component<
     return (
       <div className="min-h-screen bg-background px-5 py-8 flex flex-col items-center justify-center">
         <NeoCard shadow="lg" className="w-full max-w-md text-center py-8">
-          <h1 className="text-2xl font-heading font-bold mb-2">
+          <h1 className="text-title font-heading font-bold mb-2">
             {tSafe("errorBoundary.title", "Something went off-script")}
           </h1>
-          <p className="text-sm text-muted-foreground mb-5">
+          <p className="text-body-sm text-muted-foreground mb-5">
             {tSafe(
               "errorBoundary.body",
               "We hit an unexpected error while drawing this screen. Try again — or reload if it sticks.",
             )}
           </p>
           {this.state.error?.message && (
-            <p className="text-xs font-mono text-destructive break-words mb-5">
+            <p className="text-meta font-mono text-destructive break-words mb-5">
               {friendlyError(this.state.error)}
             </p>
           )}

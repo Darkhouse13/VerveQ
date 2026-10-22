@@ -55,16 +55,16 @@ export interface TierInfo {
   min: number;
   /** Inclusive upper ELO bound, or null for the open-ended top tier. */
   max: number | null;
-  /** Emblem/accent color (visual identity only). */
+  /** Emblem/accent color (visual identity only): a CSS color from the --tier-* tokens. */
   color: string;
 }
 
 /** Bottom → top. Thresholds mirror convex/lib/elo.ts#getTierName. */
 export const TIERS: TierInfo[] = [
-  { key: "bronze", min: 0, max: 1199, color: "#B07A43" },
-  { key: "silver", min: 1200, max: 1499, color: "#9AA1A8" },
-  { key: "gold", min: 1500, max: 1999, color: "#E2B23A" },
-  { key: "platinum", min: 2000, max: null, color: "#5FD0C8" },
+  { key: "bronze", min: 0, max: 1199, color: "hsl(var(--tier-bronze))" },
+  { key: "silver", min: 1200, max: 1499, color: "hsl(var(--tier-silver))" },
+  { key: "gold", min: 1500, max: 1999, color: "hsl(var(--tier-gold))" },
+  { key: "platinum", min: 2000, max: null, color: "hsl(var(--tier-platinum))" },
 ];
 
 export function tierFromElo(elo: number): TierKey {

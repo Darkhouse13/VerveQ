@@ -19,6 +19,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { cn } from "@/lib/utils";
+import { Chip } from "@/components/ui/chip";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { pickTodaysSessionNode } from "@/lib/learn/todaysSession";
 import { learnPath, useLearnSubject } from "@/lib/learn/useLearnSubject";
@@ -71,19 +72,15 @@ export default function LearnEntryScreen() {
           className="flex flex-none gap-2 overflow-x-auto px-4 pb-3 md:flex-wrap md:px-6"
         >
           {subjects.map((s) => (
-            <button
+            <Chip
               key={s.subject}
-              type="button"
-              aria-pressed={s.subject === subject}
+              selected={s.subject === subject}
               onClick={() => setSubject(s.subject)}
-              className={cn(
-                "shrink-0 min-h-11 rounded-full neo-border px-4 font-heading text-body-sm font-bold",
-                s.subject === subject ? "bg-foreground text-background" : "bg-card text-card-foreground hover:bg-muted",
-              )}
+              className={cn(s.subject === subject && "shadow-none")}
             >
               {t(`subjects.${s.subject}`, { defaultValue: s.name })}
               {s.dueCount > 0 ? ` · ${s.dueCount}` : ""}
-            </button>
+            </Chip>
           ))}
         </div>
       )}

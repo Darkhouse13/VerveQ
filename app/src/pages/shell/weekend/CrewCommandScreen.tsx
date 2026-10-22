@@ -153,7 +153,7 @@ export default function CrewCommandScreen() {
       <ShellLayout theme="theme-weekend" title={t("weekend.crewCommandTitle", { defaultValue: "Crew Command" })} back onBack={() => navigate(SHELL_ROUTES.weekendCrew(code))} scroll>
         <Card className="bg-destructive text-ink on-fill py-6 text-center md:mx-auto md:max-w-md">
           <p className="font-heading font-bold">{t("weekend.creatorOnly", { defaultValue: "Creator access only" })}</p>
-          <p className="mt-1 text-sm text-muted-foreground">{t("weekend.creatorOnlyBody", { defaultValue: "Only the person running this crew can open Crew Command." })}</p>
+          <p className="mt-1 text-body-sm text-muted-foreground">{t("weekend.creatorOnlyBody", { defaultValue: "Only the person running this crew can open Crew Command." })}</p>
           <Button className="mt-3" variant="secondary" size="md" onClick={() => navigate(SHELL_ROUTES.weekendCrew(code))}>{t("weekend.backToCrew", { defaultValue: "Back to crew" })}</Button>
         </Card>
       </ShellLayout>
@@ -205,7 +205,7 @@ export default function CrewCommandScreen() {
         <section>
           <p className="mb-2 font-mono text-eyebrow font-bold uppercase text-muted-foreground">{t("weekend.invite", { defaultValue: "Invite" })}</p>
           <Card className="py-3 text-center">
-            <p className="font-mono text-3xl font-bold">{crew.code}</p>
+            <p className="font-mono text-title-lg font-bold">{crew.code}</p>
             <div className="mt-3 grid grid-cols-2 gap-2">
               <Button variant="secondary" size="md" onClick={() => void handleShare()}><Share2 size={14} className="mr-1.5" />{t("weekend.shareLink", { defaultValue: "Share link" })}</Button>
               <Button variant="secondary" size="md" onClick={() => void handleCopyCode()}>
@@ -228,7 +228,7 @@ export default function CrewCommandScreen() {
               <div key={member.userId} className="flex items-center justify-between gap-2 px-3 py-2.5">
                 <div className="flex min-w-0 items-center gap-2">
                   <Users size={14} className="shrink-0 text-muted-foreground" />
-                  <span className="truncate font-heading text-sm font-bold">{member.name}</span>
+                  <span className="truncate font-heading text-body-sm font-bold">{member.name}</span>
                   {member.userId === crew.isMe && <Badge tone="primary">{t("weekend.creator", { defaultValue: "Creator" })}</Badge>}
                 </div>
                 {member.userId !== crew.isMe && (
@@ -268,7 +268,7 @@ export default function CrewCommandScreen() {
                 return (
                   <Card interactive key={room.roomId} onClick={() => navigate(SHELL_ROUTES.weekendDraft(room.roomId))} className="flex items-center justify-between py-2.5 text-left">
                     <div>
-                  <p className="font-heading text-sm font-bold">{room.gameweek === null ? t("weekend.gameweek", { defaultValue: "Gameweek" }) : `GW ${room.gameweek.gwNumber} · ${room.gameweek.season}`}</p>
+                  <p className="font-heading text-body-sm font-bold">{room.gameweek === null ? t("weekend.gameweek", { defaultValue: "Gameweek" }) : `GW ${room.gameweek.gwNumber} · ${room.gameweek.season}`}</p>
                   <p className="text-meta text-muted-foreground">{t("weekend.drafters", { defaultValue: "{{count}} drafters", count: room.seatCount })}</p>
                     </div>
                     <Badge tone={status.color}>{t(status.key, { defaultValue: status.fallback })}</Badge>
@@ -295,7 +295,7 @@ export default function CrewCommandScreen() {
       </div>
 
       <Sheet open={infoOpen} onOpenChange={setInfoOpen} title={t("weekend.crewCommandHowTitle", { defaultValue: "How Crew Command works" })}>
-        <div className="flex flex-col gap-3 text-sm text-muted-foreground">
+        <div className="flex flex-col gap-3 text-body-sm text-muted-foreground">
           <p><strong className="text-foreground">{t("weekend.draftLabel", { defaultValue: "Draft:" })}</strong> {t("weekend.crewCommandDraftBody", { defaultValue: "open the weekly room, then manage its time and eight seats in the lobby." })}</p>
           <p><strong className="text-foreground">{t("weekend.inviteLabel", { defaultValue: "Invite:" })}</strong> {t("weekend.crewCommandInviteBody", { defaultValue: "share the permanent crew link or code." })}</p>
           <p><strong className="text-foreground">{t("weekend.membersLabel", { defaultValue: "Members:" })}</strong> {t("weekend.crewCommandMembersBody", { defaultValue: "remove inactive people without erasing past results." })}</p>

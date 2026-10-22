@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { SUPPORTED_LANGUAGES, LANGUAGE_AUTONYMS } from "@/i18n";
 import { chooseLanguage } from "@/lib/languagePref";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 /**
  * Language picker for the v2 shell. Renders one pill per supported language,
@@ -19,7 +20,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
-      <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+      <span className="font-mono text-eyebrow font-bold uppercase text-muted-foreground flex items-center gap-1.5">
         <Globe size={13} strokeWidth={2.5} />
         {label}
       </span>
@@ -27,20 +28,16 @@ export function LanguageSwitcher({ className }: { className?: string }) {
         {SUPPORTED_LANGUAGES.map((lng) => {
           const selected = active === lng;
           return (
-            <button
+            <Button
               key={lng}
-              type="button"
+              variant={selected ? "primary" : "secondary"}
+              size="sm"
               aria-pressed={selected}
               onClick={() => void chooseLanguage(lng)}
-              className={cn(
-                "flex-1 neo-border rounded-lg px-2 py-2 font-heading font-bold text-[13px] transition-all",
-                selected
-                  ? "bg-primary text-primary-foreground neo-shadow"
-                  : "bg-card active:neo-shadow-pressed",
-              )}
+              className="flex-1 px-2"
             >
               {LANGUAGE_AUTONYMS[lng]}
-            </button>
+            </Button>
           );
         })}
       </div>

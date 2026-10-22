@@ -83,7 +83,7 @@ export function LobbyView({
         <p className="font-mono text-eyebrow uppercase text-muted-foreground mb-1">
           {t("weekend.draftFor", { defaultValue: "Drafting for" })}
         </p>
-        <p className="font-heading font-bold text-2xl">
+        <p className="font-heading font-bold text-title">
           {room.gameweek === null ? "—" : `GW ${room.gameweek.gwNumber}`}
         </p>
         <p className="font-mono text-eyebrow text-muted-foreground uppercase mt-1">
@@ -99,7 +99,7 @@ export function LobbyView({
             // Your seat wears the lime outline (R4: never a lime fill).
             className={cn("flex items-center justify-between py-2.5", i === room.mySeatIndex && "!border-lime")}
           >
-            <p className="font-heading font-bold text-sm">
+            <p className="font-heading font-bold text-body-sm">
               {seat.name}
               {seat.userId === room.createdBy && (
                 <span className="ml-1.5 text-eyebrow uppercase text-muted-foreground">
@@ -115,7 +115,7 @@ export function LobbyView({
             {isCreator && seat.userId !== room.createdBy && availableMembers.length > 0 && (
               <select
                 aria-label={t("weekend.replacePlayer", { defaultValue: "Replace {{name}}", name: seat.name })}
-                className="ml-2 max-w-24 neo-border rounded bg-background px-1 py-1 text-meta"
+                className="ml-2 max-w-24 neo-border rounded-sm bg-background px-1 py-1 text-meta"
                 defaultValue=""
                 onChange={(event) => {
                   if (event.target.value !== "") onReplace?.(seat.userId, event.target.value);
@@ -155,13 +155,13 @@ export function LobbyView({
       {isCreator && (
         <>
           <Card className="py-3">
-            <p className="mb-2 font-heading font-bold text-sm"><CalendarClock size={14} className="mr-1.5 inline" />{t("weekend.planDraft", { defaultValue: "Plan the draft" })}</p>
+            <p className="mb-2 font-heading font-bold text-body-sm"><CalendarClock size={14} className="mr-1.5 inline" />{t("weekend.planDraft", { defaultValue: "Plan the draft" })}</p>
             <div className="flex gap-2">
               <input
                 type="datetime-local"
                 value={scheduledInput}
                 onChange={(event) => setScheduledInput(event.target.value)}
-                className="min-w-0 flex-1 neo-border rounded bg-background px-2 text-xs"
+                className="min-w-0 flex-1 neo-border rounded-sm bg-background px-2 text-meta"
               />
               <Button variant="secondary" size="sm" disabled={busy} onClick={() => onSchedule?.(scheduledInput === "" ? null : new Date(scheduledInput).getTime())}>{t("weekend.save", { defaultValue: "Save" })}</Button>
             </div>
@@ -232,7 +232,7 @@ export function OrderRevealView({ room, serverNow }: { room: DraftRoom; serverNo
                 (seatIndex === room.mySeatIndex ? "bg-orange text-ink on-fill" : "bg-yellow text-ink on-fill"),
             )}
           >
-            <span className="font-mono font-bold text-lg w-7 text-center">{position + 1}</span>
+            <span className="font-mono font-bold text-title-sm w-7 text-center">{position + 1}</span>
             <span className="font-heading font-bold">
               {position < revealedCount ? room.seats[seatIndex]?.name : "…"}
             </span>
@@ -278,7 +278,7 @@ export function ShortlistPanel({
   };
   return (
     <Card className="py-3">
-      <p className="font-heading font-bold text-sm"><Star size={14} className="mr-1.5 inline" />{t("weekend.autoPickQueue", { defaultValue: "Private auto-pick queue" })}</p>
+      <p className="font-heading font-bold text-body-sm"><Star size={14} className="mr-1.5 inline" />{t("weekend.autoPickQueue", { defaultValue: "Private auto-pick queue" })}</p>
       <p className="mb-2 text-meta text-muted-foreground">{t("weekend.autoPickQueueBody", { defaultValue: "Your order is private. On timeout, legal queued players are tried first." })}</p>
       {queued.length > 0 && (
         <ol className="mb-2 flex flex-col gap-1">
@@ -405,7 +405,7 @@ export function DraftBoardView({
             {t("weekend.roundOf", { defaultValue: "Round {{round}} of 13", round })} · #
             {(room.currentPickIndex ?? 0) + 1}
           </p>
-          <p className="font-heading font-bold text-lg leading-tight">
+          <p className="font-heading font-bold text-title-sm leading-tight">
             {myTurn
               ? t("weekend.yourPick", { defaultValue: "Your pick" })
               : t("weekend.onClock", {
@@ -416,7 +416,7 @@ export function DraftBoardView({
         </div>
         <div className="text-right">
           <Timer size={14} strokeWidth={3} className="inline mr-1 -mt-0.5" />
-          <span className="font-mono font-bold text-2xl tabular-nums">
+          <span className="font-mono font-bold text-title tabular-nums">
             {formatBank(turnRemaining)}
           </span>
         </div>
@@ -463,17 +463,17 @@ export function DraftBoardView({
               key={player.playerId}
               elevation="flat"
               padding="sm"
-              className={cn("flex items-center justify-between gap-2", (takenSeat !== undefined || started) && "opacity-45")}
+              className={cn("flex items-center justify-between gap-2", (takenSeat !== undefined || started) && "is-dimmed")}
             >
               {/* FW-SCOUT: the row BODY opens the detail sheet; PICK stays a
                   sibling (same recipe as the budget picker rows). */}
               <Button
                 variant="ghost"
                 data-testid="draft-row-body"
-                className="min-w-0 flex-1 flex-col items-stretch justify-center gap-0 border-0 px-0 py-0 text-left font-body font-normal hover:bg-transparent active:opacity-60"
+                className="min-w-0 flex-1 flex-col items-stretch justify-center gap-0 border-0 px-0 py-0 text-left font-body font-normal hover:bg-transparent active:is-dimmed"
                 onClick={() => setDetailPlayer(player.playerId)}
               >
-                <p className="font-heading font-bold text-sm truncate">
+                <p className="font-heading font-bold text-body-sm truncate">
                   {player.name}
                   <span className="ml-1.5 font-mono text-eyebrow text-muted-foreground uppercase">
                     {roleLabel(player.position, t)}
@@ -536,10 +536,10 @@ export function DraftBoardView({
         clockLine={
           myTurn ? (
             <Card className="bg-orange text-ink on-fill flex items-center justify-between py-2">
-              <span className="font-heading font-bold text-sm">
+              <span className="font-heading font-bold text-body-sm">
                 {t("weekend.yourPick", { defaultValue: "Your pick" })}
               </span>
-              <span className="font-mono font-bold text-lg tabular-nums">
+              <span className="font-mono font-bold text-title-sm tabular-nums">
                 <Timer size={13} strokeWidth={3} className="inline mr-1 -mt-0.5" />
                 {formatBank(turnRemaining)}
               </span>
@@ -670,10 +670,10 @@ export function CompletedView({
   return (
     <div className="flex flex-col gap-4">
       <Card elevation="lifted" className="bg-success text-ink on-fill text-center py-4">
-        <p className="font-heading font-bold text-xl">
+        <p className="font-heading font-bold text-title-sm">
           {t("weekend.draftDone", { defaultValue: "Draft complete" })}
         </p>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-body-sm text-muted-foreground mt-1">
           {t("weekend.draftDoneBody", {
             defaultValue:
               "Squads are on their default sheets — arrange yours before kickoff. Every player stays editable until his match starts.",
@@ -760,7 +760,7 @@ export default function DraftRoomScreen() {
       <div className="md:max-w-lg md:mx-auto md:w-full">
         {room === undefined ? (
           <Card className="text-center py-6">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-body-sm text-muted-foreground">
               {t("common.loading", { defaultValue: "Loading…" })}
             </p>
           </Card>
@@ -853,7 +853,7 @@ export default function DraftRoomScreen() {
           />
         ) : (
           <Card className="text-center py-6">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-body-sm text-muted-foreground">
               {t("weekend.roomAbandoned", { defaultValue: "This room expired before drafting." })}
             </p>
           </Card>

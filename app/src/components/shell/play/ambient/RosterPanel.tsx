@@ -22,7 +22,7 @@ const STATE_META: Record<
 
 function PanelTitle({ children }: { children: string }) {
   return (
-    <p className="font-heading font-bold text-[11px] uppercase tracking-wide text-muted-foreground">
+    <p className="font-heading font-bold text-eyebrow uppercase text-muted-foreground">
       {children}
     </p>
   );
@@ -49,19 +49,19 @@ export function RosterPanel({
               key={p.id}
               className={cn(
                 "neo-border rounded-lg px-2.5 py-1.5 flex items-center justify-between gap-2",
-                p.isMe ? "bg-primary text-primary-foreground" : "bg-card",
+                p.isMe ? "bg-primary text-primary-foreground on-fill" : "bg-card",
               )}
             >
               <div className="min-w-0">
-                <p className="font-heading font-bold text-xs truncate">
+                <p className="font-heading font-bold text-meta truncate">
                   {p.name}
                   {p.isMe && ` ${t("ambient.youSuffix")}`}
                 </p>
-                <p className="text-[10px] font-mono truncate opacity-80">{p.label || "—"}</p>
+                <p className="text-meta font-mono truncate text-muted-foreground">{p.label || "—"}</p>
               </div>
               <span
                 className={cn(
-                  "shrink-0 text-[10px] font-heading font-bold uppercase",
+                  "shrink-0 text-eyebrow font-heading font-bold uppercase",
                   p.outcome === "correct"
                     ? "text-success"
                     : p.outcome === "wrong"
@@ -96,7 +96,7 @@ export function RosterPanel({
                 e.isMe ? "bg-primary text-primary-foreground" : "bg-card",
               )}
             >
-              <span className="font-heading font-bold text-xs truncate min-w-0">
+              <span className="font-heading font-bold text-meta truncate min-w-0">
                 {e.name}
                 {e.isMe && ` ${t("ambient.youSuffix")}`}
               </span>
@@ -110,7 +110,7 @@ export function RosterPanel({
           );
         })}
         {entries.length === 0 && (
-          <li className="text-[11px] text-muted-foreground">{t("ambient.noPlayersYet")}</li>
+          <li className="text-meta text-muted-foreground">{t("ambient.noPlayersYet")}</li>
         )}
       </ul>
     </section>

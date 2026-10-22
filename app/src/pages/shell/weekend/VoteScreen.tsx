@@ -117,12 +117,12 @@ export function FixturePickerView({
   return (
     <div className="flex flex-col gap-4" data-testid="fixture-picker">
       <div className="text-center">
-        <p className="font-heading font-bold text-lg leading-tight">
+        <p className="font-heading font-bold text-title-sm leading-tight">
           {t("weekend.pickerTitle", {
             defaultValue: "Which games did you catch this weekend?",
           })}
         </p>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-body-sm text-muted-foreground mt-1">
           {t("weekend.pickerBody", {
             defaultValue: "We'll only ask about players you actually saw.",
           })}
@@ -154,7 +154,7 @@ export function FixturePickerView({
                 <span
                   className={`shrink-0 w-5 h-5 rounded-sm neo-border flex items-center justify-center ${
                     on ? "bg-background text-foreground" : ""
-                  } ${retired ? "opacity-40" : ""}`}
+                  } ${retired ? "is-dimmed" : ""}`}
                   aria-hidden="true"
                 >
                   {on && <Check size={13} strokeWidth={4} />}
@@ -180,7 +180,7 @@ export function FixturePickerView({
             return retired ? (
               <Card
                 key={fixture.fixtureId}
-                className="py-2.5 px-3 flex items-center gap-2.5 opacity-55"
+                className="py-2.5 px-3 flex items-center gap-2.5 is-dimmed"
                 data-testid="picker-fixture"
                 data-selected="0"
                 data-retired="1"
@@ -350,14 +350,14 @@ export function DoneView({
         >
           <Check size={20} strokeWidth={4} />
         </span>
-        <p className="font-heading font-bold text-lg leading-tight">
+        <p className="font-heading font-bold text-title-sm leading-tight">
           {exhausted
             ? t("weekend.doneExhausted", {
                 defaultValue: "That's every game you picked.",
               })
             : t("weekend.doneTen", { defaultValue: "That's today's ten." })}
         </p>
-        <p className="text-sm mt-1">
+        <p className="text-body-sm mt-1">
           {t("weekend.doneThanks", { defaultValue: "The crowd thanks you." })}
         </p>
       </Card>
@@ -413,13 +413,13 @@ export function PairCard({
       <Card
         interactive
         elevation="lifted"
-        className="flex-1 min-w-0 text-center py-4 px-2.5 disabled:opacity-60"
+        className="flex-1 min-w-0 text-center py-4 px-2.5 disabled:is-dimmed"
         onClick={busy ? undefined : onPick}
       >
         <Badge tone="muted">
           {roleLabel(player.position, t)}
         </Badge>
-        <p className="font-heading font-bold text-lg leading-tight mt-2">{player.name}</p>
+        <p className="font-heading font-bold text-title-sm leading-tight mt-2">{player.name}</p>
         <p className="text-meta text-muted-foreground mt-1">
           {fixture.homeGoals === null || fixture.awayGoals === null
             ? t("weekend.fullTime", { defaultValue: "full time" })
@@ -433,13 +433,13 @@ export function PairCard({
     <Card
       interactive
       elevation="lifted"
-      className="flex-1 min-w-0 text-center py-4 px-2.5 disabled:opacity-60"
+      className="flex-1 min-w-0 text-center py-4 px-2.5 disabled:is-dimmed"
       onClick={busy ? undefined : onPick}
     >
       <Badge tone="muted">
         {roleLabel(player.position, t)}
       </Badge>
-      <p className="font-heading font-bold text-lg leading-tight mt-2">{player.name}</p>
+      <p className="font-heading font-bold text-title-sm leading-tight mt-2">{player.name}</p>
       {/* where the memory happened: club, opponent, venue */}
       <p
         // clamp-3, not the fixtures screen's clamp-2: the venue letter closes
@@ -487,7 +487,7 @@ export function PairCard({
         })}
       </p>
       {events.length > 0 && (
-        <p className="text-xs mt-1 leading-none" data-testid="vote-card-events">
+        <p className="text-meta mt-1 leading-none" data-testid="vote-card-events">
           {events.map((event) => (
             <span key={event.kind} className="mx-0.5 whitespace-nowrap">
               {EVENT_GLYPHS[event.kind]}
@@ -523,7 +523,7 @@ export function VoteStackView({
         <p className="font-heading font-bold">
           {t("weekend.votingClosed", { defaultValue: "Voting is closed right now." })}
         </p>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-body-sm text-muted-foreground mt-1">
           {t("weekend.votingClosedBody", {
             defaultValue:
               "The stack opens as matches finish and closes when the weekend settles.",
@@ -542,7 +542,7 @@ export function VoteStackView({
           <p className="font-heading font-bold">
             {t("weekend.voteNoGames", { defaultValue: "Nothing to judge, then." })}
           </p>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-body-sm text-muted-foreground mt-1">
             {t("weekend.voteNoGamesBody", {
               defaultValue:
                 "No games picked this weekend — that's a fine answer. Add one whenever you catch it.",
@@ -564,7 +564,7 @@ export function VoteStackView({
         <p className="font-heading font-bold">
           {t("weekend.voteCap", { defaultValue: "That's this weekend's limit." })}
         </p>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-body-sm text-muted-foreground mt-1">
           {t("weekend.voteCapBody", {
             defaultValue: "{{served}} pairs served — thank you for the eyes.",
             served: serve.served,
@@ -580,7 +580,7 @@ export function VoteStackView({
           <p className="font-heading font-bold">
             {t("weekend.voteExhausted", { defaultValue: "No more pairs for now." })}
           </p>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-body-sm text-muted-foreground mt-1">
             {t("weekend.voteExhaustedBody", {
               defaultValue: "Come back after the next matches finish.",
             })}
@@ -619,7 +619,7 @@ export function VoteStackView({
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="font-heading font-bold text-center text-lg">
+      <p className="font-heading font-bold text-center text-title-sm">
         {t("weekend.whoBetter", { defaultValue: "Who had the better game?" })}
       </p>
       <div className="flex gap-3">
@@ -654,7 +654,7 @@ export function VoteStackView({
               variant="ghost"
               size="lg"
               block
-              className="py-2 text-sm"
+              className="py-2 text-body-sm"
               disabled={busy}
               data-testid="didnt-see-both"
               onClick={() => onVote("skip")}
@@ -898,7 +898,7 @@ export default function VoteScreen() {
         (gate === "open" && phase === "stack" && serve === null) ||
         (phase === "picker" && fixtures === null) ? (
           <Card className="text-center py-6">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-body-sm text-muted-foreground">
               {t("common.loading", { defaultValue: "Loading…" })}
             </p>
           </Card>
