@@ -133,14 +133,14 @@ test("FW-IMMERSE B: wide hub, fixtures, side-by-side build, crew split", async (
     page.getByRole("button", { name: "Pick", exact: true }).first(),
   ).toBeVisible({ timeout: 30_000 });
 
-  // The filter row keeps its one axis in the panel host too.
+  // The filter row wraps in the panel host too (W4): no chip off the edge.
   const row = page.getByTestId("picker-filter-row");
   const axes = await row.evaluate((el) => ({
-    overflowX: getComputedStyle(el).overflowX,
-    overflowY: getComputedStyle(el).overflowY,
+    wrap: getComputedStyle(el).flexWrap,
+    horizontal: el.scrollWidth > el.clientWidth,
   }));
-  expect(axes.overflowX).toBe("auto");
-  expect(axes.overflowY).toBe("hidden");
+  expect(axes.wrap).toBe("wrap");
+  expect(axes.horizontal).toBe(false);
 
   // Back to browsing disarms without picking.
   await page.getByTestId("market-panel-browse").click();

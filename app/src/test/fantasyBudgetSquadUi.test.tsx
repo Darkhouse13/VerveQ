@@ -65,6 +65,7 @@ vi.mock("sonner", () => ({ toast: toastMock }));
 
 import { api } from "../../convex/_generated/api";
 import BudgetSquadScreen from "@/pages/shell/weekend/BudgetSquadScreen";
+import { fitCap, resetPickerMemory } from "@/lib/weekendPickerMemory";
 
 const SQUAD_QUERY = getFunctionName(api.fantasySquads.getSquad);
 const MARKET_QUERY = getFunctionName(api.fantasyMarket.getMarket);
@@ -151,14 +152,18 @@ function scoreSlot(overrides: Record<string, unknown>) {
   };
 }
 
-function renderScreen() {
-  return render(
-    <MemoryRouter initialEntries={["/weekend/squad"]}>
+function screenTree(path = "/weekend/squad") {
+  return (
+    <MemoryRouter initialEntries={[path]}>
       <Routes>
         <Route path="/weekend/squad" element={<BudgetSquadScreen />} />
       </Routes>
-    </MemoryRouter>,
+    </MemoryRouter>
   );
+}
+
+function renderScreen(path?: string) {
+  return render(screenTree(path));
 }
 
 beforeEach(() => {
@@ -171,6 +176,10 @@ beforeEach(() => {
     [SCORE_QUERY]: null,
   };
   toastMock.error.mockClear();
+  toastMock.success.mockClear();
+  // The picker's remembered filters live for the tab session; one test's
+  // league choice must not narrow the next test's picker.
+  resetPickerMemory();
   // The R2 display-formation memory is keyed by squadId and every test uses
   // "squad1" — clear it so a prior test's choice can't leak into a label.
   localStorage.clear();
@@ -694,5 +703,189 @@ describe("budget squad screen — the leagues strip (FW-POLISH-3 O4)", () => {
     expect(strip.textContent).toContain(
       "This gameweek: Championship + Eredivisie + Liga Portugal + La Liga",
     );
+  });
+});
+
+// ── W4 onboarding: paid entry, budget-aware picker, full-squad moment ──
+
+const CREATE_SQUAD = getFunctionName(api.fantasySquads.createSquad);
+
+describe("budget squad screen — first-time paid entry (W4)", () => {
+  it("shows a paid-link visitor what the game is, then builds on one tap", async () => {
+    renderScreen("/weekend/squad?entry=builder&ref=weekend");
+    expect(await screen.findByTestId("weekend-intro")).toBeInTheDocument();
+    expect(screen.getByText(/real matches/)).toBeInTheDocument();
+    // The setup page waits behind the explainer.
+    expect(screen.queryByTestId("start-building")).toBeNull();
+
+    fireEvent.click(screen.getByTestId("weekend-intro-start"));
+    await waitFor(() => expect(queryMock.mutations[CREATE_SQUAD]).toHaveBeenCalled());
+    // Straight onto the pitch with the default shape: 4-4-2, MID + ATT finishers.
+    expect(queryMock.mutations[CREATE_SQUAD].mock.calls[0][0]).toMatchObject({
+      context: "budget",
+      formation: { GK: 1, DEF: 4, MID: 4, ATT: 2 },
+      finisherRoles: ["MID", "ATT"],
+    });
+  });
+
+  it("a hub visitor goes straight to the setup, its action at the top", async () => {
+    renderScreen();
+    expect(await screen.findByTestId("start-building")).toBeInTheDocument();
+    expect(screen.queryByTestId("weekend-intro")).toBeNull();
+    // Nothing sticky floats over the chooser any more.
+    expect(screen.getByTestId("start-building").closest(".sticky")).toBeNull();
+  });
+});
+
+describe("budget squad screen — budget-aware picker (W4)", () => {
+  it("prices a pick against completing the 13", () => {
+    // 20.0 left, this pick plus 2 more open slots at the 4.0 floor.
+    expect(fitCap(20, 3, 4)).toBe(12);
+    expect(fitCap(20, 1, 4)).toBe(20);
+    expect(fitCap(5, 4, 4)).toBe(0);
+  });
+
+  async function openTightGkPicker() {
+    // Ten of 13 filled for 71.0: 20.0 left for 3 open slots, so the GK may
+    // cost at most 12.0 (two more players at the 4.0 floor).
+    const squad = fullSquad([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    queryMock.results[SQUAD_QUERY] = {
+      ...squad,
+      budget: { committed: 0, live: 71, total: 71, limit: 91 },
+    };
+    queryMock.results[MARKET_QUERY] = {
+      ...GATE,
+      players: [
+        marketPlayer({}),
+        marketPlayer({
+          playerId: "mp9",
+          name: "Pricey Keeper",
+          clubId: "rm",
+          clubName: "Real Madrid",
+          price: 13,
+        }),
+      ],
+    };
+    renderScreen();
+    fireEvent.click(await screen.findByTestId("pitch-slot-0"));
+    return within(await screen.findByRole("dialog"));
+  }
+
+  it("hides players the rest of the 13 can't afford, says how many fit, and lets you see all", async () => {
+    const dialog = await openTightGkPicker();
+    expect(await dialog.findByText("Keeper One")).toBeInTheDocument();
+    expect(dialog.queryByText("Pricey Keeper")).toBeNull();
+    expect(dialog.getByTestId("picker-count").textContent).toBe("Fit your budget: 1");
+    expect(dialog.getByTestId("picker-fits-chip").textContent).toContain("12.0");
+
+    fireEvent.click(dialog.getByTestId("picker-fits-chip"));
+    expect(await dialog.findByText("Pricey Keeper")).toBeInTheDocument();
+    expect(dialog.getByTestId("picker-count").textContent).toBe("Players: 2");
+  });
+
+  it("sorts cheapest first on request", async () => {
+    const dialog = await openTightGkPicker();
+    fireEvent.click(dialog.getByTestId("picker-fits-chip"));
+    const order = () =>
+      dialog.getAllByTestId("picker-row-body").map((row) => row.textContent ?? "");
+    await waitFor(() => expect(order()[0]).toContain("Pricey Keeper"));
+    fireEvent.click(dialog.getByTestId("picker-sort-chip"));
+    await waitFor(() => expect(order()[0]).toContain("Keeper One"));
+  });
+
+  it("remembers the league between picker opens", async () => {
+    const dialog = await openGkPicker();
+    fireEvent.click(dialog.getByTestId("picker-league-chip"));
+    const sheet = within(await screen.findByTestId("picker-filter-sheet"));
+    fireEvent.click(sheet.getByText("La Liga"));
+    expect(await dialog.findByText("Keeper One")).toBeInTheDocument();
+
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    fireEvent.click(screen.getByTestId("pitch-slot-0"));
+    const again = within(await screen.findByRole("dialog"));
+    expect(await again.findByText("Keeper One")).toBeInTheDocument();
+    expect(again.queryByText("Keeper Two")).toBeNull();
+    expect(again.getByTestId("picker-league-chip").textContent).toContain("La Liga");
+  });
+
+  it("wraps the filter row instead of hiding chips off the edge", async () => {
+    const dialog = await openGkPicker();
+    const row = dialog.getByTestId("picker-filter-row");
+    expect(row.className).toContain("flex-wrap");
+    expect(row.className).not.toContain("overflow-x-auto");
+  });
+});
+
+describe("budget squad screen — the full 13 (W4)", () => {
+  function squadOf(filled: number) {
+    const squad = fullSquad([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    const slots = [...squad.slots];
+    if (filled >= 12) {
+      slots[11] = slot({
+        slotIndex: 11,
+        slotRole: "MID",
+        isFinisher: true,
+        playerId: "p11",
+        playerName: "Player 11",
+        playerPrice: 5,
+      });
+    }
+    if (filled >= 13) {
+      slots[12] = slot({
+        slotIndex: 12,
+        slotRole: "ATT",
+        isFinisher: true,
+        playerId: "p12",
+        playerName: "Player 12",
+        playerPrice: 5,
+      });
+    }
+    return { ...squad, slots };
+  }
+
+  it("confirms the squad once, when the 13th player lands", async () => {
+    queryMock.results[SQUAD_QUERY] = squadOf(12);
+    const view = renderScreen();
+    await screen.findByTestId("pitch-slot-12");
+    expect(toastMock.success).not.toHaveBeenCalled();
+
+    queryMock.results[SQUAD_QUERY] = squadOf(13);
+    view.rerender(screenTree());
+    await waitFor(() => expect(toastMock.success).toHaveBeenCalledTimes(1));
+    expect(toastMock.success.mock.calls[0][0]).toBe(
+      "You're in for GW 3. Points land after each match.",
+    );
+
+    // Another render of the same full squad says nothing more.
+    view.rerender(screenTree());
+    expect(toastMock.success).toHaveBeenCalledTimes(1);
+  });
+
+  it("says nothing when an already-full squad loads", async () => {
+    queryMock.results[SQUAD_QUERY] = squadOf(13);
+    renderScreen();
+    await screen.findByTestId("pitch-slot-12");
+    expect(toastMock.success).not.toHaveBeenCalled();
+  });
+
+  it("keeps a player's price on his plate until his match starts", async () => {
+    queryMock.results[SQUAD_QUERY] = squadWith([
+      slot({
+        slotIndex: 0,
+        playerId: "p1",
+        playerName: "Early Bird",
+        playerPrice: 6.5,
+        locked: false,
+      }),
+    ]);
+    queryMock.results[SCORE_QUERY] = scoreWith([
+      scoreSlot({ slotIndex: 0, state: "awaiting", points: null, locked: false }),
+    ]);
+    renderScreen();
+    const chip = await screen.findByTestId("pitch-slot-0");
+    expect(chip).toHaveAttribute("data-chip-state", "filled");
+    expect(chip.textContent).toContain("6.5");
+    expect(chip.textContent).not.toContain("…");
   });
 });

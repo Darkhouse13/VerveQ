@@ -122,7 +122,8 @@ describe("MatchdayHero", () => {
     );
     expect(screen.getByText(/Next kickoff in/i)).toBeInTheDocument();
     expect(screen.getByTestId("matchday-countdown").textContent).toBe("00:30:00");
-    expect(screen.getByText("1 in play · 1 played · 1 scored")).toBeInTheDocument();
+    // Fixtures, labelled as such, so the line never reads against the squad table.
+    expect(screen.getByText("Matches: 1 live · 1 finished · 1 with points in")).toBeInTheDocument();
   });
 
   it("nothing ahead but balls in play: the in-play count is the number", () => {
