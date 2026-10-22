@@ -20,6 +20,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, Lock } from "lucide-react";
 import { Sheet } from "@/components/ui/sheet";
+import { Button, type ButtonProps } from "@/components/ui/button";
 import { SLOT_ROLES, type SlotRole } from "../../../convex/lib/fantasyConstants";
 import {
   FORMATION_CATALOGUE,
@@ -30,7 +31,33 @@ import {
   type NamedFormation,
   type PlannerSlot,
 } from "@/lib/weekendFormations";
-import { NeoButton } from "@/components/neo/NeoButton";
+import { Eyebrow } from "@/components/ui/eyebrow";
+import { cn } from "@/lib/utils";
+
+/**
+ * A pressable choice chip (shape / finisher role): 44px tall, sentence case,
+ * the selected chip is a cream chip like Segmented's — never lime, which
+ * stays free for the screen's one action (START BUILDING sits right below).
+ */
+function ChoiceChip({
+  selected,
+  className,
+  ...props
+}: Omit<ButtonProps, "variant" | "size"> & { selected: boolean }) {
+  return (
+    <Button
+      variant="secondary"
+      size="sm"
+      aria-pressed={selected}
+      className={cn(
+        "px-1",
+        selected && "bg-foreground text-background hover:bg-foreground",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
 
 /** A finisher line in the chooser: `id` is echoed back by onFinisherRole
  *  (the finisher's slotIndex on a live squad; 0/1 during creation). */
@@ -59,25 +86,23 @@ export function FormationChooser({
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
+        <Eyebrow className="mb-2 font-bold">
           {t("weekend.shape", { defaultValue: "Your shape" })}
-        </p>
+        </Eyebrow>
         <div className="grid grid-cols-3 gap-1.5" data-testid="formation-chips">
           {FORMATION_CATALOGUE.map((formation) => (
-            <NeoButton
+            <ChoiceChip
               key={formation.name}
-              variant={selectedName === formation.name ? "primary" : "outline"}
-              size="sm"
-              className="font-mono tabular-nums px-1 text-[11px]"
+              selected={selectedName === formation.name}
+              className="font-mono tabular-nums"
               disabled={busy || (disabledNames?.has(formation.name) ?? false)}
-              aria-pressed={selectedName === formation.name}
               onClick={() => onSelectFormation(formation)}
             >
               {formation.name}
-            </NeoButton>
+            </ChoiceChip>
           ))}
         </div>
-        <p className="text-[11px] text-muted-foreground mt-2">
+        <p className="text-meta text-muted-foreground mt-2">
           {t("weekend.shapeNote", {
             defaultValue:
               "Change it any time before kick-off — nothing is set in stone yet.",
@@ -86,23 +111,21 @@ export function FormationChooser({
       </div>
 
       <div>
-        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
+        <Eyebrow className="mb-2 font-bold">
           {t("weekend.finisherRoles", { defaultValue: "Your finishers" })}
-        </p>
+        </Eyebrow>
         {finishers.map((finisher) => (
           <div key={finisher.id} className="flex gap-1.5 mb-1.5 items-center">
             {SLOT_ROLES.map((role) => (
-              <NeoButton
+              <ChoiceChip
                 key={role}
-                variant={finisher.role === role ? "primary" : "outline"}
-                size="sm"
+                selected={finisher.role === role}
                 className="flex-1"
                 disabled={busy || finisher.locked}
-                aria-pressed={finisher.role === role}
                 onClick={() => onFinisherRole(finisher.id, role)}
               >
                 {role}
-              </NeoButton>
+              </ChoiceChip>
             ))}
             {finisher.locked && (
               <Lock
@@ -114,7 +137,7 @@ export function FormationChooser({
             )}
           </div>
         ))}
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-meta text-muted-foreground">
           {t("weekend.finisherNote", {
             defaultValue:
               "Finishers score only from their entry minute — any position, free of your shape.",
@@ -170,30 +193,31 @@ export function FormationSection({
 
   if (!editable) {
     return (
-      <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+      <Eyebrow className="font-bold">
         {t("weekend.shapeLockedLine", {
           defaultValue: "Set up in a {{label}}",
           label,
         })}
-      </p>
+      </Eyebrow>
     );
   }
 
   return (
     <div data-testid="formation-section">
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="sm"
         data-testid="shape-label"
         aria-label={t("weekend.shapeOpenAria", {
           defaultValue: "Change shape — currently {{label}}",
           label,
         })}
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground active:opacity-60"
+        className="-mx-2 gap-1.5 px-2 font-mono text-eyebrow uppercase text-muted-foreground"
       >
         {t("weekend.shapeLine", { defaultValue: "Shape — {{label}}", label })}
-        <ChevronDown size={13} strokeWidth={3} aria-hidden />
-      </button>
+        <ChevronDown size={14} strokeWidth={3} aria-hidden />
+      </Button>
 
       <Sheet
         open={open}

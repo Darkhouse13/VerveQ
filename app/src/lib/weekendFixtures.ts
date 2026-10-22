@@ -164,3 +164,20 @@ export function countdownParts(
     seconds: Math.floor((left % 60_000) / 1000),
   };
 }
+
+/**
+ * The countdown as a cold visitor reads it: "1d 21h" while a whole day or
+ * more is left (a ticking "45:42:25" reads as a clock, not a wait), then
+ * "HH:MM:SS" for the last 24 hours. `days` formats the day form so the unit
+ * letters follow the UI language.
+ */
+export function countdownLabel(
+  target: number,
+  now: number,
+  days: (d: number, h: number) => string,
+): string {
+  const { hours, minutes, seconds } = countdownParts(target, now);
+  if (hours >= 24) return days(Math.floor(hours / 24), hours % 24);
+  const two = (n: number) => n.toString().padStart(2, "0");
+  return `${two(hours)}:${two(minutes)}:${two(seconds)}`;
+}

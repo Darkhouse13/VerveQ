@@ -26,7 +26,7 @@ import { useTranslation } from "react-i18next";
 import { useConvex, useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { notify } from "@/lib/notify";
-import { ArrowLeftRight, Check, ChevronDown, ChevronRight, Lock, Plus, X } from "lucide-react";
+import { ArrowLeft, ArrowLeftRight, Check, ChevronDown, ChevronRight, Lock, Plus, X } from "lucide-react";
 import { matchesNameSearch } from "../../../../convex/lib/fantasyPlayerName";
 import {
   availabilityBadgeLabel,
@@ -54,10 +54,14 @@ import {
   loadDisplayFormation,
   saveDisplayFormation,
 } from "@/lib/weekendDisplayFormation";
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { NeoBadge } from "@/components/neo/NeoBadge";
-import { NeoInput } from "@/components/neo/NeoInput";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Eyebrow } from "@/components/ui/eyebrow";
+import { Skeleton } from "@/components/ui/skeleton";
+import { usePriceFormat } from "@/lib/weekendPrice";
+import { cn } from "@/lib/utils";
 import { PitchView } from "@/components/weekend/PitchView";
 import { PlayerSheet } from "@/components/weekend/PlayerSheet";
 import {
@@ -116,6 +120,7 @@ export function CreateSquadView({
   busy: boolean;
 }) {
   const { t } = useTranslation();
+  const price = usePriceFormat();
   const [formation, setFormation] = useState<NamedFormation>(FORMATION_CATALOGUE[0]);
   const [finishers, setFinishers] = useState<[SlotRole, SlotRole]>([
     ...DEFAULT_FINISHERS,
@@ -123,16 +128,19 @@ export function CreateSquadView({
 
   return (
     <div className="flex flex-col gap-4">
-      <NeoCard shadow="lg" className="text-center py-4">
-        <p className="text-[10px] font-heading uppercase text-muted-foreground mb-1">
+      <Card elevation="lifted" className="text-center">
+        <Eyebrow className="mb-1">
           {t("weekend.buildFor", { defaultValue: "Building for" })}
+        </Eyebrow>
+        <p className="font-heading font-bold text-title-lg">GW {gwNumber}</p>
+        <p className="text-body-sm text-muted-foreground mt-1" data-testid="build-line">
+          {t("weekend.buildLine", {
+            defaultValue: "{{n}} players · {{budget}} budget",
+            n: 13,
+            budget: price(SQUAD_BUDGET),
+          })}
         </p>
-        <p className="font-heading font-bold text-2xl">GW {gwNumber}</p>
-        <p className="font-mono text-[11px] text-muted-foreground tracking-[0.16em] uppercase mt-1">
-          13 {t("weekend.slots", { defaultValue: "shirts" })} ·{" "}
-          {SQUAD_BUDGET.toFixed(1)} {t("weekend.budget", { defaultValue: "budget" })}
-        </p>
-      </NeoCard>
+      </Card>
 
       <FormationChooser
         selectedName={formation.name}
@@ -146,16 +154,23 @@ export function CreateSquadView({
         }}
       />
 
-      <NeoButton
-        variant="primary"
-        size="full"
-        disabled={busy}
-        onClick={() =>
-          onCreate(shapeToFormation(formation.shape), finishers, formation.name)
-        }
-      >
-        {t("weekend.startBuilding", { defaultValue: "Start building" })}
-      </NeoButton>
+      {/* The one action stays above the bottom nav at the fold (390×664):
+          it sticks to the foot of the scrolling main, on an ink band so the
+          chooser scrolls under it rather than through it. */}
+      <div className="sticky bottom-0 z-raised -mx-1 bg-background px-1 pb-2 pt-2">
+        <Button
+          variant="primary"
+          size="lg"
+          block
+          disabled={busy}
+          data-testid="start-building"
+          onClick={() =>
+            onCreate(shapeToFormation(formation.shape), finishers, formation.name)
+          }
+        >
+          {t("weekend.startBuilding", { defaultValue: "Start building" })}
+        </Button>
+      </div>
     </div>
   );
 }
@@ -180,26 +195,26 @@ export function DisplacedTray({
   const { t } = useTranslation();
   if (players.length === 0) return null;
   return (
-    <NeoCard color="yellow" className="py-2.5" data-testid="displaced-tray">
-      <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] mb-1.5">
+    <Card padding="sm" className="bg-yellow text-ink on-fill" data-testid="displaced-tray">
+      <Eyebrow className="mb-1.5 font-bold text-ink">
         {t("weekend.trayTitle", { defaultValue: "Waiting to come back on" })}
-      </p>
+      </Eyebrow>
       <div className="flex flex-col gap-1.5">
         {players.map((player) => (
           <div key={player.playerId} className="flex items-center justify-between gap-2">
-            <p className="font-heading font-bold text-sm truncate">{player.name}</p>
-            <NeoButton
+            <p className="font-heading font-bold text-body-sm truncate">{player.name}</p>
+            <Button
               variant="secondary"
               size="sm"
               disabled={!canPlace}
               onClick={() => onPlace(player.playerId)}
             >
               {t("weekend.trayPlace", { defaultValue: "Bring back on" })}
-            </NeoButton>
+            </Button>
           </div>
         ))}
       </div>
-    </NeoCard>
+    </Card>
   );
 }
 
@@ -207,6 +222,7 @@ export function DisplacedTray({
 
 export function BudgetBar({ budget }: { budget: NonNullable<BudgetSquad["budget"]> }) {
   const { t } = useTranslation();
+  const price = usePriceFormat();
   // FW-REPRICE R1: a squad the reprice pushed over 91.0 stays legal at its
   // pre-edit cost, so the bar must measure against what actually binds. For
   // everyone else `allowance` IS `limit` and nothing below reads differently.
@@ -218,14 +234,14 @@ export function BudgetBar({ budget }: { budget: NonNullable<BudgetSquad["budget"
   const remaining = ceiling - budget.total;
   const pct = Math.min(100, (budget.total / ceiling) * 100);
   return (
-    <NeoCard shadow="lg" className="py-3">
+    <Card elevation="lifted" padding="sm">
       <div className="flex items-baseline justify-between mb-1.5">
-        <span className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+        <Eyebrow as="span" className="font-bold">
           {t("weekend.spent", { defaultValue: "Spent" })}
-        </span>
+        </Eyebrow>
         <span className="font-mono font-bold tabular-nums">
-          {budget.total.toFixed(1)}
-          <span className="text-muted-foreground"> / {ceiling.toFixed(1)}</span>
+          {price(budget.total)}
+          <span className="text-muted-foreground"> / {price(ceiling)}</span>
         </span>
       </div>
       <div className="neo-border rounded h-3 overflow-hidden bg-muted/40">
@@ -238,30 +254,30 @@ export function BudgetBar({ budget }: { budget: NonNullable<BudgetSquad["budget"
           aria-valuemax={ceiling}
         />
       </div>
-      <div className="flex justify-between mt-1.5 text-[11px] text-muted-foreground">
+      <div className="flex justify-between mt-1.5 text-meta text-muted-foreground">
         <span>
           {t("weekend.committedCost", {
             defaultValue: "{{cost}} locked in",
-            cost: budget.committed.toFixed(1),
+            cost: price(budget.committed),
           })}
         </span>
         <span className="font-mono font-bold tabular-nums text-foreground">
           {t("weekend.remaining", {
             defaultValue: "{{amount}} left",
-            amount: remaining.toFixed(1),
+            amount: price(remaining),
           })}
         </span>
       </div>
       {grandfathered && (
-        <p className="mt-1.5 text-[11px] text-muted-foreground">
+        <p className="mt-1.5 text-meta text-muted-foreground">
           {t("weekend.budgetGrandfathered", {
             defaultValue:
               "New prices put this squad over the {{limit}} budget. It stays legal — but a change cannot make it cost more.",
-            limit: budget.limit.toFixed(1),
+            limit: price(budget.limit),
           })}
         </p>
       )}
-    </NeoCard>
+    </Card>
   );
 }
 
@@ -295,12 +311,12 @@ export function SquadAvailabilityNotice({
     .join(", ");
 
   return (
-    <NeoCard
-      color={out.length > 0 ? "destructive" : "yellow"}
-      className="py-2"
+    <Card
+      padding="sm"
+      className={cn(out.length > 0 ? "bg-destructive" : "bg-yellow", "text-ink on-fill")}
       data-testid="squad-availability-notice"
     >
-      <p className="text-[11px] font-bold">
+      <p className="text-meta font-bold">
         {out.length > 0
           ? t("weekend.squadFlaggedOut", {
               defaultValue:
@@ -312,8 +328,8 @@ export function SquadAvailabilityNotice({
               count: flagged.length,
             })}
       </p>
-      <p className="mt-0.5 text-[11px]">{names}</p>
-    </NeoCard>
+      <p className="mt-0.5 text-meta">{names}</p>
+    </Card>
   );
 }
 
@@ -330,7 +346,7 @@ export function SlotScoreCell({ score }: { score: SlotScoreRow }) {
   const { t } = useTranslation();
   if (score.state === "awaiting" || score.points === null) {
     return (
-      <span className="text-[11px] text-muted-foreground">
+      <span className="text-meta text-muted-foreground">
         {t("weekend.awaitingData", { defaultValue: "awaiting data" })}
       </span>
     );
@@ -351,17 +367,17 @@ export function SlotScoreCell({ score }: { score: SlotScoreRow }) {
     <span className="text-right">
       <span className="font-mono font-bold tabular-nums">{formatPoints(score.points)}</span>
       {score.zeroReason !== null && (
-        <span className="block text-[10px] font-mono uppercase text-muted-foreground">
+        <span className="block text-eyebrow font-mono uppercase text-muted-foreground">
           {t("weekend.didNotAppear", { defaultValue: "did not appear" })}
         </span>
       )}
       {score.mismatch && (
-        <span className="block text-[10px] font-mono uppercase text-muted-foreground">
+        <span className="block text-eyebrow font-mono uppercase text-muted-foreground">
           {t("weekend.mismatchApplied", { defaultValue: "×0.75 mismatch" })}
         </span>
       )}
       {crowdLabel !== null && (
-        <span className="block text-[10px] font-mono uppercase text-muted-foreground">
+        <span className="block text-eyebrow font-mono uppercase text-muted-foreground">
           {crowdLabel}
         </span>
       )}
@@ -375,15 +391,17 @@ export function ScoreHeader({ score }: { score: BudgetSquadScore }) {
   const { t } = useTranslation();
   const settled = score.state === "final" && score.awaitingSlots === 0;
   return (
-    <NeoCard color={settled ? "success" : "default"} shadow="lg" className="text-center py-3">
-      <p className="text-[10px] font-heading uppercase text-muted-foreground">
-        GW {score.gwNumber}
-      </p>
-      <p className="font-heading font-bold text-3xl tabular-nums">
+    <Card
+      elevation="lifted"
+      padding="sm"
+      className={cn("text-center", settled && "bg-success text-ink on-fill")}
+    >
+      <Eyebrow>GW {score.gwNumber}</Eyebrow>
+      <p className="font-heading font-bold text-title-lg tabular-nums">
         {formatPoints(score.total)}
-        <span className="text-sm ml-1">{t("weekend.pts", { defaultValue: "pts" })}</span>
+        <span className="text-body-sm ml-1">{t("weekend.pts", { defaultValue: "pts" })}</span>
       </p>
-      <p className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground mt-0.5">
+      <Eyebrow className="mt-0.5">
         {settled
           ? t("weekend.settled", { defaultValue: "settled" })
           : t("weekend.provisional", { defaultValue: "provisional" })}
@@ -392,8 +410,8 @@ export function ScoreHeader({ score }: { score: BudgetSquadScore }) {
             defaultValue: "{{count}} awaiting",
             count: score.awaitingSlots,
           })}`}
-      </p>
-    </NeoCard>
+      </Eyebrow>
+    </Card>
   );
 }
 
@@ -438,6 +456,7 @@ export function PickerPanel({
 }) {
   const { t } = useTranslation();
   const convex = useConvex();
+  const price = usePriceFormat();
 
   // O4: the slot asks its question in football, not in database.
   const prompt = browse
@@ -587,12 +606,12 @@ export function PickerPanel({
             {prompt}
           </DialogTitle>
         ) : (
-          <h2 className="font-heading font-bold text-lg" data-testid="picker-prompt">
+          <h2 className="font-heading text-title-sm font-bold" data-testid="picker-prompt">
             {prompt}
           </h2>
         )}
 
-        <NeoInput
+        <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t("weekend.searchMarket", {
@@ -612,25 +631,21 @@ export function PickerPanel({
             travel so nothing is cut off mid-press. */}
         <div
           ref={filterRowRef}
-          className="flex gap-1.5 overflow-x-auto overflow-y-hidden pb-1 shrink-0 min-w-0 w-full scrollbar-none"
+          className="flex gap-2 overflow-x-auto overflow-y-hidden pb-1 shrink-0 min-w-0 w-full scrollbar-none"
           data-testid="picker-filter-row"
         >
-          <NeoButton
-            variant={leagueFilter !== null ? "primary" : "outline"}
-            size="sm"
-            className="shrink-0"
+          <FilterChip
+            selected={leagueFilter !== null}
             data-testid="picker-league-chip"
             onClick={() => setFilterSheet("league")}
           >
             {leagueFilter === null
               ? t("weekend.filterLeague", { defaultValue: "League" })
               : leagueName(leagueFilter)}
-            <ChevronDown size={12} strokeWidth={3} className="ml-1" aria-hidden />
-          </NeoButton>
-          <NeoButton
-            variant={clubFilter !== null ? "primary" : "outline"}
-            size="sm"
-            className="shrink-0"
+            <ChevronDown size={16} strokeWidth={2.5} aria-hidden />
+          </FilterChip>
+          <FilterChip
+            selected={clubFilter !== null}
             data-testid="picker-club-chip"
             onClick={() => {
               setClubSearch("");
@@ -638,47 +653,39 @@ export function PickerPanel({
             }}
           >
             {clubFilterName ?? t("weekend.filterClub", { defaultValue: "Club" })}
-            <ChevronDown size={12} strokeWidth={3} className="ml-1" aria-hidden />
-          </NeoButton>
-          <NeoButton
-            variant={affordableOnly ? "primary" : "outline"}
-            size="sm"
-            className="shrink-0"
+            <ChevronDown size={16} strokeWidth={2.5} aria-hidden />
+          </FilterChip>
+          <FilterChip
+            selected={affordableOnly}
             onClick={() => setAffordableOnly((v) => !v)}
           >
-            ≤ {remaining.toFixed(1)}
-          </NeoButton>
-          <NeoButton
-            variant={showAll ? "primary" : "outline"}
-            size="sm"
-            className="shrink-0"
+            ≤ {price(remaining)}
+          </FilterChip>
+          <FilterChip
+            selected={showAll}
             aria-pressed={showAll}
             onClick={() => setShowAll((v) => !v)}
           >
             {t("weekend.showAll", { defaultValue: "Show all" })}
-          </NeoButton>
-          <NeoButton
-            variant={hideFlagged ? "primary" : "outline"}
-            size="sm"
-            className="shrink-0"
+          </FilterChip>
+          <FilterChip
+            selected={hideFlagged}
             data-testid="picker-hide-flagged"
             aria-pressed={hideFlagged}
             onClick={() => setHideFlagged((v) => !v)}
           >
             {t("weekend.hideFlagged", { defaultValue: "Hide flagged" })}
-          </NeoButton>
+          </FilterChip>
           {allPositions && (
-            <NeoButton
-              variant="primary"
-              size="sm"
-              className="shrink-0"
+            <FilterChip
+              selected
               data-testid="picker-all-positions-chip"
               aria-pressed
               onClick={() => setAllPositions(false)}
             >
               {t("weekend.allPositions", { defaultValue: "All positions" })}
-              <X size={12} strokeWidth={3} className="ml-1" aria-hidden />
-            </NeoButton>
+              <X size={16} strokeWidth={2.5} aria-hidden />
+            </FilterChip>
           )}
         </div>
 
@@ -694,30 +701,32 @@ export function PickerPanel({
             const noFixture = player.kickoffAt === null;
             const pickable = !started && !taken && !unpriced && !noFixture;
             return (
-              <NeoCard
+              <Card
                 key={player.playerId}
+                elevation="flat"
+                padding="sm"
                 data-testid="picker-row"
-                className={`flex items-center justify-between py-2 ${!pickable ? "opacity-45" : ""}`}
+                className={cn("flex items-center justify-between gap-2", !pickable && "opacity-45")}
               >
                 {/* FW-SCOUT: the row BODY opens the detail sheet; PICK stays
                     its own sibling button so the two taps can never collide.
                     A button here, not onClick on the NeoCard — the card
-                    would render as a <button> and nest the PICK button
+                    would render as a button element and nest the PICK button
                     inside it (invalid HTML, double-fire). */}
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
                   data-testid="picker-row-body"
-                  className="min-w-0 flex-1 text-left active:opacity-60"
+                  className="min-w-0 flex-1 flex-col items-stretch justify-center gap-0 border-0 px-0 py-0 text-left font-body font-normal hover:bg-transparent active:opacity-60"
                   onClick={() => setDetailPlayer(player.playerId)}
                 >
-                  <p className="font-heading font-bold text-sm truncate">
+                  <p className="font-heading font-bold text-body-sm truncate">
                     {player.name}
-                    <span className="ml-1.5 font-mono text-[10px] text-muted-foreground uppercase">
+                    <span className="ml-1.5 font-mono text-eyebrow text-muted-foreground uppercase">
                       {player.position}
                     </span>
                   </p>
                   <p
-                    className="text-[11px] text-muted-foreground truncate"
+                    className="text-meta text-muted-foreground truncate"
                     data-testid="picker-club-line"
                   >
                     {player.clubName ?? player.clubId}
@@ -750,70 +759,71 @@ export function PickerPanel({
                       </span>
                     )}
                   </p>
-                </button>
+                </Button>
                 <div className="flex items-center gap-2 shrink-0">
                   {player.availability != null && (
-                    <NeoBadge
-                      color={availabilityColor(player.availability.status)}
-                      size="sm"
+                    <Badge
+                      tone={availabilityColor(player.availability.status)}
                       data-testid="picker-availability-badge"
                     >
                       {availabilityBadgeLabel(player.availability.status, t)}
-                    </NeoBadge>
+                    </Badge>
                   )}
                   {noFixture && (
-                    <NeoBadge color="muted" size="sm">
+                    <Badge tone="muted">
                       {t("weekend.noFixture", { defaultValue: "No fixture" })}
-                    </NeoBadge>
+                    </Badge>
                   )}
                   {started && (
-                    <NeoBadge color="muted" size="sm">
+                    <Badge tone="muted">
                       {t("weekend.started", { defaultValue: "Started" })}
-                    </NeoBadge>
+                    </Badge>
                   )}
                   {taken && (
-                    <NeoBadge color="muted" size="sm">
+                    <Badge tone="muted">
                       {t("weekend.inSquad", { defaultValue: "In squad" })}
-                    </NeoBadge>
+                    </Badge>
                   )}
                   {unpriced ? (
-                    <NeoBadge color="yellow" size="sm">
+                    <Badge tone="yellow">
                       {t("weekend.unpriced", { defaultValue: "No price yet" })}
-                    </NeoBadge>
+                    </Badge>
                   ) : (
                     <span
                       className={`font-mono font-bold tabular-nums ${over ? "text-destructive" : ""}`}
                     >
-                      {player.price?.toFixed(1)}
+                      {player.price !== null && price(player.price)}
                     </span>
                   )}
                   {pickable && onPick !== undefined && (
-                    <NeoButton
-                      variant="primary"
+                    // One lime action per screen: the list's Pick buttons are
+                    // secondary; the name and price carry the row.
+                    <Button
+                      variant="secondary"
                       size="sm"
                       onClick={() => onPick(player.playerId)}
                     >
                       {t("weekend.pick", { defaultValue: "Pick" })}
-                    </NeoButton>
+                    </Button>
                   )}
                 </div>
-              </NeoCard>
+              </Card>
             );
           })}
           {results.length === MARKET_RESULT_CAP && (
-            <p className="text-[11px] text-muted-foreground text-center">
+            <p className="text-meta text-muted-foreground text-center">
               {t("weekend.narrowSearch", {
                 defaultValue: "Showing the top 130 — search to narrow.",
               })}
             </p>
           )}
           {results.length === 0 && (
-            <p className="text-[11px] text-muted-foreground text-center py-4">
+            <p className="text-meta text-muted-foreground text-center py-4">
               {showAll
                 ? t("weekend.noResults", { defaultValue: "Nobody matches those filters." })
                 : t("weekend.noEligibleResults", {
                     defaultValue:
-                      "Nobody with a fixture this weekend matches — Show all includes the rest.",
+                      "Nobody with a fixture this gameweek matches — Show all includes the rest.",
                   })}
             </p>
           )}
@@ -839,7 +849,7 @@ export function PickerPanel({
         >
 
           {filterSheet === "club" && (
-            <NeoInput
+            <Input
               value={clubSearch}
               onChange={(e) => setClubSearch(e.target.value)}
               data-testid="picker-club-search"
@@ -903,9 +913,9 @@ export function PickerPanel({
                   if (clubs.length === 0) return null;
                   return (
                     <div key={group.leagueId}>
-                      <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground pt-2 pb-1">
+                      <Eyebrow className="pt-2 pb-1 font-bold">
                         {leagueName(group.leagueId)}
-                      </p>
+                      </Eyebrow>
                       <div className="flex flex-col gap-1">
                         {clubs.map((club) => (
                           <SheetRow
@@ -932,28 +942,29 @@ export function PickerPanel({
               idle browse has no pre-filter to clear, so it hides there. */}
           {!browse && (
             <div className="border-t-2 border-border pt-3">
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                block
                 data-testid="picker-all-positions"
                 aria-pressed={allPositions}
                 onClick={() => {
                   setAllPositions((v) => !v);
                   setFilterSheet(null);
                 }}
-                className="flex w-full items-center justify-between gap-2 text-left active:opacity-60"
+                className="h-auto justify-between px-2 text-left"
               >
                 <span>
-                  <span className="block font-heading font-bold text-sm">
+                  <span className="block font-heading font-bold text-body-sm">
                     {t("weekend.allPositions", { defaultValue: "All positions" })}
                   </span>
-                  <span className="block text-[11px] text-muted-foreground">
+                  <span className="block text-meta font-normal text-muted-foreground">
                     {t("weekend.allPositionsBody", {
                       defaultValue: "Out-of-position picks carry the ×0.75 risk.",
                     })}
                   </span>
                 </span>
                 {allPositions && <Check size={16} strokeWidth={3} aria-hidden />}
-              </button>
+              </Button>
             </div>
           )}
         </Sheet>
@@ -1026,16 +1037,39 @@ function SheetRow({
   children: ReactNode;
 }) {
   return (
-    <button
-      type="button"
+    <Button
+      variant="secondary"
+      size="sm"
+      block
+      aria-pressed={selected}
       onClick={onClick}
-      className={`flex items-center justify-between gap-2 neo-border rounded px-3 py-2 text-left font-heading font-bold text-sm active:neo-shadow-pressed ${
-        selected ? "bg-primary text-primary-foreground" : "bg-card"
-      }`}
+      // Selected = the cream chip (Segmented's rule): lime stays for the action.
+      className={cn("justify-between shadow-none", selected && "bg-foreground text-background hover:bg-foreground")}
     >
       <span className="truncate">{children}</span>
-      {selected && <Check size={14} strokeWidth={3} className="shrink-0" aria-hidden />}
-    </button>
+      {selected && <Check size={16} strokeWidth={3} className="shrink-0" aria-hidden />}
+    </Button>
+  );
+}
+
+/** A picker filter toggle: 44px, secondary; on = the cream chip, never lime. */
+function FilterChip({
+  selected,
+  className,
+  ...props
+}: { selected: boolean } & React.ComponentProps<typeof Button>) {
+  return (
+    <Button
+      variant="secondary"
+      size="sm"
+      aria-pressed={props["aria-pressed"] ?? selected}
+      className={cn(
+        "shrink-0 gap-1 px-3 shadow-none",
+        selected && "bg-foreground text-background hover:bg-foreground",
+        className,
+      )}
+      {...props}
+    />
   );
 }
 
@@ -1067,6 +1101,7 @@ export function SquadView({
   onSwap: (slotIndex: number) => void;
 }) {
   const { t } = useTranslation();
+  const price = usePriceFormat();
   /** The chip whose detail sheet is open. */
   const [sheetSlot, setSheetSlot] = useState<number | null>(null);
   /** FW-SCOUT: the player whose full stats sheet is open (stacked over the
@@ -1124,13 +1159,13 @@ export function SquadView({
       <SquadAvailabilityNotice slots={squad.slots} />
 
       {swapSource !== null && (
-        <NeoCard color="yellow" className="py-2 text-center">
-          <p className="text-[11px] font-bold">
+        <Card padding="sm" className="bg-yellow text-center text-ink on-fill">
+          <p className="text-meta font-bold">
             {t("weekend.swapPrompt", {
               defaultValue: "Now tap where he goes — or tap him again to leave it.",
             })}
           </p>
-        </NeoCard>
+        </Card>
       )}
 
       <PitchView
@@ -1154,23 +1189,23 @@ export function SquadView({
                 {sheet.playerName ?? "…"}
               </DialogTitle>
               <div className="flex items-center gap-2 flex-wrap">
-                <NeoBadge color={sheet.isFinisher ? "pink" : "muted"} size="sm">
+                <Badge tone={sheet.isFinisher ? "pink" : "muted"}>
                   {sheet.isFinisher ? `F·${sheet.slotRole}` : sheet.slotRole}
-                </NeoBadge>
+                </Badge>
                 {sheet.locked && (
-                  <NeoBadge color="muted" size="sm">
+                  <Badge tone="muted">
                     {t("weekend.lockedBadge", { defaultValue: "Locked" })}
-                  </NeoBadge>
+                  </Badge>
                 )}
                 {sheetPrice !== null && (
-                  <span className="font-mono font-bold tabular-nums text-sm">
-                    {sheetPrice.toFixed(1)}
+                  <span className="font-mono font-bold tabular-nums text-body-sm">
+                    {price(sheetPrice)}
                   </span>
                 )}
               </div>
               {sheet.availability != null && (
                 <p
-                  className={`text-[11px] font-bold ${
+                  className={`text-meta font-bold ${
                     sheet.availability.status === "out"
                       ? "text-destructive"
                       : "text-foreground"
@@ -1181,7 +1216,7 @@ export function SquadView({
                 </p>
               )}
               {nominalMismatch(sheet, sheetNominal) && (
-                <p className="text-[11px] font-mono uppercase text-muted-foreground">
+                <p className="text-eyebrow font-mono uppercase text-muted-foreground">
                   {t("weekend.nominalMismatch", {
                     defaultValue: "listed {{pos}} — ×0.75 risk if the verdict agrees",
                     pos: sheetNominal,
@@ -1190,24 +1225,24 @@ export function SquadView({
               )}
               {sheetScore !== undefined && sheetScore.state !== "empty" && (
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                  <Eyebrow as="span" className="font-bold">
                     {t("weekend.thisGw", { defaultValue: "This gameweek" })}
-                  </span>
+                  </Eyebrow>
                   <SlotScoreCell score={sheetScore} />
                 </div>
               )}
-              <NeoButton
-                variant="outline"
+              <Button
+                variant="secondary"
                 size="sm"
                 data-testid="slot-sheet-stats"
                 onClick={() => setStatsPlayer(sheet.playerId)}
               >
                 {t("weekend.seasonStats", { defaultValue: "Season stats & form" })}
-              </NeoButton>
+              </Button>
               {editable && !sheet.locked ? (
                 <div className="flex gap-2">
-                  <NeoButton
-                    variant="outline"
+                  <Button
+                    variant="secondary"
                     size="sm"
                     className="flex-1"
                     aria-label={t("weekend.moveSlot", { defaultValue: "Move" })}
@@ -1217,11 +1252,11 @@ export function SquadView({
                       if (index !== null) onSwap(index);
                     }}
                   >
-                    <ArrowLeftRight size={14} strokeWidth={3} />
+                    <ArrowLeftRight size={16} strokeWidth={2.5} aria-hidden />
                     {t("weekend.moveSlot", { defaultValue: "Move" })}
-                  </NeoButton>
+                  </Button>
                   {!playersFixed && (
-                    <NeoButton
+                    <Button
                       variant="danger"
                       size="sm"
                       className="flex-1"
@@ -1232,14 +1267,14 @@ export function SquadView({
                         if (index !== null) onClear(index);
                       }}
                     >
-                      <X size={14} strokeWidth={3} />
+                      <X size={16} strokeWidth={2.5} aria-hidden />
                       {t("weekend.clearSlot", { defaultValue: "Clear" })}
-                    </NeoButton>
+                    </Button>
                   )}
                 </div>
               ) : (
                 sheet.locked && (
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-meta text-muted-foreground">
                     {t("weekend.lockedNote", {
                       defaultValue: "His match has kicked off — this one's played.",
                     })}
@@ -1587,38 +1622,39 @@ export default function BudgetSquadScreen() {
         {/* FW-RECEIPT: the newest settled weekend's receipt, reachable after
             its board closed (a settled gameweek is never the open one). */}
         {latestReceipt != null && (
-          <NeoCard
-            color="success"
+          <Card
+            interactive
+            padding="sm"
             onClick={() => navigate(SHELL_ROUTES.weekendReceipt(latestReceipt.gameweekId))}
-            className="flex items-center justify-between gap-2 py-2.5 text-left"
+            className="flex min-h-11 items-center justify-between gap-2 bg-success text-ink on-fill"
             data-testid="squad-receipt-chip"
           >
-            <p className="font-heading font-bold text-sm min-w-0 truncate">
+            <p className="font-heading font-bold text-body-sm min-w-0 truncate">
               {t("weekend.receiptChip", {
                 defaultValue: "Gameweek {{gw}} settled — your receipt is in",
                 gw: latestReceipt.gwNumber,
               })}
             </p>
             <ChevronRight size={16} strokeWidth={3} className="shrink-0" aria-hidden />
-          </NeoCard>
+          </Card>
         )}
         {gate.state === "checking" || (gate.state === "open" && squad === undefined) ? (
-          <NeoCard className="text-center py-6">
-            <p className="text-sm text-muted-foreground">
-              {t("common.loading", { defaultValue: "Loading…" })}
-            </p>
-          </NeoCard>
+          <div className="flex flex-col gap-4" aria-busy="true">
+            <span className="sr-only">{t("common.loading", { defaultValue: "Loading…" })}</span>
+            <Skeleton className="h-28" />
+            <Skeleton className="h-96" />
+          </div>
         ) : gate.state === "closed" ? (
-          <NeoCard className="text-center py-6">
+          <Card className="text-center py-6">
             <p className="font-heading font-bold">
               {t("weekend.noBoard", { defaultValue: "No board is open right now." })}
             </p>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-body-sm text-muted-foreground mt-1">
               {t("weekend.noBoardBody", {
                 defaultValue: "A fresh board opens for each weekend. Check back soon.",
               })}
             </p>
-          </NeoCard>
+          </Card>
         ) : squad === null ? (
           editable ? (
             <CreateSquadView
@@ -1655,13 +1691,13 @@ export default function BudgetSquadScreen() {
               }
             />
           ) : (
-            <NeoCard className="text-center py-6">
-              <p className="text-sm text-muted-foreground">
+            <Card className="text-center py-6">
+              <p className="text-body-sm text-muted-foreground">
                 {t("weekend.gwClosed", {
                   defaultValue: "This gameweek is closed — you didn't enter this one.",
                 })}
               </p>
-            </NeoCard>
+            </Card>
           )
         ) : (
           <>
@@ -1796,16 +1832,18 @@ export default function BudgetSquadScreen() {
           data-testid="market-panel"
           className="min-w-0 sticky top-2 max-h-[calc(100dvh-9rem)] flex flex-col"
         >
-          <NeoCard shadow="lg" className="flex flex-col min-h-0 overflow-hidden">
+          <Card elevation="lifted" className="flex flex-col min-h-0 overflow-hidden">
             {pickerSlot !== null && (
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="sm"
                 data-testid="market-panel-browse"
                 onClick={() => setPickerSlot(null)}
-                className="self-start mb-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground active:opacity-60"
+                className="-ml-2 mb-2 self-start px-2 text-muted-foreground"
               >
-                ← {t("weekend.backToBrowse", { defaultValue: "Back to browsing" })}
-              </button>
+                <ArrowLeft size={16} strokeWidth={2.5} aria-hidden />
+                {t("weekend.backToBrowse", { defaultValue: "Back to browsing" })}
+              </Button>
             )}
             <PickerPanel
               key={pickerSlot ?? "browse"}
@@ -1820,7 +1858,7 @@ export default function BudgetSquadScreen() {
               now={Date.now()}
               onPick={pickerSlot === null ? undefined : handlePick}
             />
-          </NeoCard>
+          </Card>
         </aside>
       )}
       </div>

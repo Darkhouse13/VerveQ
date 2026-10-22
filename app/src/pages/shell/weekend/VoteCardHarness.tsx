@@ -28,7 +28,7 @@ import { useTranslation } from "react-i18next";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { CROWD_UNDO_WINDOW_MS } from "../../../../convex/lib/fantasyCrowd";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
-import { NeoButton } from "@/components/neo/NeoButton";
+import { Button } from "@/components/ui/button";
 import {
   DoneView,
   FixturePickerView,
@@ -221,8 +221,9 @@ export default function VoteCardHarness() {
       // The toast is the surface here, not the page: the stack behind it is
       // the pair the voter has already moved on to when the offer appears.
       <div className="flex flex-col gap-3">
-        <NeoButton
-          size="full"
+        <Button
+          size="lg"
+          block
           data-testid="harness-undo-fire"
           onClick={() =>
             showUndoToast(
@@ -233,7 +234,7 @@ export default function VoteCardHarness() {
           }
         >
           Fire the undo toast
-        </NeoButton>
+        </Button>
         <VoteStackView
           serve={HARNESS_PAIR}
           busy={false}
@@ -259,7 +260,7 @@ export default function VoteCardHarness() {
   return (
     <ShellLayout
       theme="theme-weekend"
-      title={t("weekend.voteTitle", { defaultValue: "The eye test" })}
+      title={t("weekend.voteTitle", { defaultValue: "Rate the weekend" })}
       back
       onBack={() => navigate(SHELL_ROUTES.weekend)}
       scroll

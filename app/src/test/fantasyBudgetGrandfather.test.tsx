@@ -38,23 +38,23 @@ const budget = (over: Partial<BudgetBreakdown>): BudgetBreakdown => ({
 describe("budget bar — FW-REPRICE R1 grandfathering", () => {
   it("measures an ordinary squad against the 91.0 budget", () => {
     render(<BudgetBar budget={budget({ live: 84.5, total: 84.5 })} />);
-    expect(screen.getByText("84.5")).toBeInTheDocument();
-    expect(screen.getByText(/\/ 91\.0/)).toBeInTheDocument();
-    expect(screen.getByText("6.5 left")).toBeInTheDocument();
+    expect(screen.getByText("£84.5m")).toBeInTheDocument();
+    expect(screen.getByText(/\/ £91\.0m/)).toBeInTheDocument();
+    expect(screen.getByText("£6.5m left")).toBeInTheDocument();
     expect(screen.queryByText(/stays legal/)).not.toBeInTheDocument();
   });
 
   it("measures a grandfathered squad against its own allowance, not the budget", () => {
     render(<BudgetBar budget={budget({ live: 93.5, total: 93.5, allowance: 93.5 })} />);
-    expect(screen.getByText(/\/ 93\.5/)).toBeInTheDocument();
+    expect(screen.getByText(/\/ £93\.5m/)).toBeInTheDocument();
     // headroom is zero, never negative
-    expect(screen.getByText("0.0 left")).toBeInTheDocument();
+    expect(screen.getByText("£0.0m left")).toBeInTheDocument();
   });
 
   it("says why the squad is over budget and that it is still legal", () => {
     render(<BudgetBar budget={budget({ live: 93.5, total: 93.5, allowance: 93.5 })} />);
     expect(
-      screen.getByText(/New prices put this squad over the 91\.0 budget\. It stays legal/),
+      screen.getByText(/New prices put this squad over the £91\.0m budget\. It stays legal/),
     ).toBeInTheDocument();
   });
 
@@ -69,7 +69,7 @@ describe("budget bar — FW-REPRICE R1 grandfathering", () => {
     // A server that predates `allowance` simply omits it.
     const legacy = { committed: 0, live: 80, total: 80, limit: 91.0 } as BudgetBreakdown;
     render(<BudgetBar budget={legacy} />);
-    expect(screen.getByText(/\/ 91\.0/)).toBeInTheDocument();
-    expect(screen.getByText("11.0 left")).toBeInTheDocument();
+    expect(screen.getByText(/\/ £91\.0m/)).toBeInTheDocument();
+    expect(screen.getByText("£11.0m left")).toBeInTheDocument();
   });
 });

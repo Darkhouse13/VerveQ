@@ -5,9 +5,10 @@ import { CalendarRange, ChevronDown, ChevronUp, Medal, Share2, Sparkles, Swords,
 import { notify } from "@/lib/notify";
 import { api } from "../../../../convex/_generated/api";
 import { formatPoints } from "../../../../convex/lib/fantasyScoring";
-import { NeoBadge } from "@/components/neo/NeoBadge";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { NeoCard } from "@/components/neo/NeoCard";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Segmented } from "@/components/ui/segmented";
+import { Card } from "@/components/ui/card";
 
 type Dashboard = NonNullable<FunctionReturnType<typeof api.fantasyCrewDashboard.getDashboard>>;
 type Scope = Dashboard["season"];
@@ -22,37 +23,37 @@ function RaceCard({ scope }: { scope: Scope }) {
   const me = scope.me;
   if (me === null || me.total === null) return null;
   return (
-    <NeoCard color="primary" shadow="lg" className="py-3">
-      <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] opacity-70">{t("weekend.yourCrewRace", { defaultValue: "Your crew race" })}</p>
+    <Card elevation="lifted" className="bg-orange text-ink on-fill py-3">
+      <p className="font-mono text-eyebrow font-bold uppercase text-muted-foreground">{t("weekend.yourCrewRace", { defaultValue: "Your crew race" })}</p>
       <div className="mt-2 grid grid-cols-3 gap-2 text-center">
         <div>
           <p className="font-heading font-bold text-2xl">#{me.rank}</p>
-          <p className="text-[10px] opacity-70">{t("weekend.position", { defaultValue: "position" })}</p>
+          <p className="text-meta text-muted-foreground">{t("weekend.position", { defaultValue: "position" })}</p>
         </div>
         <div>
           <p className="font-mono font-bold text-lg">{me.gapAbove === null ? "—" : formatPoints(me.gapAbove)}</p>
-          <p className="text-[10px] opacity-70">{t("weekend.nextPlace", { defaultValue: "to next" })}</p>
+          <p className="text-meta text-muted-foreground">{t("weekend.nextPlace", { defaultValue: "to next" })}</p>
         </div>
         <div>
           <p className="font-mono font-bold text-lg">{movementLabel(me.movement) ?? "—"}</p>
-          <p className="text-[10px] opacity-70">{t("weekend.movement", { defaultValue: "movement" })}</p>
+          <p className="text-meta text-muted-foreground">{t("weekend.movement", { defaultValue: "movement" })}</p>
         </div>
       </div>
-      <p className="mt-2 text-center text-[10px] opacity-75">
+      <p className="mt-2 text-center text-meta text-muted-foreground">
         {t("weekend.appearancesAverage", { defaultValue: "{{appearances}} appearances · {{average}} average", appearances: me.appearances, average: me.average === null ? "—" : formatPoints(me.average) })}
         {me.gapBelow === null ? "" : ` · ${t("weekend.ahead", { defaultValue: "{{points}} ahead", points: formatPoints(me.gapBelow) })}`}
       </p>
-    </NeoCard>
+    </Card>
   );
 }
 
 function Standings({ scope }: { scope: Scope }) {
   const { t } = useTranslation("shell");
   if (scope.rows.length === 0) {
-    return <NeoCard className="py-4 text-center text-sm text-muted-foreground">{t("weekend.standingsEmpty", { defaultValue: "Standings appear once a weekend has been drafted and scored." })}</NeoCard>;
+    return <Card className="py-4 text-center text-sm text-muted-foreground">{t("weekend.standingsEmpty", { defaultValue: "Standings appear once a weekend has been drafted and scored." })}</Card>;
   }
   return (
-    <NeoCard className="p-0 overflow-hidden">
+    <Card className="p-0 overflow-hidden">
       {scope.rows.map((row, index) => (
         <div key={row.userId} className={`px-3 py-2.5 ${index > 0 ? "border-t-2 border-border" : ""}`}>
           <div className="flex items-center justify-between gap-2">
@@ -62,30 +63,30 @@ function Standings({ scope }: { scope: Scope }) {
               </span>
               <span className="font-heading font-bold text-sm truncate">{row.name}</span>
               {movementLabel(row.movement) !== null && (
-                <span className={`font-mono text-[10px] ${row.movement! > 0 ? "text-success" : "text-destructive"}`}>
+                <span className={`font-mono text-eyebrow ${row.movement! > 0 ? "text-success" : "text-destructive"}`}>
                   {movementLabel(row.movement)}
                 </span>
               )}
             </div>
             <div className="text-right shrink-0">
               {row.total === null ? (
-                <p className="text-[11px] text-muted-foreground">{row.provisional ? t("weekend.awaitingData", { defaultValue: "awaiting data" }) : t("weekend.noDraftsYet", { defaultValue: "no drafts yet" })}</p>
+                <p className="text-meta text-muted-foreground">{row.provisional ? t("weekend.awaitingData", { defaultValue: "awaiting data" }) : t("weekend.noDraftsYet", { defaultValue: "no drafts yet" })}</p>
               ) : (
                 <>
                   <p className="font-mono font-bold">{formatPoints(row.total)}</p>
-                  <p className="text-[9px] text-muted-foreground">{t("weekend.appsAverage", { defaultValue: "{{apps}} apps · {{average}} avg", apps: row.appearances, average: row.average === null ? "—" : formatPoints(row.average) })}</p>
+                  <p className="text-meta text-muted-foreground">{t("weekend.appsAverage", { defaultValue: "{{apps}} apps · {{average}} avg", apps: row.appearances, average: row.average === null ? "—" : formatPoints(row.average) })}</p>
                 </>
               )}
             </div>
           </div>
           {row.provisional && (
-            <p className="ml-10 text-[9px] uppercase font-mono text-muted-foreground">
+            <p className="ml-10 text-eyebrow uppercase font-mono text-muted-foreground">
               {t("weekend.provisional", { defaultValue: "provisional" })}
             </p>
           )}
         </div>
       ))}
-    </NeoCard>
+    </Card>
   );
 }
 
@@ -102,13 +103,13 @@ function TrophyCabinet({ scope }: { scope: Scope }) {
   ];
   return (
     <div>
-      <p className="mb-2 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">{t("weekend.trophyCabinet", { defaultValue: "Trophy cabinet" })}</p>
+      <p className="mb-2 font-mono text-eyebrow font-bold uppercase text-muted-foreground">{t("weekend.trophyCabinet", { defaultValue: "Trophy cabinet" })}</p>
       <div className="grid grid-cols-2 gap-2">
         {items.map((item) => (
-          <NeoCard key={item.label} className="py-2.5 text-center">
+          <Card key={item.label} className="py-2.5 text-center">
             <p className="font-heading font-bold text-xl">{item.value}</p>
-            <p className="text-[10px] text-muted-foreground">{item.label}</p>
-          </NeoCard>
+            <p className="text-meta text-muted-foreground">{item.label}</p>
+          </Card>
         ))}
       </div>
     </div>
@@ -121,23 +122,23 @@ function WeeklyResults({ scope }: { scope: Scope }) {
   if (scope.weeks.length === 0) return null;
   return (
     <div>
-      <p className="mb-2 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">{t("weekend.weeklyResults", { defaultValue: "Weekly results" })}</p>
+      <p className="mb-2 font-mono text-eyebrow font-bold uppercase text-muted-foreground">{t("weekend.weeklyResults", { defaultValue: "Weekly results" })}</p>
       <div className="flex flex-col gap-2">
         {scope.weeks.map((week) => {
           const expanded = open === week.roomId;
           return (
-            <NeoCard key={week.roomId} className="py-2.5">
-              <button type="button" className="flex w-full items-center justify-between text-left" onClick={() => setOpen(expanded ? null : week.roomId)}>
+            <Card key={week.roomId} className="py-2.5">
+              <Button variant="ghost" block aria-expanded={expanded} className="h-auto justify-between px-0 text-left font-body font-normal hover:bg-transparent" onClick={() => setOpen(expanded ? null : week.roomId)}>
                 <span>
                   <span className="font-heading font-bold">GW {week.gwNumber}</span>
-                  <span className="ml-2 text-[10px] text-muted-foreground">
+                  <span className="ml-2 text-meta text-muted-foreground">
                     {week.state === "final"
                       ? t("weekend.final", { defaultValue: "Final" })
                       : t("weekend.provisional", { defaultValue: "Provisional" })}
                   </span>
                 </span>
                 {expanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
-              </button>
+              </Button>
               {expanded && (
                 <div className="mt-2 border-t-2 border-border pt-2">
                   {week.rows.map((row) => (
@@ -148,7 +149,7 @@ function WeeklyResults({ scope }: { scope: Scope }) {
                   ))}
                 </div>
               )}
-            </NeoCard>
+            </Card>
           );
         })}
       </div>
@@ -180,15 +181,15 @@ function Recap({ dashboard }: { dashboard: Dashboard }) {
     }
   };
   return (
-    <NeoCard color="yellow" shadow="lg" className="py-3">
+    <Card elevation="lifted" className="bg-yellow text-ink on-fill py-3">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] opacity-70">
+          <p className="font-mono text-eyebrow font-bold uppercase text-muted-foreground">
             {t("weekend.gameweekRecap", { defaultValue: "GW {{gw}} recap", gw: recap.gwNumber })}
           </p>
           <p className="font-heading font-bold text-lg">{t("weekend.weekendWrapped", { defaultValue: "Weekend wrapped" })}</p>
         </div>
-        <NeoButton variant="secondary" size="sm" onClick={() => void share()}><Share2 size={13} className="mr-1" />{t("common.share", { defaultValue: "Share" })}</NeoButton>
+        <Button variant="secondary" size="sm" onClick={() => void share()}><Share2 size={13} className="mr-1" />{t("common.share", { defaultValue: "Share" })}</Button>
       </div>
       <div className="mt-2 flex flex-col gap-1 text-xs">
         {recap.podium.map((row) => <p key={`${row.rank}:${row.name}`}><Medal size={12} className="mr-1 inline" />#{row.rank} {row.name} · {formatPoints(row.points)}</p>)}
@@ -214,7 +215,7 @@ function Recap({ dashboard }: { dashboard: Dashboard }) {
           </p>
         )}
       </div>
-    </NeoCard>
+    </Card>
   );
 }
 
@@ -222,36 +223,55 @@ export function CrewCompetitionPanel({ dashboard }: { dashboard: Dashboard | nul
   const { t } = useTranslation("shell");
   const [tab, setTab] = useState<"season" | "allTime">("season");
   const [section, setSection] = useState<"standings" | "record" | "results">("standings");
-  if (dashboard === undefined) return <NeoCard className="py-5 text-center text-sm text-muted-foreground">{t("weekend.loadingStandings", { defaultValue: "Loading standings…" })}</NeoCard>;
+  if (dashboard === undefined) return <Card className="py-5 text-center text-sm text-muted-foreground">{t("weekend.loadingStandings", { defaultValue: "Loading standings…" })}</Card>;
   if (dashboard === null) return null;
   const scope = dashboard[tab];
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-3 gap-2" role="tablist" aria-label={t("weekend.crewCompetition", { defaultValue: "Crew competition" })}>
-        <NeoButton variant={section === "standings" ? "primary" : "outline"} size="sm" onClick={() => setSection("standings")}>
-          {t("weekend.standings", { defaultValue: "Standings" })}
-        </NeoButton>
-        <NeoButton variant={section === "record" ? "primary" : "outline"} size="sm" onClick={() => setSection("record")}>
-          {t("weekend.myRecord", { defaultValue: "My record" })}
-        </NeoButton>
-        <NeoButton variant={section === "results" ? "primary" : "outline"} size="sm" onClick={() => setSection("results")}>
-          {t("weekend.weekends", { defaultValue: "Weekends" })}
-        </NeoButton>
-      </div>
+      <Segmented<"standings" | "record" | "results">
+        block
+        aria-label={t("weekend.crewCompetition", { defaultValue: "Crew competition" })}
+        value={section}
+        onChange={setSection}
+        options={[
+          { value: "standings", label: t("weekend.standings", { defaultValue: "Standings" }) },
+          { value: "record", label: t("weekend.myRecord", { defaultValue: "My record" }) },
+          { value: "results", label: t("weekend.weekends", { defaultValue: "Weekends" }) },
+        ]}
+        className="[&_button]:px-2"
+      />
 
       {section === "standings" && (
         <>
-          <div className="grid grid-cols-2 gap-2">
-            <NeoButton variant={tab === "season" ? "primary" : "outline"} size="sm" onClick={() => setTab("season")}>
-              <CalendarRange size={14} className="mr-1" />{t("weekend.thisSeason", { defaultValue: "This season" })}
-            </NeoButton>
-            <NeoButton variant={tab === "allTime" ? "primary" : "outline"} size="sm" onClick={() => setTab("allTime")}>
-              <Trophy size={14} className="mr-1" />{t("weekend.allTime", { defaultValue: "All time" })}
-            </NeoButton>
-          </div>
+          <Segmented<"season" | "allTime">
+            block
+            aria-label={t("weekend.standings", { defaultValue: "Standings" })}
+            value={tab}
+            onChange={setTab}
+            options={[
+              {
+                value: "season",
+                label: (
+                  <span className="inline-flex items-center gap-1.5">
+                    <CalendarRange size={16} aria-hidden />
+                    {t("weekend.thisSeason", { defaultValue: "This season" })}
+                  </span>
+                ),
+              },
+              {
+                value: "allTime",
+                label: (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Trophy size={16} aria-hidden />
+                    {t("weekend.allTime", { defaultValue: "All time" })}
+                  </span>
+                ),
+              },
+            ]}
+          />
           <RaceCard scope={scope} />
           <div>
-            <p className="mb-2 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">{tab === "season" ? dashboard.currentSeason : t("weekend.allTimeStandings", { defaultValue: "All-time standings" })}</p>
+            <p className="mb-2 font-mono text-eyebrow font-bold uppercase text-muted-foreground">{tab === "season" ? dashboard.currentSeason : t("weekend.allTimeStandings", { defaultValue: "All-time standings" })}</p>
             <Standings scope={scope} />
           </div>
         </>
@@ -262,15 +282,15 @@ export function CrewCompetitionPanel({ dashboard }: { dashboard: Dashboard | nul
           <TrophyCabinet scope={scope} />
           {dashboard.rivalries.length > 0 && (
             <div>
-              <p className="mb-2 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">{t("weekend.yourRivalries", { defaultValue: "Your rivalries" })}</p>
-              <NeoCard className="py-2">
+              <p className="mb-2 font-mono text-eyebrow font-bold uppercase text-muted-foreground">{t("weekend.yourRivalries", { defaultValue: "Your rivalries" })}</p>
+              <Card className="py-2">
                 {dashboard.rivalries.slice(0, 5).map((rival) => (
                   <div key={rival.userId} className="flex items-center justify-between py-1.5 text-xs">
                     <span className="font-heading font-bold"><Swords size={12} className="mr-1 inline" />{rival.name}</span>
                     <span className="font-mono">{rival.wins}–{rival.losses}–{rival.draws}{rival.streak === null ? "" : ` · ${rival.streak.result} ${rival.streak.length}`}</span>
                   </div>
                 ))}
-              </NeoCard>
+              </Card>
             </div>
           )}
         </>

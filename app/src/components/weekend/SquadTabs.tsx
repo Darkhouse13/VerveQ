@@ -1,8 +1,11 @@
 /**
  * FW-RECEIPT — the squad screen's two-tab switch: the squad itself, and its
- * weekend ledger. A plain segmented control in the Neo language; no motion.
+ * weekend ledger. Segmented's look (44px tabs, the selected tab a cream chip,
+ * never lime) with a test id per tab, which Segmented's options don't carry.
  */
 import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function SquadTabs<T extends string>({
   tabs,
@@ -19,23 +22,26 @@ export function SquadTabs<T extends string>({
       role="tablist"
       data-testid="squad-tabs"
     >
-      {tabs.map((tab) => (
-        <button
-          key={tab.key}
-          type="button"
-          role="tab"
-          aria-selected={active === tab.key}
-          data-testid={tab.testid}
-          onClick={() => onSelect(tab.key)}
-          className={`font-mono text-[11px] font-bold uppercase tracking-[0.14em] rounded-md py-1.5 px-2 ${
-            active === tab.key
-              ? "bg-primary text-primary-foreground neo-border"
-              : "text-muted-foreground active:opacity-60"
-          }`}
-        >
-          {tab.label}
-        </button>
-      ))}
+      {tabs.map((tab) => {
+        const selected = active === tab.key;
+        return (
+          <Button
+            key={tab.key}
+            variant="ghost"
+            size="sm"
+            role="tab"
+            aria-selected={selected}
+            data-testid={tab.testid}
+            onClick={() => onSelect(tab.key)}
+            className={cn(
+              "rounded-md border-0 px-2",
+              selected && "bg-foreground text-background hover:bg-foreground",
+            )}
+          >
+            {tab.label}
+          </Button>
+        );
+      })}
     </div>
   );
 }

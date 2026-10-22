@@ -341,6 +341,9 @@
     "later": "Quizá más tarde"
   },
   "weekend": {
+    "countdownDays": "{{d}} d {{h}} h",
+    "priceAmount": "{{amount}} M£",
+    "buildLine": "{{n}} jugadores · presupuesto de {{budget}}",
     "addGames": "Añadir partidos",
     "addGamesShort": "+ añadir partidos",
     "allClubs": "Todos los clubes",
@@ -558,7 +561,7 @@
     "pts": "pts",
     "pulseLine": "{{inPlay}} en juego · {{played}} jugados · {{scored}} puntuados",
     "quorumNote": "quórum {{quorum}} · 60% para aprobar",
-    "railTitle": "Este fin de semana",
+    "railTitle": "Esta jornada",
     "rank": "Puesto",
     "rankOf": "de {{count}}",
     "ready": "Listo",
@@ -617,7 +620,7 @@
     "sheetTitle": "Tu alineación",
     "showAll": "Mostrar todo",
     "showLog": "Mostrar registro del draft",
-    "slots": "camisetas",
+    "slots": "jugadores",
     "slotsAwaiting": "{{count}} esperando",
     "slotsAwaitingBody": "{{count}} esperando · los puntos llegan ~2 h después del final",
     "snakeNote": "Orden serpiente — el último elige dos veces.",
@@ -647,9 +650,9 @@
     "tenProgress": "{{voted}} de {{goal}}",
     "thisGw": "Esta jornada",
     "thisSeason": "Esta temporada",
-    "thisWeekend": "Este fin de semana",
-    "thisWeekendLine": "Este fin de semana: {{leagues}}",
-    "thisWeekendMany": "Este fin de semana: {{n}} ligas",
+    "thisWeekend": "Esta jornada",
+    "thisWeekendLine": "Esta jornada: {{leagues}}",
+    "thisWeekendMany": "Esta jornada: {{n}} ligas",
     "tied": "empatado",
     "topHalfStreak": "Racha en la mitad superior: {{count}}",
     "topPercent": "Top {{percent}}%",
@@ -675,7 +678,7 @@
     "voteNoBoardShort": "No hay tablero abierto ahora mismo.",
     "voteNoGames": "Entonces no hay nada que juzgar.",
     "voteNoGamesBody": "No elegiste partidos este fin de semana — es una respuesta válida. Añade uno cuando lo veas.",
-    "voteTitle": "La prueba del ojo",
+    "voteTitle": "Valora el fin de semana",
     "voteYes": "Sí jugó",
     "votedBadge": "votaste {{v}}",
     "votingClosed": "Ahora mismo la votación está cerrada.",
@@ -698,7 +701,7 @@
     "claim_failed": "rechazada",
     "claim_died": "archivada",
     "claim_expired": "caducada"
-    ,"homeEyebrow": "Nuevo modo · En directo"
+    ,"homeEyebrow": "Fantasy · esta jornada"
     ,"homeBulletLeagues": "Ocho ligas, un equipo"
     ,"homeBulletCrowd": "El público valora a los jugadores, no un algoritmo"
     ,"homeBulletFresh": "Draft nuevo cada semana, sin temporada eterna"
@@ -745,7 +748,7 @@
     ,"enterLiveDraft": "Entrar al draft en directo"
     ,"enterLobby": "Entrar a la sala de espera"
     ,"gameweek": "Jornada"
-    ,"howBudgetBody": "Forma tus 13 con un presupuesto de 91,0. Los precios van de 4,0 a 13,0 en pasos de medio punto, iguales para todos y fijos durante la jornada."
+    ,"howBudgetBody": "Forma tus 13 jugadores con un presupuesto de 91,0 M£. Los precios van de 4,0 M£ a 13,0 M£ en pasos de 0,5 M£, iguales para todos y fijos durante la jornada."
     ,"howBudgetLabel": "Equipo con presupuesto."
     ,"howCardsBody": "amarilla −1, roja −4 (una expulsión por doble amarilla suma −6)."
     ,"howCardsLabel": "Tarjetas:"

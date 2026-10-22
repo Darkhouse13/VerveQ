@@ -20,7 +20,7 @@ import { notify } from "@/lib/notify";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import type { SlotRole } from "../../../../convex/lib/fantasyConstants";
-import { NeoCard } from "@/components/neo/NeoCard";
+import { Card } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -212,22 +212,22 @@ export default function CrewSheetScreen() {
     >
       <div className="flex flex-col gap-4 md:max-w-md md:mx-auto md:w-full">
         {gate === "checking" || (gate === "open" && sheet === undefined) ? (
-          <NeoCard className="text-center py-6">
+          <Card className="text-center py-6">
             <p className="text-sm text-muted-foreground">
               {t("common.loading", { defaultValue: "Loading…" })}
             </p>
-          </NeoCard>
+          </Card>
         ) : gate === "closed" || sheet === null ? (
-          <NeoCard className="text-center py-6">
+          <Card className="text-center py-6">
             <p className="font-heading font-bold">
               {t("weekend.noSheet", {
                 defaultValue: "No sheet of yours here — it appears once your draft completes.",
               })}
             </p>
-          </NeoCard>
+          </Card>
         ) : sheet !== undefined ? (
           <>
-            <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-muted-foreground text-center">
+            <p className="text-eyebrow font-mono uppercase text-muted-foreground text-center">
               GW {sheet.gwNumber} ·{" "}
               {t("weekend.sheetNote", {
                 defaultValue: "the 13 are the 13 — arrange, don't re-man",

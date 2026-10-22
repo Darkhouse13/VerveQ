@@ -150,11 +150,11 @@ test("FW-POLISH-3: GW label, crew deletion, slot-aware picker, leagues strip", a
   // O4: the strip lives on the squad screen; 4+ leagues collapse to a count.
   const strip = page.getByTestId("squad-leagues-strip");
   await expect(strip).toBeVisible();
-  const joined = `This weekend: ${inWindow.map((id) => LEAGUE_NAMES[id]).join(" + ")}`;
+  const joined = `This gameweek: ${inWindow.map((id) => LEAGUE_NAMES[id]).join(" + ")}`;
   if (inWindow.length <= 3) {
     await expect(strip).toContainText(joined);
   } else {
-    await expect(strip).toContainText(`This weekend: ${inWindow.length} leagues`);
+    await expect(strip).toContainText(`This gameweek: ${inWindow.length} leagues`);
     await strip.click();
     await expect(strip).toContainText(joined);
     await page.screenshot({ path: "e2e/artifacts/fwp3-squad-strip-expanded-380.png" });
@@ -172,7 +172,7 @@ test("FW-POLISH-3: GW label, crew deletion, slot-aware picker, leagues strip", a
   const dialog = page.getByRole("dialog").filter({ has: page.getByTestId("picker-prompt") });
   await expect(dialog.getByRole("button", { name: "ALL", exact: true })).toHaveCount(0);
   await expect(dialog.getByRole("button", { name: "DEF", exact: true })).toHaveCount(0);
-  await expect(dialog.getByText(/This weekend:/)).toHaveCount(0);
+  await expect(dialog.getByText(/This gameweek:/)).toHaveCount(0);
   await expectNoHorizontalScroll(page, "picker (GK slot)");
   await page.waitForTimeout(450); // let the dialog's slide-in settle for the artifact
   await page.screenshot({ path: "e2e/artifacts/fwp3-picker-gk-380.png" });

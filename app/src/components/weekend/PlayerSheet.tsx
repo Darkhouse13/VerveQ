@@ -25,7 +25,8 @@ import { useQuery } from "convex/react";
 import type { ReactNode } from "react";
 import { api } from "../../../convex/_generated/api";
 import { formatPoints } from "../../../convex/lib/fantasyScoring";
-import { NeoBadge } from "@/components/neo/NeoBadge";
+import { Badge } from "@/components/ui/badge";
+import { usePriceFormat } from "@/lib/weekendPrice";
 import { Sheet } from "@/components/ui/sheet";
 import { track } from "@/lib/analytics";
 import {
@@ -94,6 +95,7 @@ export function PlayerSheet({
 }) {
   const { t } = useTranslation();
   const card = usePlayerCard(playerId);
+  const price = usePriceFormat();
 
   useEffect(() => {
     if (playerId !== null) track("weekend_player_opened", { surface });
@@ -126,24 +128,24 @@ export function PlayerSheet({
       title={card == null ? "…" : card.name}
       badge={
         card == null ? undefined : card.price === null ? (
-          <NeoBadge color="yellow" size="sm">
+          <Badge tone="yellow">
             {t("weekend.unpriced", { defaultValue: "No price yet" })}
-          </NeoBadge>
+          </Badge>
         ) : (
-          <span className="neo-border rounded bg-card font-mono font-bold text-lg px-2 py-0.5 tabular-nums">
-            {card.price.toFixed(1)}
+          <span className="neo-border rounded bg-card px-2 py-0.5 font-mono text-title-sm font-bold tabular-nums">
+            {price(card.price)}
           </span>
         )
       }
     >
       {clockLine}
       {loading && (
-        <p className="text-[11px] text-muted-foreground" data-testid="player-sheet-loading">
+        <p className="text-meta text-muted-foreground" data-testid="player-sheet-loading">
           {t("weekend.loading", { defaultValue: "Loading…" })}
         </p>
       )}
       {card === null && (
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-meta text-muted-foreground">
           {t("weekend.playerGone", { defaultValue: "This player is no longer on record." })}
         </p>
       )}
@@ -157,7 +159,7 @@ export function PlayerSheet({
             );
             return provenance === null ? null : (
               <p
-                className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground"
+                className="font-mono text-eyebrow uppercase text-muted-foreground"
                 data-testid="player-sheet-pool"
               >
                 {provenance}
@@ -210,14 +212,14 @@ function AvailabilityBlock({ card }: { card: Card }) {
           className="flex items-start justify-between gap-2"
           data-testid="player-sheet-availability"
         >
-          <p className="text-[11px] font-bold">
+          <p className="text-meta font-bold">
             {availabilityLine(card.availability, t)}
           </p>
-          <NeoBadge color={availabilityColor(card.availability.status)} size="sm">
+          <Badge tone={availabilityColor(card.availability.status)}>
             {availabilityBadgeLabel(card.availability.status, t)}
-          </NeoBadge>
+          </Badge>
         </div>
-        <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+        <p className="mt-0.5 font-mono text-eyebrow uppercase text-muted-foreground">
           {t("weekend.availabilityRead", {
             defaultValue: "Feed read {{when}}",
             when: stamped,
@@ -230,7 +232,7 @@ function AvailabilityBlock({ card }: { card: Card }) {
   return (
     <Section label={label}>
       <p
-        className="text-[11px] text-muted-foreground"
+        className="text-meta text-muted-foreground"
         data-testid="player-sheet-availability"
       >
         {card.availabilityReported
@@ -252,8 +254,8 @@ function WeekendBlock({ card }: { card: Card }) {
   const { t } = useTranslation();
   if (card.weekend === null) {
     return (
-      <Section label={t("weekend.thisWeekend", { defaultValue: "This weekend" })}>
-        <p className="text-[11px] text-muted-foreground">
+      <Section label={t("weekend.thisWeekend", { defaultValue: "This gameweek" })}>
+        <p className="text-meta text-muted-foreground">
           {t("weekend.noFixtureLong", { defaultValue: "No fixture this weekend." })}
         </p>
       </Section>
@@ -267,23 +269,23 @@ function WeekendBlock({ card }: { card: Card }) {
     minute: "2-digit",
   });
   return (
-    <Section label={t("weekend.thisWeekend", { defaultValue: "This weekend" })}>
+    <Section label={t("weekend.thisWeekend", { defaultValue: "This gameweek" })}>
       <div className="flex items-center justify-between gap-2" data-testid="player-sheet-weekend">
         <p className="font-heading font-bold text-sm truncate">
           {isHome ? "vs " : "at "}
           {opponentName ?? t("weekend.unknownClub", { defaultValue: "(unnamed club)" })}
-          <span className="ml-1.5 font-mono text-[10px] text-muted-foreground uppercase">
+          <span className="ml-1.5 font-mono text-eyebrow text-muted-foreground uppercase">
             {isHome ? "(H)" : "(A)"}
           </span>
         </p>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="font-mono text-[11px] tabular-nums text-muted-foreground">{kickoff}</span>
+          <span className="font-mono text-eyebrow tabular-nums text-muted-foreground">{kickoff}</span>
           {started ? (
-            <NeoBadge color="muted" size="sm">
+            <Badge tone="muted">
               {fixtureStatus === "finished"
                 ? t("weekend.finished", { defaultValue: "FT" })
                 : t("weekend.lockedBadge", { defaultValue: "Locked" })}
-            </NeoBadge>
+            </Badge>
           ) : null}
         </div>
       </div>
@@ -314,7 +316,7 @@ function SeasonBlock({
     if (current) return null; // no current-season row yet — say nothing, not "0"
     return (
       <Section label={`${label} · ${season}`}>
-        <p className="text-[11px] text-muted-foreground" data-testid="player-sheet-no-season">
+        <p className="text-meta text-muted-foreground" data-testid="player-sheet-no-season">
           {entry?.partial != null
             ? t("weekend.partialSeason", {
                 defaultValue:
@@ -334,7 +336,7 @@ function SeasonBlock({
   if (current && line.minutes < CURRENT_SEASON_MINUTES_THRESHOLD) {
     return (
       <Section label={`${label} · ${season}${entry.leagueLabel ? ` — ${entry.leagueLabel}` : ""}`}>
-        <p className="text-[11px] text-muted-foreground" data-testid="player-sheet-early-season">
+        <p className="text-meta text-muted-foreground" data-testid="player-sheet-early-season">
           {t("weekend.earlySeason", {
             defaultValue: "Early season — {{apps}} apps, {{minutes}}′. Per-90 unlocks at {{threshold}}′.",
             apps: line.apps,
@@ -389,12 +391,12 @@ function SeasonBlock({
       >
         {stats.map((stat) => (
           <div key={stat.key} className="flex items-baseline justify-between gap-2">
-            <span className="text-[11px] text-muted-foreground truncate">{stat.label}</span>
+            <span className="text-meta text-muted-foreground truncate">{stat.label}</span>
             <span className="font-mono font-bold text-sm tabular-nums">{stat.value}</span>
           </div>
         ))}
       </div>
-      <p className="text-[10px] text-muted-foreground mt-1 font-mono uppercase tracking-[0.16em]">
+      <p className="text-eyebrow text-muted-foreground mt-1 font-mono uppercase">
         {hasClubRates
           ? t("weekend.per90ClubNote", { defaultValue: "per 90 · club rates per match" })
           : t("weekend.per90Note", { defaultValue: "per 90 minutes" })}
@@ -413,7 +415,7 @@ function OwnershipLine({ card }: { card: Card }) {
   const { inSquads, totalSquads } = card.ownership;
   const pct = Math.round((inSquads / totalSquads) * 100);
   return (
-    <p className="text-[11px] text-muted-foreground" data-testid="player-sheet-ownership">
+    <p className="text-meta text-muted-foreground" data-testid="player-sheet-ownership">
       {t("weekend.ownership", {
         defaultValue: "In {{pct}}% of this gameweek's squads ({{inSquads}}/{{totalSquads}})",
         pct,
@@ -433,7 +435,7 @@ function HistoryBlock({ card }: { card: Card }) {
   return (
     <Section label={t("weekend.verveqPoints", { defaultValue: "VerveQ points" })}>
       {card.history.length === 0 ? (
-        <p className="text-[11px] text-muted-foreground" data-testid="player-sheet-no-history">
+        <p className="text-meta text-muted-foreground" data-testid="player-sheet-no-history">
           {t("weekend.noHistory", {
             defaultValue: "No VerveQ gameweeks on record yet — history builds as weekends settle.",
           })}
@@ -445,26 +447,26 @@ function HistoryBlock({ card }: { card: Card }) {
               key={`${row.season}-${row.gwNumber}`}
               className="flex items-center justify-between gap-2"
             >
-              <span className="font-mono text-[11px] text-muted-foreground uppercase">
+              <span className="font-mono text-eyebrow text-muted-foreground uppercase">
                 GW {row.gwNumber}
               </span>
               <div className="flex items-center gap-2">
                 {row.state === "provisional" && (
-                  <NeoBadge color="muted" size="sm">
+                  <Badge tone="muted">
                     {t("weekend.provisional", { defaultValue: "Provisional" })}
-                  </NeoBadge>
+                  </Badge>
                 )}
                 {/* Crowd factor per FW-4: the signed fraction, visible. Null
                     on a double gameweek — absent beats misattributed. */}
                 {row.crowdFactor !== null && row.crowdFactor !== 0 && (
-                  <span className="font-mono text-[10px] text-muted-foreground tabular-nums">
+                  <span className="font-mono text-eyebrow text-muted-foreground tabular-nums">
                     {t("weekend.crowdShort", { defaultValue: "crowd" })}{" "}
                     {row.crowdFactor > 0 ? "+" : ""}
                     {Math.round(row.crowdFactor * 100)}%
                   </span>
                 )}
                 {row.appearances > 1 && (
-                  <span className="font-mono text-[10px] text-muted-foreground">
+                  <span className="font-mono text-eyebrow text-muted-foreground">
                     ×{row.appearances}
                   </span>
                 )}
@@ -494,11 +496,11 @@ function Section({
   return (
     <div className="border-t-2 border-border pt-2.5">
       <div className="flex items-baseline justify-between gap-2 mb-1.5">
-        <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+        <p className="font-mono text-eyebrow font-bold uppercase text-muted-foreground">
           {label}
         </p>
         {aside !== undefined && (
-          <p className="font-mono text-[10px] text-muted-foreground tabular-nums shrink-0">{aside}</p>
+          <p className="font-mono text-eyebrow text-muted-foreground tabular-nums shrink-0">{aside}</p>
         )}
       </div>
       {children}

@@ -103,7 +103,8 @@ describe("MatchdayHero", () => {
       />,
     );
     expect(screen.getByText(/First kickoff in/i)).toBeInTheDocument();
-    expect(screen.getByTestId("matchday-countdown").textContent).toBe("26:05:09");
+    // ≥24h left reads as days + hours, not a 26-hour clock.
+    expect(screen.getByTestId("matchday-countdown").textContent).toBe("1d 2h");
     expect(screen.getByText(/Telstar v Sparta Rotterdam/)).toBeInTheDocument();
   });
 

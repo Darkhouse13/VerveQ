@@ -537,9 +537,9 @@ describe("budget squad screen — edits and locks", () => {
     );
 
     const { container } = renderScreen();
-    await screen.findByText(/30\.0 locked in/);
-    expect(container.textContent).toContain("71.5 / 91.0");
-    expect(screen.getByText(/19\.5 left/)).toBeInTheDocument();
+    await screen.findByText(/£30\.0m locked in/);
+    expect(container.textContent).toContain("£71.5m / £91.0m");
+    expect(screen.getByText(/£19\.5m left/)).toBeInTheDocument();
   });
 });
 
@@ -671,7 +671,7 @@ describe("budget squad screen — the leagues strip (FW-POLISH-3 O4)", () => {
     };
     renderScreen();
     const strip = await screen.findByTestId("squad-leagues-strip");
-    expect(strip.textContent).toContain("This weekend: Eredivisie + Liga Portugal");
+    expect(strip.textContent).toContain("This gameweek: Eredivisie + Liga Portugal");
   });
 
   it("collapses to a count at 4+ and expands on tap to list all", async () => {
@@ -688,11 +688,11 @@ describe("budget squad screen — the leagues strip (FW-POLISH-3 O4)", () => {
     };
     renderScreen();
     const strip = await screen.findByTestId("squad-leagues-strip");
-    expect(strip.textContent).toContain("This weekend: 4 leagues");
+    expect(strip.textContent).toContain("This gameweek: 4 leagues");
     expect(strip.textContent).not.toContain("Championship");
     fireEvent.click(strip);
     expect(strip.textContent).toContain(
-      "This weekend: Championship + Eredivisie + Liga Portugal + La Liga",
+      "This gameweek: Championship + Eredivisie + Liga Portugal + La Liga",
     );
   });
 });

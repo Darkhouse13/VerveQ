@@ -184,6 +184,18 @@
   html.seo-static-page body {
     background-color: hsl(var(--cream));
   }
+
+  /* THE WEEKEND pitch (PitchView + .weekend-pitch): always dark, any theme. */
+  :root {
+    --pitch-turf: 140 34% 10%;
+    --pitch-turf-stripe: 142 30% 13.5%;
+    --pitch-floodlight: 75 100% 72%;
+    --pitch-line: 78 90% 88%;
+    --pitch-shade: 0 0% 0%;
+    --pitch-plate: 0 0% 10%;
+    --pitch-finisher: 330 90% 80%;
+    --pitch-swap: 48 100% 60%;
+  }
 }
 
 @layer base {
@@ -277,15 +289,15 @@
     /* FW-IMMERSE A2: the main pitch is painted by PitchView's inline SVG
        (perspective stripes, floodlight, markings); this class keeps the
        matching turf under the SVG and on the finisher touchline strip. */
-    background-color: hsl(140 34% 10%);
+    background-color: hsl(var(--pitch-turf));
     background-image:
-      radial-gradient(120% 60% at 50% 0%, hsl(75 100% 70% / 0.07), transparent 60%),
+      radial-gradient(120% 60% at 50% 0%, hsl(var(--pitch-floodlight) / 0.07), transparent 60%),
       repeating-linear-gradient(
         to bottom,
-        hsl(140 34% 10%) 0,
-        hsl(140 34% 10%) 44px,
-        hsl(142 30% 13.5%) 44px,
-        hsl(142 30% 13.5%) 88px
+        hsl(var(--pitch-turf)) 0,
+        hsl(var(--pitch-turf)) 44px,
+        hsl(var(--pitch-turf-stripe)) 44px,
+        hsl(var(--pitch-turf-stripe)) 88px
       );
   }
 
@@ -508,8 +520,8 @@
 }
 
 @keyframes weekend-score-in {
-  0% { box-shadow: 0 0 0 0 hsl(74 100% 50% / 0.55); }
-  100% { box-shadow: 0 0 0 7px hsl(74 100% 50% / 0); }
+  0% { box-shadow: 0 0 0 0 hsl(var(--lime) / 0.55); }
+  100% { box-shadow: 0 0 0 7px hsl(var(--lime) / 0); }
 }
 
 /* Honour the OS "reduce motion" setting for the app-wide effect animations —

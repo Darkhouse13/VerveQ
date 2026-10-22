@@ -103,49 +103,9 @@
   "src/components/ui/overlay.tsx": {
     "fixedInset": 1
   },
-  "src/components/weekend/FavoriteClubCard.tsx": {
-    "textPx": 4,
-    "rawButton": 1,
-    "trackingArbitrary": 1
-  },
-  "src/components/weekend/FormationChooser.tsx": {
-    "textPx": 7,
-    "rawButton": 1,
-    "opacityText": 1,
-    "trackingArbitrary": 4
-  },
-  "src/components/weekend/PitchView.tsx": {
-    "textPx": 6,
-    "colorFn": 35,
-    "rawButton": 1,
-    "roundedXl": 3,
-    "transitionAll": 1,
-    "opacityText": 2,
-    "trackingArbitrary": 2
-  },
-  "src/components/weekend/PlayerSheet.tsx": {
-    "textPx": 20,
-    "trackingArbitrary": 4
-  },
-  "src/components/weekend/SquadLedgerView.tsx": {
-    "textPx": 5,
-    "trackingArbitrary": 2
-  },
-  "src/components/weekend/SquadTabs.tsx": {
-    "textPx": 1,
-    "rawButton": 1,
-    "opacityText": 1,
-    "trackingArbitrary": 1
-  },
-  "src/components/weekend/WeekendLeaguesLine.tsx": {
-    "textPx": 1,
-    "rawButton": 1,
-    "opacityText": 1,
-    "trackingArbitrary": 1
-  },
   "src/index.css": {
     "hex": 2,
-    "colorFn": 20
+    "colorFn": 12
   },
   "src/lib/rankedLadder.ts": {
     "hex": 4
@@ -225,80 +185,12 @@
     "rawButton": 1
   },
   "src/pages/shell/weekend/BudgetSquadScreen.tsx": {
-    "textPx": 26,
-    "rawButton": 5,
-    "opacityText": 4,
-    "trackingArbitrary": 6
-  },
-  "src/pages/shell/weekend/CourtScreen.tsx": {
-    "textPx": 11,
-    "trackingArbitrary": 1
-  },
-  "src/pages/shell/weekend/CrewCommandScreen.tsx": {
-    "textPx": 14,
-    "rawButton": 6,
-    "opacityText": 5,
-    "trackingArbitrary": 7
-  },
-  "src/pages/shell/weekend/CrewCompetitionPanel.tsx": {
-    "textPx": 16,
-    "rawButton": 1,
-    "opacityText": 6,
-    "trackingArbitrary": 6
-  },
-  "src/pages/shell/weekend/CrewScreen.tsx": {
-    "textPx": 4,
-    "rawButton": 3,
-    "opacityText": 1,
-    "trackingArbitrary": 1
-  },
-  "src/pages/shell/weekend/CrewSheetScreen.tsx": {
-    "textPx": 1,
-    "trackingArbitrary": 1
+    "opacityText": 2
   },
   "src/pages/shell/weekend/DraftRoomScreen.tsx": {
-    "textPx": 15,
-    "rawButton": 5,
-    "opacityText": 4,
-    "trackingArbitrary": 1
-  },
-  "src/pages/shell/weekend/FixturesScreen.tsx": {
-    "textPx": 3,
-    "trackingArbitrary": 3
+    "opacityText": 2
   },
   "src/pages/shell/weekend/VoteScreen.tsx": {
-    "textPx": 12,
-    "rawButton": 2,
-    "roundedXl": 1,
-    "opacityText": 5,
-    "trackingArbitrary": 3
-  },
-  "src/pages/shell/weekend/WeekendCrewsScreen.tsx": {
-    "textPx": 2,
-    "roundedXl": 1,
-    "opacityText": 1,
-    "trackingArbitrary": 2
-  },
-  "src/pages/shell/weekend/WeekendHowToPlayScreen.tsx": {
-    "textPx": 1,
-    "trackingArbitrary": 1
-  },
-  "src/pages/shell/weekend/WeekendHubScreen.tsx": {
-    "textPx": 22,
-    "rawButton": 4,
-    "opacityText": 6,
-    "trackingArbitrary": 12
-  },
-  "src/pages/shell/weekend/WeekendLeaderboardScreen.tsx": {
-    "textPx": 23,
-    "rawButton": 2,
-    "transitionAll": 2,
-    "opacityText": 4,
-    "trackingArbitrary": 17
-  },
-  "src/pages/shell/weekend/WeekendReceiptScreen.tsx": {
-    "textPx": 10,
-    "roundedXl": 1,
-    "trackingArbitrary": 8
+    "opacityText": 4
   }
 }

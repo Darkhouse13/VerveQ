@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 
 vi.mock("react-i18next", () => ({
+  // DraftRoomScreen now uses the ui IconButton, whose module loads the i18n setup.
+  initReactI18next: { type: "3rdParty", init: () => {} },
   useTranslation: () => ({
     t: (_key: string, options?: { defaultValue?: string; name?: string; names?: string }) =>
       options?.defaultValue?.replace("{{name}}", options.name ?? "").replace("{{names}}", options.names ?? "") ?? _key,

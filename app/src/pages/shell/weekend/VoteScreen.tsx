@@ -37,9 +37,10 @@ import { notify } from "@/lib/notify";
 import { Check, EyeOff, Plus } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { NeoBadge } from "@/components/neo/NeoBadge";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { friendlyError } from "@/lib/errors";
@@ -129,7 +130,7 @@ export function FixturePickerView({
 
       {days.map((day) => (
         <div key={day.dayStart} className="flex flex-col gap-2">
-          <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+          <p className="font-mono text-eyebrow uppercase text-muted-foreground">
             {new Date(day.dayStart).toLocaleDateString(i18n.language, {
               weekday: "long",
               day: "numeric",
@@ -150,7 +151,7 @@ export function FixturePickerView({
             const body = (
               <>
                 <span
-                  className={`shrink-0 w-5 h-5 rounded-[4px] neo-border flex items-center justify-center ${
+                  className={`shrink-0 w-5 h-5 rounded-sm neo-border flex items-center justify-center ${
                     on ? "bg-background text-foreground" : ""
                   } ${retired ? "opacity-40" : ""}`}
                   aria-hidden="true"
@@ -158,12 +159,12 @@ export function FixturePickerView({
                   {on && <Check size={13} strokeWidth={4} />}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block font-heading font-bold text-sm leading-tight break-words">
-                    {home} — {away}
+                  <span className="block font-heading font-bold text-body-sm leading-tight break-words">
+                    {home} v {away}
                   </span>
                   <span
-                    className={`block font-mono text-[10px] uppercase tracking-[0.1em] ${
-                      on ? "opacity-80" : "text-muted-foreground"
+                    className={`block font-mono text-eyebrow uppercase ${
+                      "text-muted-foreground"
                     }`}
                   >
                     {leagueName(fixture.leagueId)}
@@ -176,7 +177,7 @@ export function FixturePickerView({
             // plain row with no onClick, so NeoCard stays a div and no tap is
             // offered that the server would refuse.
             return retired ? (
-              <NeoCard
+              <Card
                 key={fixture.fixtureId}
                 className="py-2.5 px-3 flex items-center gap-2.5 opacity-55"
                 data-testid="picker-fixture"
@@ -184,13 +185,14 @@ export function FixturePickerView({
                 data-retired="1"
               >
                 {body}
-              </NeoCard>
+              </Card>
             ) : (
-              <NeoCard
+              <Card
+                interactive
                 key={fixture.fixtureId}
-                shadow={on ? "lg" : "default"}
-                color={on ? "primary" : "default"}
-                className="py-2.5 px-3 flex items-center gap-2.5"
+                elevation={on ? "lifted" : "raised"}
+                // Picked = the cream chip (Segmented's rule); lime stays for Continue.
+                className={cn("py-2.5 px-3 flex items-center gap-2.5", on && "bg-cream text-ink on-fill")}
                 aria-pressed={on}
                 data-testid="picker-fixture"
                 data-selected={on ? "1" : "0"}
@@ -198,15 +200,16 @@ export function FixturePickerView({
                 onClick={busy ? () => undefined : () => onToggle(fixture.fixtureId)}
               >
                 {body}
-              </NeoCard>
+              </Card>
             );
           })}
         </div>
       ))}
 
-      <NeoButton
-        size="full"
-        variant={selected.size === 0 ? "outline" : "primary"}
+      <Button
+        size="lg"
+        block
+        variant={selected.size === 0 ? "secondary" : "primary"}
         disabled={busy}
         data-testid="picker-continue"
         onClick={onContinue}
@@ -216,7 +219,7 @@ export function FixturePickerView({
           : editing
             ? t("weekend.pickerSave", { defaultValue: "Save" })
             : t("weekend.pickerContinue", { defaultValue: "Continue" })}
-      </NeoButton>
+      </Button>
     </div>
   );
 }
@@ -289,9 +292,8 @@ export function RevealView({ reveal }: { reveal: ConsensusReveal }) {
   const percent = reveal.percent ?? 0;
 
   return (
-    <NeoCard
-      color={tone === "with" ? "success" : "default"}
-      className="text-center py-4"
+    <Card
+      className={cn("text-center py-4", tone === "with" && "bg-success text-ink on-fill")}
       data-testid="vote-reveal"
       data-tone={tone}
     >
@@ -322,7 +324,7 @@ export function RevealView({ reveal }: { reveal: ConsensusReveal }) {
           />
         </span>
       )}
-    </NeoCard>
+    </Card>
   );
 }
 
@@ -340,7 +342,7 @@ export function DoneView({
   const { t } = useTranslation();
   return (
     <div className="flex flex-col gap-3" data-testid="vote-done">
-      <NeoCard color="success" className="text-center py-6">
+      <Card className="bg-success text-ink on-fill text-center py-6">
         <span
           className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full neo-border bg-background text-foreground"
           aria-hidden="true"
@@ -357,18 +359,19 @@ export function DoneView({
         <p className="text-sm mt-1">
           {t("weekend.doneThanks", { defaultValue: "The crowd thanks you." })}
         </p>
-      </NeoCard>
+      </Card>
       {!exhausted && (
-        <button
-          type="button"
-          className="text-[11px] text-muted-foreground underline underline-offset-4 mx-auto"
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mx-auto h-auto px-2 font-body text-meta font-normal text-muted-foreground underline underline-offset-4"
           data-testid="vote-keep-going"
           onClick={onKeepGoing}
         >
           {t("weekend.doneKeepGoing", {
             defaultValue: "Keep going — extra pairs don't count, they just help.",
           })}
-        </button>
+        </Button>
       )}
       <p className="sr-only" data-testid="vote-done-progress">
         {progress.voted}/{progress.goal}
@@ -406,33 +409,35 @@ export function PairCard({
   // type always carries minutes; only an old backend's payload does not.)
   if ((player as { minutes?: number }).minutes === undefined) {
     return (
-      <NeoCard
-        shadow="lg"
+      <Card
+        interactive
+        elevation="lifted"
         className="flex-1 min-w-0 text-center py-4 px-2.5 disabled:opacity-60"
         onClick={busy ? undefined : onPick}
       >
-        <NeoBadge color="muted" size="sm">
+        <Badge tone="muted">
           {player.position}
-        </NeoBadge>
+        </Badge>
         <p className="font-heading font-bold text-lg leading-tight mt-2">{player.name}</p>
-        <p className="text-[11px] text-muted-foreground mt-1">
+        <p className="text-meta text-muted-foreground mt-1">
           {fixture.homeGoals === null || fixture.awayGoals === null
             ? t("weekend.fullTime", { defaultValue: "full time" })
             : `${fixture.homeGoals}–${fixture.awayGoals}`}
         </p>
-      </NeoCard>
+      </Card>
     );
   }
 
   return (
-    <NeoCard
-      shadow="lg"
+    <Card
+      interactive
+      elevation="lifted"
       className="flex-1 min-w-0 text-center py-4 px-2.5 disabled:opacity-60"
       onClick={busy ? undefined : onPick}
     >
-      <NeoBadge color="muted" size="sm">
+      <Badge tone="muted">
         {player.position}
-      </NeoBadge>
+      </Badge>
       <p className="font-heading font-bold text-lg leading-tight mt-2">{player.name}</p>
       {/* where the memory happened: club, opponent, venue */}
       <p
@@ -440,7 +445,7 @@ export function PairCard({
         // the line and is a fact the card must keep — the longest real pair
         // ("Borussia Mönchengladbach · vs Bayern München (A)") needs three
         // lines at half-viewport width before it would truncate.
-        className="text-[11px] text-muted-foreground leading-snug mt-1 line-clamp-3 break-words"
+        className="text-meta text-muted-foreground leading-snug mt-1 line-clamp-3 break-words"
         data-testid="vote-card-match"
       >
         {t("weekend.voteMatchLine", {
@@ -451,7 +456,7 @@ export function PairCard({
         })}
       </p>
       <p
-        className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground mt-0.5"
+        className="font-mono text-eyebrow uppercase text-muted-foreground mt-0.5"
         data-testid="vote-card-league"
       >
         {leagueName(fixture.leagueId)} · {kickoffDayTag(fixture.kickoffAt, i18n.language)}
@@ -459,7 +464,7 @@ export function PairCard({
       {/* the score from his side — his team's number is the marked one */}
       <p className="font-mono font-bold tabular-nums mt-1.5" data-testid="vote-card-score">
         {score === null ? (
-          <span className="text-[11px] text-muted-foreground font-normal">
+          <span className="text-meta text-muted-foreground font-normal">
             {t("weekend.fullTime", { defaultValue: "full time" })}
           </span>
         ) : (
@@ -472,7 +477,7 @@ export function PairCard({
         )}
       </p>
       <p
-        className="font-mono text-[11px] text-muted-foreground mt-0.5"
+        className="font-mono text-eyebrow text-muted-foreground mt-0.5"
         data-testid="vote-card-minutes"
       >
         {t("weekend.minutesPlayed", {
@@ -486,7 +491,7 @@ export function PairCard({
             <span key={event.kind} className="mx-0.5 whitespace-nowrap">
               {EVENT_GLYPHS[event.kind]}
               {event.count > 1 && (
-                <span className="font-mono text-[10px] text-muted-foreground">
+                <span className="font-mono text-eyebrow text-muted-foreground">
                   ×{event.count}
                 </span>
               )}
@@ -494,7 +499,7 @@ export function PairCard({
           ))}
         </p>
       )}
-    </NeoCard>
+    </Card>
   );
 }
 
@@ -513,7 +518,7 @@ export function VoteStackView({
 
   if (serve.status === "closed") {
     return (
-      <NeoCard className="text-center py-6">
+      <Card className="text-center py-6">
         <p className="font-heading font-bold">
           {t("weekend.votingClosed", { defaultValue: "Voting is closed right now." })}
         </p>
@@ -523,7 +528,7 @@ export function VoteStackView({
               "The stack opens as matches finish and closes when the weekend settles.",
           })}
         </p>
-      </NeoCard>
+      </Card>
     );
   }
   // The picker's own empty answer, and the state a full cascade lands in:
@@ -532,7 +537,7 @@ export function VoteStackView({
   if (serve.status === "no_fixtures") {
     return (
       <div className="flex flex-col gap-3" data-testid="vote-no-fixtures">
-        <NeoCard className="text-center py-6">
+        <Card className="text-center py-6">
           <p className="font-heading font-bold">
             {t("weekend.voteNoGames", { defaultValue: "Nothing to judge, then." })}
           </p>
@@ -542,19 +547,19 @@ export function VoteStackView({
                 "No games picked this weekend — that's a fine answer. Add one whenever you catch it.",
             })}
           </p>
-        </NeoCard>
+        </Card>
         {onEditPicker !== undefined && (
-          <NeoButton variant="outline" size="full" disabled={busy} onClick={onEditPicker}>
+          <Button variant="secondary" size="lg" block disabled={busy} onClick={onEditPicker}>
             <Plus size={14} strokeWidth={3} className="mr-1.5" />
             {t("weekend.addGames", { defaultValue: "Add games" })}
-          </NeoButton>
+          </Button>
         )}
       </div>
     );
   }
   if (serve.status === "cap_reached") {
     return (
-      <NeoCard color="success" className="text-center py-6">
+      <Card className="bg-success text-ink on-fill text-center py-6">
         <p className="font-heading font-bold">
           {t("weekend.voteCap", { defaultValue: "That's this weekend's limit." })}
         </p>
@@ -564,13 +569,13 @@ export function VoteStackView({
             served: serve.served,
           })}
         </p>
-      </NeoCard>
+      </Card>
     );
   }
   if (serve.status === "exhausted") {
     return (
       <div className="flex flex-col gap-3">
-        <NeoCard className="text-center py-6">
+        <Card className="text-center py-6">
           <p className="font-heading font-bold">
             {t("weekend.voteExhausted", { defaultValue: "No more pairs for now." })}
           </p>
@@ -579,12 +584,12 @@ export function VoteStackView({
               defaultValue: "Come back after the next matches finish.",
             })}
           </p>
-        </NeoCard>
+        </Card>
         {onEditPicker !== undefined && (
-          <NeoButton variant="outline" size="full" disabled={busy} onClick={onEditPicker}>
+          <Button variant="secondary" size="lg" block disabled={busy} onClick={onEditPicker}>
             <Plus size={14} strokeWidth={3} className="mr-1.5" />
             {t("weekend.addGames", { defaultValue: "Add games" })}
-          </NeoButton>
+          </Button>
         )}
       </div>
     );
@@ -593,11 +598,11 @@ export function VoteStackView({
     // The container routes this to the picker; if it is ever rendered it means
     // the picker could not load — say so quietly rather than showing nothing.
     return (
-      <NeoCard className="text-center py-6">
+      <Card className="text-center py-6">
         <p className="font-heading font-bold">
           {t("weekend.voteNoBoardShort", { defaultValue: "No board is open right now." })}
         </p>
-      </NeoCard>
+      </Card>
     );
   }
 
@@ -627,11 +632,11 @@ export function VoteStackView({
               one man must not retire the other man's game. */}
           <div className="flex gap-3">
             {(["a", "b"] as const).map((side) => (
-              <NeoButton
+              <Button
                 key={side}
                 variant="ghost"
                 size="sm"
-                className="flex-1 min-w-0 text-[11px] normal-case tracking-normal"
+                className="flex-1 min-w-0 text-meta normal-case tracking-normal"
                 disabled={busy}
                 data-testid={`didnt-see-${side}`}
                 onClick={() => onVote(side === "a" ? "unseen_a" : "unseen_b")}
@@ -640,13 +645,14 @@ export function VoteStackView({
                 <span className="truncate">
                   {t("weekend.didntSeeHim", { defaultValue: "Didn't see him" })}
                 </span>
-              </NeoButton>
+              </Button>
             ))}
           </div>
           {sameFixture && (
-            <NeoButton
+            <Button
               variant="ghost"
-              size="full"
+              size="lg"
+              block
               className="py-2 text-sm"
               disabled={busy}
               data-testid="didnt-see-both"
@@ -654,20 +660,20 @@ export function VoteStackView({
             >
               <EyeOff size={14} strokeWidth={3} className="mr-1.5" />
               {t("weekend.didntSeeGame", { defaultValue: "Didn't see this game" })}
-            </NeoButton>
+            </Button>
           )}
         </>
       ) : (
-        <NeoButton variant="ghost" size="full" disabled={busy} onClick={() => onVote("skip")}>
+        <Button variant="ghost" size="lg" block disabled={busy} onClick={() => onVote("skip")}>
           <EyeOff size={14} strokeWidth={3} className="mr-1.5" />
           {t("weekend.didntWatch", { defaultValue: "Didn't watch" })}
-        </NeoButton>
+        </Button>
       )}
 
       <div className="flex items-center justify-center gap-3">
         {progress !== undefined && (
           <p
-            className="text-[11px] text-muted-foreground font-mono"
+            className="text-eyebrow text-muted-foreground font-mono"
             data-testid="vote-progress"
           >
             {t("weekend.tenProgress", {
@@ -678,14 +684,15 @@ export function VoteStackView({
           </p>
         )}
         {onEditPicker !== undefined && (
-          <button
-            type="button"
-            className="text-[11px] text-muted-foreground underline underline-offset-4"
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-auto px-2 font-body text-meta font-normal text-muted-foreground underline underline-offset-4"
             data-testid="vote-add-games"
             onClick={onEditPicker}
           >
             {t("weekend.addGamesShort", { defaultValue: "+ add games" })}
-          </button>
+          </Button>
         )}
       </div>
     </div>
@@ -878,7 +885,7 @@ export default function VoteScreen() {
   return (
     <ShellLayout
       theme="theme-weekend"
-      title={t("weekend.voteTitle", { defaultValue: "The eye test" })}
+      title={t("weekend.voteTitle", { defaultValue: "Rate the weekend" })}
       back
       // U2: back walks UP the flow — this door's parent is the hub, not the
       // compete grid two levels above it.
@@ -889,17 +896,17 @@ export default function VoteScreen() {
         {gate === "checking" ||
         (gate === "open" && phase === "stack" && serve === null) ||
         (phase === "picker" && fixtures === null) ? (
-          <NeoCard className="text-center py-6">
+          <Card className="text-center py-6">
             <p className="text-sm text-muted-foreground">
               {t("common.loading", { defaultValue: "Loading…" })}
             </p>
-          </NeoCard>
+          </Card>
         ) : gate === "closed" ? (
-          <NeoCard className="text-center py-6">
+          <Card className="text-center py-6">
             <p className="font-heading font-bold">
               {t("weekend.noBoard", { defaultValue: "No board is open right now." })}
             </p>
-          </NeoCard>
+          </Card>
         ) : phase === "picker" ? (
           <FixturePickerView
             fixtures={fixtures ?? []}

@@ -21,10 +21,11 @@ import { Gavel, Scale } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { SLOT_ROLES, type SlotRole } from "../../../../convex/lib/fantasyConstants";
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { NeoBadge } from "@/components/neo/NeoBadge";
-import { NeoInput } from "@/components/neo/NeoInput";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Segmented } from "@/components/ui/segmented";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -66,30 +67,30 @@ export function ClaimCard({
   const { t } = useTranslation();
   const badge = STATUS_BADGES[claim.status];
   return (
-    <NeoCard className="py-3">
+    <Card className="py-3">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="font-heading font-bold text-sm">
             {claim.playerName}
-            <span className="font-mono text-[11px] text-muted-foreground ml-2">
+            <span className="font-mono text-eyebrow text-muted-foreground ml-2">
               {claim.positionAtFiling ?? "?"} → {claim.claimedPosition}
             </span>
           </p>
-          <p className="text-[12px] mt-1">“{claim.argument}”</p>
+          <p className="text-meta mt-1">“{claim.argument}”</p>
           {claim.rebuttal !== null && (
-            <p className="text-[12px] mt-1 text-muted-foreground">
+            <p className="text-meta mt-1 text-muted-foreground">
               {t("weekend.rebuttalPrefix", { defaultValue: "Rebuttal:" })} “{claim.rebuttal}”
             </p>
           )}
         </div>
-        <NeoBadge color={badge.color} size="sm" className="shrink-0">
+        <Badge tone={badge.color} className="shrink-0">
           {t(`weekend.claim_${claim.status}`, { defaultValue: badge.label })}
-        </NeoBadge>
+        </Badge>
       </div>
 
       {claim.status === "filing" && (
         <div className="flex items-center justify-between mt-2">
-          <p className="text-[11px] font-mono text-muted-foreground">
+          <p className="text-eyebrow font-mono text-muted-foreground">
             {t("weekend.endorseCount", {
               defaultValue: "{{n}} / {{needed}} endorsements",
               n: claim.endorsements,
@@ -97,16 +98,16 @@ export function ClaimCard({
             })}
           </p>
           {!claim.myEndorsement && !claim.filedByMe && (
-            <NeoButton variant="secondary" size="sm" disabled={busy} onClick={onEndorse}>
+            <Button variant="secondary" size="sm" disabled={busy} onClick={onEndorse}>
               {t("weekend.endorse", { defaultValue: "Deserves a hearing" })}
-            </NeoButton>
+            </Button>
           )}
         </div>
       )}
 
       {claim.status === "trial" && (
         <div className="flex items-center justify-between mt-2 gap-2">
-          <p className="text-[11px] font-mono text-muted-foreground">
+          <p className="text-eyebrow font-mono text-muted-foreground">
             {t("weekend.quorumNote", {
               defaultValue: "quorum {{quorum}} · 60% to pass",
               quorum: docket.quorum,
@@ -114,23 +115,23 @@ export function ClaimCard({
           </p>
           {claim.myVote === null && !claim.filedByMe ? (
             <div className="flex gap-1.5">
-              <NeoButton variant="success" size="sm" disabled={busy} onClick={() => onVote("yes")}>
+              <Button variant="primary" size="sm" disabled={busy} onClick={() => onVote("yes")}>
                 {t("weekend.voteYes", { defaultValue: "He did" })}
-              </NeoButton>
-              <NeoButton variant="danger" size="sm" disabled={busy} onClick={() => onVote("no")}>
+              </Button>
+              <Button variant="danger" size="sm" disabled={busy} onClick={() => onVote("no")}>
                 {t("weekend.voteNo", { defaultValue: "Feed's right" })}
-              </NeoButton>
+              </Button>
             </div>
           ) : claim.myVote !== null ? (
-            <NeoBadge color="muted" size="sm">
+            <Badge tone="muted">
               {t("weekend.votedBadge", { defaultValue: "voted {{v}}", v: claim.myVote })}
-            </NeoBadge>
+            </Badge>
           ) : null}
         </div>
       )}
 
       {claim.tallies !== null && (claim.status === "passed" || claim.status === "failed") && (
-        <p className="text-[11px] font-mono text-muted-foreground mt-2">
+        <p className="text-eyebrow font-mono text-muted-foreground mt-2">
           {t("weekend.verdictTallies", {
             defaultValue: "{{yes}}–{{no}} weighted ({{rawYes}}–{{rawNo}} raw, {{n}} jurors)",
             yes: claim.tallies.weightedYes.toFixed(1),
@@ -143,13 +144,13 @@ export function ClaimCard({
       )}
 
       {claim.status === "expired" && (
-        <p className="text-[11px] font-mono text-muted-foreground mt-2">
+        <p className="text-eyebrow font-mono text-muted-foreground mt-2">
           {t("weekend.claimExpiredNote", {
             defaultValue: "unresolved at finality — no ruling applied, no score moved",
           })}
         </p>
       )}
-    </NeoCard>
+    </Card>
   );
 }
 
@@ -205,51 +206,47 @@ export function FileClaimDialog({
 
         {selected === null ? (
           <>
-            <NeoInput
+            <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t("weekend.searchPlayer", { defaultValue: "Which player?" })}
             />
             <div className="flex flex-col gap-1.5 overflow-y-auto min-h-0">
               {results.map((p) => (
-                <NeoCard
+                <Card
+                  interactive
                   key={p.playerId}
                   className="flex items-center justify-between py-2"
                   onClick={() => setPlayerId(p.playerId)}
                 >
                   <span className="font-heading font-bold text-sm truncate">{p.name}</span>
-                  <span className="font-mono text-[11px] text-muted-foreground shrink-0">
+                  <span className="font-mono text-eyebrow text-muted-foreground shrink-0">
                     {p.position} · {p.clubName ?? p.clubId}
                   </span>
-                </NeoCard>
+                </Card>
               ))}
             </div>
           </>
         ) : (
           <>
-            <NeoCard className="py-2 flex items-center justify-between">
+            <Card className="py-2 flex items-center justify-between">
               <span className="font-heading font-bold text-sm">{selected.name}</span>
-              <NeoButton variant="ghost" size="sm" onClick={() => setPlayerId(null)}>
+              <Button variant="ghost" size="sm" onClick={() => setPlayerId(null)}>
                 {t("weekend.change", { defaultValue: "Change" })}
-              </NeoButton>
-            </NeoCard>
-            <p className="text-[11px] font-mono uppercase text-muted-foreground">
+              </Button>
+            </Card>
+            <p className="text-eyebrow font-mono uppercase text-muted-foreground">
               {t("weekend.heActuallyPlayed", { defaultValue: "He actually played…" })}
             </p>
-            <div className="flex gap-1.5">
-              {SLOT_ROLES.map((role) => (
-                <NeoButton
-                  key={role}
-                  variant={position === role ? "primary" : "outline"}
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => setPosition(role)}
-                >
-                  {role}
-                </NeoButton>
-              ))}
-            </div>
-            <NeoInput
+            <Segmented
+              block
+              aria-label={t("weekend.heActuallyPlayed", { defaultValue: "He actually played…" })}
+              value={position ?? ""}
+              onChange={(role) => setPosition(role as SlotRole)}
+              options={SLOT_ROLES.map((role) => ({ value: role, label: role }))}
+              className="[&_button]:px-2"
+            />
+            <Input
               value={argument}
               onChange={(e) => setArgument(e.target.value)}
               maxLength={280}
@@ -257,9 +254,10 @@ export function FileClaimDialog({
                 defaultValue: "Your one-line case (280 chars)…",
               })}
             />
-            <NeoButton
+            <Button
               variant="primary"
-              size="full"
+              size="lg"
+              block
               disabled={busy || position === null || argument.trim().length === 0}
               onClick={() => {
                 if (playerId !== null && position !== null) {
@@ -269,7 +267,7 @@ export function FileClaimDialog({
             >
               <Gavel size={14} strokeWidth={3} className="mr-1.5" />
               {t("weekend.fileIt", { defaultValue: "File it" })}
-            </NeoButton>
+            </Button>
           </>
         )}
       </DialogContent>
@@ -334,7 +332,7 @@ export default function CourtScreen() {
     claims.length > 0 &&
     docket != null && (
       <div>
-        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
+        <p className="font-mono text-eyebrow font-bold uppercase text-muted-foreground mb-2">
           {title}
         </p>
         <div className="flex flex-col gap-2">
@@ -374,26 +372,26 @@ export default function CourtScreen() {
     >
       <div className="flex flex-col gap-4 md:max-w-md md:mx-auto md:w-full">
         {gate === "checking" || (gate === "open" && docket === undefined) ? (
-          <NeoCard className="text-center py-6">
+          <Card className="text-center py-6">
             <p className="text-sm text-muted-foreground">
               {t("common.loading", { defaultValue: "Loading…" })}
             </p>
-          </NeoCard>
+          </Card>
         ) : gate === "closed" || docket == null ? (
-          <NeoCard className="text-center py-6">
+          <Card className="text-center py-6">
             <p className="font-heading font-bold">
               {t("weekend.noBoard", { defaultValue: "No board is open right now." })}
             </p>
-          </NeoCard>
+          </Card>
         ) : (
           <>
-            <NeoCard shadow="lg" className="flex items-center justify-between py-3">
+            <Card elevation="lifted" className="flex items-center justify-between py-3">
               <div>
                 <p className="font-heading font-bold">
                   <Scale size={15} strokeWidth={3} className="inline mr-1.5 -mt-0.5" />
                   GW {docket.gwNumber}
                 </p>
-                <p className="text-[11px] font-mono text-muted-foreground">
+                <p className="text-eyebrow font-mono text-muted-foreground">
                   {t("weekend.filingsLeft", {
                     defaultValue: "{{left}} of {{max}} filings left",
                     left: Math.max(0, docket.filingsAllowed - docket.myFilings),
@@ -401,7 +399,7 @@ export default function CourtScreen() {
                   })}
                 </p>
               </div>
-              <NeoButton
+              <Button
                 variant="primary"
                 size="sm"
                 disabled={docket.myFilings >= docket.filingsAllowed}
@@ -409,18 +407,18 @@ export default function CourtScreen() {
               >
                 <Gavel size={14} strokeWidth={3} className="mr-1" />
                 {t("weekend.fileClaim", { defaultValue: "File a claim" })}
-              </NeoButton>
-            </NeoCard>
+              </Button>
+            </Card>
 
             {docket.claims.length === 0 && (
-              <NeoCard className="text-center py-6">
+              <Card className="text-center py-6">
                 <p className="text-sm text-muted-foreground">
                   {t("weekend.emptyDocket", {
                     defaultValue:
                       "No claims this weekend. See a position the feed got wrong? File it.",
                   })}
                 </p>
-              </NeoCard>
+              </Card>
             )}
 
             {section(t("weekend.gathering", { defaultValue: "Gathering support" }), open)}

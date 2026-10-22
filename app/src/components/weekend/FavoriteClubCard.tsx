@@ -4,9 +4,10 @@ import { useMutation, useQuery } from "convex/react";
 import { ChevronRight, Heart, Lock } from "lucide-react";
 import { notify } from "@/lib/notify";
 import { api } from "../../../convex/_generated/api";
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { NeoInput } from "@/components/neo/NeoInput";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Eyebrow } from "@/components/ui/eyebrow";
 import { Sheet } from "@/components/ui/sheet";
 import { leagueName } from "@/lib/leagueNames";
 import { friendlyError } from "@/lib/errors";
@@ -100,8 +101,8 @@ export function FavoriteClubCard() {
 
   if (lockedName !== null) {
     return (
-      <NeoCard
-        shadow="lg"
+      <Card
+        elevation="lifted"
         className="flex items-center gap-3 text-left"
         data-testid="weekend-favorite-club"
       >
@@ -116,7 +117,7 @@ export function FavoriteClubCard() {
               {lockedName}
             </span>
           </p>
-          <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+          <p className="text-meta text-muted-foreground mt-0.5">
             {t("weekend.favoriteClubLockedBody", {
               defaultValue:
                 "4 of them allowed instead of 3. Permanent — it can't be changed.",
@@ -129,14 +130,15 @@ export function FavoriteClubCard() {
           className="shrink-0 text-muted-foreground"
           aria-hidden
         />
-      </NeoCard>
+      </Card>
     );
   }
 
   return (
     <>
-      <NeoCard
-        shadow="lg"
+      <Card
+        interactive
+        elevation="lifted"
         onClick={() => setOpen(true)}
         className="flex items-center gap-3 text-left"
         data-testid="weekend-favorite-club"
@@ -148,7 +150,7 @@ export function FavoriteClubCard() {
           <p className="font-heading font-bold text-base leading-tight">
             {t("weekend.favoriteClubTitle", { defaultValue: "Favorite club" })}
           </p>
-          <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+          <p className="text-meta text-muted-foreground mt-0.5">
             {t("weekend.favoriteClubEmptyBody", {
               defaultValue:
                 "Pick one — you may field 4 of them instead of 3. One choice, for good.",
@@ -161,7 +163,7 @@ export function FavoriteClubCard() {
           className="shrink-0"
           aria-hidden
         />
-      </NeoCard>
+      </Card>
 
       <Sheet
         open={open}
@@ -187,7 +189,7 @@ export function FavoriteClubCard() {
         {candidate === null ? (
           <>
             <p
-              className="neo-border rounded-lg bg-destructive/15 px-3 py-2 text-xs font-bold leading-snug"
+              className="neo-border rounded-lg bg-destructive/15 px-3 py-2 text-body-sm font-bold"
               data-testid="favorite-club-warning"
             >
               {t("weekend.favoriteClubWarning", {
@@ -195,7 +197,7 @@ export function FavoriteClubCard() {
                   "Choose carefully: your favorite club is permanent. It can never be changed — not next gameweek, not next season.",
               })}
             </p>
-            <NeoInput
+            <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               data-testid="favorite-club-search"
@@ -206,25 +208,27 @@ export function FavoriteClubCard() {
             <div className="flex flex-col gap-1 overflow-y-auto min-h-0">
               {groups.map((group) => (
                 <div key={group.leagueId}>
-                  <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground pt-2 pb-1">
+                  <Eyebrow className="pt-2 pb-1 font-bold">
                     {leagueName(group.leagueId)}
-                  </p>
+                  </Eyebrow>
                   <div className="flex flex-col gap-1">
                     {group.clubs.map((club) => (
-                      <button
+                      <Button
                         key={club.clubId}
-                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        block
                         onClick={() => setCandidate(club)}
-                        className="flex items-center justify-between gap-2 neo-border rounded px-3 py-2 text-left font-heading font-bold text-sm bg-card active:neo-shadow-pressed"
+                        className="justify-start px-3 text-left shadow-none"
                       >
                         <span className="truncate">{club.name}</span>
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>
               ))}
               {groups.length === 0 && (
-                <p className="text-[11px] text-muted-foreground text-center py-4">
+                <p className="text-meta text-muted-foreground text-center py-4">
                   {t("weekend.noClubsMatch", {
                     defaultValue: "No club matches that.",
                   })}
@@ -235,7 +239,7 @@ export function FavoriteClubCard() {
         ) : (
           <>
             <p
-              className="text-sm leading-snug"
+              className="text-body-sm"
               data-testid="favorite-club-confirm-body"
             >
               {t("weekend.favoriteClubConfirmBody", {
@@ -245,15 +249,15 @@ export function FavoriteClubCard() {
               })}
             </p>
             <div className="flex gap-2">
-              <NeoButton
-                variant="outline"
+              <Button
+                variant="secondary"
                 className="flex-1"
                 disabled={busy}
                 onClick={() => setCandidate(null)}
               >
                 {t("weekend.favoriteClubBack", { defaultValue: "Back" })}
-              </NeoButton>
-              <NeoButton
+              </Button>
+              <Button
                 variant="primary"
                 className="flex-1"
                 disabled={busy}
@@ -263,7 +267,7 @@ export function FavoriteClubCard() {
                 {t("weekend.favoriteClubConfirm", {
                   defaultValue: "Confirm, for good",
                 })}
-              </NeoButton>
+              </Button>
             </div>
           </>
         )}

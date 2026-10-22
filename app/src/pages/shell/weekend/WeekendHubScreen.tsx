@@ -15,54 +15,50 @@
  * session — the card simply doesn't render. The provisional/settled label
  * derives from the settlement stamp the server read, never from the clock
  * (FW-4 N2).
+ *
+ * VerveQ ONE P4.1: on the ui primitives. While the fixtures payload loads,
+ * the hero and the rail hold their space as skeletons of the same height, so
+ * the doors never jump down when the payload lands (prod measured CLS 0.29:
+ * a 299px push at ~1.2s).
  */
-import { useEffect, useMemo, useState, type ComponentProps } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useConvex, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
-import {
-  CalendarRange,
-  ChevronRight,
-  Gavel,
-  HelpCircle,
-  Trophy,
-  Users,
-  Vote,
-  Wallet,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { CalendarRange, ChevronRight, Gavel, HelpCircle, Trophy, Users, Vote, Wallet } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { formatPoints } from "../../../../convex/lib/fantasyScoring";
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoBadge } from "@/components/neo/NeoBadge";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Eyebrow } from "@/components/ui/eyebrow";
+import { IconButton } from "@/components/ui/icon-button";
+import { ModeTile } from "@/components/ui/mode-tile";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { WeekendLeaguesLine } from "@/components/weekend/WeekendLeaguesLine";
 import { FavoriteClubCard } from "@/components/weekend/FavoriteClubCard";
 import { leagueName } from "@/lib/leagueNames";
 import {
-  countdownParts,
+  countdownLabel,
   fixtureDisplayKind,
   fixtureScoreline,
   nextKickoffAt,
   weekendPulse,
 } from "@/lib/weekendFixtures";
 import { FixturesView } from "./FixturesScreen";
-import type {
-  WeekendFixturesPayload,
-  WeekendFixtureRow,
-} from "./FixturesScreen";
+import type { WeekendFixturesPayload, WeekendFixtureRow } from "./FixturesScreen";
 import { useWideScreen } from "@/hooks/useWideScreen";
 import { useWeekendRankMovement } from "@/hooks/useWeekendRankMovement";
 
-type NeoColor = NonNullable<ComponentProps<typeof NeoCard>["color"]>;
-
 const RAIL_CAP = 12;
 
-function two(n: number): string {
-  return n.toString().padStart(2, "0");
-}
+// Fixed heights shared by the real blocks and their loading skeletons, so the
+// swap from one to the other moves nothing below them.
+const HERO_HEIGHT = "min-h-40";
+const RAIL_CARD = "h-32 w-40";
 
 // ── the matchday hero ──
 
@@ -89,8 +85,9 @@ export function MatchdayHero({
       pulse.inPlay === 0 && pulse.played === 0
         ? t("weekend.firstKickoffIn", { defaultValue: "First kickoff in" })
         : t("weekend.nextKickoffIn", { defaultValue: "Next kickoff in" });
-    const parts = countdownParts(next, now);
-    big = `${two(parts.hours)}:${two(parts.minutes)}:${two(parts.seconds)}`;
+    big = countdownLabel(next, now, (d, h) =>
+      t("weekend.countdownDays", { defaultValue: "{{d}}d {{h}}h", d, h }),
+    );
     const upNext = payload.fixtures.filter(
       (f) => f.status === "scheduled" && f.kickoffAt === next,
     );
@@ -125,8 +122,12 @@ export function MatchdayHero({
   }
 
   return (
-    <NeoCard shadow="lg" className="text-center py-4" data-testid="matchday-hero">
-      <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+    <Card
+      elevation="lifted"
+      className={`${HERO_HEIGHT} flex flex-col items-center justify-center gap-1 text-center`}
+      data-testid="matchday-hero"
+    >
+      <Eyebrow>
         {gwNumber !== null
           ? t("weekend.matchdayEyebrow", {
               defaultValue: "Gameweek {{gw}} · {{headline}}",
@@ -134,27 +135,27 @@ export function MatchdayHero({
               headline,
             })
           : headline}
-      </p>
+      </Eyebrow>
       <p
-        className="font-mono font-bold text-4xl tabular-nums tracking-tight mt-1"
+        className="font-mono text-display font-bold tabular-nums"
         data-testid="matchday-countdown"
       >
         {big}
       </p>
       {teaser !== null && (
-        <p className="text-[11px] text-muted-foreground mt-1 truncate px-2">{teaser}</p>
+        <p className="w-full truncate px-2 text-meta text-muted-foreground">{teaser}</p>
       )}
       {(pulse.inPlay > 0 || pulse.played > 0) && next !== null && (
-        <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground mt-2">
+        <Eyebrow className="mt-1">
           {t("weekend.pulseLine", {
             defaultValue: "{{inPlay}} in play · {{played}} played · {{scored}} scored",
             inPlay: pulse.inPlay,
             played: pulse.played,
             scored: pulse.scored,
           })}
-        </p>
+        </Eyebrow>
       )}
-    </NeoCard>
+    </Card>
   );
 }
 
@@ -168,6 +169,38 @@ function railRank(fixture: WeekendFixtureRow, now: number): number {
   return 3;
 }
 
+/** The rail/panel header: which leagues play this gameweek + "All fixtures". */
+function FixturesHeader({
+  leagueIds,
+  onOpenFixtures,
+}: {
+  leagueIds?: ReadonlyArray<number>;
+  onOpenFixtures: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="flex min-h-11 items-center justify-between gap-2">
+      {leagueIds !== undefined && leagueIds.length > 0 ? (
+        <WeekendLeaguesLine leagueIds={leagueIds} testid="weekend-hub-leagues-line" className="min-w-0" />
+      ) : (
+        <Eyebrow as="span" className="font-bold">
+          {t("weekend.railTitle", { defaultValue: "This gameweek" })}
+        </Eyebrow>
+      )}
+      <Button
+        variant="ghost"
+        size="sm"
+        data-testid="fixtures-rail-all"
+        onClick={onOpenFixtures}
+        className="-mr-2 shrink-0 gap-1 px-2"
+      >
+        {t("weekend.allFixtures", { defaultValue: "All fixtures" })}
+        <ChevronRight size={16} strokeWidth={2.5} aria-hidden />
+      </Button>
+    </div>
+  );
+}
+
 export function FixturesRail({
   payload,
   now,
@@ -176,7 +209,7 @@ export function FixturesRail({
 }: {
   payload: WeekendFixturesPayload;
   now: number;
-  /** FW-RECEIPT P1: the rail header IS the "This weekend" line, so it carries
+  /** FW-RECEIPT P1: the rail header IS the "This gameweek" line, so it carries
    *  the leagues chip/expander — one statement of the window, not two. */
   leagueIds?: ReadonlyArray<number>;
   onOpenFixtures: () => void;
@@ -199,90 +232,56 @@ export function FixturesRail({
 
   return (
     <div data-testid="fixtures-rail">
-      <div className="flex items-baseline justify-between gap-2 mb-2">
-        {leagueIds !== undefined && leagueIds.length > 0 ? (
-          <WeekendLeaguesLine
-            leagueIds={leagueIds}
-            testid="weekend-hub-leagues-line"
-            className="min-w-0"
-          />
-        ) : (
-          <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-            {t("weekend.railTitle", { defaultValue: "This weekend" })}
-          </h2>
-        )}
-        <button
-          type="button"
-          data-testid="fixtures-rail-all"
-          onClick={onOpenFixtures}
-          className="shrink-0 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-primary flex items-center gap-0.5 active:opacity-60"
-        >
-          {t("weekend.allFixtures", { defaultValue: "All fixtures" })}
-          <ChevronRight size={12} strokeWidth={3} aria-hidden />
-        </button>
-      </div>
-      <div className="flex gap-2 overflow-x-auto overflow-y-hidden scrollbar-none -mx-5 px-5 pb-1">
+      <FixturesHeader leagueIds={leagueIds} onOpenFixtures={onOpenFixtures} />
+      <div className="-mx-5 flex gap-2 overflow-x-auto overflow-y-hidden px-5 pb-2 pt-1 scrollbar-none">
         {rail.map((fixture) => {
           const kind = fixtureDisplayKind(fixture, now);
           const score = fixtureScoreline(fixture, now);
+          const kickoff = new Date(fixture.kickoffAt);
+          // The card's top line says WHEN (or the result); the day is always
+          // named, because a gameweek can run Tuesday to Monday.
+          const when =
+            score !== null
+              ? `${
+                  kind === "live" || kind === "started"
+                    ? t("weekend.fixtureLive", { defaultValue: "Live" })
+                    : t("weekend.fixtureFt", { defaultValue: "FT" })
+                } · ${score.home}–${score.away}`
+              : kind === "void"
+                ? t("weekend.fixtureVoid", { defaultValue: "OFF" })
+                : `${kickoff.toLocaleDateString(i18n.language, { weekday: "short" })} ${kickoff.toLocaleTimeString(
+                    i18n.language,
+                    { hour: "numeric", minute: "2-digit" },
+                  )}`;
           return (
-            <button
+            <Card
               key={fixture.fixtureId}
-              type="button"
+              interactive
+              elevation="raised"
+              padding="sm"
               data-testid="fixtures-rail-card"
               onClick={onOpenFixtures}
-              className="shrink-0 w-[150px] neo-border rounded-lg bg-card text-card-foreground neo-shadow-sm px-2.5 py-2 text-left active:neo-shadow-pressed"
+              className={`${RAIL_CARD} flex shrink-0 flex-col gap-1`}
             >
-              {/* P3: a grid rather than two stacked columns, so each score
-                  number stays row-paired with its club name when a long name
-                  wraps to a second line (clamped at two). */}
-              <span className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-1.5 items-center">
-                <span className="text-[11px] font-heading font-bold leading-tight line-clamp-2 break-words">
-                  {fixture.homeName ?? fixture.homeClubId}
-                </span>
-                {score !== null ? (
-                  <span className="font-mono font-bold text-sm tabular-nums leading-tight text-right">
-                    {score.home}
-                  </span>
-                ) : kind === "void" ? (
-                  <span className="row-span-2 font-mono text-[10px] text-muted-foreground text-right">
-                    {t("weekend.fixtureVoid", { defaultValue: "OFF" })}
-                  </span>
-                ) : (
-                  <span className="row-span-2 font-mono text-[11px] tabular-nums text-right whitespace-nowrap">
-                    <span className="block text-[9px] uppercase text-muted-foreground">
-                      {new Date(fixture.kickoffAt).toLocaleDateString(i18n.language, {
-                        weekday: "short",
-                      })}
-                    </span>
-                    {new Date(fixture.kickoffAt).toLocaleTimeString(i18n.language, {
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                )}
-                <span className="text-[11px] font-heading font-bold leading-tight line-clamp-2 break-words">
-                  {fixture.awayName ?? fixture.awayClubId}
-                </span>
-                {score !== null && (
-                  <span className="font-mono font-bold text-sm tabular-nums leading-tight text-right">
-                    {score.away}
-                  </span>
-                )}
+              <span
+                className={`font-mono text-eyebrow font-bold uppercase tabular-nums ${
+                  kind === "live" || kind === "started" ? "text-primary" : "text-muted-foreground"
+                }`}
+              >
+                {when}
               </span>
-              <span className="block font-mono text-[9px] uppercase tracking-[0.1em] text-muted-foreground truncate mt-1">
-                {kind === "live" || kind === "started" ? (
-                  <span className="text-primary font-bold">
-                    {t("weekend.fixtureLive", { defaultValue: "Live" })} ·{" "}
-                  </span>
-                ) : kind === "played" ? (
-                  `${t("weekend.fixtureFt", { defaultValue: "FT" })} · `
-                ) : null}
+              {/* Home v Away as one phrase: names wrap instead of truncating,
+                  and the "v" keeps two clubs from reading as one. */}
+              <span className="line-clamp-3 break-words font-heading text-body-sm font-bold leading-tight">
+                {fixture.homeName ?? fixture.homeClubId}{" "}
+                <span className="font-normal text-muted-foreground">v</span>{" "}
+                {fixture.awayName ?? fixture.awayClubId}
+              </span>
+              <span className="mt-auto truncate font-mono text-eyebrow uppercase text-muted-foreground">
                 {leagueName(fixture.leagueId)}
-                {fixture.scored &&
-                  ` · ${t("weekend.fixturePointsIn", { defaultValue: "points in" })}`}
+                {fixture.scored && ` · ${t("weekend.fixturePointsIn", { defaultValue: "points in" })}`}
               </span>
-            </button>
+            </Card>
           );
         })}
       </div>
@@ -315,40 +314,43 @@ export function SquadStatusCard({
   const anythingScored = score.scoredSlots > 0 || score.awaitingSlots > 0;
 
   return (
-    <NeoCard
-      shadow="lg"
-      color={settled ? "success" : "accent"}
+    <Card
+      interactive
+      elevation="lifted"
       onClick={onOpen}
-      className="flex items-center justify-between gap-3 text-left"
+      // R4: your squad is outlined in lime, never filled with it.
+      className="flex items-center justify-between gap-3 !border-lime"
       data-testid="squad-status-card"
     >
       <div className="min-w-0">
-        <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] opacity-70">
+        <Eyebrow>
           {t("weekend.yourThirteen", { defaultValue: "Your 13 · GW {{gw}}", gw: score.gwNumber })}
-        </p>
+        </Eyebrow>
         {score.emptySlots > 0 ? (
-          <p className="font-heading font-bold text-lg leading-tight mt-0.5">
+          <p className="mt-0.5 font-heading text-title-sm font-bold">
             {t("weekend.squadUnfinished", {
               defaultValue: "{{n}} spots still open",
               n: score.emptySlots,
             })}
           </p>
         ) : anythingScored ? (
-          <p className="font-heading font-bold text-lg leading-tight mt-0.5">
-            {formatPoints(score.total)}{" "}
-            <span className="text-sm">{t("weekend.pts", { defaultValue: "pts" })}</span>
-            <span className="font-mono text-[10px] uppercase tracking-wide ml-1.5 opacity-70">
+          <p className="mt-0.5 flex flex-wrap items-baseline gap-x-1.5 font-heading text-title-sm font-bold">
+            <span>
+              {formatPoints(score.total)}{" "}
+              <span className="text-body-sm">{t("weekend.pts", { defaultValue: "pts" })}</span>
+            </span>
+            <Badge tone={settled ? "right" : "muted"} shape="tag">
               {settled
                 ? t("weekend.settled", { defaultValue: "settled" })
                 : t("weekend.provisional", { defaultValue: "provisional" })}
-            </span>
+            </Badge>
           </p>
         ) : (
-          <p className="font-heading font-bold text-lg leading-tight mt-0.5">
+          <p className="mt-0.5 font-heading text-title-sm font-bold">
             {t("weekend.squadReady", { defaultValue: "Your 13 is in" })}
           </p>
         )}
-        <p className="text-[11px] opacity-80 mt-0.5">
+        <p className="mt-0.5 text-meta text-muted-foreground">
           {score.emptySlots > 0
             ? t("weekend.squadUnfinishedBody", {
                 defaultValue: "Every player locks at his own kickoff.",
@@ -369,7 +371,7 @@ export function SquadStatusCard({
         </p>
         {standing !== undefined && (
           <p
-            className="font-mono text-[10px] font-bold uppercase tracking-[0.1em] mt-1.5"
+            className="mt-1.5 font-mono text-eyebrow font-bold uppercase"
             data-testid="weekend-hub-rank"
           >
             {settled
@@ -397,46 +399,36 @@ export function SquadStatusCard({
           </p>
         )}
       </div>
-      <ChevronRight size={18} strokeWidth={3} className="shrink-0" aria-hidden />
-    </NeoCard>
+      <ChevronRight size={20} strokeWidth={2.5} className="shrink-0" aria-hidden />
+    </Card>
   );
 }
 
-// ── the doors, compact ──
+// ── loading placeholders (same footprint as the real blocks) ──
 
-function HubDoor({
-  icon: Icon,
-  color,
-  title,
-  body,
-  onClick,
-  testId,
-}: {
-  icon: LucideIcon;
-  color: NeoColor;
-  title: string;
-  body: string;
-  onClick: () => void;
-  testId: string;
-}) {
+function HeroSkeleton() {
+  return <Skeleton className={`${HERO_HEIGHT} neo-border`} data-testid="matchday-hero-skeleton" />;
+}
+
+function RailSkeleton() {
   return (
-    <NeoCard
-      color={color}
-      shadow="lg"
-      onClick={onClick}
-      className="flex flex-col items-start gap-2 text-left"
-      data-testid={testId}
-    >
-      <div className="neo-border rounded-lg bg-background p-2 shrink-0">
-        <Icon size={18} strokeWidth={2.5} className="text-foreground" />
+    <div aria-hidden="true">
+      <div className="flex min-h-11 items-center">
+        <Skeleton className="h-4 w-40" />
       </div>
-      <div className="min-w-0">
-        <p className="font-heading font-bold text-base leading-tight">{title}</p>
-        <p className="text-[11px] opacity-75 mt-0.5 leading-snug">{body}</p>
+      <div className="-mx-5 flex gap-2 overflow-hidden px-5 pb-2 pt-1">
+        {[0, 1, 2].map((i) => (
+          <Skeleton key={i} className={`${RAIL_CARD} shrink-0`} />
+        ))}
       </div>
-    </NeoCard>
+    </div>
   );
 }
+
+type FixturesState =
+  | { state: "loading" }
+  | { state: "none" }
+  | { state: "ready"; payload: WeekendFixturesPayload };
 
 export default function WeekendHubScreen() {
   const navigate = useNavigate();
@@ -451,19 +443,24 @@ export default function WeekendHubScreen() {
 
   // A4: the matchday payload — imperative and fail-quiet so a backend that
   // predates getWeekendFixtures renders the hub exactly as before.
-  const [fixtures, setFixtures] = useState<WeekendFixturesPayload | null>(null);
+  const [fixturesState, setFixturesState] = useState<FixturesState>({ state: "loading" });
   useEffect(() => {
     let cancelled = false;
     convex
       .query(api.fantasyMarket.getWeekendFixtures, {})
       .then((payload) => {
-        if (!cancelled && payload !== null) setFixtures(payload);
+        if (cancelled) return;
+        setFixturesState(payload === null ? { state: "none" } : { state: "ready", payload });
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!cancelled) setFixturesState({ state: "none" });
+      });
     return () => {
       cancelled = true;
     };
   }, [convex]);
+  const fixtures = fixturesState.state === "ready" ? fixturesState.payload : null;
+  const fixturesLoading = fixturesState.state === "loading";
 
   // Your squad's weekend — null for visitors without a session or squad, so
   // the card renders only when there is a squad to speak of.
@@ -497,9 +494,11 @@ export default function WeekendHubScreen() {
 
   // B1: wide screens hold the weekend's fixtures as a persistent side panel
   // instead of the horizontal rail — same payload, same day grouping as the
-  // fixtures screen itself.
+  // fixtures screen itself. The panel's column is laid out while the payload
+  // loads too, so the main column never re-flows when it lands.
   const wide = useWideScreen();
-  const showFixturesPanel = wide && fixtures !== null;
+  const showFixturesPanel = wide && fixturesState.state !== "none";
+  const leagueIds = weekendLeagues?.leagues.map((l) => l.leagueId);
 
   return (
     <ShellLayout
@@ -508,199 +507,177 @@ export default function WeekendHubScreen() {
       subtitle={t("weekend.hubSubtitle", {
         defaultValue: "Eight leagues, one squad.",
       })}
-      back
-      onBack={() => navigate(SHELL_ROUTES.compete)}
       headerRight={
         // U3: the rules screen's natural front door.
-        <button
-          type="button"
+        <IconButton
+          variant="secondary"
           aria-label={t("weekend.howToPlayTitle", { defaultValue: "How to play" })}
           data-testid="weekend-how-to-play-button"
-          className="neo-border neo-shadow rounded-lg w-9 h-9 flex items-center justify-center bg-card active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
           onClick={() => navigate(SHELL_ROUTES.weekendHowToPlay)}
         >
-          <HelpCircle size={16} strokeWidth={3} />
-        </button>
+          <HelpCircle aria-hidden />
+        </IconButton>
       }
       scroll
     >
       <div
         className={
           showFixturesPanel
-            ? "grid grid-cols-[minmax(0,1fr)_minmax(340px,400px)] gap-6 items-start max-w-5xl mx-auto w-full pb-4"
-            : "flex flex-col gap-4 md:max-w-md md:mx-auto md:w-full pb-4"
+            ? "mx-auto grid w-full max-w-5xl grid-cols-[minmax(0,1fr)_minmax(340px,400px)] items-start gap-6 pb-4"
+            : "flex flex-col gap-4 pb-4 md:mx-auto md:w-full md:max-w-md"
         }
       >
-      <div className="flex flex-col gap-4 min-w-0">
-        <div className="flex items-center gap-2" data-testid="weekend-hub-board-line">
-          <CalendarRange size={14} strokeWidth={3} className="text-muted-foreground shrink-0" />
-          {gameweek ? (
-            <>
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                {t("weekend.boardOpen", {
-                  defaultValue: "Gameweek {{gw}} board is open",
-                  gw: gameweek.gwNumber,
-                })}
-              </p>
-              <NeoBadge color="accent">
-                {t("weekend.live", { defaultValue: "Live" })}
-              </NeoBadge>
-            </>
-          ) : (
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-              {t("weekend.boardBetween", {
-                defaultValue: "Fresh board opens for each weekend",
-              })}
-            </p>
-          )}
-        </div>
-        {/* P1: the leagues line lives in the fixtures-rail header (one "This
-            weekend" on the hub, not two). It renders here standalone only on
-            the fail-quiet path — a backend without the fixtures payload has
-            no rail to carry it. */}
-        {fixtures === null && weekendLeagues != null && weekendLeagues.leagues.length > 0 && (
-          <WeekendLeaguesLine
-            leagueIds={weekendLeagues.leagues.map((l) => l.leagueId)}
-            testid="weekend-hub-leagues-line"
-            className="-mt-2"
-          />
-        )}
-
-        <MatchdayHero
-          gwNumber={gameweek?.gwNumber ?? fixtures?.gwNumber ?? null}
-          payload={fixtures}
-          now={now}
-        />
-
-        {squadScore != null && gameweek != null && (
-          <SquadStatusCard
-            score={{ ...squadScore, gwNumber: gameweek.gwNumber }}
-            standing={
-              myRank === null || leaderboard === undefined
-                ? undefined
-                : {
-                    rank: myRank.rank,
-                    ranked: leaderboard.ranked,
-                    gap: rankGap,
-                    movement: rankMovement,
-                  }
-            }
-            onOpen={() => navigate(SHELL_ROUTES.weekendSquad)}
-          />
-        )}
-
-        {fixtures !== null && !showFixturesPanel && (
-          <FixturesRail
-            payload={fixtures}
-            now={now}
-            leagueIds={weekendLeagues?.leagues.map((l) => l.leagueId)}
-            onOpenFixtures={() => navigate(SHELL_ROUTES.weekendFixtures)}
-          />
-        )}
-
-        <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground -mb-1">
-          {t("weekend.playTitle", { defaultValue: "Play the weekend" })}
-        </h2>
-        <NeoCard
-          shadow="lg"
-          onClick={() => navigate(SHELL_ROUTES.weekendLeaderboard)}
-          className="flex items-center gap-3 text-left"
-          data-testid="weekend-door-leaderboard"
-        >
-          <div className="neo-border rounded-lg bg-primary text-primary-foreground p-2 shrink-0">
-            <Trophy size={18} strokeWidth={2.5} aria-hidden />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-heading font-bold text-base leading-tight">
-              {t("weekend.leaderboardTitle", { defaultValue: "Leaderboard" })}
-            </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
-              {t("weekend.leaderboardDoorBody", {
-                defaultValue: "See how every budget squad is scoring.",
-              })}
-            </p>
-          </div>
-          <ChevronRight size={18} strokeWidth={3} className="shrink-0" aria-hidden />
-        </NeoCard>
-        <div className="grid grid-cols-2 gap-3">
-          <HubDoor
-            icon={Wallet}
-            color="accent"
-            title={t("weekend.doorSquadTitle", { defaultValue: "Budget squad" })}
-            body={t("weekend.doorSquadBodyShort", {
-              defaultValue: "A fresh 13 under budget.",
-            })}
-            onClick={() => navigate(SHELL_ROUTES.weekendSquad)}
-            testId="weekend-door-squad"
-          />
-          <HubDoor
-            icon={Users}
-            color="pink"
-            title={t("weekend.doorCrewsTitle", { defaultValue: "Crew draft" })}
-            body={t("weekend.doorCrewsBodyShort", {
-              defaultValue: "One code, unique picks.",
-            })}
-            onClick={() => navigate(SHELL_ROUTES.weekendCrews)}
-            testId="weekend-door-crews"
-          />
-          <HubDoor
-            icon={Vote}
-            color="yellow"
-            title={t("weekend.doorVoteTitle", { defaultValue: "Rate the weekend" })}
-            body={t("weekend.doorVoteBodyShort", {
-              defaultValue: "The crowd moves every score.",
-            })}
-            onClick={() => navigate(SHELL_ROUTES.weekendVote)}
-            testId="weekend-door-vote"
-          />
-          <HubDoor
-            icon={Gavel}
-            color="blue"
-            title={t("weekend.doorCourtTitle", { defaultValue: "Reclamation court" })}
-            body={t("weekend.doorCourtBodyShort", {
-              defaultValue: "Argue a player's real position.",
-            })}
-            onClick={() => navigate(SHELL_ROUTES.weekendCourt)}
-            testId="weekend-door-court"
-          />
-        </div>
-        {/* The profile-level favorite club (exempt from the 3-per-club cap).
-            Renders nothing for anonymous visitors. */}
-        <FavoriteClubCard />
-      </div>
-
-      {showFixturesPanel && fixtures !== null && (
-        <aside
-          data-testid="hub-fixtures-panel"
-          // FW-NIT1: a real vertical scroller wears the themed thin bar —
-          // scrollbar-none stays reserved for horizontal chip rows.
-          className="min-w-0 sticky top-2 max-h-[calc(100dvh-9rem)] overflow-y-auto flex flex-col gap-2 pb-2 pr-1"
-        >
-          <div className="flex items-baseline justify-between gap-2">
-            {weekendLeagues != null && weekendLeagues.leagues.length > 0 ? (
-              <WeekendLeaguesLine
-                leagueIds={weekendLeagues.leagues.map((l) => l.leagueId)}
-                testid="weekend-hub-leagues-line"
-                className="min-w-0"
-              />
+        <div className="flex min-w-0 flex-col gap-4">
+          <div className="flex min-h-6 items-center gap-2" data-testid="weekend-hub-board-line">
+            <CalendarRange size={16} strokeWidth={2.5} className="shrink-0 text-muted-foreground" aria-hidden />
+            {gameweek ? (
+              <>
+                <Eyebrow className="font-bold">
+                  {t("weekend.boardOpen", {
+                    defaultValue: "Gameweek {{gw}} board is open",
+                    gw: gameweek.gwNumber,
+                  })}
+                </Eyebrow>
+                <Badge tone="right">{t("weekend.live", { defaultValue: "Live" })}</Badge>
+              </>
             ) : (
-              <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                {t("weekend.railTitle", { defaultValue: "This weekend" })}
-              </h2>
+              <Eyebrow className="font-bold">
+                {t("weekend.boardBetween", {
+                  defaultValue: "Fresh board opens for each weekend",
+                })}
+              </Eyebrow>
             )}
-            <button
-              type="button"
-              data-testid="fixtures-rail-all"
-              onClick={() => navigate(SHELL_ROUTES.weekendFixtures)}
-              className="shrink-0 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-primary flex items-center gap-0.5 active:opacity-60"
-            >
-              {t("weekend.allFixtures", { defaultValue: "All fixtures" })}
-              <ChevronRight size={12} strokeWidth={3} aria-hidden />
-            </button>
           </div>
-          <FixturesView payload={fixtures} now={now} />
-        </aside>
-      )}
+          {/* P1: the leagues line lives in the fixtures-rail header (one "This
+              gameweek" on the hub, not two). It renders here standalone only
+              on the fail-quiet path — a backend without the fixtures payload
+              has no rail to carry it. */}
+          {fixturesState.state === "none" && leagueIds !== undefined && leagueIds.length > 0 && (
+            <WeekendLeaguesLine leagueIds={leagueIds} testid="weekend-hub-leagues-line" className="-mt-2" />
+          )}
+
+          {fixturesLoading ? (
+            <HeroSkeleton />
+          ) : (
+            <MatchdayHero
+              gwNumber={gameweek?.gwNumber ?? fixtures?.gwNumber ?? null}
+              payload={fixtures}
+              now={now}
+            />
+          )}
+
+          {squadScore != null && gameweek != null && (
+            <SquadStatusCard
+              score={{ ...squadScore, gwNumber: gameweek.gwNumber }}
+              standing={
+                myRank === null || leaderboard === undefined
+                  ? undefined
+                  : {
+                      rank: myRank.rank,
+                      ranked: leaderboard.ranked,
+                      gap: rankGap,
+                      movement: rankMovement,
+                    }
+              }
+              onOpen={() => navigate(SHELL_ROUTES.weekendSquad)}
+            />
+          )}
+
+          {!showFixturesPanel &&
+            (fixturesLoading ? (
+              <RailSkeleton />
+            ) : fixtures !== null ? (
+              <FixturesRail
+                payload={fixtures}
+                now={now}
+                leagueIds={leagueIds}
+                onOpenFixtures={() => navigate(SHELL_ROUTES.weekendFixtures)}
+              />
+            ) : null)}
+
+          <Eyebrow as="div" className="-mb-1 font-bold">
+            {t("weekend.playTitle", { defaultValue: "Play the weekend" })}
+          </Eyebrow>
+          <ModeTile
+            layout="row"
+            mode="surface"
+            elevation="lifted"
+            icon={Trophy}
+            name={t("weekend.leaderboardTitle", { defaultValue: "Leaderboard" })}
+            line={t("weekend.leaderboardDoorBody", {
+              defaultValue: "See how every budget squad is scoring.",
+            })}
+            onClick={() => navigate(SHELL_ROUTES.weekendLeaderboard)}
+            data-testid="weekend-door-leaderboard"
+          />
+          <div className="grid grid-cols-2 gap-3">
+            {/* The budget squad is the hub's one action: lime OUTLINE (R4 —
+                lime is never a large fill), the other doors keep their mode
+                accents. */}
+            <ModeTile
+              mode="outline"
+              elevation="lifted"
+              icon={Wallet}
+              name={t("weekend.doorSquadTitle", { defaultValue: "Budget squad" })}
+              line={t("weekend.doorSquadBodyShort", { defaultValue: "A fresh 13 under budget." })}
+              onClick={() => navigate(SHELL_ROUTES.weekendSquad)}
+              data-testid="weekend-door-squad"
+            />
+            <ModeTile
+              mode="pink"
+              elevation="lifted"
+              icon={Users}
+              name={t("weekend.doorCrewsTitle", { defaultValue: "Crew draft" })}
+              line={t("weekend.doorCrewsBodyShort", { defaultValue: "One code, unique picks." })}
+              onClick={() => navigate(SHELL_ROUTES.weekendCrews)}
+              data-testid="weekend-door-crews"
+            />
+            <ModeTile
+              mode="yellow"
+              elevation="lifted"
+              icon={Vote}
+              name={t("weekend.doorVoteTitle", { defaultValue: "Rate the weekend" })}
+              line={t("weekend.doorVoteBodyShort", { defaultValue: "The crowd moves every score." })}
+              onClick={() => navigate(SHELL_ROUTES.weekendVote)}
+              data-testid="weekend-door-vote"
+            />
+            <ModeTile
+              mode="blue"
+              elevation="lifted"
+              icon={Gavel}
+              name={t("weekend.doorCourtTitle", { defaultValue: "Reclamation court" })}
+              line={t("weekend.doorCourtBodyShort", { defaultValue: "Argue a player's real position." })}
+              onClick={() => navigate(SHELL_ROUTES.weekendCourt)}
+              data-testid="weekend-door-court"
+            />
+          </div>
+          {/* The profile-level favorite club (exempt from the 3-per-club cap).
+              Renders nothing for anonymous visitors. */}
+          <FavoriteClubCard />
+        </div>
+
+        {showFixturesPanel && (
+          <aside
+            data-testid="hub-fixtures-panel"
+            // FW-NIT1: a real vertical scroller wears the themed thin bar —
+            // scrollbar-none stays reserved for horizontal chip rows.
+            className="sticky top-2 flex max-h-[calc(100dvh-9rem)] min-w-0 flex-col gap-2 overflow-y-auto pb-2 pr-1"
+          >
+            <FixturesHeader
+              leagueIds={leagueIds}
+              onOpenFixtures={() => navigate(SHELL_ROUTES.weekendFixtures)}
+            />
+            {fixtures !== null ? (
+              <FixturesView payload={fixtures} now={now} />
+            ) : (
+              <div className="flex flex-col gap-2" aria-hidden="true">
+                {[0, 1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-20" />
+                ))}
+              </div>
+            )}
+          </aside>
+        )}
       </div>
     </ShellLayout>
   );

@@ -20,8 +20,9 @@ import { useConvex } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { Check, Lock } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoBadge } from "@/components/neo/NeoBadge";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { leagueName } from "@/lib/leagueNames";
@@ -51,69 +52,65 @@ export function FixtureCard({ fixture, now }: { fixture: WeekendFixtureRow; now:
     minute: "2-digit",
   });
 
-  // Centre column: the one number (or time) the row is about.
-  const centre =
-    score !== null ? (
-      <span className="font-mono font-bold text-base tabular-nums" data-testid="fixture-score">
-        {score.home}–{score.away}
-      </span>
-    ) : (
-      <span
-        className={`font-mono font-bold text-sm tabular-nums whitespace-nowrap ${
-          kind === "upcoming" ? "" : "text-muted-foreground"
-        }`}
-        data-testid="fixture-kickoff"
-      >
-        {kind === "void"
-          ? t("weekend.fixtureVoid", { defaultValue: "OFF" })
-          : kickoffLabel}
-      </span>
-    );
-
   const stateBadge =
     kind === "live" ? (
-      <NeoBadge color="accent" size="sm">
-        {t("weekend.fixtureLive", { defaultValue: "Live" })}
-      </NeoBadge>
+      <Badge tone="action">{t("weekend.fixtureLive", { defaultValue: "Live" })}</Badge>
     ) : kind === "played" ? (
-      <NeoBadge color="muted" size="sm">
-        {t("weekend.fixtureFt", { defaultValue: "FT" })}
-      </NeoBadge>
+      <Badge tone="muted">{t("weekend.fixtureFt", { defaultValue: "FT" })}</Badge>
     ) : kind === "void" ? (
-      <NeoBadge color="muted" size="sm">
+      <Badge tone="muted">
         {fixture.status === "postponed"
           ? t("weekend.fixturePostponed", { defaultValue: "Postponed" })
           : fixture.status === "cancelled"
             ? t("weekend.fixtureCancelled", { defaultValue: "Cancelled" })
             : t("weekend.fixtureAbandoned", { defaultValue: "Abandoned" })}
-      </NeoBadge>
+      </Badge>
     ) : null;
 
   return (
-    <NeoCard className="py-2.5 px-3" data-testid="fixture-card">
+    <Card padding="sm" data-testid="fixture-card">
+      {/* Home · (score | v) · Away. The centre holds only the scoreline or a
+          "v", so club names get the width: a long name wraps to a second
+          line (clamped at two) instead of truncating, and two clubs never
+          read as one run-on name. The kickoff time moves to the meta line. */}
       <div className="flex items-center gap-2">
-        {/* FW-RECEIPT P3: the card has vertical room, so a long club name
-            wraps to a second line before it truncates — "Sparta Rott…" was
-            an ellipsis with space to spare. line-clamp-2 keeps the ceiling. */}
-        <p className="flex-1 min-w-0 text-right font-heading font-bold text-sm leading-tight line-clamp-2 break-words">
+        <p className="min-w-0 flex-1 break-words text-right font-heading text-body-sm font-bold leading-tight line-clamp-2">
           {fixture.homeName ?? fixture.homeClubId}
         </p>
-        {/* min-w, not w: the time is one non-wrapping unit and the column
-            grows to its intrinsic width — long club names wrap instead
-            of squeezing the time onto two lines (FW-NIT1). */}
-        <div className="shrink-0 min-w-[64px] flex flex-col items-center gap-0.5">{centre}</div>
-        <p className="flex-1 min-w-0 font-heading font-bold text-sm leading-tight line-clamp-2 break-words">
+        <div className="flex min-w-8 shrink-0 flex-col items-center">
+          {score !== null ? (
+            <span className="font-mono text-body font-bold tabular-nums" data-testid="fixture-score">
+              {score.home}–{score.away}
+            </span>
+          ) : (
+            <span className="font-mono text-body-sm text-muted-foreground" aria-hidden>
+              v
+            </span>
+          )}
+        </div>
+        <p className="min-w-0 flex-1 break-words font-heading text-body-sm font-bold leading-tight line-clamp-2">
           {fixture.awayName ?? fixture.awayClubId}
         </p>
       </div>
-      <div className="flex items-center justify-center gap-1.5 mt-1">
-        <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+      <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1">
+        {score === null && (
+          <span
+            className={`font-mono text-eyebrow font-bold tabular-nums ${
+              kind === "upcoming" ? "text-foreground" : "text-muted-foreground"
+            }`}
+            data-testid="fixture-kickoff"
+          >
+            {kind === "void" ? t("weekend.fixtureVoid", { defaultValue: "OFF" }) : kickoffLabel}
+          </span>
+        )}
+        {score === null && <span className="text-eyebrow text-muted-foreground" aria-hidden>·</span>}
+        <span className="font-mono text-eyebrow uppercase text-muted-foreground">
           {leagueName(fixture.leagueId)}
         </span>
         {locked && (
           <Lock
-            size={10}
-            strokeWidth={3}
+            size={12}
+            strokeWidth={2.5}
             className="text-muted-foreground"
             aria-label={t("weekend.fixtureLocked", { defaultValue: "Locked" })}
             data-testid="fixture-lock"
@@ -122,15 +119,15 @@ export function FixtureCard({ fixture, now }: { fixture: WeekendFixtureRow; now:
         {stateBadge}
         {fixture.scored && (
           <span
-            className="font-mono text-[10px] uppercase tracking-[0.12em] text-primary flex items-center gap-0.5"
+            className="flex items-center gap-0.5 font-mono text-eyebrow uppercase text-verdict-right"
             data-testid="fixture-points-in"
           >
-            <Check size={10} strokeWidth={3} aria-hidden />
+            <Check size={12} strokeWidth={3} aria-hidden />
             {t("weekend.fixturePointsIn", { defaultValue: "points in" })}
           </span>
         )}
       </div>
-    </NeoCard>
+    </Card>
   );
 }
 
@@ -153,7 +150,7 @@ export function FixturesView({
       {groups.map((group) => (
         <section key={group.dayStart} data-testid="fixture-day">
           <h2
-            className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2"
+            className="mb-2 font-mono text-eyebrow font-bold uppercase text-muted-foreground"
             data-testid="fixture-day-heading"
           >
             {new Date(group.dayStart).toLocaleDateString(i18n.language, {
@@ -226,22 +223,23 @@ export default function FixturesScreen() {
           weekend on screen at once. */}
       <div className="flex flex-col gap-4 md:max-w-md md:mx-auto md:w-full pb-4 xl:max-w-4xl">
         {gate.state === "checking" ? (
-          <NeoCard className="text-center py-6">
-            <p className="text-sm text-muted-foreground">
-              {t("common.loading", { defaultValue: "Loading…" })}
-            </p>
-          </NeoCard>
+          <div className="flex flex-col gap-2" aria-busy="true">
+            <span className="sr-only">{t("common.loading", { defaultValue: "Loading…" })}</span>
+            {[0, 1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-20" />
+            ))}
+          </div>
         ) : gate.state === "closed" ? (
-          <NeoCard className="text-center py-6">
+          <Card className="py-6 text-center">
             <p className="font-heading font-bold">
               {t("weekend.noBoard", { defaultValue: "No board is open right now." })}
             </p>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="mt-1 text-body-sm text-muted-foreground">
               {t("weekend.noBoardBody", {
                 defaultValue: "A fresh board opens for each weekend. Check back soon.",
               })}
             </p>
-          </NeoCard>
+          </Card>
         ) : (
           <FixturesView
             payload={gate.payload}

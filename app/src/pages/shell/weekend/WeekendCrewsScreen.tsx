@@ -12,10 +12,10 @@ import { useMutation, useQuery } from "convex/react";
 import { notify } from "@/lib/notify";
 import { Bell, Hash, Plus, Users } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { NeoBadge } from "@/components/neo/NeoBadge";
-import { NeoInput } from "@/components/neo/NeoInput";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { friendlyError } from "@/lib/errors";
@@ -79,43 +79,44 @@ export default function WeekendCrewsScreen() {
     >
       <div className="flex flex-col gap-4 md:max-w-md md:mx-auto md:w-full">
         {crews === undefined ? (
-          <NeoCard className="text-center py-6">
+          <Card className="text-center py-6">
             <p className="text-sm text-muted-foreground">
               {t("common.loading", { defaultValue: "Loading…" })}
             </p>
-          </NeoCard>
+          </Card>
         ) : crews.length === 0 ? (
-          <NeoCard color="pink" shadow="lg" className="flex flex-col gap-3">
-            <div className="neo-border rounded-xl bg-background w-fit p-2.5">
+          <Card elevation="lifted" className="bg-hot-pink text-ink on-fill flex flex-col gap-3">
+            <div className="neo-border rounded-lg bg-background w-fit p-2.5">
               <Users size={24} strokeWidth={2.5} className="text-foreground" />
             </div>
             <div>
               <p className="font-heading font-bold text-lg leading-tight">
                 {t("weekend.noCrewsTitle", { defaultValue: "One code, one crew, 13 picks" })}
               </p>
-              <p className="text-sm opacity-80 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 {t("weekend.noCrewsBody", {
                   defaultValue:
                     "Start a crew, share the code, and draft a fresh squad every weekend. Unique picks — when a player's gone, he's gone.",
                 })}
               </p>
             </div>
-          </NeoCard>
+          </Card>
         ) : (
           crews.map((crew) => (
-            <NeoCard
+            <Card
+              interactive
               key={crew.crewId}
               onClick={() => navigate(SHELL_ROUTES.weekendCrew(crew.code))}
               className="flex items-center justify-between py-3 text-left"
             >
               <div>
                 <p className="font-heading font-bold leading-tight">{crew.name}</p>
-                <p className="font-mono text-[11px] text-muted-foreground tracking-[0.16em] uppercase">
+                <p className="font-mono text-eyebrow text-muted-foreground uppercase">
                   {crew.code} · {crew.memberCount}{" "}
                   {t("weekend.members", { defaultValue: "members" })}
                 </p>
                 {crew.scheduledFor !== null && (
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                  <p className="text-meta text-muted-foreground mt-0.5">
                     {t("weekend.scheduledDraft", {
                       defaultValue: "Draft · {{date}}",
                       date: new Date(crew.scheduledFor).toLocaleString(),
@@ -124,80 +125,80 @@ export default function WeekendCrewsScreen() {
                 )}
               </div>
               {crew.liveRoomStatus !== null && (
-                <NeoBadge color={crew.liveRoomStatus === "drafting" ? "destructive" : "yellow"}>
+                <Badge tone={crew.liveRoomStatus === "drafting" ? "destructive" : "yellow"}>
                   {crew.liveRoomStatus === "drafting"
                     ? t("weekend.liveDrafting", { defaultValue: "Drafting" })
                     : t("weekend.lobbyOpen", { defaultValue: "Lobby open" })}
-                </NeoBadge>
+                </Badge>
               )}
               {crew.liveRoomStatus === null && crew.unreadAlerts > 0 && (
-                <NeoBadge color="primary"><Bell size={11} className="mr-1" />{crew.unreadAlerts}</NeoBadge>
+                <Badge tone="primary"><Bell size={11} className="mr-1" />{crew.unreadAlerts}</Badge>
               )}
-            </NeoCard>
+            </Card>
           ))
         )}
 
         {creating ? (
-          <NeoCard shadow="lg" className="flex flex-col gap-3">
-            <p className="font-heading font-bold text-sm uppercase tracking-wide">
+          <Card elevation="lifted" className="flex flex-col gap-3">
+            <p className="font-heading font-bold text-body-sm">
               {t("weekend.nameYourCrew", { defaultValue: "Name your crew" })}
             </p>
-            <NeoInput
+            <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={32}
               placeholder={t("weekend.crewNamePlaceholder", { defaultValue: "Sunday League Legends" })}
             />
             <div className="grid grid-cols-2 gap-2">
-              <NeoButton variant="ghost" size="md" onClick={() => setCreating(false)}>
+              <Button variant="ghost" size="md" onClick={() => setCreating(false)}>
                 {t("common.cancel", { defaultValue: "Cancel" })}
-              </NeoButton>
-              <NeoButton
+              </Button>
+              <Button
                 variant="primary"
                 size="md"
                 disabled={name.trim().length < 2 || busy}
                 onClick={() => void handleCreate()}
               >
                 {t("weekend.create", { defaultValue: "Create" })}
-              </NeoButton>
+              </Button>
             </div>
-          </NeoCard>
+          </Card>
         ) : joining ? (
-          <NeoCard shadow="lg" className="flex flex-col gap-3">
-            <p className="font-heading font-bold text-sm uppercase tracking-wide">
+          <Card elevation="lifted" className="flex flex-col gap-3">
+            <p className="font-heading font-bold text-body-sm">
               {t("weekend.enterCode", { defaultValue: "Enter the crew code" })}
             </p>
-            <NeoInput
+            <Input
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               maxLength={6}
-              className="font-mono tracking-[0.3em] text-center"
+              className="font-mono text-center"
               placeholder="ABC123"
             />
             <div className="grid grid-cols-2 gap-2">
-              <NeoButton variant="ghost" size="md" onClick={() => setJoining(false)}>
+              <Button variant="ghost" size="md" onClick={() => setJoining(false)}>
                 {t("common.cancel", { defaultValue: "Cancel" })}
-              </NeoButton>
-              <NeoButton
+              </Button>
+              <Button
                 variant="primary"
                 size="md"
                 disabled={code.trim().length < 4 || busy}
                 onClick={() => void handleJoin()}
               >
                 {t("weekend.join", { defaultValue: "Join" })}
-              </NeoButton>
+              </Button>
             </div>
-          </NeoCard>
+          </Card>
         ) : (
           <>
-            <NeoButton variant="primary" size="full" onClick={() => setCreating(true)}>
+            <Button variant="primary" size="lg" block onClick={() => setCreating(true)}>
               <Plus size={18} strokeWidth={3} className="mr-1.5" />
               {t("weekend.createCrew", { defaultValue: "Create crew" })}
-            </NeoButton>
-            <NeoButton variant="secondary" size="full" onClick={() => setJoining(true)}>
+            </Button>
+            <Button variant="secondary" size="lg" block onClick={() => setJoining(true)}>
               <Hash size={18} strokeWidth={3} className="mr-1.5" />
               {t("weekend.joinCrew", { defaultValue: "Join with code" })}
-            </NeoButton>
+            </Button>
           </>
         )}
       </div>

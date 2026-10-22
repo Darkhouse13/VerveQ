@@ -60,14 +60,14 @@ test("FW-GO: short link → hub → budget squad → crew → draft lobby at 380
   await expect(page.getByText("Building for")).toBeVisible({ timeout: 45_000 });
   await expectNoHorizontalScroll(page, "create view");
   await page.getByText("Start building").click();
-  await expect(page.getByText("/ 91.0")).toBeVisible({ timeout: 45_000 });
+  await expect(page.getByText("/ £91.0m")).toBeVisible({ timeout: 45_000 });
 
   // One real pick through the pitch so the squad exists with money moved.
   await page.getByTestId("pitch-slot-0").click();
   const firstPick = page.getByRole("button", { name: "Pick", exact: true }).first();
   await expect(firstPick).toBeVisible({ timeout: 45_000 });
   await firstPick.click();
-  await expect(page.getByText("91.0 left")).toHaveCount(0, { timeout: 30_000 });
+  await expect(page.getByText("£91.0m left")).toHaveCount(0, { timeout: 30_000 });
   await expectNoHorizontalScroll(page, "squad view");
   await page.screenshot({ path: "e2e/artifacts/weekend-squad-380.png", fullPage: true });
 

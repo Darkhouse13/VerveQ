@@ -138,7 +138,7 @@ describe("the global weekend leaderboard screen", () => {
       </MemoryRouter>,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Season" }));
+    fireEvent.click(screen.getByRole("tab", { name: "Season" }));
 
     expect(screen.getByTestId("weekend-season-summary")).toHaveTextContent("Best #1");
     expect(screen.getByTestId("weekend-season-summary")).toHaveTextContent("Top-half streak 2");

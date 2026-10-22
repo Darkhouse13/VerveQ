@@ -11,8 +11,10 @@ import type { FunctionReturnType } from "convex/server";
 import { Award, Flame, Radio, Target, TrendingUp, Trophy } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { formatPoints } from "../../../../convex/lib/fantasyScoring";
-import { NeoBadge } from "@/components/neo/NeoBadge";
-import { NeoCard } from "@/components/neo/NeoCard";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Segmented } from "@/components/ui/segmented";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { useWeekendRankMovement } from "@/hooks/useWeekendRankMovement";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -42,19 +44,19 @@ function LeaderboardRow({ row }: { row: Row }) {
         row.isYou ? "bg-primary/10" : ""
       }`}
     >
-      <NeoBadge color={rankColor(row.rank)} className="w-10 justify-center px-1 shrink-0">
+      <Badge tone={rankColor(row.rank)} className="w-10 justify-center px-1 shrink-0">
         {row.rank}
-      </NeoBadge>
+      </Badge>
       <div className="min-w-0 flex-1">
         <p className="font-heading font-bold text-sm truncate">
           {row.name}
           {row.isYou && (
-            <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-primary ml-1.5">
+            <span className="font-mono text-eyebrow uppercase text-primary ml-1.5">
               {t("weekend.leaderboardYou", { defaultValue: "You" })}
             </span>
           )}
         </p>
-        <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground mt-0.5">
+        <p className="font-mono text-eyebrow uppercase text-muted-foreground mt-0.5">
           {t("weekend.leaderboardScored", {
             defaultValue: "{{scored}}/13 scored",
             scored: row.scoredSlots,
@@ -70,7 +72,7 @@ function LeaderboardRow({ row }: { row: Row }) {
         <p className="font-mono font-bold text-lg tabular-nums leading-none">
           {formatPoints(row.total)}
         </p>
-        <p className="font-mono text-[9px] uppercase tracking-[0.12em] text-muted-foreground mt-1">
+        <p className="font-mono text-eyebrow uppercase text-muted-foreground mt-1">
           {t("weekend.pts", { defaultValue: "pts" })}
           {row.tied ? ` · ${t("weekend.tied", { defaultValue: "tied" })}` : ""}
         </p>
@@ -91,26 +93,26 @@ function YourRaceCard({ board }: { board: Board }) {
   const top = percentile(me.rank, board.ranked);
 
   return (
-    <NeoCard color="accent" shadow="lg" data-testid="weekend-your-race">
+    <Card elevation="lifted" data-testid="weekend-your-race" className="!border-lime">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] opacity-70">
+          <p className="font-mono text-eyebrow font-bold uppercase text-muted-foreground">
             {t("weekend.yourRace", { defaultValue: "Your race" })}
           </p>
-          <p className="font-heading font-bold text-2xl leading-none mt-1">
+          <p className="font-heading font-bold text-title-lg mt-1">
             #{me.rank}
-            <span className="text-sm ml-1.5 opacity-70">
+            <span className="text-body-sm ml-1.5 text-muted-foreground">
               {t("weekend.rankOf", { defaultValue: "of {{count}}", count: board.ranked })}
             </span>
           </p>
         </div>
-        <NeoBadge color="muted">
+        <Badge tone="muted">
           {t("weekend.topPercent", { defaultValue: "Top {{percent}}%", percent: top })}
-        </NeoBadge>
+        </Badge>
       </div>
       <div className="grid grid-cols-2 gap-2 mt-3">
         <div className="neo-border rounded-lg bg-background/90 text-foreground px-3 py-2">
-          <p className="font-mono text-[9px] uppercase tracking-[0.12em] text-muted-foreground">
+          <p className="font-mono text-eyebrow uppercase text-muted-foreground">
             {above === null
               ? t("weekend.position", { defaultValue: "Position" })
               : t("weekend.nextPlace", { defaultValue: "Next place" })}
@@ -128,7 +130,7 @@ function YourRaceCard({ board }: { board: Board }) {
           </p>
         </div>
         <div className="neo-border rounded-lg bg-background/90 text-foreground px-3 py-2">
-          <p className="font-mono text-[9px] uppercase tracking-[0.12em] text-muted-foreground">
+          <p className="font-mono text-eyebrow uppercase text-muted-foreground">
             {t("weekend.squadProgress", { defaultValue: "Squad progress" })}
           </p>
           <p className="font-heading font-bold text-sm mt-0.5">
@@ -141,7 +143,7 @@ function YourRaceCard({ board }: { board: Board }) {
       </div>
       {movement !== null && (
         <p
-          className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] mt-3 flex items-center gap-1"
+          className="font-mono text-eyebrow font-bold uppercase mt-3 flex items-center gap-1"
           data-testid="weekend-rank-movement"
         >
           <TrendingUp size={12} strokeWidth={3} aria-hidden />
@@ -156,7 +158,7 @@ function YourRaceCard({ board }: { board: Board }) {
               })}
         </p>
       )}
-    </NeoCard>
+    </Card>
   );
 }
 
@@ -174,8 +176,8 @@ function WeekendStandings({ board }: { board: Board }) {
   return (
     <>
       <YourRaceCard board={board} />
-      <NeoCard color="accent" shadow="lg" className="flex items-center gap-3">
-        <div className="neo-border rounded-lg bg-background text-foreground p-2.5 shrink-0">
+      <Card className="flex items-center gap-3" data-testid="weekend-board-state">
+        <div className="neo-border rounded-lg bg-background text-primary p-2.5 shrink-0">
           {board.state === "provisional" ? (
             <Radio size={20} strokeWidth={3} aria-hidden />
           ) : (
@@ -188,7 +190,7 @@ function WeekendStandings({ board }: { board: Board }) {
               ? t("weekend.leaderboardLive", { defaultValue: "Live standings" })
               : t("weekend.leaderboardFinal", { defaultValue: "Final standings" })}
           </p>
-          <p className="text-[11px] opacity-75 mt-0.5">
+          <p className="text-meta text-muted-foreground mt-0.5">
             {board.state === "provisional"
               ? t("weekend.leaderboardLiveBody", {
                   defaultValue: "Provisional totals update as points land.",
@@ -196,13 +198,13 @@ function WeekendStandings({ board }: { board: Board }) {
               : t("weekend.leaderboardFinalBody", { defaultValue: "This gameweek is settled." })}
           </p>
         </div>
-        <span className="font-mono font-bold text-sm tabular-nums shrink-0">
+        <span className="font-mono font-bold text-body-sm tabular-nums shrink-0">
           {board.ranked}/{board.participants}
         </span>
-      </NeoCard>
+      </Card>
 
       {board.rows.length === 0 ? (
-        <NeoCard className="text-center py-8" data-testid="weekend-leaderboard-empty">
+        <Card className="text-center py-8" data-testid="weekend-leaderboard-empty">
           <Trophy size={28} strokeWidth={2.5} className="mx-auto text-primary" aria-hidden />
           <p className="font-heading font-bold mt-2">
             {t("weekend.leaderboardWaiting", { defaultValue: "Waiting for the first points" })}
@@ -212,30 +214,30 @@ function WeekendStandings({ board }: { board: Board }) {
               defaultValue: "The table appears as soon as a player score lands.",
             })}
           </p>
-        </NeoCard>
+        </Card>
       ) : (
         <>
           {nearby.length > 0 && board.rows.length > nearby.length && (
             <section data-testid="weekend-around-you">
-              <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
+              <h2 className="font-mono text-eyebrow font-bold uppercase text-muted-foreground mb-2">
                 {t("weekend.aroundYou", { defaultValue: "Around you" })}
               </h2>
-              <NeoCard className="p-0 overflow-hidden">
+              <Card className="p-0 overflow-hidden">
                 {nearby.map((row, index) => (
                   <LeaderboardRow key={`near-${row.rank}-${row.name}-${index}`} row={row} />
                 ))}
-              </NeoCard>
+              </Card>
             </section>
           )}
           <section>
-            <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
+            <h2 className="font-mono text-eyebrow font-bold uppercase text-muted-foreground mb-2">
               {t("weekend.fullStandings", { defaultValue: "Full standings" })}
             </h2>
-            <NeoCard className="p-0 overflow-hidden" data-testid="weekend-leaderboard">
+            <Card className="p-0 overflow-hidden" data-testid="weekend-leaderboard">
               {board.rows.map((row, index) => (
                 <LeaderboardRow key={`${row.rank}-${row.name}-${index}`} row={row} />
               ))}
-            </NeoCard>
+            </Card>
           </section>
         </>
       )}
@@ -252,19 +254,19 @@ function SeasonLeaderboardRow({ row }: { row: SeasonRow }) {
       }`}
       data-testid={row.isYou ? "season-leaderboard-you" : "season-leaderboard-row"}
     >
-      <NeoBadge color={rankColor(row.rank)} className="w-10 justify-center px-1 shrink-0">
+      <Badge tone={rankColor(row.rank)} className="w-10 justify-center px-1 shrink-0">
         {row.rank}
-      </NeoBadge>
+      </Badge>
       <div className="min-w-0 flex-1">
         <p className="font-heading font-bold text-sm truncate">
           {row.name}
           {row.isYou && (
-            <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-primary ml-1.5">
+            <span className="font-mono text-eyebrow uppercase text-primary ml-1.5">
               {t("weekend.leaderboardYou", { defaultValue: "You" })}
             </span>
           )}
         </p>
-        <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground mt-0.5">
+        <p className="font-mono text-eyebrow uppercase text-muted-foreground mt-0.5">
           {t("weekend.weekendsPlayed", {
             defaultValue: "{{count}} weekends",
             count: row.playedWeekends,
@@ -276,7 +278,7 @@ function SeasonLeaderboardRow({ row }: { row: SeasonRow }) {
         <p className="font-mono font-bold text-lg tabular-nums leading-none">
           {formatPoints(row.total)}
         </p>
-        <p className="font-mono text-[9px] uppercase tracking-[0.12em] text-muted-foreground mt-1">
+        <p className="font-mono text-eyebrow uppercase text-muted-foreground mt-1">
           {t("weekend.pts", { defaultValue: "pts" })}
           {row.tied ? ` · ${t("weekend.tied", { defaultValue: "tied" })}` : ""}
         </p>
@@ -290,88 +292,88 @@ function SeasonStandings({ board }: { board: SeasonBoard }) {
   return (
     <>
       {board.me !== null && (
-        <NeoCard color="accent" shadow="lg" data-testid="weekend-season-summary">
-          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] opacity-70">
+        <Card elevation="lifted" data-testid="weekend-season-summary" className="!border-lime">
+          <p className="font-mono text-eyebrow font-bold uppercase text-muted-foreground">
             {t("weekend.yourSeason", { defaultValue: "Your season" })}
           </p>
           <div className="grid grid-cols-3 gap-2 mt-2 text-center">
             <div className="neo-border rounded-lg bg-background/90 text-foreground px-2 py-2">
               <p className="font-heading font-bold text-lg">#{board.me.rank}</p>
-              <p className="font-mono text-[8px] uppercase text-muted-foreground">
+              <p className="font-mono text-eyebrow uppercase text-muted-foreground">
                 {t("weekend.rank", { defaultValue: "Rank" })}
               </p>
             </div>
             <div className="neo-border rounded-lg bg-background/90 text-foreground px-2 py-2">
               <p className="font-heading font-bold text-lg">{formatPoints(board.me.total)}</p>
-              <p className="font-mono text-[8px] uppercase text-muted-foreground">
+              <p className="font-mono text-eyebrow uppercase text-muted-foreground">
                 {t("weekend.points", { defaultValue: "Points" })}
               </p>
             </div>
             <div className="neo-border rounded-lg bg-background/90 text-foreground px-2 py-2">
               <p className="font-heading font-bold text-lg">{board.me.playedWeekends}</p>
-              <p className="font-mono text-[8px] uppercase text-muted-foreground">
+              <p className="font-mono text-eyebrow uppercase text-muted-foreground">
                 {t("weekend.played", { defaultValue: "Played" })}
               </p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2 mt-3">
-            <NeoBadge color="muted">
+            <Badge tone="muted">
               <Award size={11} className="mr-1" aria-hidden />
               {t("weekend.bestFinish", {
                 defaultValue: "Best #{{rank}}",
                 rank: board.me.bestRank,
               })}
-            </NeoBadge>
-            <NeoBadge color="muted">
+            </Badge>
+            <Badge tone="muted">
               <Flame size={11} className="mr-1" aria-hidden />
               {t("weekend.topHalfStreak", {
                 defaultValue: "Top-half streak {{count}}",
                 count: board.me.topHalfStreak,
               })}
-            </NeoBadge>
+            </Badge>
             {board.me.topTenPercentFinishes > 0 && (
-              <NeoBadge color="yellow">
+              <Badge tone="yellow">
                 {t("weekend.topTenFinishes", {
                   defaultValue: "Top 10% ×{{count}}",
                   count: board.me.topTenPercentFinishes,
                 })}
-              </NeoBadge>
+              </Badge>
             )}
             {board.me.changeFromPrevious !== null && board.me.changeFromPrevious > 0 && (
-              <NeoBadge color="success">
+              <Badge tone="success">
                 <TrendingUp size={11} className="mr-1" aria-hidden />
                 {t("weekend.improvedPlaces", {
                   defaultValue: "+{{count}} places",
                   count: board.me.changeFromPrevious,
                 })}
-              </NeoBadge>
+              </Badge>
             )}
           </div>
-        </NeoCard>
+        </Card>
       )}
 
       <section>
         <div className="flex items-baseline justify-between gap-2 mb-2">
-          <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+          <h2 className="font-mono text-eyebrow font-bold uppercase text-muted-foreground">
             {t("weekend.seasonStandings", { defaultValue: "Season standings" })}
           </h2>
-          <span className="font-mono text-[10px] text-muted-foreground">
+          <span className="font-mono text-eyebrow text-muted-foreground">
             {board.ranked}/{board.participants}
           </span>
         </div>
-        <NeoCard className="p-0 overflow-hidden" data-testid="weekend-season-leaderboard">
+        <Card className="p-0 overflow-hidden" data-testid="weekend-season-leaderboard">
           {board.rows.map((row, index) => (
             <SeasonLeaderboardRow key={`${row.rank}-${row.name}-${index}`} row={row} />
           ))}
-        </NeoCard>
+        </Card>
       </section>
 
       {board.me !== null && board.me.history.length > 0 && (
         <section data-testid="weekend-history">
-          <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
+          <h2 className="font-mono text-eyebrow font-bold uppercase text-muted-foreground mb-2">
             {t("weekend.yourGameweeks", { defaultValue: "Your gameweeks" })}
           </h2>
-          <NeoCard className="p-0 overflow-hidden">
+          <Card className="p-0 overflow-hidden">
             {board.me.history.map((week) => (
               <div
                 key={week.gwNumber}
@@ -379,7 +381,7 @@ function SeasonStandings({ board }: { board: SeasonBoard }) {
               >
                 <div>
                   <p className="font-heading font-bold text-sm">GW {week.gwNumber}</p>
-                  <p className="font-mono text-[9px] uppercase text-muted-foreground">
+                  <p className="font-mono text-eyebrow uppercase text-muted-foreground">
                     {t("weekend.topPercent", {
                       defaultValue: "Top {{percent}}%",
                       percent: week.percentile,
@@ -392,22 +394,22 @@ function SeasonStandings({ board }: { board: SeasonBoard }) {
                 </p>
               </div>
             ))}
-          </NeoCard>
+          </Card>
         </section>
       )}
 
       {board.weeks.length > 0 && (
         <section data-testid="weekend-podium-archive">
-          <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
+          <h2 className="font-mono text-eyebrow font-bold uppercase text-muted-foreground mb-2">
             {t("weekend.weeklyPodiums", { defaultValue: "Weekly podiums" })}
           </h2>
           <div className="flex flex-col gap-2">
             {board.weeks.map((week) => (
-              <NeoCard key={week.gwNumber} className="py-3">
+              <Card key={week.gwNumber} className="py-3">
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-heading font-bold">GW {week.gwNumber}</p>
                   {week.mostImproved !== null && (
-                    <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-primary">
+                    <span className="font-mono text-eyebrow uppercase text-primary">
                       {t("weekend.mostImproved", {
                         defaultValue: "Most improved: {{name}} +{{places}}",
                         name: week.mostImproved.name,
@@ -419,9 +421,9 @@ function SeasonStandings({ board }: { board: SeasonBoard }) {
                 <div className="flex flex-col gap-1.5 mt-2">
                   {week.podium.map((entry, index) => (
                     <div key={`${entry.rank}-${entry.name}-${index}`} className="flex items-center gap-2">
-                      <NeoBadge color={rankColor(entry.rank)} className="w-8 justify-center px-1">
+                      <Badge tone={rankColor(entry.rank)} className="w-8 justify-center px-1">
                         {entry.rank}
-                      </NeoBadge>
+                      </Badge>
                       <span className="font-heading font-bold text-sm truncate flex-1">{entry.name}</span>
                       <span className="font-mono font-bold text-sm tabular-nums">
                         {formatPoints(entry.total)}
@@ -429,7 +431,7 @@ function SeasonStandings({ board }: { board: SeasonBoard }) {
                     </div>
                   ))}
                 </div>
-              </NeoCard>
+              </Card>
             ))}
           </div>
         </section>
@@ -472,13 +474,14 @@ export default function WeekendLeaderboardScreen() {
     >
       <div className="flex flex-col gap-4 md:max-w-lg md:mx-auto md:w-full pb-4">
         {board === undefined ? (
-          <NeoCard className="text-center py-6">
-            <p className="text-sm text-muted-foreground">
-              {t("common.loading", { defaultValue: "Loading…" })}
-            </p>
-          </NeoCard>
+          <div className="flex flex-col gap-4" aria-busy="true">
+            <span className="sr-only">{t("common.loading", { defaultValue: "Loading…" })}</span>
+            <Skeleton className="h-14" />
+            <Skeleton className="h-24" />
+            <Skeleton className="h-64" />
+          </div>
         ) : board === null ? (
-          <NeoCard className="text-center py-6">
+          <Card className="text-center py-6">
             <p className="font-heading font-bold">
               {t("weekend.noBoard", { defaultValue: "No board is open right now." })}
             </p>
@@ -487,49 +490,37 @@ export default function WeekendLeaderboardScreen() {
                 defaultValue: "A fresh board opens for each weekend. Check back soon.",
               })}
             </p>
-          </NeoCard>
+          </Card>
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-2" data-testid="weekend-leaderboard-tabs">
-              <button
-                type="button"
-                onClick={() => setTab("weekend")}
-                className={`neo-border rounded-lg px-3 py-2 font-heading font-bold text-sm transition-all ${
-                  tab === "weekend"
-                    ? "bg-primary text-primary-foreground neo-shadow"
-                    : "bg-card text-card-foreground"
-                }`}
-              >
-                {t("weekend.thisWeekend", { defaultValue: "This Weekend" })}
-              </button>
-              <button
-                type="button"
-                onClick={() => setTab("season")}
-                className={`neo-border rounded-lg px-3 py-2 font-heading font-bold text-sm transition-all ${
-                  tab === "season"
-                    ? "bg-primary text-primary-foreground neo-shadow"
-                    : "bg-card text-card-foreground"
-                }`}
-              >
-                {t("weekend.season", { defaultValue: "Season" })}
-              </button>
+            <div data-testid="weekend-leaderboard-tabs">
+              <Segmented<"weekend" | "season">
+                block
+                aria-label={t("weekend.leaderboardTitle", { defaultValue: "Leaderboard" })}
+                value={tab}
+                onChange={setTab}
+                options={[
+                  { value: "weekend", label: t("weekend.thisWeekend", { defaultValue: "This gameweek" }) },
+                  { value: "season", label: t("weekend.season", { defaultValue: "Season" }) },
+                ]}
+              />
             </div>
 
             {tab === "weekend" ? (
               <WeekendStandings board={board} />
             ) : season === undefined ? (
-              <NeoCard className="text-center py-6">
+              <Card className="text-center py-6">
                 <p className="text-sm text-muted-foreground">
                   {t("common.loading", { defaultValue: "Loading…" })}
                 </p>
-              </NeoCard>
+              </Card>
             ) : season.rows.length === 0 ? (
-              <NeoCard className="text-center py-8">
+              <Card className="text-center py-8">
                 <Target size={28} className="mx-auto text-primary" aria-hidden />
                 <p className="font-heading font-bold mt-2">
                   {t("weekend.seasonWaiting", { defaultValue: "The season race starts here" })}
                 </p>
-              </NeoCard>
+              </Card>
             ) : (
               <SeasonStandings board={season} />
             )}

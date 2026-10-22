@@ -17,13 +17,16 @@ import { useTranslation } from "react-i18next";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { notify } from "@/lib/notify";
-import { ArrowDown, ArrowUp, Bot, CalendarClock, Check, LogOut, ScrollText, Star, Swords, Timer, UserPlus, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Bot, CalendarClock, Check, LogOut, Plus, ScrollText, Star, Swords, Timer, UserPlus, X } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { NeoBadge } from "@/components/neo/NeoBadge";
-import { NeoInput } from "@/components/neo/NeoInput";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { usePriceFormat } from "@/lib/weekendPrice";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { PlayerSheet } from "@/components/weekend/PlayerSheet";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -75,43 +78,43 @@ export function LobbyView({
 
   return (
     <div className="flex flex-col gap-4">
-      <NeoCard shadow="lg" className="text-center py-4">
-        <p className="text-[10px] font-heading uppercase text-muted-foreground mb-1">
+      <Card elevation="lifted" className="text-center py-4">
+        <p className="font-mono text-eyebrow uppercase text-muted-foreground mb-1">
           {t("weekend.draftFor", { defaultValue: "Drafting for" })}
         </p>
         <p className="font-heading font-bold text-2xl">
           {room.gameweek === null ? "—" : `GW ${room.gameweek.gwNumber}`}
         </p>
-        <p className="font-mono text-[11px] text-muted-foreground tracking-[0.16em] uppercase mt-1">
+        <p className="font-mono text-eyebrow text-muted-foreground uppercase mt-1">
           {room.crew?.code ?? ""} · 13 {t("weekend.rounds", { defaultValue: "rounds" })} · 6:30{" "}
           {t("weekend.bankEach", { defaultValue: "bank each" })}
         </p>
-      </NeoCard>
+      </Card>
 
       <div className="flex flex-col gap-2">
         {room.seats.map((seat, i) => (
-          <NeoCard
+          <Card
             key={seat.userId}
-            color={i === room.mySeatIndex ? "primary" : "default"}
-            className="flex items-center justify-between py-2.5"
+            // Your seat wears the lime outline (R4: never a lime fill).
+            className={cn("flex items-center justify-between py-2.5", i === room.mySeatIndex && "!border-lime")}
           >
             <p className="font-heading font-bold text-sm">
               {seat.name}
               {seat.userId === room.createdBy && (
-                <span className="ml-1.5 text-[10px] uppercase text-muted-foreground">
+                <span className="ml-1.5 text-eyebrow uppercase text-muted-foreground">
                   {t("weekend.host", { defaultValue: "host" })}
                 </span>
               )}
             </p>
-            <NeoBadge color={seat.ready ? "success" : "muted"}>
+            <Badge tone={seat.ready ? "success" : "muted"}>
               {seat.ready
                 ? t("weekend.ready", { defaultValue: "Ready" })
                 : t("weekend.idle", { defaultValue: "Idle" })}
-            </NeoBadge>
+            </Badge>
             {isCreator && seat.userId !== room.createdBy && availableMembers.length > 0 && (
               <select
                 aria-label={t("weekend.replacePlayer", { defaultValue: "Replace {{name}}", name: seat.name })}
-                className="ml-2 max-w-24 neo-border rounded bg-background px-1 py-1 text-[10px]"
+                className="ml-2 max-w-24 neo-border rounded bg-background px-1 py-1 text-meta"
                 defaultValue=""
                 onChange={(event) => {
                   if (event.target.value !== "") onReplace?.(seat.userId, event.target.value);
@@ -122,21 +125,22 @@ export function LobbyView({
                 {availableMembers.map((member) => <option key={member.userId} value={member.userId}>{member.name}</option>)}
               </select>
             )}
-          </NeoCard>
+          </Card>
         ))}
       </div>
 
       {mySeat === null && (
-        <NeoButton variant="primary" size="full" disabled={busy || room.seats.length >= 8} onClick={onClaim}>
+        <Button variant="primary" size="lg" block disabled={busy || room.seats.length >= 8} onClick={onClaim}>
           <UserPlus size={16} strokeWidth={3} className="mr-1.5" />
           {room.seats.length >= 8 ? t("weekend.allSeatsClaimed", { defaultValue: "All 8 seats are claimed" }) : t("weekend.claimSeat", { defaultValue: "Claim a draft seat" })}
-        </NeoButton>
+        </Button>
       )}
 
       {mySeat !== null && (
-        <NeoButton
-          variant={mySeat.ready ? "success" : "primary"}
-          size="full"
+        <Button
+          variant={mySeat.ready ? "secondary" : "primary"}
+          size="lg"
+          block
           disabled={busy}
           onClick={() => onReady(!mySeat.ready)}
         >
@@ -144,12 +148,12 @@ export function LobbyView({
           {mySeat.ready
             ? t("weekend.readyOn", { defaultValue: "Ready — tap to undo" })
             : t("weekend.readyUp", { defaultValue: "Ready up" })}
-        </NeoButton>
+        </Button>
       )}
 
       {isCreator && (
         <>
-          <NeoCard className="py-3">
+          <Card className="py-3">
             <p className="mb-2 font-heading font-bold text-sm"><CalendarClock size={14} className="mr-1.5 inline" />{t("weekend.planDraft", { defaultValue: "Plan the draft" })}</p>
             <div className="flex gap-2">
               <input
@@ -158,21 +162,22 @@ export function LobbyView({
                 onChange={(event) => setScheduledInput(event.target.value)}
                 className="min-w-0 flex-1 neo-border rounded bg-background px-2 text-xs"
               />
-              <NeoButton variant="secondary" size="sm" disabled={busy} onClick={() => onSchedule?.(scheduledInput === "" ? null : new Date(scheduledInput).getTime())}>{t("weekend.save", { defaultValue: "Save" })}</NeoButton>
+              <Button variant="secondary" size="sm" disabled={busy} onClick={() => onSchedule?.(scheduledInput === "" ? null : new Date(scheduledInput).getTime())}>{t("weekend.save", { defaultValue: "Save" })}</Button>
             </div>
-            {room.scheduledFor !== null && <p className="mt-2 text-[10px] text-muted-foreground">{t("weekend.planned", { defaultValue: "Planned: {{date}}", date: new Date(room.scheduledFor).toLocaleString() })}</p>}
-          </NeoCard>
-          <NeoButton
+            {room.scheduledFor !== null && <p className="mt-2 text-meta text-muted-foreground">{t("weekend.planned", { defaultValue: "Planned: {{date}}", date: new Date(room.scheduledFor).toLocaleString() })}</p>}
+          </Card>
+          <Button
             variant="danger"
-            size="full"
+            size="lg"
+            block
             disabled={!allReady || busy}
             onClick={onArm}
           >
             <Swords size={16} strokeWidth={3} className="mr-1.5" />
             {t("weekend.armDraft", { defaultValue: "Start the draft" })}
-          </NeoButton>
+          </Button>
           {!allReady && (
-            <p className="text-[11px] text-muted-foreground text-center">
+            <p className="text-meta text-muted-foreground text-center">
               {room.seats.length < 2
                 ? t("weekend.needTwo", { defaultValue: "A draft needs at least 2 drafters." })
                 : t("weekend.waitingOn", {
@@ -185,9 +190,9 @@ export function LobbyView({
       )}
 
       {mySeat !== null && room.status === "lobby" && (
-        <NeoButton variant="ghost" size="sm" disabled={busy} onClick={onLeave}>
+        <Button variant="ghost" size="sm" disabled={busy} onClick={onLeave}>
           <LogOut size={14} className="mr-1.5" />{t("weekend.releaseSeat", { defaultValue: "Release my seat" })}
-        </NeoButton>
+        </Button>
       )}
     </div>
   );
@@ -212,25 +217,28 @@ export function OrderRevealView({ room, serverNow }: { room: DraftRoom; serverNo
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="font-heading font-bold text-center text-xl uppercase tracking-wide animate-pulse-urgent">
+      <p className="font-heading font-bold text-center text-title animate-pulse-urgent">
         {t("weekend.orderReveal", { defaultValue: "The order" })}
       </p>
       <div className="flex flex-col gap-2">
         {order.map((seatIndex, position) => (
-          <NeoCard
+          <Card
             key={seatIndex}
-            color={position < revealedCount ? (seatIndex === room.mySeatIndex ? "primary" : "yellow") : "default"}
-            shadow={position < revealedCount ? "lg" : "none"}
-            className="flex items-center gap-3 py-2.5"
+            elevation={position < revealedCount ? "lifted" : "flat"}
+            className={cn(
+              "flex items-center gap-3 py-2.5",
+              position < revealedCount &&
+                (seatIndex === room.mySeatIndex ? "bg-orange text-ink on-fill" : "bg-yellow text-ink on-fill"),
+            )}
           >
             <span className="font-mono font-bold text-lg w-7 text-center">{position + 1}</span>
             <span className="font-heading font-bold">
               {position < revealedCount ? room.seats[seatIndex]?.name : "…"}
             </span>
-          </NeoCard>
+          </Card>
         ))}
       </div>
-      <p className="text-[11px] text-muted-foreground text-center">
+      <p className="text-meta text-muted-foreground text-center">
         {t("weekend.snakeNote", { defaultValue: "Snake order — last picks twice." })}
       </p>
     </div>
@@ -268,34 +276,34 @@ export function ShortlistPanel({
     onChange(next);
   };
   return (
-    <NeoCard className="py-3">
+    <Card className="py-3">
       <p className="font-heading font-bold text-sm"><Star size={14} className="mr-1.5 inline" />{t("weekend.autoPickQueue", { defaultValue: "Private auto-pick queue" })}</p>
-      <p className="mb-2 text-[10px] text-muted-foreground">{t("weekend.autoPickQueueBody", { defaultValue: "Your order is private. On timeout, legal queued players are tried first." })}</p>
+      <p className="mb-2 text-meta text-muted-foreground">{t("weekend.autoPickQueueBody", { defaultValue: "Your order is private. On timeout, legal queued players are tried first." })}</p>
       {queued.length > 0 && (
         <ol className="mb-2 flex flex-col gap-1">
           {queued.map((player, index) => (
-            <li key={player.playerId} className="flex items-center gap-1 text-xs">
+            <li key={player.playerId} className="flex items-center gap-1 text-body-sm">
               <span className="w-5 font-mono text-muted-foreground">{index + 1}</span>
               <span className="min-w-0 flex-1 truncate font-heading font-bold">{player.name}</span>
-              <button type="button" aria-label={t("weekend.moveUp", { defaultValue: "Move up" })} disabled={index === 0} onClick={() => move(index, -1)}><ArrowUp size={13} /></button>
-              <button type="button" aria-label={t("weekend.moveDown", { defaultValue: "Move down" })} disabled={index === queued.length - 1} onClick={() => move(index, 1)}><ArrowDown size={13} /></button>
-              <button type="button" aria-label={t("weekend.remove", { defaultValue: "Remove" })} onClick={() => onChange(queuedIds.filter((id) => id !== player.playerId))}><X size={13} /></button>
+              <IconButton aria-label={t("weekend.moveUp", { defaultValue: "Move up" })} disabled={index === 0} onClick={() => move(index, -1)}><ArrowUp aria-hidden /></IconButton>
+              <IconButton aria-label={t("weekend.moveDown", { defaultValue: "Move down" })} disabled={index === queued.length - 1} onClick={() => move(index, 1)}><ArrowDown aria-hidden /></IconButton>
+              <IconButton aria-label={t("weekend.remove", { defaultValue: "Remove" })} onClick={() => onChange(queuedIds.filter((id) => id !== player.playerId))}><X aria-hidden /></IconButton>
             </li>
           ))}
         </ol>
       )}
-      <NeoInput value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t("weekend.searchAddPlayers", { defaultValue: "Search to add players…" })} />
+      <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t("weekend.searchAddPlayers", { defaultValue: "Search to add players…" })} />
       {candidates.length > 0 && (
         <div className="mt-2 flex flex-col gap-1">
           {candidates.map((player) => (
-            <button key={player.playerId} type="button" className="flex items-center justify-between text-left text-xs" onClick={() => onChange([...queuedIds, player.playerId])}>
+            <Button key={player.playerId} variant="ghost" size="sm" block className="justify-between px-2 text-left font-body font-normal" onClick={() => onChange([...queuedIds, player.playerId])}>
               <span className="truncate">{player.name} · {player.clubName ?? player.clubId}</span>
-              <span className="ml-2 font-mono font-bold">+</span>
-            </button>
+              <Plus size={16} aria-hidden />
+            </Button>
           ))}
         </div>
       )}
-    </NeoCard>
+    </Card>
   );
 }
 
@@ -319,6 +327,7 @@ export function DraftBoardView({
   busy: boolean;
 }) {
   const { t } = useTranslation();
+  const price = usePriceFormat();
   const [search, setSearch] = useState("");
   const [showLog, setShowLog] = useState(false);
   // FW-SCOUT: the player whose detail sheet is open. Clock-safe by design:
@@ -386,13 +395,12 @@ export function DraftBoardView({
 
   return (
     <div className="flex flex-col gap-3">
-      <NeoCard
-        color={myTurn ? "primary" : "default"}
-        shadow="lg"
-        className={`flex items-center justify-between py-3 ${myTurn ? "animate-pulse-urgent" : ""}`}
+      <Card
+        elevation="lifted"
+        className={cn("flex items-center justify-between py-3", myTurn && "animate-pulse-urgent bg-orange text-ink on-fill")}
       >
         <div>
-          <p className="text-[10px] font-heading uppercase text-muted-foreground">
+          <p className="font-mono text-eyebrow uppercase text-muted-foreground">
             {t("weekend.roundOf", { defaultValue: "Round {{round}} of 13", round })} · #
             {(room.currentPickIndex ?? 0) + 1}
           </p>
@@ -411,17 +419,17 @@ export function DraftBoardView({
             {formatBank(turnRemaining)}
           </span>
         </div>
-      </NeoCard>
+      </Card>
 
       <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
         {room.seats.map((seat, i) => (
-          <NeoBadge
+          <Badge
             key={seat.userId}
-            color={i === room.turnSeatIndex ? "destructive" : i === room.mySeatIndex ? "primary" : "muted"}
+            tone={i === room.turnSeatIndex ? "destructive" : i === room.mySeatIndex ? "primary" : "muted"}
             className="whitespace-nowrap shrink-0"
           >
             {seat.name} · {formatBank(i === room.turnSeatIndex ? turnRemaining : seat.bankMs)}
-          </NeoBadge>
+          </Badge>
         ))}
       </div>
 
@@ -431,15 +439,15 @@ export function DraftBoardView({
         <ShortlistPanel pool={pool} queuedIds={queuedIds} onChange={onQueueChange} compact />
       )}
 
-      <NeoButton variant="ghost" size="sm" onClick={() => setShowLog((v) => !v)}>
+      <Button variant="ghost" size="sm" onClick={() => setShowLog((v) => !v)}>
         <ScrollText size={14} strokeWidth={3} className="mr-1.5" />
         {showLog
           ? t("weekend.hideLog", { defaultValue: "Hide draft log" })
           : t("weekend.showLog", { defaultValue: "Draft log" })}
-      </NeoButton>
+      </Button>
       {showLog && <DraftLogView room={room} playerById={playerById} />}
 
-      <NeoInput
+      <Input
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder={t("weekend.searchPool", { defaultValue: "Search 2,895 players…" })}
@@ -450,67 +458,69 @@ export function DraftBoardView({
           const started = player.kickoffAt !== null && player.kickoffAt <= serverNow;
           const pickable = myTurn && takenSeat === undefined && !started && !busy;
           return (
-            <NeoCard
+            <Card
               key={player.playerId}
-              className={`flex items-center justify-between py-2 ${takenSeat !== undefined || started ? "opacity-45" : ""}`}
+              elevation="flat"
+              padding="sm"
+              className={cn("flex items-center justify-between gap-2", (takenSeat !== undefined || started) && "opacity-45")}
             >
               {/* FW-SCOUT: the row BODY opens the detail sheet; PICK stays a
                   sibling (same recipe as the budget picker rows). */}
-              <button
-                type="button"
+              <Button
+                variant="ghost"
                 data-testid="draft-row-body"
-                className="min-w-0 flex-1 text-left active:opacity-60"
+                className="min-w-0 flex-1 flex-col items-stretch justify-center gap-0 border-0 px-0 py-0 text-left font-body font-normal hover:bg-transparent active:opacity-60"
                 onClick={() => setDetailPlayer(player.playerId)}
               >
                 <p className="font-heading font-bold text-sm truncate">
                   {player.name}
-                  <span className="ml-1.5 font-mono text-[10px] text-muted-foreground uppercase">
+                  <span className="ml-1.5 font-mono text-eyebrow text-muted-foreground uppercase">
                     {player.position}
                   </span>
                 </p>
-                <p className="text-[11px] text-muted-foreground truncate">
+                <p className="text-meta text-muted-foreground truncate">
                   {player.clubName ?? player.clubId}
                 </p>
-              </button>
+              </Button>
               <div className="flex items-center gap-2 shrink-0">
                 {/* R5: no fixture this gameweek — pickable, but say so. */}
                 {!player.hasFixture && (
-                  <NeoBadge color="yellow">
+                  <Badge tone="yellow">
                     {t("weekend.noFixture", { defaultValue: "No fixture" })}
-                  </NeoBadge>
+                  </Badge>
                 )}
                 {started && (
-                  <NeoBadge color="muted">
+                  <Badge tone="muted">
                     {t("weekend.started", { defaultValue: "Started" })}
-                  </NeoBadge>
+                  </Badge>
                 )}
                 {takenSeat !== undefined ? (
-                  <NeoBadge color="muted">
+                  <Badge tone="muted">
                     {room.seats[takenSeat]?.name ?? t("weekend.taken", { defaultValue: "Taken" })}
-                  </NeoBadge>
+                  </Badge>
                 ) : (
                   <>
                     <span className="font-mono font-bold tabular-nums">
-                      {player.price === null ? "—" : player.price.toFixed(1)}
+                      {player.price === null ? "—" : price(player.price)}
                     </span>
                     {myTurn && (
-                      <NeoButton
+                      <Button
                         variant="primary"
                         size="sm"
                         disabled={!pickable}
                         onClick={() => onPick(player.playerId)}
                       >
                         {t("weekend.pick", { defaultValue: "Pick" })}
-                      </NeoButton>
+                      </Button>
                     )}
                   </>
                 )}
               </div>
-            </NeoCard>
+            </Card>
           );
         })}
         {pool !== null && pool !== undefined && results.length === POOL_RESULT_CAP && (
-          <p className="text-[11px] text-muted-foreground text-center">
+          <p className="text-meta text-muted-foreground text-center">
             {t("weekend.narrowSearch", { defaultValue: "Showing the top 130 — search to narrow." })}
           </p>
         )}
@@ -524,7 +534,7 @@ export function DraftBoardView({
         surface="draft"
         clockLine={
           myTurn ? (
-            <NeoCard color="primary" className="flex items-center justify-between py-2">
+            <Card className="bg-orange text-ink on-fill flex items-center justify-between py-2">
               <span className="font-heading font-bold text-sm">
                 {t("weekend.yourPick", { defaultValue: "Your pick" })}
               </span>
@@ -532,7 +542,7 @@ export function DraftBoardView({
                 <Timer size={13} strokeWidth={3} className="inline mr-1 -mt-0.5" />
                 {formatBank(turnRemaining)}
               </span>
-            </NeoCard>
+            </Card>
           ) : undefined
         }
       />
@@ -556,7 +566,7 @@ export function PicksGrid({
 
   return (
     <div className="overflow-x-auto neo-border rounded-lg">
-      <table className="w-full text-[11px]">
+      <table className="w-full text-meta">
         <thead>
           <tr className="border-b-2 border-border bg-muted/40">
             <th className="p-1.5 font-mono text-left w-8">{t("weekend.rankShort", { defaultValue: "R" })}</th>
@@ -609,8 +619,8 @@ export function DraftLogView({
 }) {
   const { t } = useTranslation();
   return (
-    <NeoCard className="py-2 max-h-56 overflow-y-auto">
-      <ol className="flex flex-col gap-1 text-[11px]">
+    <Card className="py-2 max-h-56 overflow-y-auto">
+      <ol className="flex flex-col gap-1 text-meta">
         {[...room.picks].reverse().map((pick) => (
           <li key={pick.seq} className="flex items-center justify-between gap-2">
             <span className="font-mono text-muted-foreground w-7 shrink-0">#{pick.pickNumber}</span>
@@ -624,14 +634,14 @@ export function DraftLogView({
               {(pick.elapsedMs / 1000).toFixed(1)}s
             </span>
             {pick.auto && (
-              <NeoBadge color="muted" className="shrink-0">
+              <Badge tone="muted" className="shrink-0">
                 {t("weekend.auto", { defaultValue: "Auto" })}
-              </NeoBadge>
+              </Badge>
             )}
           </li>
         ))}
       </ol>
-    </NeoCard>
+    </Card>
   );
 }
 
@@ -658,34 +668,35 @@ export function CompletedView({
 
   return (
     <div className="flex flex-col gap-4">
-      <NeoCard color="success" shadow="lg" className="text-center py-4">
+      <Card elevation="lifted" className="bg-success text-ink on-fill text-center py-4">
         <p className="font-heading font-bold text-xl">
           {t("weekend.draftDone", { defaultValue: "Draft complete" })}
         </p>
-        <p className="text-sm opacity-80 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           {t("weekend.draftDoneBody", {
             defaultValue:
               "Squads are on their default sheets — arrange yours before kickoff. Every player stays editable until his match starts.",
           })}
         </p>
         {autoCount > 0 && (
-          <p className="font-mono text-[11px] mt-2 opacity-70">
+          <p className="font-mono text-eyebrow mt-2 text-muted-foreground">
             {t("weekend.autoPicks", { defaultValue: "{{count}} auto-picks", count: autoCount })}
           </p>
         )}
-      </NeoCard>
-      <NeoButton
+      </Card>
+      <Button
         variant="primary"
-        size="full"
+        size="lg"
+        block
         onClick={() => onArrangeSheet(room.roomId)}
       >
         {t("weekend.arrangeSheet", { defaultValue: "Arrange your sheet" })}
-      </NeoButton>
+      </Button>
       <PicksGrid room={room} playerById={playerById} />
       <DraftLogView room={room} playerById={playerById} />
-      <NeoButton variant="secondary" size="full" onClick={onBackToCrew}>
+      <Button variant="secondary" size="lg" block onClick={onBackToCrew}>
         {t("weekend.backToCrew", { defaultValue: "Back to the crew" })}
-      </NeoButton>
+      </Button>
     </div>
   );
 }
@@ -747,27 +758,27 @@ export default function DraftRoomScreen() {
     >
       <div className="md:max-w-lg md:mx-auto md:w-full">
         {room === undefined ? (
-          <NeoCard className="text-center py-6">
+          <Card className="text-center py-6">
             <p className="text-sm text-muted-foreground">
               {t("common.loading", { defaultValue: "Loading…" })}
             </p>
-          </NeoCard>
+          </Card>
         ) : room === null ? (
-          <NeoCard color="destructive" className="text-center py-6">
+          <Card className="bg-destructive text-ink on-fill text-center py-6">
             <p className="font-heading font-bold">
               {t("weekend.roomGone", {
                 defaultValue: "This room isn't yours to see — join the crew first.",
               })}
             </p>
-            <NeoButton
+            <Button
               variant="secondary"
               size="md"
               className="mt-3"
               onClick={() => navigate(SHELL_ROUTES.weekendCrews)}
             >
               {t("weekend.backToCrews", { defaultValue: "Back to crews" })}
-            </NeoButton>
-          </NeoCard>
+            </Button>
+          </Card>
         ) : room.status === "lobby" ? (
           <div className="flex flex-col gap-4">
             <LobbyView
@@ -840,11 +851,11 @@ export default function DraftRoomScreen() {
             onArrangeSheet={(id) => navigate(SHELL_ROUTES.weekendSheet(id))}
           />
         ) : (
-          <NeoCard className="text-center py-6">
+          <Card className="text-center py-6">
             <p className="text-sm text-muted-foreground">
               {t("weekend.roomAbandoned", { defaultValue: "This room expired before drafting." })}
             </p>
-          </NeoCard>
+          </Card>
         )}
       </div>
     </ShellLayout>

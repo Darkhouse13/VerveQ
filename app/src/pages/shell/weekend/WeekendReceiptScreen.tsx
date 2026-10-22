@@ -24,9 +24,9 @@ import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import type { SquadReceipt } from "../../../../convex/fantasyReceipts";
 import { formatPoints } from "../../../../convex/lib/fantasyScoring";
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoBadge } from "@/components/neo/NeoBadge";
-import { NeoButton } from "@/components/neo/NeoButton";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { paintReceipt, receiptFilename } from "@/lib/receiptImage";
@@ -74,10 +74,10 @@ export function ReceiptCard({ receipt }: { receipt: SquadReceipt }) {
   return (
     <div
       data-testid="receipt-card"
-      className="neo-border neo-shadow-lg rounded-xl bg-background text-foreground p-5 flex flex-col gap-4"
+      className="neo-border neo-shadow-lg rounded-lg bg-background text-foreground p-5 flex flex-col gap-4"
     >
       <div>
-        <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
+        <p className="font-mono text-eyebrow font-bold uppercase text-primary">
           {t("weekend.receiptEyebrow", { defaultValue: "The Weekend — settled" })}
         </p>
         <h2 className="font-heading font-bold text-2xl leading-tight mt-1">
@@ -86,7 +86,7 @@ export function ReceiptCard({ receipt }: { receipt: SquadReceipt }) {
             gw: receipt.gwNumber,
           })}
         </h2>
-        <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground mt-0.5">
+        <p className="font-mono text-eyebrow uppercase text-muted-foreground mt-0.5">
           {receipt.season} ·{" "}
           {new Date(receipt.settledAt).toLocaleDateString(i18n.language, {
             weekday: "short",
@@ -103,7 +103,7 @@ export function ReceiptCard({ receipt }: { receipt: SquadReceipt }) {
         >
           {formatPoints(receipt.total)}
         </span>
-        <span className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+        <span className="font-mono text-eyebrow font-bold uppercase text-muted-foreground">
           {t("weekend.receiptFinal", { defaultValue: "pts final" })}
         </span>
       </div>
@@ -114,7 +114,7 @@ export function ReceiptCard({ receipt }: { receipt: SquadReceipt }) {
             key={slot.slotIndex}
             className="flex items-center gap-2 py-1 border-b-2 border-border/40 last:border-b-0"
           >
-            <span className="font-mono text-[9px] font-bold uppercase text-muted-foreground w-11 shrink-0">
+            <span className="font-mono text-eyebrow font-bold uppercase text-muted-foreground w-11 shrink-0">
               {slot.slotRole}
               {slot.isFinisher ? "·F" : ""}
             </span>
@@ -122,7 +122,7 @@ export function ReceiptCard({ receipt }: { receipt: SquadReceipt }) {
               {slot.playerName ?? "—"}
             </span>
             {slot.points === null ? (
-              <span className="font-mono text-[10px] text-muted-foreground shrink-0">
+              <span className="font-mono text-eyebrow text-muted-foreground shrink-0">
                 {t("weekend.awaitingData", { defaultValue: "awaiting data" })}
               </span>
             ) : (
@@ -141,7 +141,7 @@ export function ReceiptCard({ receipt }: { receipt: SquadReceipt }) {
       {receipt.best !== null && receipt.worst !== null && (
         <div className="neo-border rounded-lg bg-card px-4 py-3 flex flex-col gap-1.5">
           <p className="text-sm flex items-baseline justify-between gap-2">
-            <span className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-primary shrink-0">
+            <span className="font-mono text-eyebrow font-bold uppercase text-primary shrink-0">
               {t("weekend.receiptBest", { defaultValue: "Best call" })}
             </span>
             <span className="font-heading font-bold text-sm min-w-0 truncate" data-testid="receipt-best">
@@ -150,7 +150,7 @@ export function ReceiptCard({ receipt }: { receipt: SquadReceipt }) {
             </span>
           </p>
           <p className="text-sm flex items-baseline justify-between gap-2">
-            <span className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground shrink-0">
+            <span className="font-mono text-eyebrow font-bold uppercase text-muted-foreground shrink-0">
               {t("weekend.receiptWorst", { defaultValue: "Worst call" })}
             </span>
             <span className="font-heading font-bold text-sm min-w-0 truncate" data-testid="receipt-worst">
@@ -163,7 +163,7 @@ export function ReceiptCard({ receipt }: { receipt: SquadReceipt }) {
 
       {strongestCrowd !== null && (
         <p
-          className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground"
+          className="font-mono text-eyebrow uppercase text-muted-foreground"
           data-testid="receipt-crowd"
         >
           {receipt.crowdMoved.length === 1
@@ -184,10 +184,11 @@ export function ReceiptCard({ receipt }: { receipt: SquadReceipt }) {
 
       {pct !== null ? (
         <div
-          className="neo-border rounded-lg bg-primary text-primary-foreground px-4 py-3"
+          // R4: the standing is outlined in lime, never filled with it.
+          className="neo-border rounded-lg !border-lime bg-card text-card-foreground px-4 py-3"
           data-testid="receipt-percentile"
         >
-          <p className="font-heading font-bold text-lg leading-tight">
+          <p className="font-heading font-bold text-title-sm">
             {t("weekend.receiptPercentile", {
               defaultValue: "Beat {{pct}}% of budget squads",
               pct,
@@ -196,10 +197,11 @@ export function ReceiptCard({ receipt }: { receipt: SquadReceipt }) {
         </div>
       ) : receipt.crewRank !== null ? (
         <div
-          className="neo-border rounded-lg bg-primary text-primary-foreground px-4 py-3"
+          // R4: the standing is outlined in lime, never filled with it.
+          className="neo-border rounded-lg !border-lime bg-card text-card-foreground px-4 py-3"
           data-testid="receipt-crew-rank"
         >
-          <p className="font-heading font-bold text-lg leading-tight">
+          <p className="font-heading font-bold text-title-sm">
             {t("weekend.receiptCrewRank", {
               defaultValue: "{{rank}} of {{of}} in the room",
               rank: `${receipt.crewRank.tied ? "T" : ""}${receipt.crewRank.rank}`,
@@ -209,14 +211,14 @@ export function ReceiptCard({ receipt }: { receipt: SquadReceipt }) {
         </div>
       ) : receipt.context === "budget" ? (
         // A settled squad with no number gets no standing — honestly absent.
-        <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+        <p className="font-mono text-eyebrow uppercase text-muted-foreground">
           {t("weekend.receiptNoNumber", {
             defaultValue: "No scored player this weekend — no standing to claim.",
           })}
         </p>
       ) : null}
 
-      <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+      <p className="font-mono text-eyebrow font-bold uppercase text-muted-foreground">
         verveq.com/weekend
       </p>
     </div>
@@ -306,13 +308,13 @@ export default function WeekendReceiptScreen() {
     >
       <div className="flex flex-col gap-4 max-w-sm mx-auto w-full pb-6">
         {receipt === undefined ? (
-          <NeoCard className="text-center py-6">
+          <Card className="text-center py-6">
             <p className="text-sm text-muted-foreground">
               {t("common.loading", { defaultValue: "Loading…" })}
             </p>
-          </NeoCard>
+          </Card>
         ) : receipt === null ? (
-          <NeoCard className="text-center py-6" data-testid="receipt-not-ready">
+          <Card className="text-center py-6" data-testid="receipt-not-ready">
             <p className="font-heading font-bold">
               {t("weekend.receiptNotReady", { defaultValue: "No receipt yet." })}
             </p>
@@ -322,12 +324,12 @@ export default function WeekendReceiptScreen() {
                   "A receipt prints when the gameweek settles — until then the ledger tells the story.",
               })}
             </p>
-          </NeoCard>
+          </Card>
         ) : (
           <>
             <ReceiptCard receipt={receipt} />
             <div className="grid grid-cols-2 gap-2">
-              <NeoButton
+              <Button
                 variant="primary"
                 size="md"
                 disabled={busy}
@@ -336,8 +338,8 @@ export default function WeekendReceiptScreen() {
               >
                 <Share2 size={14} strokeWidth={3} className="mr-1.5" />
                 {t("common.share", { defaultValue: "Share" })}
-              </NeoButton>
-              <NeoButton
+              </Button>
+              <Button
                 variant="secondary"
                 size="md"
                 disabled={busy}
@@ -346,15 +348,15 @@ export default function WeekendReceiptScreen() {
               >
                 <Download size={14} strokeWidth={3} className="mr-1.5" />
                 {t("common.download", { defaultValue: "Download" })}
-              </NeoButton>
+              </Button>
             </div>
             {receipt.awaitingSlots > 0 && (
-              <NeoBadge color="muted">
+              <Badge tone="muted">
                 {t("weekend.receiptAwaitingNote", {
                   defaultValue: "{{n}} slot(s) never got data this weekend",
                   n: receipt.awaitingSlots,
                 })}
-              </NeoBadge>
+              </Badge>
             )}
           </>
         )}

@@ -12,7 +12,8 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { ReactNode } from "react";
 import { ShellLayout } from "@/components/shell/ShellLayout";
-import { NeoCard } from "@/components/neo/NeoCard";
+import { Card } from "@/components/ui/card";
+import { Eyebrow } from "@/components/ui/eyebrow";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 
 function Section({
@@ -25,18 +26,16 @@ function Section({
   testId?: string;
 }) {
   return (
-    <NeoCard className="flex flex-col gap-2 p-4" data-testid={testId}>
-      <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
-        {eyebrow}
-      </p>
+    <Card className="flex flex-col gap-2" data-testid={testId}>
+      <Eyebrow className="font-bold text-primary">{eyebrow}</Eyebrow>
       {children}
-    </NeoCard>
+    </Card>
   );
 }
 
 function Rule({ label, children }: { label?: string; children: ReactNode }) {
   return (
-    <p className="text-sm leading-snug">
+    <p className="text-body-sm">
       {label && <span className="font-heading font-bold">{label} </span>}
       <span className="text-muted-foreground">{children}</span>
     </p>
@@ -75,7 +74,7 @@ function PitchShapeFigure() {
         <g
           fill="currentColor"
           opacity="0.7"
-          fontSize="8"
+          fontSize="12"
           fontFamily="inherit"
           textAnchor="middle"
         >
@@ -170,7 +169,7 @@ function MismatchFigure() {
   return (
     <div aria-hidden className="text-muted-foreground mt-1" data-testid="htp-figure-mismatch">
       <svg viewBox="0 0 220 64" className="w-full max-w-[260px] h-auto" role="presentation">
-        <g fontSize="8" fontFamily="inherit" fill="currentColor" opacity="0.8">
+        <g fontSize="12" fontFamily="inherit" fill="currentColor" opacity="0.8">
           <text x="0" y="12">{t("weekend.slotMatchesVerdict", { defaultValue: "slot matches the verdict" })}</text>
           <text x="0" y="44">{t("weekend.slotMismatched", { defaultValue: "slot mismatched" })}</text>
         </g>
@@ -193,7 +192,7 @@ function MismatchFigure() {
         <text
           x="166"
           y="57"
-          fontSize="9"
+          fontSize="12"
           fontFamily="inherit"
           fontWeight="bold"
           fill="currentColor"
@@ -227,7 +226,7 @@ export default function WeekendHowToPlayScreen() {
         </Section>
 
         <Section eyebrow={t("weekend.howModes", { defaultValue: "Two ways to play" })} testId="htp-modes">
-          <Rule label={t("weekend.howBudgetLabel", { defaultValue: "Budget squad." })}>{t("weekend.howBudgetBody", { defaultValue: "Build your own 13 under a 91.0 budget. Prices run 4.0–13.0 in half-point steps, identical for everyone and fixed within the gameweek." })}</Rule>
+          <Rule label={t("weekend.howBudgetLabel", { defaultValue: "Budget squad." })}>{t("weekend.howBudgetBody", { defaultValue: "Build your own 13 players under a £91.0m budget. Prices run £4.0m–£13.0m in £0.5m steps, identical for everyone and fixed within the gameweek." })}</Rule>
           <Rule label={t("weekend.howCrewLabel", { defaultValue: "Crew draft." })}>{t("weekend.howCrewBody", { defaultValue: "2–8 friends, share-code to join, snake draft where every player can be owned once per room. Each drafter gets a chess-clock bank of 30 seconds per round — 390s spent freely across all 13 picks; an empty bank auto-picks the rest." })}</Rule>
           <ChessClockFigure />
         </Section>

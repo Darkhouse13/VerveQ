@@ -18,9 +18,9 @@ import type {
   SquadLedgerEvent,
   LedgerTermChange,
 } from "../../../convex/fantasyLedger";
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoBadge } from "@/components/neo/NeoBadge";
-import { NeoButton } from "@/components/neo/NeoButton";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 function signed(points: number): string {
   return points >= 0 ? `+${formatPoints(points)}` : formatPoints(points);
@@ -45,7 +45,7 @@ function EntryTime({ at }: { at: number }) {
   const { i18n } = useTranslation();
   const date = new Date(at);
   return (
-    <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground tabular-nums shrink-0">
+    <span className="font-mono text-eyebrow uppercase text-muted-foreground tabular-nums shrink-0">
       {date.toLocaleDateString(i18n.language, { weekday: "short" })}{" "}
       {date.toLocaleTimeString(i18n.language, { hour: "2-digit", minute: "2-digit" })}
     </span>
@@ -60,10 +60,10 @@ function RoleBadge({
   isFinisher: boolean;
 }) {
   return (
-    <NeoBadge color="muted">
+    <Badge tone="muted">
       {slotRole}
       {isFinisher ? " · FIN" : ""}
-    </NeoBadge>
+    </Badge>
   );
 }
 
@@ -80,7 +80,7 @@ function Entry({
     case "squad_built":
       return (
         <div className="flex items-baseline justify-between gap-2">
-          <p className="text-sm">
+          <p className="text-body-sm">
             {event.context === "crew"
               ? t("weekend.ledgerSheetDrafted", { defaultValue: "Sheet drafted — 13 on the card." })
               : t("weekend.ledgerSquadBuilt", { defaultValue: "The 13 assembled." })}
@@ -92,7 +92,7 @@ function Entry({
     case "locked":
       return (
         <div className="flex items-center justify-between gap-2">
-          <p className="text-sm flex items-center gap-1.5 min-w-0">
+          <p className="text-body-sm flex items-center gap-1.5 min-w-0">
             <Lock size={12} strokeWidth={3} className="shrink-0 text-muted-foreground" aria-hidden />
             <span className="truncate">
               {t("weekend.ledgerLocked", {
@@ -110,7 +110,7 @@ function Entry({
         <div>
           <div className="flex items-center justify-between gap-2">
             {/* The number never truncates — the name yields first. */}
-            <p className="font-heading font-bold text-sm min-w-0 flex-1 flex items-baseline gap-2">
+            <p className="font-heading font-bold text-body-sm min-w-0 flex-1 flex items-baseline gap-2">
               <span className="truncate min-w-0">{event.playerName}</span>
               <span className="font-mono shrink-0">{signed(event.points)}</span>
             </p>
@@ -120,7 +120,7 @@ function Entry({
             </div>
           </div>
           {event.terms !== null && event.terms.length > 0 && (
-            <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
+            <p className="text-meta text-muted-foreground mt-1">
               {event.terms
                 .map((term) =>
                   // ×count only where the term is per-unit (unit present) —
@@ -133,7 +133,7 @@ function Entry({
             </p>
           )}
           {event.mismatch && (
-            <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground mt-1">
+            <p className="font-mono text-eyebrow uppercase text-muted-foreground mt-1">
               {t("weekend.ledgerMismatch", {
                 defaultValue: "played {{verdict}} in a {{slot}} slot — ×0.75 on the plus side",
                 verdict: event.verdictPosition ?? "?",
@@ -164,10 +164,10 @@ function Entry({
       return (
         <div>
           <div className="flex items-center justify-between gap-2">
-            <p className="font-heading font-bold text-sm min-w-0 truncate">{headline}</p>
+            <p className="font-heading font-bold text-body-sm min-w-0 truncate">{headline}</p>
             <EntryTime at={event.at} />
           </div>
-          <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
+          <p className="text-meta text-muted-foreground mt-1">
             {event.cause === "stats" && event.changes !== null && event.changes.length > 0
               ? `${event.changes.map(changeLine).join(" · ")} — ${formatPoints(event.prevPoints)} → ${formatPoints(event.points)}`
               : t("weekend.ledgerRevisedPoints", {
@@ -183,7 +183,7 @@ function Entry({
     case "court":
       return (
         <div className="flex items-center justify-between gap-2">
-          <p className="text-sm flex items-center gap-1.5 min-w-0">
+          <p className="text-body-sm flex items-center gap-1.5 min-w-0">
             <Landmark size={12} strokeWidth={3} className="shrink-0 text-muted-foreground" aria-hidden />
             <span className="truncate">
               {t("weekend.ledgerCourtRuled", {
@@ -201,7 +201,7 @@ function Entry({
       return (
         <div>
           <div className="flex items-center justify-between gap-2">
-            <p className="font-heading font-bold text-sm">
+            <p className="font-heading font-bold text-body-sm">
               {t("weekend.ledgerSettled", {
                 defaultValue: "Gameweek settled — {{total}} pts final.",
                 total: formatPoints(event.total),
@@ -210,16 +210,16 @@ function Entry({
             <EntryTime at={event.at} />
           </div>
           {onOpenReceipt !== undefined && (
-            <NeoButton
+            <Button
               variant="primary"
               size="sm"
               className="mt-2"
               data-testid="ledger-open-receipt"
               onClick={onOpenReceipt}
             >
-              <ReceiptIcon size={14} strokeWidth={3} className="mr-1.5" />
+              <ReceiptIcon size={16} strokeWidth={3} aria-hidden />
               {t("weekend.ledgerOpenReceipt", { defaultValue: "The receipt" })}
-            </NeoButton>
+            </Button>
           )}
         </div>
       );
@@ -238,11 +238,11 @@ export function SquadLedgerView({
 
   if (ledger === undefined) {
     return (
-      <NeoCard className="text-center py-6">
-        <p className="text-sm text-muted-foreground">
+      <Card className="text-center py-6">
+        <p className="text-body-sm text-muted-foreground">
           {t("common.loading", { defaultValue: "Loading…" })}
         </p>
-      </NeoCard>
+      </Card>
     );
   }
   if (ledger === null) return null;
@@ -250,19 +250,19 @@ export function SquadLedgerView({
   return (
     <div className="flex flex-col gap-2" data-testid="squad-ledger">
       {ledger.entries.map((event, index) => (
-        <NeoCard
+        <Card
           key={`${event.kind}-${event.at}-${index}`}
-          className="py-2.5 px-3"
+          padding="sm"
+          className={event.kind === "settled" ? "!border-verdict-right" : undefined}
           data-testid={`ledger-entry-${event.kind}`}
-          color={event.kind === "settled" ? "success" : "default"}
         >
           <Entry
             event={event}
             onOpenReceipt={event.kind === "settled" ? onOpenReceipt : undefined}
           />
-        </NeoCard>
+        </Card>
       ))}
-      <p className="text-[10px] leading-snug text-muted-foreground mt-0.5">
+      <p className="text-meta text-muted-foreground mt-0.5">
         {t("weekend.ledgerFootnote", {
           defaultValue:
             "Every line traces to a stored fact. Points can move until the gameweek settles; players whose match hasn't been scored simply aren't here yet.",

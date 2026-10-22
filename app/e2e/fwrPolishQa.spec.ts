@@ -64,9 +64,9 @@ test("FW-RECEIPT P1-P4: one header, honest copy, wrapped names, figures", async 
   ).toBeVisible();
   // And no other element on the hub opens with the phrase.
   const thisWeekendCount = await page
-    .getByText(/^This weekend/i)
+    .getByText(/^This gameweek/i)
     .count();
-  expect(thisWeekendCount, "one 'This weekend' on the hub, not two").toBe(1);
+  expect(thisWeekendCount, "one 'This gameweek' on the hub, not two").toBe(1);
   await expectNoHorizontalScroll(page, "hub");
   await page.screenshot({ path: "e2e/artifacts/fwr-p1-hub-380.png", fullPage: false });
 

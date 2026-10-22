@@ -12,8 +12,8 @@ import { useMutation, useQuery } from "convex/react";
 import { Bell, LogOut, Settings2, Swords } from "lucide-react";
 import { notify } from "@/lib/notify";
 import { api } from "../../../../convex/_generated/api";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { NeoCard } from "@/components/neo/NeoCard";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { friendlyError } from "@/lib/errors";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -68,9 +68,9 @@ export default function CrewScreen() {
   if (crew === undefined || (crew === null && joinFailed === null)) {
     return (
       <ShellLayout theme="theme-weekend" title={t("weekend.crewTitle", { defaultValue: "Crew" })} back scroll>
-        <NeoCard className="py-6 text-center md:mx-auto md:max-w-md">
-          <p className="text-sm text-muted-foreground">{t("common.loading", { defaultValue: "Loading…" })}</p>
-        </NeoCard>
+        <Card className="py-6 text-center md:mx-auto md:max-w-md">
+          <p className="text-body-sm text-muted-foreground">{t("common.loading", { defaultValue: "Loading…" })}</p>
+        </Card>
       </ShellLayout>
     );
   }
@@ -78,12 +78,12 @@ export default function CrewScreen() {
   if (crew === null) {
     return (
       <ShellLayout theme="theme-weekend" title={t("weekend.crewTitle", { defaultValue: "Crew" })} back scroll>
-        <NeoCard color="destructive" className="py-6 text-center md:mx-auto md:max-w-md">
-          <p className="font-heading font-bold">{joinFailed}</p>
-          <NeoButton variant="secondary" size="md" className="mt-3" onClick={() => navigate(SHELL_ROUTES.weekendCrews)}>
+        <Card className="py-6 text-center md:mx-auto md:max-w-md">
+          <p className="font-heading font-bold text-verdict-wrong">{joinFailed}</p>
+          <Button variant="secondary" className="mt-3" onClick={() => navigate(SHELL_ROUTES.weekendCrews)}>
             {t("weekend.backToCrews", { defaultValue: "Back to crews" })}
-          </NeoButton>
-        </NeoCard>
+          </Button>
+        </Card>
       </ShellLayout>
     );
   }
@@ -99,70 +99,72 @@ export default function CrewScreen() {
       back
       onBack={() => navigate(SHELL_ROUTES.weekendCrews)}
       headerRight={isCreator ? (
-        <NeoButton
+        <Button
           variant="secondary"
           size="sm"
           onClick={() => navigate(SHELL_ROUTES.weekendCrewCommand(code))}
           aria-label={t("weekend.openCrewCommand", { defaultValue: "Open Crew Command" })}
         >
-          <Settings2 size={15} className="mr-1" />{t("weekend.command", { defaultValue: "Command" })}
-        </NeoButton>
+          <Settings2 size={16} aria-hidden />{t("weekend.command", { defaultValue: "Command" })}
+        </Button>
       ) : undefined}
       scroll
     >
       <div className="flex w-full flex-col gap-4 md:mx-auto md:max-w-md">
         {liveRoom !== undefined ? (
-          <NeoButton variant="danger" size="full" onClick={() => navigate(SHELL_ROUTES.weekendDraft(liveRoom.roomId))}>
-            <Swords size={18} strokeWidth={3} className="mr-1.5" />
+          <Button size="lg" block onClick={() => navigate(SHELL_ROUTES.weekendDraft(liveRoom.roomId))}>
+            <Swords size={18} strokeWidth={3} aria-hidden />
             {liveRoom.status === "lobby" ? t("weekend.enterLobby", { defaultValue: "Enter the lobby" }) : t("weekend.enterLiveDraft", { defaultValue: "Enter the live draft" })}
-          </NeoButton>
+          </Button>
         ) : (
-          <NeoCard className="py-3 text-center">
-            <p className="font-heading text-sm font-bold">{t("weekend.noDraftOpen", { defaultValue: "No draft is open" })}</p>
-            <p className="mt-0.5 text-[11px] text-muted-foreground">
+          <Card padding="sm" className="text-center">
+            <p className="font-heading text-body-sm font-bold">{t("weekend.noDraftOpen", { defaultValue: "No draft is open" })}</p>
+            <p className="mt-0.5 text-meta text-muted-foreground">
               {isCreator ? t("weekend.openNextFromCommand", { defaultValue: "Open the next one from Crew Command." }) : t("weekend.creatorOpensNext", { defaultValue: "The crew creator will open the next weekend." })}
             </p>
-          </NeoCard>
+          </Card>
         )}
 
         {alerts !== undefined && alerts !== null && alerts.alerts.length > 0 && (
-          <NeoCard className="py-3">
+          <Card padding="sm">
             <div className="flex items-center justify-between gap-2">
-              <p className="font-heading text-sm font-bold"><Bell size={14} className="mr-1.5 inline" />{t("weekend.latestActivity", { defaultValue: "Latest activity" })}</p>
+              <p className="font-heading text-body-sm font-bold"><Bell size={14} className="mr-1.5 inline" aria-hidden />{t("weekend.latestActivity", { defaultValue: "Latest activity" })}</p>
               {alerts.unread > 0 && (
-                <button
-                  type="button"
-                  className="font-mono text-[10px] font-bold uppercase text-muted-foreground"
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="px-2 text-meta text-muted-foreground"
                   onClick={() => void markCrewAlertsRead({ crewId: crew.crewId })}
                 >
                   {t("weekend.markRead", { defaultValue: "Mark read · {{count}}", count: alerts.unread })}
-                </button>
+                </Button>
               )}
             </div>
-            <button
-              type="button"
-              className="mt-2 w-full text-left"
+            <Button
+              variant="ghost"
+              block
+              className="mt-1 h-auto flex-col items-start justify-start gap-0 px-0 py-1 text-left font-normal"
               onClick={() => alerts.alerts[0]?.roomId !== null && alerts.alerts[0]?.roomId !== undefined
                 && navigate(SHELL_ROUTES.weekendDraft(alerts.alerts[0].roomId))}
             >
-              <p className="text-xs font-heading font-bold">{alerts.alerts[0]?.title}</p>
-              <p className="text-[10px] text-muted-foreground">{alerts.alerts[0]?.body}</p>
-            </button>
-          </NeoCard>
+              <span className="block font-heading text-body-sm font-bold">{alerts.alerts[0]?.title}</span>
+              <span className="block text-meta text-muted-foreground">{alerts.alerts[0]?.body}</span>
+            </Button>
+          </Card>
         )}
 
         <CrewCompetitionPanel dashboard={dashboard} />
 
         {!isCreator && (
-          <button
-            type="button"
+          <Button
+            variant="ghost"
             disabled={busy}
             onClick={() => void handleLeaveCrew()}
-            className="flex items-center justify-center gap-1.5 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground active:opacity-60"
+            className="self-center text-muted-foreground"
           >
-            <LogOut size={13} strokeWidth={3} />
+            <LogOut size={16} strokeWidth={2.5} aria-hidden />
             {t("weekend.leaveCrew", { defaultValue: "Leave crew" })}
-          </button>
+          </Button>
         )}
       </div>
     </ShellLayout>

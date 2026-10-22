@@ -30,7 +30,13 @@ import { formatPoints } from "../../../convex/lib/fantasyScoring";
 import { CROWD_LIQUIDITY_THRESHOLD } from "../../../convex/lib/fantasyCrowd";
 import type { SlotRole } from "../../../convex/lib/fantasyConstants";
 import type { FormationRow } from "@/lib/weekendFormations";
+import { usePriceFormat } from "@/lib/weekendPrice";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+/** The pitch palette lives in index.css as the `--pitch-*` token group. */
+const pitch = (token: string, alpha?: number) =>
+  alpha === undefined ? `hsl(var(--${token}))` : `hsl(var(--${token}) / ${alpha})`;
 
 /** Structural chip inputs — BudgetSlot and crew-sheet slots both satisfy it. */
 export interface PitchSlot {
@@ -104,29 +110,29 @@ function Jersey({
     variant === "empty"
       ? "none"
       : swapArmed
-        ? "hsl(48 100% 60%)"
+        ? pitch("pitch-swap")
         : variant === "finisher"
-          ? "hsl(330 90% 80%)"
-          : "hsl(30 100% 97%)";
+          ? pitch("pitch-finisher")
+          : pitch("cream");
   return (
     <svg
       viewBox="0 0 24 22"
       className="w-[42px] h-[38px]"
       aria-hidden
-      style={{ filter: "drop-shadow(1.5px 2px 0 hsl(0 0% 0% / 0.55))" }}
+      style={{ filter: `drop-shadow(1.5px 2px 0 ${pitch("pitch-shade", 0.55)})` }}
     >
       <path
         d={JERSEY_PATH}
         fill={fill}
         stroke={
-          variant === "empty" ? "hsl(75 100% 55% / 0.65)" : "hsl(0 0% 7%)"
+          variant === "empty" ? pitch("lime", 0.65) : pitch("ink")
         }
         strokeWidth={variant === "empty" ? 1.1 : 1}
         strokeDasharray={variant === "empty" ? "2.6 1.8" : undefined}
         strokeLinejoin="round"
       />
       {variant !== "empty" && (
-        <path d={JERSEY_SHADE_PATH} fill="hsl(0 0% 0% / 0.09)" />
+        <path d={JERSEY_SHADE_PATH} fill={pitch("pitch-shade", 0.09)} />
       )}
     </svg>
   );
@@ -148,6 +154,7 @@ export function SlotChip({
   onTap: () => void;
 }) {
   const { t } = useTranslation();
+  const formatPrice = usePriceFormat();
   const state = slotChipState(slot, score);
   const filled = slot.playerId !== null;
   const price = slot.locked ? (slot.committedPrice ?? slot.playerPrice) : slot.playerPrice;
@@ -184,14 +191,14 @@ export function SlotChip({
       : state === "scored" && score !== undefined
         ? formatPoints(score.points)
         : price !== null
-          ? price.toFixed(1)
+          ? formatPrice(price)
           : filled
             ? "—"
             : null;
 
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
       data-testid={`pitch-slot-${slot.slotIndex}`}
       data-chip-state={state}
       aria-label={
@@ -203,21 +210,23 @@ export function SlotChip({
             })
       }
       onClick={onTap}
+      // A 44px+ tap target that draws nothing of its own: the shirt is the chip.
       className={cn(
-        "w-[64px] rounded-md px-0.5 py-1 flex flex-col items-center gap-[3px] text-center transition-all select-none",
-        swapArmed && "ring-2 ring-ring bg-[hsl(48_100%_60%/0.12)]",
-        state === "locked" && "opacity-85",
-        !editable && !filled && "opacity-60",
+        "h-auto w-16 flex-col items-center justify-start gap-0.5 rounded-md border-0 px-0.5 py-1 text-center font-normal hover:bg-transparent",
+        swapArmed && "ring-2 ring-ring bg-[hsl(var(--pitch-swap)/0.12)] hover:bg-[hsl(var(--pitch-swap)/0.12)]",
+        // Dimmed states, not muted text: the whole chip steps back.
+        state === "locked" && "opacity-[0.85]",
+        !editable && !filled && "opacity-[0.6]",
       )}
     >
       {/* Role line above the shirt — filled chips only (an empty chip already
           says its role under the dashed jersey; twice was noise). */}
       {filled && (
-        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.12em] leading-none flex items-center gap-0.5 text-[hsl(30_100%_97%/0.85)]">
+        <span className="flex items-center gap-0.5 font-mono text-eyebrow font-bold uppercase text-cream">
           {slot.isFinisher ? `F·${slot.slotRole}` : slot.slotRole}
           {slot.locked && (
             <Lock
-              size={8}
+              size={12}
               strokeWidth={3}
               aria-label={t("weekend.lockedBadge", { defaultValue: "Locked" })}
             />
@@ -230,7 +239,7 @@ export function SlotChip({
         // keyframe carries the shirt onto the pitch.
         <span
           key={slot.playerId ?? undefined}
-          className="weekend-chip-in w-full flex flex-col items-center gap-[2px]"
+          className="weekend-chip-in w-full flex flex-col items-center gap-0.5"
         >
           <span className="relative">
             <Jersey
@@ -238,7 +247,7 @@ export function SlotChip({
               swapArmed={swapArmed}
             />
           </span>
-          <span className="w-full rounded-[3px] bg-[hsl(30_100%_97%)] text-[hsl(0_0%_7%)] font-heading font-bold text-[9.5px] leading-[13px] px-0.5 truncate neo-shadow-sm border border-[hsl(0_0%_7%)]">
+          <span className="w-full truncate rounded-sm border border-ink bg-cream px-0.5 font-heading text-eyebrow font-bold text-ink neo-shadow-sm">
             {surname(slot.playerName ?? "…")}
           </span>
           <span
@@ -246,37 +255,38 @@ export function SlotChip({
             // revision) re-mounts the plate and fires its one-shot pulse.
             key={`v-${valueLine ?? ""}-${state}`}
             className={cn(
-              "w-full rounded-[3px] font-mono font-bold text-[9.5px] leading-[13px] tabular-nums border border-[hsl(0_0%_7%)]",
+              "w-full whitespace-nowrap rounded-sm border border-ink font-mono text-eyebrow font-bold tabular-nums",
+              // A scored plate is a small lime accent (the points landed).
               state === "scored"
-                ? "weekend-score-in bg-[hsl(74_100%_50%)] text-[hsl(0_0%_5%)]"
-                : "bg-[hsl(0_0%_10%)] text-[hsl(30_100%_97%/0.92)]",
+                ? "weekend-score-in bg-lime text-ink"
+                : "bg-[hsl(var(--pitch-plate))] text-cream",
             )}
           >
             {valueLine}
           </span>
           {micro !== null && (
-            <span className="font-mono text-[8px] uppercase leading-none text-[hsl(30_100%_97%/0.75)]">
+            <span className="font-mono text-eyebrow uppercase text-cream">
               {micro}
             </span>
           )}
         </span>
       ) : (
-        <span className="w-full flex flex-col items-center gap-[2px]">
+        <span className="w-full flex flex-col items-center gap-0.5">
           <span className="relative">
             <Jersey variant="empty" swapArmed={swapArmed} />
             <Plus
               size={13}
               strokeWidth={3}
               aria-hidden
-              className="absolute left-1/2 top-[55%] -translate-x-1/2 -translate-y-1/2 text-[hsl(75_100%_55%/0.85)]"
+              className="absolute left-1/2 top-[55%] -translate-x-1/2 -translate-y-1/2 text-lime"
             />
           </span>
-          <span className="font-heading font-bold text-[10px] leading-tight text-[hsl(30_100%_97%/0.9)]">
+          <span className="font-heading text-eyebrow font-bold text-cream">
             {slot.slotRole}
           </span>
         </span>
       )}
-    </button>
+    </Button>
   );
 }
 
@@ -296,7 +306,7 @@ function PitchSurface() {
   const bands = [0, 8.6, 18.5, 29.9, 43.0, 58.0, 75.3, 95.2, 118.1, 144];
   // Perspective: half-width of the pitch at height y (converges far/top).
   const halfW = (y: number) => 40 + (8 * (y - 5)) / 134;
-  const line = "hsl(78 90% 88% / 0.5)";
+  const line = pitch("pitch-line", 0.5);
   return (
     <svg
       viewBox="0 0 100 144"
@@ -306,21 +316,21 @@ function PitchSurface() {
     >
       <defs>
         <linearGradient id="wknd-turf-depth" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="hsl(0 0% 0%)" stopOpacity="0.5" />
-          <stop offset="0.3" stopColor="hsl(0 0% 0%)" stopOpacity="0.08" />
-          <stop offset="0.72" stopColor="hsl(0 0% 0%)" stopOpacity="0" />
-          <stop offset="1" stopColor="hsl(0 0% 0%)" stopOpacity="0.22" />
+          <stop offset="0" stopColor={pitch("pitch-shade")} stopOpacity="0.5" />
+          <stop offset="0.3" stopColor={pitch("pitch-shade")} stopOpacity="0.08" />
+          <stop offset="0.72" stopColor={pitch("pitch-shade")} stopOpacity="0" />
+          <stop offset="1" stopColor={pitch("pitch-shade")} stopOpacity="0.22" />
         </linearGradient>
         <linearGradient id="wknd-turf-sides" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="hsl(0 0% 0%)" stopOpacity="0.38" />
-          <stop offset="0.1" stopColor="hsl(0 0% 0%)" stopOpacity="0" />
-          <stop offset="0.9" stopColor="hsl(0 0% 0%)" stopOpacity="0" />
-          <stop offset="1" stopColor="hsl(0 0% 0%)" stopOpacity="0.38" />
+          <stop offset="0" stopColor={pitch("pitch-shade")} stopOpacity="0.38" />
+          <stop offset="0.1" stopColor={pitch("pitch-shade")} stopOpacity="0" />
+          <stop offset="0.9" stopColor={pitch("pitch-shade")} stopOpacity="0" />
+          <stop offset="1" stopColor={pitch("pitch-shade")} stopOpacity="0.38" />
         </linearGradient>
         <radialGradient id="wknd-floodlight" cx="0.5" cy="0.16" r="0.75">
-          <stop offset="0" stopColor="hsl(75 100% 72%)" stopOpacity="0.14" />
-          <stop offset="0.55" stopColor="hsl(75 100% 72%)" stopOpacity="0.04" />
-          <stop offset="1" stopColor="hsl(75 100% 72%)" stopOpacity="0" />
+          <stop offset="0" stopColor={pitch("pitch-floodlight")} stopOpacity="0.14" />
+          <stop offset="0.55" stopColor={pitch("pitch-floodlight")} stopOpacity="0.04" />
+          <stop offset="1" stopColor={pitch("pitch-floodlight")} stopOpacity="0" />
         </radialGradient>
       </defs>
 
@@ -332,7 +342,7 @@ function PitchSurface() {
           y={top}
           width="100"
           height={bands[i + 1] - top}
-          fill={i % 2 === 0 ? "hsl(140 34% 10%)" : "hsl(142 30% 13.5%)"}
+          fill={i % 2 === 0 ? pitch("pitch-turf") : pitch("pitch-turf-stripe")}
         />
       ))}
 
@@ -456,7 +466,7 @@ export function PitchView({
 
   return (
     <div data-testid="weekend-pitch">
-      <div className="weekend-pitch neo-border neo-shadow-lg rounded-xl relative overflow-hidden">
+      <div className="weekend-pitch neo-border neo-shadow-lg rounded-lg relative overflow-hidden">
         <PitchSurface />
 
         <div
@@ -478,7 +488,7 @@ export function PitchView({
         className="weekend-pitch neo-border neo-shadow rounded-lg mt-2 px-3 py-2 flex items-center gap-3"
         data-testid="finisher-touchline"
       >
-        <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[hsl(30_100%_97%/0.7)] shrink-0">
+        <p className="shrink-0 font-mono text-eyebrow font-bold uppercase text-cream">
           {t("weekend.finishers", { defaultValue: "Finishers" })}
         </p>
         <div className="flex items-center gap-2 flex-1 justify-evenly">
