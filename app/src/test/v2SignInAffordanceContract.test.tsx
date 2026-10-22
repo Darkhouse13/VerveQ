@@ -62,10 +62,10 @@ function LocationProbe() {
 
 function renderHome() {
   return render(
-    <MemoryRouter initialEntries={["/v2"]}>
+    <MemoryRouter initialEntries={["/home"]}>
       <Routes>
         <Route path="/" element={<EntryRoute />} />
-        <Route path="/v2" element={<ShellHomeScreen />} />
+        <Route path="/home" element={<ShellHomeScreen />} />
       </Routes>
       <LocationProbe />
     </MemoryRouter>,

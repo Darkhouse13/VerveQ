@@ -7,7 +7,7 @@
  * is deliberate — the cold visitor must be able to play within one tap, with
  * no signup wall, no Convex session, and no backend surface added. Real,
  * server-authoritative play starts after they claim a username (the existing
- * `/v2/welcome` flow). Keep ranked/ELO logic far away from this file.
+ * `/welcome` flow). Keep ranked/ELO logic far away from this file.
  */
 
 export type TasteQuestion = {

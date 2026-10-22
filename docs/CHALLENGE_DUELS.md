@@ -132,7 +132,7 @@ The link-landing route is the only duel route reachable as a guest — every
 other duel route is gated by `UsernameRequiredRoute`.
 
 Production now runs the v2 shell, which re-hosts these screens: `/challenge`
-forwards to `/v2/duels` and `/rivals` to `/v2/rivals`, both rendering the same
+forwards to `/duels` and `/rivals` to `/rivals`, both rendering the same
 components embedded in `ShellLayout`. `/duel/play/:duelId`,
 `/duel/result/:duelId`, `/duel/:linkCode`, and `/rivals/:opponentUserId` are not
 redirected and keep the gating above. See `docs/COMPETITIVE_MODES.md` for the

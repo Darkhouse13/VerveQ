@@ -1,5 +1,5 @@
 /**
- * Duels hub (`/v2/duels`) — async head-to-heads with friends, rebuilt on the
+ * Duels hub (`/duels`) — async head-to-heads with friends, rebuilt on the
  * shell (VerveQ ONE P3.3): ShellLayout header + nav, one lime "New Duel", then
  * the buckets in the order a player acts on them — your turn, waiting on them,
  * recent results, rivals — with Arena rooms as a quiet secondary at the foot.

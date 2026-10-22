@@ -6,7 +6,7 @@
  * into an instant, account-free taste round (see `lib/tasteRound.ts` — bundled
  * questions, client scoring, no Convex session, no signup wall). Only AFTER
  * the round do we ask for anything: the claim card mirrors the duel
- * guest-claim pattern and routes into the existing `/v2/welcome` username-only
+ * guest-claim pattern and routes into the existing `/welcome` username-only
  * onboarding. "Maybe later" keeps them playing fresh rounds, and the result
  * card cross-sells Career Path (the guest-playable marketed mode) with
  * `?ref=taste` so those hops stay visible in funnel.careerPathMetrics.

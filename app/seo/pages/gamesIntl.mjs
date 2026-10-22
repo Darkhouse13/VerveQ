@@ -130,7 +130,7 @@ export function buildIntlGamePages(ctx) {
     body: `<div class="seo-hero"><span class="seo-tag">Nouveau quiz à minuit UTC</span>
 <h1>Quiz foot du jour</h1>
 <p class="seo-lede">Chaque jour, VerveQ propose <strong>dix questions de foot, les mêmes pour tous les joueurs du monde</strong>. Une seule tentative. Réponds vite pour gagner plus de points, puis partage ton score avec tes potes.</p>
-${cta("/v2/daily?ref=seo_daily_fr", "Jouer au quiz du jour")}
+${cta("/daily?ref=seo_daily_fr", "Jouer au quiz du jour")}
 <p class="seo-note">${UI.fr.free}</p></div>
 <h2>Comment ça marche</h2>
 <ul>
@@ -155,7 +155,7 @@ ${cta("/v2/daily?ref=seo_daily_fr", "Jouer au quiz du jour")}
     body: `<div class="seo-hero"><span class="seo-tag">Le jeu le plus joué</span>
 <h1>Devine le joueur grâce à sa carrière</h1>
 <p class="seo-lede">La liste des clubs d'un joueur, dans l'ordre. À toi de trouver qui a vécu cette carrière. Certains parcours sont évidents, d'autres sont des tours d'Europe qui séparent les fans des encyclopédies vivantes.</p>
-${cta("/v2/career-path?ref=seo_career_fr", "Jouer au parcours carrière")}
+${cta("/career-path?ref=seo_career_fr", "Jouer au parcours carrière")}
 <p class="seo-note">${UI.fr.free}</p></div>
 <h2>Essaie maintenant</h2>
 ${cp.replace(/\{\{REVEAL\}\}/g, "Voir le joueur").replace(/\{\{LOAN\}\}/g, "prêt")}
@@ -179,7 +179,7 @@ ${cp.replace(/\{\{REVEAL\}\}/g, "Voir le joueur").replace(/\{\{LOAN\}\}/g, "prê
     body: `<div class="seo-hero"><span class="seo-tag">Défi 3×3</span>
 <h1>Grille foot</h1>
 <p class="seo-lede">Trois lignes, trois colonnes, neuf intersections. <strong>Chaque case attend un joueur qui colle aux deux en-têtes</strong> : il a joué dans ce club ET il a cette nationalité, ou il occupe ce poste. Neuf essais pour neuf cases, et chaque joueur ne sert qu'une fois.</p>
-${cta("/v2/verve-grid?ref=seo_grid_fr", "Jouer à la grille")}
+${cta("/verve-grid?ref=seo_grid_fr", "Jouer à la grille")}
 <p class="seo-note">Grilles faciles, moyennes et difficiles. Une nouvelle grille à chaque partie.</p></div>
 <h2>Comment jouer</h2>
 <ol>
@@ -203,7 +203,7 @@ ${cta("/v2/verve-grid?ref=seo_grid_fr", "Jouer à la grille")}
     body: `<div class="seo-hero"><span class="seo-tag">Jeu de série</span>
 <h1>Plus ou moins : foot</h1>
 <p class="seo-lede">Une stat est révélée, la suivante est cachée. Plus ou moins ? Bonne réponse, ta série grimpe. Mauvaise réponse, c'est terminé : pas de vies, pas de seconde chance.</p>
-${cta("/v2/higher-lower?ref=seo_hol_fr", "Jouer à plus ou moins")}
+${cta("/higher-lower?ref=seo_hol_fr", "Jouer à plus ou moins")}
 <p class="seo-note">${UI.fr.free}</p></div>
 <h2>Comment ça marche</h2>
 <ul>
@@ -224,7 +224,7 @@ ${cta("/v2/higher-lower?ref=seo_hol_fr", "Jouer à plus ou moins")}
     body: `<div class="seo-hero"><span class="seo-tag">Mode survie</span>
 <h1>Quiz des initiales</h1>
 <p class="seo-lede">La règle tient en une phrase : <strong>deux initiales, tu cites un footballeur qui les porte</strong>. « KM » ? Kylian Mbappé marche. N'importe quel autre joueur pro aux mêmes initiales aussi. Tiens le plus longtemps possible.</p>
-${cta("/v2/daily-survival?ref=seo_survival_fr", "Jouer au défi du jour")}
+${cta("/daily-survival?ref=seo_survival_fr", "Jouer au défi du jour")}
 <p class="seo-note">Le défi du jour est le même pour tout le monde. Une tentative.</p></div>
 <h2>Les règles</h2>
 <ul>
@@ -244,7 +244,7 @@ ${cta("/v2/daily-survival?ref=seo_survival_fr", "Jouer au défi du jour")}
     body: `<div class="seo-hero"><span class="seo-tag">Chrono</span>
 <h1>Quiz foot en 60 secondes</h1>
 <p class="seo-lede">Une minute au chrono. <strong>Réponds à un maximum de questions avant zéro.</strong> Chaque bonne réponse fait monter ton score ; chaque erreur te retire trois secondes.</p>
-${cta("/v2/blitz?ref=seo_blitz_fr", "Lancer le chrono")}
+${cta("/blitz?ref=seo_blitz_fr", "Lancer le chrono")}
 <p class="seo-note">${UI.fr.free}</p></div>
 <h2>Les règles</h2>
 <ul>
@@ -264,7 +264,7 @@ ${cta("/v2/blitz?ref=seo_blitz_fr", "Lancer le chrono")}
     body: `<div class="seo-hero"><span class="seo-tag">Multijoueur</span>
 <h1>Quiz foot entre amis</h1>
 <p class="seo-lede">Dans chaque groupe il y a celui qui est sûr d'en savoir plus que toi. Le duel règle ça : choisis un thème, envoie le lien, et vous affrontez <strong>exactement les mêmes questions</strong>.</p>
-${cta("/v2/duels?ref=seo_duels_fr", "Lancer un duel")}
+${cta("/duels?ref=seo_duels_fr", "Lancer un duel")}
 <p class="seo-note">Pour jouer à plusieurs en même temps, crée une salle Arena.</p></div>
 <h2>Comment ça marche</h2>
 <ul>
@@ -286,7 +286,7 @@ ${cta("/v2/duels?ref=seo_duels_fr", "Lancer un duel")}
       body: `<div class="seo-hero"><span class="seo-tag">Gratuit · sans téléchargement</span>
 <h1>Jeux de foot gratuits</h1>
 <p class="seo-lede">Sept jeux de foot à lancer tout de suite dans ton navigateur, pensés pour ceux qui regardent vraiment les matchs. Choisis-en un et joue : sans téléchargement, et la plupart sans compte.</p>
-${cta("/v2/career-path?ref=seo_games_fr", "Jouer au jeu le plus populaire")}</div>
+${cta("/career-path?ref=seo_games_fr", "Jouer au jeu le plus populaire")}</div>
 <h2>Tous les jeux</h2>
 ${linkGrid(GAMES.fr.map((g) => ({ href: LANG_GROUPS[g.key].fr, label: g.label, note: g.note })))}`,
       faqs: [
@@ -305,7 +305,7 @@ ${linkGrid(GAMES.fr.map((g) => ({ href: LANG_GROUPS[g.key].fr, label: g.label, n
     body: `<div class="seo-hero"><span class="seo-tag">Nuevo quiz a medianoche UTC</span>
 <h1>Quiz de fútbol diario</h1>
 <p class="seo-lede">Cada día VerveQ publica <strong>diez preguntas de fútbol, las mismas para todo el mundo</strong>. Un solo intento. Responde rápido para sumar más puntos y comparte tu resultado con tus amigos.</p>
-${cta("/v2/daily?ref=seo_daily_es", "Jugar el quiz de hoy")}
+${cta("/daily?ref=seo_daily_es", "Jugar el quiz de hoy")}
 <p class="seo-note">${UI.es.free}</p></div>
 <h2>Cómo funciona</h2>
 <ul>
@@ -330,7 +330,7 @@ ${cta("/v2/daily?ref=seo_daily_es", "Jugar el quiz de hoy")}
     body: `<div class="seo-hero"><span class="seo-tag">El juego más jugado</span>
 <h1>Adivina el futbolista por su trayectoria</h1>
 <p class="seo-lede">La lista de clubes de un jugador, en orden cronológico. Tú dices quién es. Algunas trayectorias son regalos; otras son vueltas por media Europa que separan a los aficionados de las enciclopedias.</p>
-${cta("/v2/career-path?ref=seo_career_es", "Jugar a adivinar el jugador")}
+${cta("/career-path?ref=seo_career_es", "Jugar a adivinar el jugador")}
 <p class="seo-note">${UI.es.free}</p></div>
 <h2>Pruébalo ahora</h2>
 ${cp.replace(/\{\{REVEAL\}\}/g, "Ver el jugador").replace(/\{\{LOAN\}\}/g, "cedido")}
@@ -353,7 +353,7 @@ ${cp.replace(/\{\{REVEAL\}\}/g, "Ver el jugador").replace(/\{\{LOAN\}\}/g, "cedi
     body: `<div class="seo-hero"><span class="seo-tag">Reto 3×3</span>
 <h1>Grid de fútbol</h1>
 <p class="seo-lede">Tres filas, tres columnas, nueve cruces. <strong>Cada casilla necesita un jugador que cumpla los dos encabezados</strong>: jugó en ese club Y tiene esa nacionalidad, o juega en esa posición. Nueve intentos para nueve casillas, sin repetir jugadores.</p>
-${cta("/v2/verve-grid?ref=seo_grid_es", "Jugar al grid")}
+${cta("/verve-grid?ref=seo_grid_es", "Jugar al grid")}
 <p class="seo-note">Grids fáciles, medios y difíciles. Uno nuevo en cada partida.</p></div>
 <h2>Cómo se juega</h2>
 <ol>
@@ -375,7 +375,7 @@ ${cta("/v2/verve-grid?ref=seo_grid_es", "Jugar al grid")}
     body: `<div class="seo-hero"><span class="seo-tag">Juego de rachas</span>
 <h1>Mayor o menor: fútbol</h1>
 <p class="seo-lede">Se muestra una estadística y la siguiente está oculta. ¿Mayor o menor? Si aciertas, tu racha sigue; si fallas, se acabó.</p>
-${cta("/v2/higher-lower?ref=seo_hol_es", "Jugar a mayor o menor")}
+${cta("/higher-lower?ref=seo_hol_es", "Jugar a mayor o menor")}
 <p class="seo-note">${UI.es.free}</p></div>
 <h2>Cómo funciona</h2>
 <ul>
@@ -394,7 +394,7 @@ ${cta("/v2/higher-lower?ref=seo_hol_es", "Jugar a mayor o menor")}
     body: `<div class="seo-hero"><span class="seo-tag">Supervivencia</span>
 <h1>Quiz de iniciales de futbolistas</h1>
 <p class="seo-lede">La regla cabe en una frase: <strong>dos iniciales y nombras un futbolista que las tenga</strong>. ¿«LM»? Lionel Messi vale, y cualquier otro profesional con esas iniciales también.</p>
-${cta("/v2/daily-survival?ref=seo_survival_es", "Jugar el reto de hoy")}
+${cta("/daily-survival?ref=seo_survival_es", "Jugar el reto de hoy")}
 <p class="seo-note">El reto diario es el mismo para todos. Un intento.</p></div>
 <h2>Reglas</h2>
 <ul>
@@ -413,7 +413,7 @@ ${cta("/v2/daily-survival?ref=seo_survival_es", "Jugar el reto de hoy")}
     body: `<div class="seo-hero"><span class="seo-tag">Contrarreloj</span>
 <h1>Quiz de fútbol en 60 segundos</h1>
 <p class="seo-lede">Un minuto en el reloj. <strong>Responde tantas preguntas como puedas antes de llegar a cero.</strong> Cada fallo resta tres segundos.</p>
-${cta("/v2/blitz?ref=seo_blitz_es", "Empezar el reto")}
+${cta("/blitz?ref=seo_blitz_es", "Empezar el reto")}
 <p class="seo-note">${UI.es.free}</p></div>
 <h2>Reglas</h2>
 <ul>
@@ -430,7 +430,7 @@ ${cta("/v2/blitz?ref=seo_blitz_es", "Empezar el reto")}
     body: `<div class="seo-hero"><span class="seo-tag">Multijugador</span>
 <h1>Quiz de fútbol con amigos</h1>
 <p class="seo-lede">En cada grupo hay uno que está seguro de saber más de fútbol que tú. El duelo lo decide: elige tema, envía el enlace y os enfrentáis a <strong>las mismas preguntas</strong>.</p>
-${cta("/v2/duels?ref=seo_duels_es", "Empezar un duelo")}
+${cta("/duels?ref=seo_duels_es", "Empezar un duelo")}
 <p class="seo-note">Para jugar en grupo, crea una sala Arena.</p></div>
 <h2>Cómo funciona</h2>
 <ul>
@@ -451,7 +451,7 @@ ${cta("/v2/duels?ref=seo_duels_es", "Empezar un duelo")}
       body: `<div class="seo-hero"><span class="seo-tag">Gratis · sin descargas</span>
 <h1>Juegos de fútbol gratis</h1>
 <p class="seo-lede">Siete juegos de fútbol para jugar ya en tu navegador, pensados para quien ve los partidos de verdad. Sin descargas y, la mayoría, sin cuenta.</p>
-${cta("/v2/career-path?ref=seo_games_es", "Jugar al más popular")}</div>
+${cta("/career-path?ref=seo_games_es", "Jugar al más popular")}</div>
 <h2>Todos los juegos</h2>
 ${linkGrid(GAMES.es.map((g) => ({ href: LANG_GROUPS[g.key].es, label: g.label, note: g.note })))}`,
       faqs: [

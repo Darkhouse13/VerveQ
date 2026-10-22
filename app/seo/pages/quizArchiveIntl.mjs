@@ -250,7 +250,7 @@ export function buildIntlQuizArchive(archive, lang, { minFresh = 5, minTopic = 1
         body: `<div class="seo-hero"><span class="seo-tag">${esc(loc.topicTag(n))}</span>
 <h1>${esc(h1)}</h1>
 <p class="seo-lede">${esc(loc.topicLede(n, name))}</p>
-${cta(`/v2/daily?ref=seo_quiz_topic_${lang}`, loc.play)}</div>
+${cta(`/daily?ref=seo_quiz_topic_${lang}`, loc.play)}</div>
 ${items.map((it, i) => renderQ(it.q, i + 1, loc.from(`${loc.base}${it.date}/`, label(it.date)))).join("\n")}
 ${faqSection(faqs, lang === "fr" ? "Questions fréquentes" : "Preguntas frecuentes")}
 <h2>${esc(loc.moreTopics)}</h2>
@@ -291,7 +291,7 @@ ${faqSection(faqs, lang === "fr" ? "Questions fréquentes" : "Preguntas frecuent
       body: `<div class="seo-hero"><span class="seo-tag">${esc(long)}</span>
 <h1>${esc(loc.dayH1(label(day.date)))}</h1>
 <p class="seo-lede">${esc(loc.dayLede(day.tq.length, long))}</p>
-${cta(`/v2/daily?ref=seo_quiz_day_${lang}`, loc.play)}</div>
+${cta(`/daily?ref=seo_quiz_day_${lang}`, loc.play)}</div>
 ${day.tq.map((q, n) => renderQ(q, n + 1)).join("\n")}
 ${topics.length ? `<h2>${esc(loc.similar)}</h2>${linkGrid(topics.map((t) => ({ href: t.page.path, label: loc.topicLink(t.name.replace(/^(la |le |l'|les |el |los |las )/i, "")), note: loc.nq(t.count) })))}` : ""}
 <h2>${esc(loc.otherDays)}</h2>
@@ -333,7 +333,7 @@ ${linkGrid([
     body: `<div class="seo-hero"><span class="seo-tag">${esc(loc.hubTag(total))}</span>
 <h1>${esc(loc.hubH1)}</h1>
 <p class="seo-lede">${esc(loc.hubLede(first))}</p>
-${cta(`/v2/daily?ref=seo_quiz_hub_${lang}`, loc.play)}</div>
+${cta(`/daily?ref=seo_quiz_hub_${lang}`, loc.play)}</div>
 <h2>${esc(loc.byTopic)}</h2>
 ${linkGrid(topicLinks)}
 <h2>${esc(loc.latest(label(latest.date, true)))}</h2>

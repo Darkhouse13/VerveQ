@@ -32,6 +32,23 @@ Newest first.
 
 ---
 
+## DECISION 2026-10-22 — No `/v2` in URLs
+
+The owner asked for the `/v2` prefix to go ("it about time we get rid of it
+no?"). The shell's pages now sit at the top level: Home (the Play tab) is
+`/home`, everything else drops the prefix (`/v2/weekend/squad` →
+`/weekend/squad`). Binding:
+
+- Never mint a `/v2` path again. `app/src/lib/shellRoutes.ts` is the one list.
+- Old `/v2` URLs keep working forever: nginx 301s them (`deploy/nginx.conf`),
+  and the app redirects the visits nginx never sees (`DropV2Redirect`).
+- `/weekend`, `/whos-older` and `/missing-letters` are the pages AND the
+  caption links: a cold landing gets `ref=`, an in-app tap does not.
+- PostHog paths changed with it: a series filtered on `/v2/...` needs the new
+  path added from 2026-10-22.
+
+---
+
 ## DECISION 2026-10-21 — VerveQ ONE: one brand for the whole app
 
 **Plan.** "VerveQ ONE: the unification plan" (claude.ai doc

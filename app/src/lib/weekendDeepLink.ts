@@ -3,7 +3,7 @@
  * Instagram/TikTok bio link). One typed-friendly URL.
  *
  * FW-GO: the mode is LIVE, so the short link lands on the WEEKEND hub
- * (`/v2/weekend`) — the mode's own front door — instead of the pre-launch
+ * (`/weekend`) — the mode's own front door — instead of the pre-launch
  * teaser placement on Home. The hub is behind `ShellGate` (the build flag)
  * ONLY, with no session guard, so an anonymous visitor sees the mode before
  * being asked for anything; the individual surfaces keep their own guards.
@@ -38,7 +38,7 @@ export const WEEKEND_START_BUILDER = "budget";
 export const WEEKEND_ENTRY_PARAM = "entry";
 export const WEEKEND_ENTRY_BUILDER = "builder";
 
-/** Query param that pins the WEEKEND card to the top of Home (`/v2?w=1`).
+/** Query param that pins the WEEKEND card to the top of Home (`/home?w=1`).
  *  Pre-FW-GO short links minted it; Home still honours it. */
 export const WEEKEND_TOP_PARAM = "w";
 
@@ -53,6 +53,11 @@ export function weekendShortLinkTarget(search: string): string {
   const target = toBuilder ? SHELL_ROUTES.weekendSquad : SHELL_ROUTES.weekend;
   const query = params.toString();
   return query.length > 0 ? `${target}?${query}` : target;
+}
+
+/** A paid `?start=` link, which redirects even on an in-app visit. */
+export function hasWeekendStart(search: string): boolean {
+  return new URLSearchParams(search).has(WEEKEND_START_PARAM);
 }
 
 /** The builder-entry tag, read from the CURRENT location's search — the

@@ -58,7 +58,7 @@ test("THE WEEKEND full loop at 380px: hub → pitch build → shape change → c
   });
 
   // ── the hub: four doors on the dark canvas, league framing line ──
-  await page.goto("/v2/weekend");
+  await page.goto("/weekend");
   await expect(page.getByTestId("weekend-door-squad")).toBeVisible({ timeout: 45_000 });
   await expect(page.getByTestId("weekend-door-crews")).toBeVisible();
   await expect(page.getByTestId("weekend-door-vote")).toBeVisible();
@@ -202,7 +202,7 @@ test("THE WEEKEND full loop at 380px: hub → pitch build → shape change → c
   await expect(sheet).toHaveCount(0);
 
   // ── crew: create, land on the crew page, open the lobby ──
-  await page.goto("/v2/weekend/crews");
+  await page.goto("/weekend/crews");
   await expect(page.getByText("Create crew")).toBeVisible({ timeout: 30_000 });
   await expectNoHorizontalScroll(page, "crews hub");
   await page.getByText("Create crew").click();
@@ -211,7 +211,7 @@ test("THE WEEKEND full loop at 380px: hub → pitch build → shape change → c
   await expect(page.getByText("Crew code")).toBeVisible({ timeout: 30_000 });
   await expectNoHorizontalScroll(page, "crew page");
   await page.getByText("Open this weekend's draft").click();
-  await expect(page).toHaveURL(/\/v2\/weekend\/draft\//, { timeout: 30_000 });
+  await expect(page).toHaveURL(/\/weekend\/draft\//, { timeout: 30_000 });
   await expect(page.getByText("Ready up")).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText("A draft needs at least 2 drafters.")).toBeVisible();
   await expectNoHorizontalScroll(page, "draft lobby");
@@ -222,7 +222,7 @@ test("THE WEEKEND full loop at 380px: hub → pitch build → shape change → c
     username: RUN_TAG,
   }) as { roomId: string };
   expect(drafted.roomId).toBeTruthy();
-  await page.goto(`/v2/weekend/sheet/${drafted.roomId}`);
+  await page.goto(`/weekend/sheet/${drafted.roomId}`);
   await expect(page.getByText("the 13 are the 13 — arrange, don't re-man")).toBeVisible({
     timeout: 45_000,
   });
@@ -242,7 +242,7 @@ test("THE WEEKEND full loop at 380px: hub → pitch build → shape change → c
   await page.screenshot({ path: "e2e/artifacts/weekend-sheet-380.png", fullPage: true });
 
   // ── vote: reachable, honest about whether pairs can be served ──
-  await page.goto("/v2/weekend/vote");
+  await page.goto("/weekend/vote");
   await expect(
     page
       .getByText("Who had the better game?")
@@ -255,7 +255,7 @@ test("THE WEEKEND full loop at 380px: hub → pitch build → shape change → c
   await page.screenshot({ path: "e2e/artifacts/weekend-vote-380.png", fullPage: true });
 
   // ── court: the docket renders (or the honest closed card) ──
-  await page.goto("/v2/weekend/court");
+  await page.goto("/weekend/court");
   await expect(
     page
       .getByText("File a claim")
@@ -268,23 +268,23 @@ test("THE WEEKEND full loop at 380px: hub → pitch build → shape change → c
   // ── U2 (FW-EXPAND): back walks UP the flow, one level at a time ──
   // court → back lands on the hub, not the compete grid.
   await page.getByRole("button", { name: "Back" }).click();
-  await expect(page).toHaveURL(/\/v2\/weekend$/, { timeout: 30_000 });
+  await expect(page).toHaveURL(/\/weekend$/, { timeout: 30_000 });
   // hub → squad → back lands on the hub again.
   await page.getByTestId("weekend-door-squad").click();
   await expect(page.getByTestId("weekend-pitch")).toBeVisible({ timeout: 45_000 });
   await page.getByRole("button", { name: "Back" }).click();
-  await expect(page).toHaveURL(/\/v2\/weekend$/, { timeout: 30_000 });
+  await expect(page).toHaveURL(/\/weekend$/, { timeout: 30_000 });
   // crews → back lands on the hub too.
-  await page.goto("/v2/weekend/crews");
+  await page.goto("/weekend/crews");
   await expect(page.getByText("Create crew")).toBeVisible({ timeout: 30_000 });
   await page.getByRole("button", { name: "Back" }).click();
-  await expect(page).toHaveURL(/\/v2\/weekend$/, { timeout: 30_000 });
+  await expect(page).toHaveURL(/\/weekend$/, { timeout: 30_000 });
   // …and the hub's own back exits to compete, its true parent.
   await page.getByRole("button", { name: "Back" }).click();
   await expect(page).toHaveURL(/\/compete$/, { timeout: 30_000 });
 
   // ── U3 (FW-EXPAND): How to Play — hub "?" → rules screen → back to hub ──
-  await page.goto("/v2/weekend");
+  await page.goto("/weekend");
   await page.getByTestId("weekend-how-to-play-button").click();
   await expect(page.getByTestId("how-to-play")).toBeVisible({ timeout: 30_000 });
   await expect(page.getByTestId("htp-scoring")).toBeVisible();
@@ -295,7 +295,7 @@ test("THE WEEKEND full loop at 380px: hub → pitch build → shape change → c
     fullPage: true,
   });
   await page.getByRole("button", { name: "Back" }).click();
-  await expect(page).toHaveURL(/\/v2\/weekend$/, { timeout: 30_000 });
+  await expect(page).toHaveURL(/\/weekend$/, { timeout: 30_000 });
 
   // ── the whole loop ran clean ──
   expect(consoleErrors, `console errors:\n${consoleErrors.join("\n")}`).toEqual([]);

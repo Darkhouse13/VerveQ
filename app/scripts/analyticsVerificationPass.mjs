@@ -126,7 +126,7 @@ async function playCareerPathOut(page) {
 
 async function claimUsername(page) {
   const username = `tvq${Date.now().toString().slice(-9)}`;
-  await page.goto(`${BASE}/v2/welcome`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/welcome`, { waitUntil: "networkidle" });
   await wait(2500);
   await dismissLanguagePrompt(page);
   const field = page.locator("input").first();
@@ -145,7 +145,7 @@ async function main() {
   // ── 1. Career Path: a real game, played to a real finish ──────────────────
   {
     const { ctx, page } = await fresh(browser);
-    await page.goto(`${BASE}/v2/career-path?ref=play`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/career-path?ref=play`, { waitUntil: "networkidle" });
     // Dismiss BEFORE asserting: the prompt overlays the screen and swallows
     // clicks meant for it. Career Path's arrival is idempotent, so a locale
     // switch no longer mints a second session — but the modal is still in the
@@ -178,7 +178,7 @@ async function main() {
   // ── 2. Career Path: leave mid-game -> abandoned, never completed ──────────
   {
     const { ctx, page } = await fresh(browser);
-    await page.goto(`${BASE}/v2/career-path?ref=play`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/career-path?ref=play`, { waitUntil: "networkidle" });
     // Dismiss BEFORE asserting: the prompt overlays the screen and swallows
     // clicks meant for it. Career Path's arrival is idempotent, so a locale
     // switch no longer mints a second session — but the modal is still in the
@@ -202,7 +202,7 @@ async function main() {
     const { ctx, page } = await fresh(browser);
     await page.goto(`${BASE}/compete`, { waitUntil: "networkidle" });
     await wait(2000);
-    await page.goto(`${BASE}/v2/ranks`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/ranks`, { waitUntil: "networkidle" });
     await wait(FLUSH);
     report("route changes fire NO game_started / game_completed",
       seen("game_started").length === 0 && seen("game_completed").length === 0,
@@ -214,7 +214,7 @@ async function main() {
   {
     const { ctx, page } = await fresh(browser);
     // Build anonymous history FIRST so the merge has something to attribute.
-    await page.goto(`${BASE}/v2/career-path?ref=play`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/career-path?ref=play`, { waitUntil: "networkidle" });
     // Dismiss BEFORE asserting: the prompt overlays the screen and swallows
     // clicks meant for it. Career Path's arrival is idempotent, so a locale
     // switch no longer mints a second session — but the modal is still in the
@@ -248,10 +248,10 @@ async function main() {
 
     // ── 5. A username-only account can play the casual modes ───────────────
     for (const [route, mode] of [
-      ["/v2/blitz?sport=football", "blitz"],
-      ["/v2/higher-lower?sport=football", "higher-lower"],
-      ["/v2/verve-grid?sport=football", "verve-grid"],
-      ["/v2/daily?sport=football", "daily"],
+      ["/blitz?sport=football", "blitz"],
+      ["/higher-lower?sport=football", "higher-lower"],
+      ["/verve-grid?sport=football", "verve-grid"],
+      ["/daily?sport=football", "daily"],
     ]) {
       sent = [];
       await page.goto(`${BASE}${route}`, { waitUntil: "networkidle" });
@@ -263,7 +263,7 @@ async function main() {
 
     // ── 6. Logout resets the identity ──────────────────────────────────────
     sent = [];
-    await page.goto(`${BASE}/v2/settings`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/settings`, { waitUntil: "networkidle" });
     await wait(2500);
     const out = page.getByRole("button", { name: /sign out|log ?out/i }).first();
     if (await out.count()) {
@@ -272,7 +272,7 @@ async function main() {
       report("logout observed (reset() drops the person binding)", true,
         `events after logout: ${sent.map((e) => e.event).join(", ") || "(none)"}`);
     } else {
-      report("logout control found on /v2/settings", false, "could not locate a sign-out button");
+      report("logout control found on /settings", false, "could not locate a sign-out button");
     }
     await ctx.close();
   }

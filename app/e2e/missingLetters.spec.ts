@@ -96,7 +96,7 @@ test("daily, challenge, reminder and endless", async ({ browser }) => {
   // ── A: the daily — gives up round one, guesses the rest blind ──
   const a = await visitor(browser);
   await a.goto("/letters?utm_source=ig&utm_medium=reel");
-  await expect(a).toHaveURL(/\/v2\/missing-letters\?/);
+  await expect(a).toHaveURL(/\/missing-letters\?/);
   await expect(board(a)).toBeVisible({ timeout: 30_000 });
   await expect(a.getByTestId("missing-letters-tier")).toHaveText(/easy/i);
   await expect(a.getByTestId("missing-letters-clue")).not.toBeEmpty();

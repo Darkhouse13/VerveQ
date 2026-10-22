@@ -15,7 +15,7 @@
  *             wide with a text label (a CTA, not Back/Close chrome); else the
  *             first visible <button>. The report names which one it used.
  *
- * Routes that redirect (e.g. a game that needs a session → /v2/account) are
+ * Routes that redirect (e.g. a game that needs a session → /account) are
  * measured where they land; the report shows the final path.
  *
  *   npm run design:floors -- https://verveq.com
@@ -24,12 +24,12 @@
  *
  * Analytics/monitoring hosts are blocked, and so is the anonymous-session
  * permit endpoint: the run only looks — it never creates a guest account.
- * Game routes that need a session therefore land on /v2/account; to measure
+ * Game routes that need a session therefore land on /account; to measure
  * the games themselves, run against a DEV server started with the prod flags
  * (VITE_ANONYMOUS_FIRST_ENABLED=true, VITE_DRAW_ENABLED=true) and pass
  * `--allow-guest` (refused for verveq.com):
  *
- *   npm run design:floors -- http://localhost:5173 --allow-guest --routes /older,/letters,/v2/daily,/draw
+ *   npm run design:floors -- http://localhost:5173 --allow-guest --routes /older,/letters,/daily,/draw
  * axe-core is vendored (scripts/vendor/axe.min.js, 4.10.3, MPL-2.0) so the
  * check needs no network beyond the site itself.
  */
@@ -49,8 +49,8 @@ export const DEFAULT_ROUTES = [
   "/weekend",
   "/draw",
   "/compete",
-  "/v2/daily",
-  "/v2/career-path",
+  "/daily",
+  "/career-path",
   "/games/",
 ];
 const BLOCKED = [

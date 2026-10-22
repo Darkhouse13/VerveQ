@@ -32,15 +32,15 @@ const GUARDS = read("../components/shell/ShellRouteGuards.tsx");
 
 /** Routes that must sit on the identity tier — the ticket's Part 2 list. */
 const SESSION_ROUTES = [
-  "/v2/daily",
-  "/v2/daily-survival",
-  "/v2/blitz",
-  "/v2/higher-lower",
-  "/v2/verve-grid",
-  "/v2/learn",
-  "/v2/learn/run",
-  "/v2/learn/review",
-  "/v2/learn/mastery",
+  "/daily",
+  "/daily-survival",
+  "/blitz",
+  "/higher-lower",
+  "/verve-grid",
+  "/learn",
+  "/learn/run",
+  "/learn/review",
+  "/learn/mastery",
   // The exit screens of those modes used to be routes of their own
   // (/daily-results, /blitz-results) and had to sit on this tier too: a run
   // playable anonymously whose RESULT demanded a username was a wall at the
@@ -54,12 +54,12 @@ const RETIRED_RESULT_ROUTES = ["/results", "/daily-results", "/blitz-results"];
 
 /** Routes whose tier FR-1B deliberately did NOT move. */
 const UNCHANGED_TIERS: Array<[string, string]> = [
-  ["/v2/quiz", "FullAccountRoute"],
-  ["/v2/survival", "FullAccountRoute"],
-  ["/v2/forge", "FullAccountRoute"],
-  ["/v2/arena", "UsernameOnlyRoute"],
-  ["/v2/duels", "UsernameOnlyRoute"],
-  ["/v2/profile", "UsernameOnlyRoute"],
+  ["/quiz", "FullAccountRoute"],
+  ["/survival", "FullAccountRoute"],
+  ["/forge", "FullAccountRoute"],
+  ["/arena", "UsernameOnlyRoute"],
+  ["/duels", "UsernameOnlyRoute"],
+  ["/profile", "UsernameOnlyRoute"],
 ];
 
 /**
@@ -107,7 +107,7 @@ describe("FR-1B route tiers (source contract)", () => {
   });
 
   it("keeps Career Path tokenized-guest — no session guard at all", () => {
-    const line = routeBlock("/v2/career-path");
+    const line = routeBlock("/career-path");
     expect(line).not.toContain("SessionRoute");
     expect(line).not.toContain("UsernameOnlyRoute");
     expect(line).not.toContain("FullAccountRoute");
@@ -318,6 +318,7 @@ describe("FR-1B in-screen tier control", () => {
   });
 
   it("adds no new route for the picker", () => {
-    expect(APP).not.toContain('path="/v2/difficulty"');
+    // Only the existing ungated picker page; the shell modes pick in-screen.
+    expect(APP.match(/path="[^"]*difficulty[^"]*"/g)).toEqual(['path="/difficulty"']);
   });
 });

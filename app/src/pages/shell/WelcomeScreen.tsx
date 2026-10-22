@@ -1,5 +1,5 @@
 /**
- * `/v2/welcome` — the standalone username-only onboarding route.
+ * `/welcome` — the standalone username-only onboarding route.
  *
  * Renders the shared {@link UsernameOnlyOnboarding} card with no nav chrome and
  * routes the visitor onward once they have a username. `?next=` carries the

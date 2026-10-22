@@ -147,7 +147,7 @@ export function buildPlayerPages({ quizQuestions = [] } = {}) {
         body: `<div class="seo-hero"><span class="seo-tag">Football grid answers</span>
 <h1>Who played for ${esc(A.name)} and ${esc(B.name)}?</h1>
 <p class="seo-lede"><strong>${n} players</strong> in VerveQ's fact-checked player database played for both ${esc(A.name)} and ${esc(B.name)}. The most recent is <strong>${esc(mostRecent.p.name)}</strong>; the earliest is ${esc(earliest.p.name)}.${topNation && topNation[1] > 1 ? ` The most common nationality among them is ${esc(topNation[0])} (${topNation[1]}).` : ""}</p>
-${cta("/v2/verve-grid?ref=seo_wpf", "Play the football grid")}</div>
+${cta("/verve-grid?ref=seo_wpf", "Play the football grid")}</div>
 <h2>All ${n} players who played for both clubs</h2>
 <p>Years are each player's spells at the club (loans included), sourced from Wikidata. Most recent first.</p>
 ${table}
@@ -221,7 +221,7 @@ ${faqSection(faqs)}
           body: `<div class="seo-hero"><span class="seo-tag">Football grid answers</span>
 <h1>${esc(adj)} players who played for ${esc(club.name)}</h1>
 <p class="seo-lede"><strong>${n} ${esc(adj)} players</strong> in VerveQ's fact-checked database have played for ${esc(club.name)}. The most recent is <strong>${esc(rows[0].p.name)}</strong>.</p>
-${cta("/v2/verve-grid?ref=seo_wpf", "Play the football grid")}</div>
+${cta("/verve-grid?ref=seo_wpf", "Play the football grid")}</div>
 <h2>All ${n} ${esc(adj)} ${esc(club.name)} players</h2>
 <div class="seo-scroll"><table><thead><tr><th>Player</th><th>Years at ${esc(club.name)}</th><th>Position</th><th>Other clubs</th></tr></thead><tbody>${rows
             .map((r) => `<tr><td><strong>${esc(r.p.name)}</strong></td><td>${esc(r.c.spellText || "—")}</td><td>${esc(r.p.position ?? "—")}</td><td>${esc(r.p.clubs.filter((c) => c.slug !== slug).slice(0, 4).map((c) => c.name).join(", ") || "—")}</td></tr>`)
@@ -282,7 +282,7 @@ ${faqSection(faqs)}
       body: `<div class="seo-hero"><span class="seo-tag">Club grid answers</span>
 <h1>Who played for ${esc(club.name)}?</h1>
 <p class="seo-lede">${n} players in VerveQ's fact-checked database played for ${esc(club.name)}. Use the pages below to find who fits ${article(club.name)} ${esc(club.name)} cell in a football grid, by the other club or by nationality.</p>
-${cta("/v2/verve-grid?ref=seo_wpf", "Play the football grid")}</div>
+${cta("/verve-grid?ref=seo_wpf", "Play the football grid")}</div>
 ${pairsL.length ? `<h2>${esc(club.name)} and another club</h2>${linkGrid(pairsL.map((p) => ({ href: p.path, label: p.linkLabel, note: p.note })))}` : ""}
 ${natL.length ? `<h2>${esc(club.name)} players by nationality</h2>${linkGrid(natL.map((p) => ({ href: p.path, label: p.linkLabel, note: p.note })))}` : ""}
 ${careerSetPaths.has(`/career-path-quiz/${slug}/`) ? `<h2>Guess ${esc(club.name)} players from their careers</h2>
@@ -302,7 +302,7 @@ ${careerSetPaths.has(`/career-path-quiz/${slug}/`) ? `<h2>Guess ${esc(club.name)
     body: `<div class="seo-hero"><span class="seo-tag">Football grid answers</span>
 <h1>Who played for both clubs?</h1>
 <p class="seo-lede">Stuck on a football grid cell? These pages list every player in VerveQ's fact-checked database who fits a club × club or club × nationality intersection, with their years at each club. ${pairPages.length} club pairs and ${nationPages.length} nationality combinations so far.</p>
-${cta("/v2/verve-grid?ref=seo_wpf", "Play the football grid")}</div>
+${cta("/verve-grid?ref=seo_wpf", "Play the football grid")}</div>
 <h2>Browse by club</h2>
 ${linkGrid(hubsSorted.map((h) => ({ href: `/who-played-for/${h.slug}/`, label: h.club.name, note: `${h.club.players.length} players` })))}
 <h2>Most common club pairs</h2>
@@ -391,7 +391,7 @@ function buildCareerSets(clubMeta, careerPaths, quizQuestions = [], hubSlugs = n
       body: `<div class="seo-hero"><span class="seo-tag">${esc(tag)}</span>
 <h1>${esc(h1)}</h1>
 <p class="seo-lede">${esc(lede)} Each player is shown as his clubs in order. Name him, then reveal the answer.</p>
-${cta("/v2/career-path?ref=seo_cpq", "Play the full Career Path game")}</div>
+${cta("/career-path?ref=seo_cpq", "Play the full Career Path game")}</div>
 ${renderPathQuiz(list)}
 ${extra}
 ${faqSection(faqs)}
@@ -449,7 +449,7 @@ ${faqSection(faqs)}
     body: `<div class="seo-hero"><span class="seo-tag">${sets.length} quizzes · answers included</span>
 <h1>Football Career Path Quiz</h1>
 <p class="seo-lede">Guess the footballer from his career path: the clubs he played for, in order. Every quiz has ten players with the answers hidden until you reveal them. Want scoring and a leaderboard? Play the full <a href="/games/career-path/">Career Path game</a>.</p>
-${cta("/v2/career-path?ref=seo_cpq", "Play Career Path")}</div>
+${cta("/career-path?ref=seo_cpq", "Play Career Path")}</div>
 <h2>By difficulty</h2>
 ${linkGrid(sets.filter((s) => /Easy|Medium|Hard/.test(s.linkLabel)).map((s) => ({ href: s.path, label: s.linkLabel })))}
 <h2>By club</h2>

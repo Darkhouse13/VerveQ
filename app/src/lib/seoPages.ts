@@ -60,13 +60,13 @@ const MODE_BY_GAME_SLUG: Record<string, string> = {
 
 /** Mode from the page's own Play button — used for the FR/ES pages. */
 const MODE_BY_ROUTE: Record<string, string> = {
-  "/v2/daily": "daily",
-  "/v2/career-path": "career-path",
-  "/v2/verve-grid": "verve-grid",
-  "/v2/higher-lower": "higher-lower",
-  "/v2/daily-survival": "survival",
-  "/v2/blitz": "blitz",
-  "/v2/duels": "duel",
+  "/daily": "daily",
+  "/career-path": "career-path",
+  "/verve-grid": "verve-grid",
+  "/higher-lower": "higher-lower",
+  "/daily-survival": "survival",
+  "/blitz": "blitz",
+  "/duels": "duel",
 };
 
 export function seoModeFor(pathname: string): string | null {

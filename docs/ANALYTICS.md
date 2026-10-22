@@ -88,8 +88,8 @@ Two behaviours worth knowing:
 #### Solo results (Quiz, Survival, Daily Quiz, Daily Survival, Blitz)
 
 Since VerveQ ONE P3.1 (2026-10-22) these modes show their result **in place**
-on the mode's own route (`/v2/quiz`, `/v2/survival`, `/v2/daily`,
-`/v2/daily-survival`, `/v2/blitz`). The v1 pages `/results`, `/daily-results`
+on the mode's own route (`/quiz`, `/survival`, `/daily`,
+`/daily-survival`, `/blitz`). The v1 pages `/results`, `/daily-results`
 and `/blitz-results` are redirects now, so **their `$pageview`s stop** — read
 finishes from `game_completed`, not from a result-page pageview.
 
@@ -165,7 +165,7 @@ as before.
 
 The launched mode's events (FW-SHIP). All four obey the governing rule the
 hard way: the entry events fire on a **press**, the mode events fire when the
-**server confirms the state transition** — reaching `/v2/weekend` or any
+**server confirms the state transition** — reaching `/weekend` or any
 surface under it fires nothing at all.
 
 | Event | Fires when | Properties |
@@ -248,16 +248,16 @@ pageview (`scrubSearch`), so arrivals show as `ref=streak_link`.
 #### Paid direct-to-builder entry (WKND-ENTRY)
 
 `/weekend?start=budget` — the campaign-link variant of the short link — lands
-directly in the budget-squad builder (`/v2/weekend/squad`) instead of the hub.
+directly in the budget-squad builder (`/weekend/squad`) instead of the hub.
 The redirect consumes `start` and mints `entry=builder` onto the landed URL,
 and `scrubSearch` allowlists `entry`, so the builder's `$pageview` carries it
 in `$current_url`. `weekend_squad_created`'s `entry` property (`builder` when
 the tag is on the URL at create time, else `hub`) splits the two funnels at
 the conversion event itself:
 
-- **hub entry** (organic): `$pageview /v2/weekend` → `$pageview
-  /v2/weekend/squad` → `weekend_squad_created` (`entry: hub`)
-- **builder entry** (paid): `$pageview /v2/weekend/squad?entry=builder…` →
+- **hub entry** (organic): `$pageview /weekend` → `$pageview
+  /weekend/squad` → `weekend_squad_created` (`entry: hub`)
+- **builder entry** (paid): `$pageview /weekend/squad?entry=builder…` →
   `weekend_squad_created` (`entry: builder`)
 
 UTM params ride the redirect untouched (ea66823 rule); `fbclid` survives in

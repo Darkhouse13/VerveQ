@@ -6,7 +6,8 @@
  *
  *  1. `LegacyRedirect` behavior — forwards to the shell surface, preserving
  *     incoming query params over defaults.
- *  2. `LegacyArenaCodeRedirect` — v1 arena invite links keep their lobby code.
+ *  2. `DropV2Redirect` — the shell's old `/v2/...` URLs land on the same page
+ *     without the prefix (`/v2` itself → `/home`), query and hash kept.
  *  3. The App.tsx wiring — every deep link QA exercised (plus its spelling
  *     variants) redirects to the expected shell target. Asserted at the source
  *     level so removing or retargeting a single alias fails this test.
@@ -23,7 +24,7 @@ import { fileURLToPath } from "node:url";
 const read = (rel: string) =>
   readFileSync(fileURLToPath(new URL(rel, import.meta.url)), "utf8");
 
-import { LegacyRedirect, LegacyArenaCodeRedirect } from "@/components/LegacyRedirect";
+import { LegacyRedirect, DropV2Redirect } from "@/components/LegacyRedirect";
 
 function LocationProbe() {
   const loc = useLocation();
@@ -60,11 +61,11 @@ function renderAliasFull(entry: string, path: string, to: string) {
 }
 
 describe("LegacyRedirect behavior", () => {
-  it("forwards to the v2 surface with default params", () => {
-    renderAlias("/daily", "/daily", "/v2/daily?sport=football");
+  it("forwards to the mode's page with default params", () => {
+    renderAlias("/daily-quiz", "/daily-quiz", "/daily?sport=football");
     expect(screen.getByTestId("destination")).toBeTruthy();
     expect(screen.getByTestId("pathname").textContent).toBe(
-      "/v2/daily?sport=football",
+      "/daily?sport=football",
     );
   });
 
@@ -72,35 +73,44 @@ describe("LegacyRedirect behavior", () => {
     renderAlias(
       "/quiz?sport=football&difficulty=hard",
       "/quiz",
-      "/v2/quiz?sport=football",
+      "/quiz?sport=football",
     );
     const dest = screen.getByTestId("pathname").textContent!;
-    expect(dest.startsWith("/v2/quiz?")).toBe(true);
+    expect(dest.startsWith("/quiz?")).toBe(true);
     expect(dest).toContain("difficulty=hard");
     expect(dest).toContain("sport=football");
   });
 
-  // Decision 10: `/compete#x` → `/v2#x` — an incoming anchor survives and
+  // Decision 10: `/compete#x` → `/home#x` — an incoming anchor survives and
   // wins over the alias's default one.
   it("carries the anchor: the incoming one wins, else the alias's default", () => {
-    const { unmount } = renderAliasFull("/compete#today", "/compete", "/v2#more");
-    expect(screen.getByTestId("full").textContent).toBe("/v2#today");
+    const { unmount } = renderAliasFull("/compete#today", "/compete", "/home#more");
+    expect(screen.getByTestId("full").textContent).toBe("/home#today");
     unmount();
-    renderAliasFull("/compete?ref=seo", "/compete", "/v2#more");
-    expect(screen.getByTestId("full").textContent).toBe("/v2?ref=seo#more");
+    renderAliasFull("/compete?ref=seo", "/compete", "/home#more");
+    expect(screen.getByTestId("full").textContent).toBe("/home?ref=seo#more");
   });
 
-  it("v1 arena invite links keep their lobby code", () => {
+  it.each([
+    ["/v2", "/home"],
+    ["/v2/", "/home"],
+    ["/v2?w=1#more", "/home?w=1#more"],
+    ["/v2/arena/E8M8JF", "/arena/E8M8JF"],
+    ["/v2/weekend/squad?entry=builder&ref=weekend", "/weekend/squad?entry=builder&ref=weekend"],
+    ["/v2/whos-older?ref=older", "/whos-older?ref=older"],
+  ])("drops the old /v2 prefix: %s → %s", (from, to) => {
     render(
-      <MemoryRouter initialEntries={["/arena/E8M8JF"]}>
+      <MemoryRouter initialEntries={[from]}>
         <Routes>
-          <Route path="/arena/:code" element={<LegacyArenaCodeRedirect />} />
+          <Route path="/v2" element={<DropV2Redirect />} />
+          <Route path="/v2/*" element={<DropV2Redirect />} />
           <Route path="*" element={<div data-testid="destination" />} />
         </Routes>
-        <LocationProbe />
+        <FullProbe />
       </MemoryRouter>,
     );
-    expect(screen.getByTestId("pathname").textContent).toBe("/v2/arena/E8M8JF");
+    expect(screen.getByTestId("destination")).toBeTruthy();
+    expect(screen.getByTestId("full").textContent).toBe(to);
   });
 });
 
@@ -110,36 +120,21 @@ describe("LegacyRedirect behavior", () => {
  * see competeModeTiles.ts and shellRoutes.ts.
  */
 const EXPECTED_ALIASES: Array<[path: string, target: string]> = [
-  ["/leaderboard", "/v2/leaderboard"],
-  ["/ranks", "/v2/ranks"],
-  ["/profile", "/v2/profile"],
-  ["/quiz", "/v2/quiz?sport=football"],
-  ["/survival", "/v2/survival?sport=football"],
-  ["/challenge", "/v2/duels"],
-  ["/duel", "/v2/duels"],
-  ["/duels", "/v2/duels"],
-  ["/arena", "/v2/arena"],
-  ["/rivals", "/v2/rivals"],
-  ["/daily-quiz", "/v2/daily?sport=football"],
-  ["/daily", "/v2/daily?sport=football"],
-  ["/blitz", "/v2/blitz?sport=football"],
+  ["/challenge", "/duels"],
+  ["/duel", "/duels"],
+  ["/daily-quiz", "/daily?sport=football"],
   // /live-match left this table 2026-07: the dead Live Match surface was
   // removed outright, so the old URL now 404s instead of aliasing.
-  ["/forge", "/v2/forge"],
-  ["/higher-lower", "/v2/higher-lower?sport=football"],
-  ["/higherlower", "/v2/higher-lower?sport=football"],
-  ["/verve-grid", "/v2/verve-grid?sport=football"],
-  ["/vervegrid", "/v2/verve-grid?sport=football"],
-  ["/learn", "/v2/learn"],
-  ["/learn/geography", "/v2/learn"],
-  ["/learn/geography/:nodeId", "/v2/learn"],
-  ["/learn/prototype", "/v2/learn"],
+  ["/higherlower", "/higher-lower?sport=football"],
+  ["/vervegrid", "/verve-grid?sport=football"],
+  ["/learn/geography", "/learn"],
+  ["/learn/geography/:nodeId", "/learn"],
+  ["/learn/prototype", "/learn"],
   // Decision 10: Compete merged into Play; the catalogue opens on #more.
-  ["/sport-select", "/v2#more"],
-  ["/compete", "/v2#more"],
-  ["/compete/sport", "/v2#more"],
-  ["/compete/sport/:sport", "/v2#more"],
-  ["/duels/history", "/v2/duels/history"],
+  ["/sport-select", "/home#more"],
+  ["/compete", "/home#more"],
+  ["/compete/sport", "/home#more"],
+  ["/compete/sport/:sport", "/home#more"],
 ];
 
 describe("App.tsx deep-link wiring (source contract)", () => {
@@ -155,28 +150,41 @@ describe("App.tsx deep-link wiring (source contract)", () => {
     expect(appSource).toMatch(re);
   });
 
-  it("wires /arena/:code through the code-preserving redirect", () => {
-    expect(appSource).toMatch(
-      /path="\/arena\/:code" element=\{<LegacyArenaCodeRedirect \/>\}/,
-    );
+  // The shell's own pages sit at the top level now (the /v2 prefix is gone),
+  // so these paths are the pages themselves, never a redirect.
+  it.each([
+    "/leaderboard", "/ranks", "/profile", "/quiz", "/survival", "/duels",
+    "/duels/history", "/arena", "/rivals", "/daily", "/blitz", "/forge",
+    "/higher-lower", "/verve-grid", "/learn",
+  ])("serves %s as a page, not a redirect", (path) => {
+    const escaped = path.replace(/\//g, "\\/");
+    expect(appSource).toMatch(new RegExp(`path="${escaped}"\\s+element=\\{\\s*<ShellGate>`));
+    expect(appSource).not.toContain(`path="${path}" element={<LegacyRedirect`);
+  });
+
+  it("keeps the arena lobby code in the URL", () => {
+    expect(appSource).toContain('path="/arena/:code" element={<ShellGate><ArenaPlayScreen />');
+  });
+
+  it("redirects every old /v2 URL", () => {
+    expect(appSource).toContain('<Route path="/v2" element={<DropV2Redirect />} />');
+    expect(appSource).toContain('<Route path="/v2/*" element={<DropV2Redirect />} />');
   });
 
   // Decision 10: Ranks is one screen with a Ladder | Leaderboard segment;
   // both URLs stay and open it on the right segment.
-  it("routes /v2/ranks and /v2/leaderboard to the one Ranks screen", () => {
-    expect(appSource).toContain('path="/v2/ranks" element={<ShellGate><RanksScreen /></ShellGate>}');
-    expect(appSource).toContain('path="/v2/leaderboard" element={<ShellGate><RanksScreen /></ShellGate>}');
+  it("routes /ranks and /leaderboard to the one Ranks screen", () => {
+    expect(appSource).toContain('path="/ranks" element={<ShellGate><RanksScreen /></ShellGate>}');
+    expect(appSource).toContain('path="/leaderboard" element={<ShellGate><RanksScreen /></ShellGate>}');
     expect(appSource).not.toContain("ShellLeaderboardScreen");
   });
 
-  it("wires /rivals/:opponentUserId through the id-preserving redirect", () => {
-    expect(appSource).toMatch(
-      /path="\/rivals\/:opponentUserId" element=\{<LegacyRivalRedirect \/>\}/,
-    );
+  it("serves the rival page at /rivals/:opponentUserId", () => {
+    expect(appSource).toMatch(/path="\/rivals\/:opponentUserId"\s+element=\{\s*<ShellGate>/);
   });
 
-  it("registers the v2 arena hub and legal pages", () => {
-    expect(appSource).toContain('path="/v2/arena"');
+  it("registers the arena hub and legal pages", () => {
+    expect(appSource).toContain('path="/arena"');
     expect(appSource).toContain('path="/privacy"');
     expect(appSource).toContain('path="/terms"');
   });

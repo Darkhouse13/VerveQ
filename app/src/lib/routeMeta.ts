@@ -3,7 +3,7 @@
  *
  * The app is client-rendered, so every SPA route ships the SAME `index.html` head:
  * without this table a crawler (and every shared link preview that reads the
- * live DOM) sees the homepage title on `/compete`, `/v2/daily` and everything
+ * live DOM) sees the homepage title on `/compete`, `/daily` and everything
  * else. This is the SECONDARY surface — the indexable one is the homepage, the
  * static legal pages, and the static `/games/` layer, all real HTML listed in
  * the sitemap. Other SPA routes are deliberately absent from the sitemap; the
@@ -35,7 +35,7 @@ export const DEFAULT_META: RouteMeta = {
 export const CANONICAL_ORIGIN = "https://verveq.com";
 
 /**
- * Exact pathname → metadata. Parameterised routes (`/v2/arena/:code`,
+ * Exact pathname → metadata. Parameterised routes (`/arena/:code`,
  * `/duel/:linkCode`) are intentionally absent: their content is per-instance
  * and they fall back to DEFAULT_META rather than claiming a shared title.
  */
@@ -45,62 +45,62 @@ export const ROUTE_META: Record<string, RouteMeta> = {
     description:
       "Every VerveQ football game in one place: ranked quiz and survival, daily quizzes, duels and arena rooms with friends. Free, no download.",
   },
-  "/v2/daily": {
+  "/daily": {
     title: "Daily Quiz — Today's 10 Football Questions | VerveQ",
     description:
       "Today's ten football questions, the same for every player worldwide. One attempt, speed scoring, and a streak to protect. Resets at midnight UTC.",
   },
-  "/v2/daily-survival": {
+  "/daily-survival": {
     title: "Daily Survival — One Shared Run | VerveQ",
     description:
       "One shared survival run per day: name players from their initials until you run out of lives. Same run for everyone, one attempt.",
   },
-  "/v2/whos-older": {
+  "/whos-older": {
     title: "Who's Older? — Daily Football Age Game | VerveQ",
     description:
       "Two footballers, tap the older one. Ten rounds a day, and the gap shrinks from years to days. Same pairs for everyone, then play endless.",
   },
-  "/v2/missing-letters": {
+  "/missing-letters": {
     title: "Missing Letters — Daily Guess the Footballer Game | VerveQ",
     description:
       "Name the footballer from the missing letters. Ten names a day, easy to impossible, with a nation clue. Same names for everyone, then play endless.",
   },
-  "/v2/blitz": {
+  "/blitz": {
     title: "Blitz — 60-Second Football Quiz | VerveQ",
     description:
       "Sixty seconds, as many football questions as you can answer. No lifelines, no second chances — just how fast you can think. Free to play.",
   },
-  "/v2/higher-lower": {
+  "/higher-lower": {
     title: "Higher or Lower — Football Stats Game | VerveQ",
     description:
       "Is the next player's stat higher or lower? Goals, appearances and trophies, one call at a time. One wrong answer ends the streak.",
   },
-  "/v2/career-path": {
+  "/career-path": {
     title: "Career Path — Name the Player From His Clubs | VerveQ",
     description:
       "Read a footballer's club history in order and name him before you run out of guesses. Typo-friendly, hundreds of careers, no sign-up.",
   },
-  "/v2/verve-grid": {
+  "/verve-grid": {
     title: "VerveGrid — Daily Football Grid | VerveQ",
     description:
       "Nine cells, nine guesses. Name a player who fits both the row and the column — club, country or position. No player twice.",
   },
-  "/v2/arena": {
+  "/arena": {
     title: "Arena — Live Quiz Rooms With Friends | VerveQ",
     description:
       "Create a room, share the code, and everyone answers the same football questions at the same time. Live scoring, up to a full group.",
   },
-  "/v2/duels": {
+  "/duels": {
     title: "Duels — Head-to-Head Football Trivia | VerveQ",
     description:
       "Send a link, both of you answer the same football questions, and settle it. Your opponent doesn't need an account to play.",
   },
-  "/v2/leaderboard": {
+  "/leaderboard": {
     title: "Ranks — Ratings & Top Players | VerveQ",
     description:
       "Where you stand in VerveQ football trivia: global ratings, the top players in each ranked mode and who is just ahead of you.",
   },
-  "/v2/weekend/leaderboard": {
+  "/weekend/leaderboard": {
     title: "The Weekend — Live Table | VerveQ",
     description:
       "Live global standings for The Weekend fantasy game: provisional budget-squad points update as each fixture is scored.",
@@ -115,18 +115,18 @@ export const ROUTE_META: Record<string, RouteMeta> = {
  */
 export const ROUTE_META_KEYS: Record<string, string> = {
   "/compete": "compete",
-  "/v2/daily": "daily",
-  "/v2/daily-survival": "dailySurvival",
-  "/v2/whos-older": "whosOlder",
-  "/v2/missing-letters": "missingLetters",
-  "/v2/blitz": "blitz",
-  "/v2/higher-lower": "higherLower",
-  "/v2/career-path": "careerPath",
-  "/v2/verve-grid": "verveGrid",
-  "/v2/arena": "arena",
-  "/v2/duels": "duels",
-  "/v2/leaderboard": "ranks",
-  "/v2/weekend/leaderboard": "weekendTable",
+  "/daily": "daily",
+  "/daily-survival": "dailySurvival",
+  "/whos-older": "whosOlder",
+  "/missing-letters": "missingLetters",
+  "/blitz": "blitz",
+  "/higher-lower": "higherLower",
+  "/career-path": "careerPath",
+  "/verve-grid": "verveGrid",
+  "/arena": "arena",
+  "/duels": "duels",
+  "/leaderboard": "ranks",
+  "/weekend/leaderboard": "weekendTable",
 };
 
 type MetaT = (key: string, options: { defaultValue: string }) => string;
@@ -172,13 +172,13 @@ export function resolveRouteMeta(pathname: string): RouteMeta {
  * the route defers to it rather than competing with it.
  */
 export const CANONICAL_OVERRIDES: Record<string, string> = {
-  "/v2/daily": "/games/daily-football-quiz/",
-  "/v2/daily-survival": "/games/football-survival/",
-  "/v2/career-path": "/games/career-path/",
-  "/v2/higher-lower": "/games/higher-or-lower/",
-  "/v2/verve-grid": "/games/football-grid/",
-  "/v2/duels": "/games/football-duels/",
-  "/v2/blitz": "/games/60-second-football-quiz/",
+  "/daily": "/games/daily-football-quiz/",
+  "/daily-survival": "/games/football-survival/",
+  "/career-path": "/games/career-path/",
+  "/higher-lower": "/games/higher-or-lower/",
+  "/verve-grid": "/games/football-grid/",
+  "/duels": "/games/football-duels/",
+  "/blitz": "/games/60-second-football-quiz/",
 };
 
 /** Canonical: origin + path (query and hash discarded), or the route's static page. */

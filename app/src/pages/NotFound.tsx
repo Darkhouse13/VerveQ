@@ -24,7 +24,7 @@ const NotFound = () => {
         <p className="mt-2 text-body-sm text-muted-foreground">
           {t("app.notFound.body")}
         </p>
-        <Button size="lg" block className="mt-6" onClick={() => navigate("/v2")}>
+        <Button size="lg" block className="mt-6" onClick={() => navigate("/home")}>
           {t("app.notFound.cta")}
         </Button>
       </Card>

@@ -1,5 +1,5 @@
 /**
- * Rivals (`/v2/rivals`, `/v2/rivals/:opponentUserId`) — the head-to-head
+ * Rivals (`/rivals`, `/rivals/:opponentUserId`) — the head-to-head
  * ledger and one rivalry's record. Shell-native (VerveQ ONE P3.3): both sit in
  * ShellLayout with the shell nav; the v1 BottomNav is gone.
  */

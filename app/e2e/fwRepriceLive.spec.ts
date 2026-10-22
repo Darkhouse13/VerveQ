@@ -48,7 +48,7 @@ test("FC Porto's starting keeper outprices his backups, live", async ({ page }) 
     if (m.type() === "error") consoleErrors.push(m.text());
   });
 
-  await page.goto("/v2/weekend/squad");
+  await page.goto("/weekend/squad");
 
   // A first visit to prod opens the language chooser over everything; the
   // local dev harness has it dismissed already, which is why the other specs

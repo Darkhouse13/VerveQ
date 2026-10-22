@@ -16,15 +16,15 @@ const read = (path: string) => readFileSync(path, "utf8");
 
 describe("career path registration", () => {
   it("is routed on the shell and registered in App.tsx", () => {
-    expect(SHELL_ROUTES.careerPathPlay).toBe("/v2/career-path");
-    expect(SHELL_ROUTE_PATTERNS.careerPathPlay).toBe("/v2/career-path");
-    expect(read("src/App.tsx")).toContain('path="/v2/career-path"');
+    expect(SHELL_ROUTES.careerPathPlay).toBe("/career-path");
+    expect(SHELL_ROUTE_PATTERNS.careerPathPlay).toBe("/career-path");
+    expect(read("src/App.tsx")).toContain('path="/career-path"');
   });
 
   it("has a compete tile that launches directly (no difficulty picker)", () => {
     const tile = COMPETE_MODE_TILES.find((t) => t.key === "careerPath");
     expect(tile).toBeDefined();
-    expect(tile!.to("football")).toBe("/v2/career-path?sport=football");
+    expect(tile!.to("football")).toBe("/career-path?sport=football");
     expect(tile!.ranked).toBeUndefined(); // casual — no ELO writes
   });
 
@@ -104,12 +104,12 @@ describe("career path social funnel", () => {
     // The off-platform CTA (promo endcards, social bios) must land on the
     // marketed mode, and a bare hit must not be bucketed as "direct".
     expect(read("src/App.tsx")).toContain('path="/play"');
-    expect(playShortLinkTarget("")).toBe("/v2/career-path?ref=play");
+    expect(playShortLinkTarget("")).toBe("/career-path?ref=play");
     expect(playShortLinkTarget("?ref=tiktok")).toBe(
-      "/v2/career-path?ref=tiktok",
+      "/career-path?ref=tiktok",
     );
     expect(playShortLinkTarget("?utm_source=ig")).toBe(
-      "/v2/career-path?utm_source=ig",
+      "/career-path?utm_source=ig",
     );
   });
 

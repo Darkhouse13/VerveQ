@@ -7,7 +7,7 @@
  * rejected and the visitor simply retries — there is no auto-suffixing.
  *
  * This is a presentational/flow component reused in two places:
- *  - the `/v2/welcome` route (generic "get started"), and
+ *  - the `/welcome` route (generic "get started"), and
  *  - inline inside the Arena invite flow (so the lobby code is never dropped).
  *
  * The caller decides what "done" means via `onComplete` — it fires once the

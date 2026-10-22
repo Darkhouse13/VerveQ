@@ -118,7 +118,7 @@ export function buildGamePages(ctx) {
       body: `<div class="seo-hero"><span class="seo-tag">New quiz at midnight UTC</span>
 <h1>Daily Football Quiz</h1>
 <p class="seo-lede">Every day VerveQ serves <strong>ten football questions, the same ten for every player in the world</strong>. You get one attempt. Answer fast for bonus points, then share your score and find out who in your group chat actually knows their football.</p>
-${cta("/v2/daily?ref=seo_daily", "Play today's quiz — free")}
+${cta("/daily?ref=seo_daily", "Play today's quiz — free")}
 <p class="seo-note">No download, no sign-up. Runs in your browser on phone or desktop.</p></div>
 <h2>How the daily quiz works</h2>
 <ul>
@@ -159,7 +159,7 @@ ${moreGames("daily-football-quiz")}`,
       body: `<div class="seo-hero"><span class="seo-tag">3×3 challenge</span>
 <h1>Football Grid Game</h1>
 <p class="seo-lede">Three rows, three columns, nine intersections. <strong>Each cell needs a player who fits both headers</strong>: played for the club AND holds the nationality, or fits the position. You get nine guesses for nine cells, and no player can be used twice.</p>
-${cta("/v2/verve-grid?ref=seo_grid", "Play the grid — free")}
+${cta("/verve-grid?ref=seo_grid", "Play the grid — free")}
 <p class="seo-note">Easy, medium and hard boards. A fresh board every time you play, no waiting for tomorrow.</p></div>
 <h2>How to play the football grid</h2>
 <ol>
@@ -200,7 +200,7 @@ ${moreGames("football-grid")}`,
       body: `<div class="seo-hero"><span class="seo-tag">Most played on VerveQ</span>
 <h1>Guess the Footballer by Career Path</h1>
 <p class="seo-lede">A chronological list of clubs. You name the player who lived that career. Some paths are one-club giveaways; some are journeyman epics that separate the fans from the encyclopedias. It is the most played game on VerveQ.</p>
-${cta("/v2/career-path?ref=seo_career", "Play Career Path — free")}
+${cta("/career-path?ref=seo_career", "Play Career Path — free")}
 <p class="seo-note">No sign-up. Choose one-at-a-time with no clock, or the 10 Path Challenge: ten careers, 30 seconds each.</p></div>
 <h2>Try three career paths now</h2>
 ${careerPathSample(ctx)}
@@ -239,7 +239,7 @@ ${moreGames("career-path")}`,
       body: `<div class="seo-hero"><span class="seo-tag">Streak game</span>
 <h1>Higher or Lower: Football</h1>
 <p class="seo-lede">One stat is revealed, the next is hidden. Higher or lower? Get it right and the streak grows; get it wrong and the run is over, with no lives and no second chances. It is the purest one-more-go game in football.</p>
-${cta("/v2/higher-lower?ref=seo_hol", "Play Higher or Lower — free")}
+${cta("/higher-lower?ref=seo_hol", "Play Higher or Lower — free")}
 <p class="seo-note">Easy, medium and hard tiers. Free in your browser, no sign-up.</p></div>
 <h2>How it works</h2>
 <ul>
@@ -282,7 +282,7 @@ ${moreGames("higher-or-lower")}`,
       body: `<div class="seo-hero"><span class="seo-tag">Survival mode</span>
 <h1>Footballer Initials Quiz</h1>
 <p class="seo-lede">The rules fit in one sentence: <strong>we show you two initials, you name any footballer with those initials</strong>. "TH"? Thierry Henry works. So does any other professional with those initials. Keep answering, keep surviving.</p>
-${cta("/v2/daily-survival?ref=seo_survival", "Play today's survival run")}
+${cta("/daily-survival?ref=seo_survival", "Play today's survival run")}
 <p class="seo-note">Today's run is the same for everyone: one attempt, free, no sign-up.</p></div>
 <h2>How it works</h2>
 <ul>
@@ -323,7 +323,7 @@ ${moreGames("football-survival")}`,
       body: `<div class="seo-hero"><span class="seo-tag">Timed quiz</span>
 <h1>60-Second Football Quiz</h1>
 <p class="seo-lede">One minute on the clock. <strong>Answer as many football questions as you can before it hits zero.</strong> Every right answer adds to your score; every wrong one takes three seconds off the clock. No lifelines, no pauses.</p>
-${cta("/v2/blitz?ref=seo_blitz", "Start the 60-second quiz")}
+${cta("/blitz?ref=seo_blitz", "Start the 60-second quiz")}
 <p class="seo-note">Free, instant, no sign-up.</p></div>
 <h2>How Blitz works</h2>
 <ul>
@@ -357,7 +357,7 @@ ${moreGames("60-second-football-quiz")}`,
       body: `<div class="seo-hero"><span class="seo-tag">Multiplayer</span>
 <h1>Football Quiz With Friends</h1>
 <p class="seo-lede">Every group chat has one: the mate who is sure he knows more football than you. Duels settle it. Pick a topic and difficulty, send the link, and you both face <strong>the exact same questions on the exact same clock</strong>. The result card does the talking.</p>
-${cta("/v2/duels?ref=seo_duels", "Start a duel — free")}
+${cta("/duels?ref=seo_duels", "Start a duel — free")}
 <p class="seo-note">Want a whole group at once? Arena rooms let everyone answer live together.</p></div>
 <h2>How football duels work</h2>
 <ul>
@@ -407,7 +407,7 @@ ${moreGames("football-duels")}`,
     body: `<div class="seo-hero"><span class="seo-tag">Free · no download</span>
 <h1>Free Football Games</h1>
 <p class="seo-lede">Seven football games you can play right now in your browser, built for people who actually watch the matches. Pick one and play: no download, and most need no account.</p>
-${cta("/v2/career-path?ref=seo_games", "Play the most popular game")}</div>
+${cta("/career-path?ref=seo_games", "Play the most popular game")}</div>
 <h2>All games</h2>
 ${linkGrid(MORE_GAMES)}
 <h2>Football quizzes and answers</h2>

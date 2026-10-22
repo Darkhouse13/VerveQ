@@ -1,7 +1,7 @@
 /**
  * EYE-TEST-TEN — the vote session's new surfaces at 380px.
  *
- * Runs against the DEV-only harness (/v2/weekend/vote-harness?view=…): no
+ * Runs against the DEV-only harness (/weekend/vote-harness?view=…): no
  * auth, no Convex, no dependency on DEV having finished fixtures inside a live
  * voting window. What is asserted is what the ticket bought:
  *
@@ -31,7 +31,7 @@ async function openHarness(page: Page, view: string): Promise<string[]> {
   await page.addInitScript(() => {
     localStorage.setItem("verveq_lang_chosen", "1");
   });
-  await page.goto(`/v2/weekend/vote-harness?view=${view}`);
+  await page.goto(`/weekend/vote-harness?view=${view}`);
   return consoleErrors;
 }
 
@@ -177,7 +177,7 @@ test("reveal: the voter's own share, majority and minority", async ({ page }) =>
   await expectNoHorizontalScroll(page);
   await page.screenshot({ path: "e2e/artifacts/vote-reveal-380.png", fullPage: false });
 
-  await page.goto("/v2/weekend/vote-harness?view=reveal-minority");
+  await page.goto("/weekend/vote-harness?view=reveal-minority");
   await expect(page.getByTestId("vote-reveal-line")).toHaveText("You're with the 32%");
   await expect(page.getByTestId("vote-reveal")).toHaveAttribute("data-tone", "against");
 

@@ -7,7 +7,7 @@
  * switch anti-cheat. Quitting forfeits today's attempt (Daily gating), so the
  * exit is wired to the hook's `forfeitAndExit` rather than a plain navigate.
  *
- * The result shows in place (VerveQ ONE P3.1). Coming back to /v2/daily after
+ * The result shows in place (VerveQ ONE P3.1). Coming back to /daily after
  * finishing shows today's result again, rebuilt from the stored attempt,
  * instead of bouncing to Home.
  *

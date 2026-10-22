@@ -219,7 +219,8 @@ function checkLinks(pages, extraPaths) {
     for (const m of body.matchAll(/href="(\/[^"#?]*)/g)) {
       const href = m[1];
       if (known.has(href)) continue;
-      if (/^\/(v2|compete|privacy|terms|play|weekend)(\/|$)/.test(href)) continue;
+      // App routes (App.tsx), not static pages: the Play buttons and the footer.
+      if (/^\/(home|daily|daily-survival|career-path|verve-grid|higher-lower|blitz|duels|arena|ranks|leaderboard|compete|privacy|terms|play|weekend|older|whos-older|letters|missing-letters)(\/|$)/.test(href)) continue;
       if (href === "/sitemap.xml") continue;
       broken.push(`${p.path} -> ${href}`);
     }

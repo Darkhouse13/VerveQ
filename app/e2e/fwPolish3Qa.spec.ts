@@ -84,7 +84,7 @@ test("FW-POLISH-3: GW label, crew deletion, slot-aware picker, leagues strip", a
     gameweek!.gwNumber,
     "a board's ordinal is 1-based — historical imports must never surface",
   ).toBeGreaterThanOrEqual(1);
-  await page.goto("/v2/weekend");
+  await page.goto("/weekend");
   const boardLine = page.getByTestId("weekend-hub-board-line");
   await expect(boardLine).toBeVisible({ timeout: 45_000 });
   await expect(boardLine).toContainText(`Gameweek ${gameweek!.gwNumber} board is open`);
@@ -142,7 +142,7 @@ test("FW-POLISH-3: GW label, crew deletion, slot-aware picker, leagues strip", a
   await page.screenshot({ path: "e2e/artifacts/fwp3-crew-protected-380.png", fullPage: true });
 
   // ── O3 + O4: squad screen strip, slot-aware picker, league→club drill ──
-  await page.goto("/v2/weekend/squad");
+  await page.goto("/weekend/squad");
   await expect(page.getByText("Building for")).toBeVisible({ timeout: 45_000 });
   await page.getByText("Start building").click();
   await expect(page.getByTestId("weekend-pitch")).toBeVisible({ timeout: 45_000 });

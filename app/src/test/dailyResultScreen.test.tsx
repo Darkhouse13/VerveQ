@@ -112,7 +112,7 @@ function setup(game: "older" | "letters", opts: { standing: { below: number; fin
   };
   const Screen = game === "older" ? WhosOlderPlayScreen : MissingLettersPlayScreen;
   render(
-    <MemoryRouter initialEntries={[game === "older" ? "/v2/whos-older" : "/v2/missing-letters"]}>
+    <MemoryRouter initialEntries={[game === "older" ? "/whos-older" : "/missing-letters"]}>
       <Screen />
     </MemoryRouter>,
   );

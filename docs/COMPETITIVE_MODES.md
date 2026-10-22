@@ -6,7 +6,7 @@ the route table, the shell nav, direct entry routes, and the Convex functions
 those screens call.
 
 The v2 shell is the only shell. Every v1 competitive URL is a pure
-`LegacyRedirect` / `LegacyArenaCodeRedirect` to its `/v2` counterpart, and the
+`LegacyRedirect` / `LegacyArenaCodeRedirect` to its `/home` counterpart, and the
 v1 mode screens were deleted. Where older notes differ, this document
 describes the v2 surface.
 
@@ -15,13 +15,13 @@ describes the v2 surface.
 - The shell nav exposes one competitive entry: `Compete` -> `/compete`
   (`app/src/components/shell/ShellNav.tsx`). There is no `Challenge` tab. The v1
   `BottomNav` was deleted in VerveQ ONE P3.3; `/challenge` redirects to
-  `/v2/duels`.
-- The live head-to-head routes are `/v2/duels`, `/v2/duels/history`, `/v2/arena`,
-  `/v2/arena/:code`, `/v2/rivals`, and `/v2/rivals/:opponentUserId`. All except
-  `/v2/arena/:code` are wrapped in `ShellGate` + `UsernameOnlyRoute`, so a
+  `/duels`.
+- The live head-to-head routes are `/duels`, `/duels/history`, `/arena`,
+  `/arena/:code`, `/rivals`, and `/rivals/:opponentUserId`. All except
+  `/arena/:code` are wrapped in `ShellGate` + `UsernameOnlyRoute`, so a
   logged-out visitor onboards with `?next=` back to the surface instead of
   bouncing home.
-- `/v2/arena/:code` carries no route guard: the screen onboards inline so a
+- `/arena/:code` carries no route guard: the screen onboards inline so a
   shared invite link never drops its lobby code.
 - `/duel/:linkCode` is intentionally open and handles account and guest link
   recipients.
@@ -32,8 +32,8 @@ describes the v2 surface.
 
 Reachable: yes.
 
-Entry point: the dedicated Arena hub at `/v2/arena` (`ArenaHubScreen`), which
-offers create and join-by-code; direct shared links use `/v2/arena/:code`. Old
+Entry point: the dedicated Arena hub at `/arena` (`ArenaHubScreen`), which
+offers create and join-by-code; direct shared links use `/arena/:code`. Old
 `/arena/:code` links are forwarded code-intact by `V2ArenaCodeRedirect`.
 
 Format: synchronous server-clocked room. The host creates a code, players join
@@ -54,20 +54,20 @@ are derived from arena answers. Arena rematch creates a new arena and stamps
 `rematchArenaId` / `rematchArenaCode` on the finished room. It does not write
 the async `rivalries` ledger.
 
-Guest support: playing still requires a username, but `/v2/arena/:code` has no
+Guest support: playing still requires a username, but `/arena/:code` has no
 route guard — the screen onboards inline so a shared invite link never drops its
-lobby code. The `/v2/arena` hub is gated by `UsernameOnlyRoute`.
+lobby code. The `/arena` hub is gated by `UsernameOnlyRoute`.
 
 ## Async Duels
 
 Reachable: yes.
 
-Entry point: the Duel hub at `/v2/duels` (`ChallengeScreen` rendered embedded in
+Entry point: the Duel hub at `/duels` (`ChallengeScreen` rendered embedded in
 `ShellLayout`) -> `New Duel`; existing duels are listed on the same hub in
 `Your turn`, `Awaiting opponent`, and `Resolved`. `/duel/play/:duelId` and
 `/duel/result/:duelId` are shared routes — they are not redirected by the shell
 flag and stay gated by `UsernameRequiredRoute`. Share links use
-`/duel/:linkCode`; `/duels/history` forwards to `/v2/duels/history`.
+`/duel/:linkCode`; `/duels/history` forwards to `/duels/history`.
 
 Format: asynchronous 1v1. The creator chooses Sports trivia, Knowledge, or
 Which Came First, then topic/category, difficulty, and opponent. Opponents can
@@ -96,8 +96,8 @@ recipients with a guest token, and can later attach the result to a new account.
 Reachable: yes, when the user has a username account.
 
 Entry point: the Duel hub shows a top rivals strip when rivalries exist, plus a
-`Rivals` card; full list is `/v2/rivals`, and detail is
-`/v2/rivals/:opponentUserId`. The v1 `/rivals` forwards to `/v2/rivals`, but
+`Rivals` card; full list is `/rivals`, and detail is
+`/rivals/:opponentUserId`. The v1 `/rivals` forwards to `/rivals`, but
 `/rivals/:opponentUserId` is not redirected and still renders the v1 detail
 screen under `UsernameRequiredRoute`.
 

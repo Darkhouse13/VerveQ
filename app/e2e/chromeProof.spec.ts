@@ -22,8 +22,8 @@ test("chrome proof shots", async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem("verveq_lang_chosen", "1");
   });
-  await shoot(page, "/v2", "chrome-home");
+  await shoot(page, "/home", "chrome-home");
   await shoot(page, "/compete", "chrome-compete");
-  await shoot(page, "/v2/quiz", "chrome-quiz");
-  await shoot(page, "/v2/weekend", "chrome-weekend-hub");
+  await shoot(page, "/quiz", "chrome-quiz");
+  await shoot(page, "/weekend", "chrome-weekend-hub");
 });

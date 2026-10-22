@@ -30,11 +30,11 @@ import type { Id } from "../../../convex/_generated/dataModel";
  * Ranks" (this screen), "The ladder" (a Home card) and "Leaderboard" (its own
  * route). Now it is the Ranks tab, with a Segmented control:
  *
- *  - LADDER (`/v2/ranks`): your real flat ELO + coarse tier + in-tier
+ *  - LADDER (`/ranks`): your real flat ELO + coarse tier + in-tier
  *    progress (full account) or the locked pitch (username-only / signed-out),
  *    beside the Bronze → Platinum staircase with the REAL tier thresholds from
  *    convex/lib/elo.ts.
- *  - LEADERBOARD (`/v2/leaderboard`): the full boards — ranked Quiz/Survival
+ *  - LEADERBOARD (`/leaderboard`): the full boards — ranked Quiz/Survival
  *    ELO with seasons, and the all-time Blitz high scores.
  *
  * Each segment has its own URL so old links and shares open the right one;

@@ -28,7 +28,7 @@ export const HOME_CARD = {
 export const ENTRY_CARDS = [
   {
     id: "older",
-    paths: ["/older", "/whos-older", "/v2/whos-older"],
+    paths: ["/older", "/whos-older"],
     image: `/og/${OG_VERSION}/older.png`,
     ogTitle: "Who's older? — VerveQ",
     ogDescription: "Who's older? Ten football pairs a day. Can you beat it?",
@@ -36,7 +36,7 @@ export const ENTRY_CARDS = [
   },
   {
     id: "letters",
-    paths: ["/letters", "/missing-letters", "/v2/missing-letters"],
+    paths: ["/letters", "/missing-letters"],
     image: `/og/${OG_VERSION}/letters.png`,
     ogTitle: "Missing Letters — VerveQ",
     ogDescription: "Name the footballer from the gaps. Ten names a day. Can you beat it?",
@@ -44,7 +44,7 @@ export const ENTRY_CARDS = [
   },
   {
     id: "weekend",
-    paths: ["/weekend", "/v2/weekend"],
+    paths: ["/weekend"],
     image: `/og/${OG_VERSION}/weekend.png`,
     ogTitle: "The Weekend — VerveQ",
     ogDescription: "Pick a squad. This weekend's real matches score it. Can you beat it?",

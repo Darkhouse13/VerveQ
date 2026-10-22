@@ -201,21 +201,21 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
       notify.error(friendlyError(e, t("arena.leaveFailed")));
     } finally {
       setLeaving(false);
-      navigate("/v2/arena");
+      navigate("/arena");
     }
   }, [leaveMut, leaving, navigate, room, t]);
 
   const handleRematch = useCallback(async () => {
     if (!room || rematching) return;
     if (room.rematchArenaCode) {
-      navigate(`/v2/arena/${room.rematchArenaCode}`, { replace: true });
+      navigate(`/arena/${room.rematchArenaCode}`, { replace: true });
       return;
     }
     setRematching(true);
     try {
       const result = await rematchMut({ arenaId: room.arenaId });
       notify.success(t("arena.rematchReady"));
-      navigate(`/v2/arena/${result.code}`, { replace: true });
+      navigate(`/arena/${result.code}`, { replace: true });
     } catch (e) {
       notify.error(friendlyError(e, t("arena.rematchFailed")));
     } finally {
@@ -233,13 +233,13 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
   if (room === undefined) return <CenteredMessage>{t("arena.loadingArena")}</CenteredMessage>;
   if (room === null) {
     return joinError ? (
-      <NotInRoom title={t("arena.joinErrorTitle")} detail={joinError} backLabel={t("arena.backToArena")} onBack={() => navigate("/v2/arena")} />
+      <NotInRoom title={t("arena.joinErrorTitle")} detail={joinError} backLabel={t("arena.backToArena")} onBack={() => navigate("/arena")} />
     ) : (
       <CenteredMessage>{t("arena.joining")}</CenteredMessage>
     );
   }
   if (room.status === "abandoned") {
-    return <NotInRoom title={t("arena.endedTitle")} detail={t("arena.endedDetail")} backLabel={t("arena.backToArena")} onBack={() => navigate("/v2/arena")} />;
+    return <NotInRoom title={t("arena.endedTitle")} detail={t("arena.endedDetail")} backLabel={t("arena.backToArena")} onBack={() => navigate("/arena")} />;
   }
 
   const me = userId ? room.players.find((p) => p.userId === userId) ?? null : null;
@@ -248,7 +248,7 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
       <NotInRoom
         title={me?.left ? t("arena.leftTitle") : t("arena.notInRoomTitle")}
         detail={me?.left ? t("arena.leftDetail") : t("arena.notInRoomDetail")}
-        onBack={() => navigate("/v2/arena")}
+        onBack={() => navigate("/arena")}
       />
     );
   }

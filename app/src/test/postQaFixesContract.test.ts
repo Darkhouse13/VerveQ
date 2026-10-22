@@ -21,7 +21,7 @@ describe("post-QA regression contracts", () => {
 
   it("/ranks is an alias for the shell Ranks screen", () => {
     const source = read("src/App.tsx");
-    expect(source).toContain('path="/ranks" element={<LegacyRedirect to="/v2/ranks" />}');
+    expect(source).toContain('path="/ranks" element={<ShellGate><RanksScreen /></ShellGate>}');
   });
 
   it("The Forge lock screen displays the same default unrated ELO as Profile", () => {

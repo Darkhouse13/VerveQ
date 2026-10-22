@@ -63,7 +63,7 @@ import ShellHomeScreen from "@/pages/shell/ShellHomeScreen";
 
 function renderHome() {
   return render(
-    <MemoryRouter initialEntries={["/v2"]}>
+    <MemoryRouter initialEntries={["/home"]}>
       <ShellHomeScreen />
     </MemoryRouter>,
   );

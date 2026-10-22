@@ -11,7 +11,7 @@ Where the design actually lives:
 
 - **Anonymous session:** `startAnonymousSession`
   (`app/src/contexts/AuthContext.tsx:495`) calls `signIn("anonymous")`; the
-  username-only onboarding screen is routed at `/v2/welcome`
+  username-only onboarding screen is routed at `/welcome`
   (`app/src/App.tsx:366`).
 - **Username claim + uniqueness:** `usernameClaims` table with a `by_key` index
   (`app/convex/schema.ts:116-124`), enforced by `claimUsernameForUser`
@@ -31,7 +31,7 @@ Where the design actually lives:
 - **Route split:** `UsernameOnlyRoute` / `FullAccountRoute`
   (`app/src/components/shell/ShellRouteGuards.tsx:52-74`); upgrade path is
   `users.upgradeUsernameOnly` (`app/convex/users.ts:333-407`).
-- **Arena invite flow:** `/v2/arena/:code` (`app/src/App.tsx:507`) carries no
+- **Arena invite flow:** `/arena/:code` (`app/src/App.tsx:507`) carries no
   route gate at all — the screen onboards inline so a shared invite never drops
   its lobby code, which is the outcome §Arena Invite Flow asked for.
 
@@ -55,7 +55,7 @@ Mentions of either below are historical.
     (`app/convex/lib/usernames.ts:85-136`) provide the claim record and the
     insert-then-re-read check that fails closed on a detected race.
 - Arena route `/arena/:code` is wrapped in `UsernameRequiredRoute`. Inside `ChallengeArenaScreen` there is logic to redirect unauthenticated users to `/?from=arena&code=CODE`, but the outer route gate likely intercepts first and sends them to `/` without the code. For current guests, the gate shows a signup CTA with `from=guest`, also losing the code. The screen auto-joins by code only after a username user reaches it.
-  - **Superseded:** the live invite target is `/v2/arena/:code`
+  - **Superseded:** the live invite target is `/arena/:code`
     (`app/src/App.tsx:507`), which is deliberately ungated and onboards inline,
     so the code survives. The legacy `/arena/:code` route still wraps
     `UsernameRequiredRoute` but now redirects to the v2 surface first

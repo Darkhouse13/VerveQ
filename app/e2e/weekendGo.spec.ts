@@ -43,7 +43,7 @@ test("FW-GO: short link → hub → budget squad → crew → draft lobby at 380
 
   // ── the public short link lands on the hub, no session asked ──
   await page.goto("/weekend");
-  await expect(page).toHaveURL(/\/v2\/weekend\?/);
+  await expect(page).toHaveURL(/\/weekend\?/);
   await expect(page.getByTestId("weekend-door-squad")).toBeVisible({ timeout: 30_000 });
   await expect(page.getByTestId("weekend-door-crews")).toBeVisible();
   await expect(page.getByTestId("weekend-door-vote")).toBeVisible();
@@ -72,7 +72,7 @@ test("FW-GO: short link → hub → budget squad → crew → draft lobby at 380
   await page.screenshot({ path: "e2e/artifacts/weekend-squad-380.png", fullPage: true });
 
   // ── crews door: create a crew, land on the crew page ──
-  await page.goto("/v2/weekend/crews");
+  await page.goto("/weekend/crews");
   await expect(page.getByText("Create crew")).toBeVisible({ timeout: 30_000 });
   await expectNoHorizontalScroll(page, "crews hub");
   await page.getByText("Create crew").click();
@@ -83,7 +83,7 @@ test("FW-GO: short link → hub → budget squad → crew → draft lobby at 380
 
   // ── the draft lobby: open this weekend's room and stand in it ──
   await page.getByText("Open this weekend's draft").click();
-  await expect(page).toHaveURL(/\/v2\/weekend\/draft\//, { timeout: 30_000 });
+  await expect(page).toHaveURL(/\/weekend\/draft\//, { timeout: 30_000 });
   // The lobby: ready toggle + the two-drafter floor line.
   await expect(page.getByText("Ready up")).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText("A draft needs at least 2 drafters.")).toBeVisible();

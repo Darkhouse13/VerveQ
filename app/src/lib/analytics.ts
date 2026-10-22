@@ -88,7 +88,7 @@ export function scrubPath(pathname: string): string {
     .replace(/^\/duel\/play\/[^/]+$/, "/duel/play/:id")
     .replace(/^\/duel\/result\/[^/]+$/, "/duel/result/:id")
     .replace(/^\/duel\/[^/]+$/, "/duel/:code")
-    .replace(/^\/v2\/arena\/[^/]+$/, "/v2/arena/:code")
+    .replace(/^\/arena\/[^/]+$/, "/arena/:code")
     .replace(/^\/arena\/[^/]+$/, "/arena/:code")
     .replace(/^\/s\/d\/[^/]+$/, "/s/d/:code")
     .replace(/^\/rivals\/[^/]+$/, "/rivals/:id");

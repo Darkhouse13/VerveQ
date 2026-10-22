@@ -8,7 +8,7 @@
 > `?mode=` / `?from=` auth intent.
 >
 > A few v1 screens are **still live**, so don't over-read that. Old v1 mode
-> URLs are pure `LegacyRedirect`s to a `/v2/*` counterpart, but a few v1
+> URLs are pure `LegacyRedirect`s to a shell counterpart, but a few v1
 > deep-link screens still render —
 > `/duel/play/:duelId`, `/duel/result/:duelId` and `/rivals/:opponentUserId`
 > render v1 screens under `UsernameRequiredRoute`, and `/duel/:linkCode`
@@ -318,7 +318,7 @@ Both Daily Quiz and **Daily Survival** are playable.
 - Maximum possible score: 1,000 points
 
 **Daily Survival:**
-- Playable at `/v2/daily-survival` (`App.tsx`), served by
+- Playable at `/daily-survival` (`App.tsx`), served by
   `survivalSessions.startDailyGame`. The daily set is built by
   `ensureDailySurvivalChallenge` (`survivalSessions.ts`, called from
   `dailyChallenge.ts`).
@@ -739,7 +739,7 @@ Results Screen
 
 ## Screen Inventory
 
-**The live routes are the `/v2/*` shell below.** Most of the v1 table that
+**The live routes are the shell routes below** (top-level paths; the shell lived under `/v2` until 2026-10, and every `/v2/...` URL now 301s to the same path without the prefix, `/v2` itself to `/home`). Most of the v1 table that
 follows is historical: those URLs are now pure `LegacyRedirect`s to their v2
 counterpart, and the v1 screens behind them were deleted.
 
@@ -755,19 +755,19 @@ signed-out visitor). Source of truth for both tables is
 | Route | Purpose |
 |-------|---------|
 | `/` | `ColdEntryScreen` when signed out; otherwise redirects to shell home. `LoginScreen` only with an explicit `?mode=` / `?from=` auth intent |
-| `/v2/welcome` | `UsernameOnlyOnboarding` — the onboarding card |
-| `/v2/upgrade` | `UpgradeAccountForm` — username-only → full account |
-| `/v2` | **Play** tab (VerveQ ONE decision 10): Today · Featured · With friends · More games. The nav is four tabs — Play · Weekend · Ranks · Profile |
-| `/v2/account`, `/v2/profile`, `/v2/settings` | Account, profile (with **Labs**: Learn, and The Forge when eligible — decision 11), settings |
-| `/compete`, `/compete/sport`, `/compete/sport/:sport` | Redirect to `/v2#more` (Compete merged into Play; params and an incoming `#anchor` survive) |
-| `/v2/quiz`, `/v2/survival`, `/v2/blitz` | Ranked modes (`FullAccountRoute`) |
-| `/v2/daily`, `/v2/daily-survival` | Daily Quiz, Daily Survival |
-| `/v2/higher-lower`, `/v2/verve-grid`, `/v2/career-path` | Casual curated modes |
-| `/v2/arena`, `/v2/arena/:code` | Arena hub; lobby by code (onboards inline — no guard, so an invite link never drops its code) |
-| `/v2/duels`, `/v2/duels/history`, `/v2/rivals` | Duels + rivalries |
-| `/v2/learn`, `/v2/learn/run`, `/v2/learn/mastery`, `/v2/learn/review` | Learn |
-| `/v2/ranks`, `/v2/leaderboard` | **Ranks** tab — one screen, Ladder \| Leaderboard segments (each URL opens its segment); links to `/v2/weekend/leaderboard` |
-| `/v2/forge` | The Forge |
+| `/welcome` | `UsernameOnlyOnboarding` — the onboarding card |
+| `/upgrade` | `UpgradeAccountForm` — username-only → full account |
+| `/home` | **Play** tab (VerveQ ONE decision 10): Today · Featured · With friends · More games. The nav is four tabs — Play · Weekend · Ranks · Profile |
+| `/account`, `/profile`, `/settings` | Account, profile (with **Labs**: Learn, and The Forge when eligible — decision 11), settings |
+| `/compete`, `/compete/sport`, `/compete/sport/:sport` | Redirect to `/home#more` (Compete merged into Play; params and an incoming `#anchor` survive) |
+| `/quiz`, `/survival`, `/blitz` | Ranked modes (`FullAccountRoute`) |
+| `/daily`, `/daily-survival` | Daily Quiz, Daily Survival |
+| `/higher-lower`, `/verve-grid`, `/career-path` | Casual curated modes |
+| `/arena`, `/arena/:code` | Arena hub; lobby by code (onboards inline — no guard, so an invite link never drops its code) |
+| `/duels`, `/duels/history`, `/rivals` | Duels + rivalries |
+| `/learn`, `/learn/run`, `/learn/mastery`, `/learn/review` | Learn |
+| `/ranks`, `/leaderboard` | **Ranks** tab — one screen, Ladder \| Leaderboard segments (each URL opens its segment); links to `/weekend/leaderboard` |
+| `/forge` | The Forge |
 | `/play` | Off-platform short link (promo endcards, social bios) |
 
 ### v1 seam (redirect-only in production)
@@ -776,7 +776,7 @@ signed-out visitor). Source of truth for both tables is
 |---|--------|-------|---------|
 | 1 | Login | `/` | Auth entry — now only via explicit auth intent |
 | 2 | Onboarding | `/onboarding` | 3-step wizard (superseded by `UsernameOnlyOnboarding`) |
-| 3 | Home | `/home` | **Unreachable in production** — redirects to `/v2` home |
+| 3 | Home | `/home` | Now the shell **Play** tab (see the shell table) |
 | 4 | Sport Select | `/sport-select` | Choose football, tennis, or basketball |
 | 5 | Difficulty | `/difficulty` | Choose easy, medium, or hard (quiz only) |
 | 6 | Quiz | `/quiz` | 10-question timed quiz gameplay |
@@ -799,7 +799,7 @@ signed-out visitor). Source of truth for both tables is
 | 23 | Forge | `/forge` | Community question editor and reviewer |
 | 24 | Higher or Lower | `/higher-lower` | Streak-based stat comparison gameplay |
 | 25 | VerveGrid | `/verve-grid` | 3x3 grid intersection challenge |
-| 26 | Career Path | `/v2/career-path` | Guess the player from his club history |
+| 26 | Career Path | `/career-path` | Guess the player from his club history |
 | 27 | Challenge Arena | `/arena/:code` | Synchronous arena room — lobby, countdown, 5 rounds of question/reveal, round break, final podium, rematch |
 
 ---

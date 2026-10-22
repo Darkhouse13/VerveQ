@@ -66,7 +66,7 @@ test("FW-RECEIPT: ledger through settlement into a rendered receipt", async ({ p
   });
 
   // ── guest onboarding through the crews door (the shipped flow) ──
-  await page.goto("/v2/weekend");
+  await page.goto("/weekend");
   await expect(page.getByTestId("weekend-door-crews")).toBeVisible({ timeout: 45_000 });
   await page.getByTestId("weekend-door-crews").click();
   await page.getByText("Play as a guest").click();
@@ -84,7 +84,7 @@ test("FW-RECEIPT: ledger through settlement into a rendered receipt", async ({ p
   gameweekId = setup.gameweekId;
 
   // ── 1 · the ledger, mid-flight ──
-  await page.goto("/v2/weekend/squad");
+  await page.goto("/weekend/squad");
   await expect(page.getByTestId("squad-tabs")).toBeVisible({ timeout: 45_000 });
   await page.getByTestId("squad-tab-ledger").click();
   await expect(page.getByTestId("squad-ledger")).toBeVisible({ timeout: 45_000 });
@@ -115,7 +115,7 @@ test("FW-RECEIPT: ledger through settlement into a rendered receipt", async ({ p
   // ── 4 · the receipt, rendered ──
   // The settled gameweek's board is closed; the squad screen offers the way
   // back through the receipt chip (latestReceiptRef).
-  await page.goto("/v2/weekend/squad");
+  await page.goto("/weekend/squad");
   const chip = page.getByTestId("squad-receipt-chip");
   await expect(chip).toBeVisible({ timeout: 45_000 });
   await expect(chip).toContainText("Gameweek 905 settled");

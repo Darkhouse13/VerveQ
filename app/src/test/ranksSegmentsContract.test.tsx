@@ -4,7 +4,7 @@
  * "The Ranks", "The ladder" and "Leaderboard" were three names on three
  * surfaces for one idea. Now Ranks is ONE screen with a Ladder | Leaderboard
  * Segmented control, and both old URLs keep working:
- *  - `/v2/ranks` opens the Ladder segment, `/v2/leaderboard` the Leaderboard;
+ *  - `/ranks` opens the Ladder segment, `/leaderboard` the Leaderboard;
  *  - switching segments moves to the other URL (replace — a toggle, not a
  *    page), so a refresh or a shared link reopens the same segment;
  *  - THE WEEKEND's gameweek table is one tap away from either segment, and
@@ -55,14 +55,14 @@ beforeEach(() => {
 });
 
 describe("Ranks — one screen, two segments", () => {
-  it("/v2/ranks opens the Ladder", () => {
+  it("/ranks opens the Ladder", () => {
     renderAt(SHELL_ROUTES.ranks);
     expect(tab("ranks.segments.ladder").getAttribute("aria-selected")).toBe("true");
     expect(screen.getByTestId("ranks-ladder")).toBeTruthy();
     expect(screen.queryByTestId("ranks-leaderboard")).toBeNull();
   });
 
-  it("/v2/leaderboard opens the Leaderboard", () => {
+  it("/leaderboard opens the Leaderboard", () => {
     renderAt(SHELL_ROUTES.leaderboard);
     expect(tab("ranks.segments.leaderboard").getAttribute("aria-selected")).toBe("true");
     expect(screen.getByTestId("ranks-leaderboard")).toBeTruthy();

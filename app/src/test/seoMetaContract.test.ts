@@ -237,12 +237,9 @@ describe("entry-path link previews", () => {
   const ENTRY_EXPECT: Record<string, string> = {
     "/older": "older",
     "/whos-older": "older",
-    "/v2/whos-older": "older",
     "/letters": "letters",
     "/missing-letters": "letters",
-    "/v2/missing-letters": "letters",
     "/weekend": "weekend",
-    "/v2/weekend": "weekend",
     "/draw": "draw",
   };
 
@@ -274,7 +271,7 @@ describe("entry-path link previews", () => {
     const spaShell = mapBlock("spa_shell");
     const images = Object.values(ENTRY_EXPECT).map((id) => og(read(path.join(dist, `entry/${id}.html`)), "og:image"));
     expect(new Set(images).size).toBe(4);
-    for (const uri of ["/compete", "/v2/daily", "/v2/weekend/squad", "/olderx", "/drawing"]) {
+    for (const uri of ["/compete", "/daily", "/weekend/squad", "/olderx", "/drawing"]) {
       expect(spaShell(uri), uri).toBe("/app-shell.html");
     }
     const home = "https://verveq.com/og/v2/home.png";
@@ -320,7 +317,7 @@ describe("SPA route metadata", () => {
   it("builds non-www canonicals, deferring game routes to their static page", () => {
     expect(canonicalFor("/")).toBe("https://verveq.com/");
     expect(canonicalFor("/compete")).toBe("https://verveq.com/compete");
-    expect(canonicalFor("/v2/daily")).toBe("https://verveq.com/games/daily-football-quiz/");
+    expect(canonicalFor("/daily")).toBe("https://verveq.com/games/daily-football-quiz/");
     for (const target of Object.values(CANONICAL_OVERRIDES)) {
       expect(pages, `${target} is not a generated page`).toContain(target);
     }

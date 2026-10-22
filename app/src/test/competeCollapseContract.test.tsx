@@ -45,11 +45,11 @@ function renderAt(entry: string) {
   return render(
     <MemoryRouter initialEntries={[entry]}>
       <Routes>
-        <Route path="/compete" element={<LegacyRedirect to="/v2#more" />} />
-        <Route path="/compete/sport" element={<LegacyRedirect to="/v2#more" />} />
-        <Route path="/compete/sport/:sport" element={<LegacyRedirect to="/v2#more" />} />
-        <Route path="/sport-select" element={<LegacyRedirect to="/v2#more" />} />
-        <Route path="/v2" element={<div data-testid="play">PLAY</div>} />
+        <Route path="/compete" element={<LegacyRedirect to="/home#more" />} />
+        <Route path="/compete/sport" element={<LegacyRedirect to="/home#more" />} />
+        <Route path="/compete/sport/:sport" element={<LegacyRedirect to="/home#more" />} />
+        <Route path="/sport-select" element={<LegacyRedirect to="/home#more" />} />
+        <Route path="/home" element={<div data-testid="play">PLAY</div>} />
       </Routes>
       <LocationProbe />
     </MemoryRouter>,
@@ -64,24 +64,24 @@ describe("Compete URLs land on Play (decision 10)", () => {
     (entry) => {
       renderAt(entry);
       expect(screen.getByTestId("play")).toBeTruthy();
-      expect(location()).toBe("/v2#more");
+      expect(location()).toBe("/home#more");
     },
   );
 
   it("keeps incoming params", () => {
     renderAt("/compete?utm_source=seo");
-    expect(location()).toBe("/v2?utm_source=seo#more");
+    expect(location()).toBe("/home?utm_source=seo#more");
   });
 
   it("an incoming #anchor wins over the default", () => {
     renderAt("/compete#today");
-    expect(location()).toBe("/v2#today");
+    expect(location()).toBe("/home#today");
   });
 
   it("is wired that way in App.tsx (source contract)", () => {
     const app = readFileSync("src/App.tsx", "utf8");
     for (const path of ["/compete", "/compete/sport", "/compete/sport/:sport", "/sport-select"]) {
-      expect(app).toContain(`path="${path}" element={<LegacyRedirect to="/v2#more" />}`);
+      expect(app).toContain(`path="${path}" element={<LegacyRedirect to="/home#more" />}`);
     }
     // The Compete screen itself is gone — no route may mount it again.
     expect(app).not.toContain("CompeteModeGridScreen");
@@ -89,7 +89,7 @@ describe("Compete URLs land on Play (decision 10)", () => {
 
   it("the deprecated route names point at Play, not a dead screen", () => {
     expect(SHELL_ROUTES.compete).toBe(SHELL_ROUTES.play);
-    expect(SHELL_ROUTES.competeSportGrid("football")).toBe("/v2#more");
+    expect(SHELL_ROUTES.competeSportGrid("football")).toBe("/home#more");
   });
 });
 

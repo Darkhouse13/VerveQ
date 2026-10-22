@@ -59,7 +59,7 @@ export function classifyEntrySource(
   // and tap into the game client-side, so the first URL is the door.
   if (isSeoPath(pathname)) return "seo";
 
-  if (pathname === "/" || pathname === "/home" || pathname === "/v2") {
+  if (pathname === "/" || pathname === "/home") {
     return "homepage";
   }
 

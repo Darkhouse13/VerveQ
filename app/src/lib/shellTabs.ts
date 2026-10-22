@@ -12,7 +12,7 @@ export interface ShellTab {
    * (so the Weekend tab stays lit across the hub's sub-screens).
    */
   match: string[];
-  /** Exact matches only — Play's `/v2` would otherwise prefix everything. */
+  /** Exact matches only (Play lights on `/home` itself, not its hash targets' sub-paths). */
   exact?: boolean;
   labelKey: string;
   icon: LucideIcon;

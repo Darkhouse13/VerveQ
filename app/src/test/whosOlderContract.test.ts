@@ -100,7 +100,7 @@ describe("Who's Older wiring", () => {
   });
 
   it("is reachable from Play's TODAY (decision 10) and the caption short link", () => {
-    expect(read("src/App.tsx")).toContain('path="/v2/whos-older"');
+    expect(read("src/App.tsx")).toContain('path="/whos-older"');
     // Decision 10 merged Home and Compete into Play: one TODAY list, in the
     // catalogue module, rendered by the Play screen.
     const tiles = read("src/pages/shell/competeModeTiles.ts");
@@ -108,7 +108,7 @@ describe("Who's Older wiring", () => {
     expect(tiles).toMatch(/key: "whosOlder",[^\n]*SHELL_ROUTES\.whosOlderPlay/);
     expect(read("src/pages/shell/ShellHomeScreen.tsx")).toContain("tilesByKeys(PLAY_TODAY_KEYS)");
     expect(read("../deploy/nginx.conf")).toMatch(/\|older\|whos-older\|/);
-    expect(whosOlderShortLinkTarget("")).toBe("/v2/whos-older?ref=older");
-    expect(whosOlderShortLinkTarget("?ref=ig_bio")).toBe("/v2/whos-older?ref=ig_bio");
+    expect(whosOlderShortLinkTarget("")).toBe("/whos-older?ref=older");
+    expect(whosOlderShortLinkTarget("?ref=ig_bio")).toBe("/whos-older?ref=ig_bio");
   });
 });

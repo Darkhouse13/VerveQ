@@ -21,7 +21,7 @@ describe("first-run language prompt routing", () => {
     localStorage.clear();
   });
 
-  it.each(["/v2/whos-older", "/v2/missing-letters", "/draw", "/v2/weekend"])(
+  it.each(["/whos-older", "/missing-letters", "/draw", "/weekend"])(
     "is not shown on the reel route %s, and is remembered as chosen",
     (path) => {
       renderAt(path);
@@ -31,7 +31,7 @@ describe("first-run language prompt routing", () => {
   );
 
   it("still asks a first-time visitor on Home", () => {
-    renderAt("/v2");
+    renderAt("/home");
     expect(screen.getByRole("dialog")).toBeTruthy();
   });
 });

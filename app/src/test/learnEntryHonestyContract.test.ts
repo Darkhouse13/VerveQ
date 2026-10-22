@@ -203,7 +203,7 @@ describe("Learn route containment (source contract)", () => {
   // UsernameOnlyRoute was stricter than the thing it guarded — FR-1A logged
   // that mismatch and FR-1B closed it.
   it("gates the v2 learn surfaces behind a server identity", () => {
-    for (const route of ["/v2/learn", "/v2/learn/run", "/v2/learn/review", "/v2/learn/mastery"]) {
+    for (const route of ["/learn", "/learn/run", "/learn/review", "/learn/mastery"]) {
       const line = app.split("\n").find((l) => l.includes(`path="${route}"`));
       expect(line, `${route} should be gated`).toContain("SessionRoute");
     }

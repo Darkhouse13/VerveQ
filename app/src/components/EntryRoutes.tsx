@@ -2,8 +2,8 @@
  * Top-level entry routing.
  *
  * A normal visit resolves by session: anyone with a server identity lands in
- * the shell (`/home` — the post-login + post-game destination every screen
- * navigates to — redirects there too), while a SIGNED-OUT visitor on a bare `/`
+ * the shell Home (`/home` — the post-login + post-game destination every
+ * screen navigates to), while a SIGNED-OUT visitor on a bare `/`
  * (the cold marketing entry) gets the orientation landing with an instant,
  * account-free taste round and a username ask deferred to after they've played
  * (`ColdEntryScreen`).
@@ -14,10 +14,10 @@
  * (`?from=duel`). Those keep rendering the v1 `LoginScreen` at `/`; only a
  * param-less visit (the "normal visitor") is routed into the shell. From the
  * shell, gated surfaces send an account-less visitor to the account chooser
- * (`/v2/account` — sign in / create account / play as guest) via the shell
+ * (`/account` — sign in / create account / play as guest) via the shell
  * route guards; the bare username ask stays for guest play and invite flows.
  */
-import { Suspense } from "react";
+import { Suspense, type ReactNode } from "react";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 import { Navigate, useLocation, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -27,7 +27,7 @@ import {
   playShortLinkTarget,
   whosOlderShortLinkTarget,
 } from "@/lib/playShortLink";
-import { weekendShortLinkTarget } from "@/lib/weekendDeepLink";
+import { hasWeekendStart, weekendShortLinkTarget } from "@/lib/weekendDeepLink";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginScreen from "@/pages/LoginScreen";
 
@@ -67,11 +67,6 @@ export function EntryRoute() {
   return <Navigate to={SHELL_ROUTES.home} replace />;
 }
 
-/** `/home` — redirects to the shell Home. */
-export function HomeRoute() {
-  return <Navigate to={SHELL_ROUTES.home} replace />;
-}
-
 /** `/play` — the off-platform short link (promo endcards, social bios).
  * Redirects into Career Path, the guest-playable marketed mode, preserving
  * attribution params; see lib/playShortLink.ts for the why. */
@@ -80,27 +75,53 @@ export function PlayShortLinkRoute() {
   return <Navigate to={playShortLinkTarget(search)} replace />;
 }
 
-/** `/older` and `/whos-older` — the Who's Older reel-caption short links.
- * Same attribution rule as /play: a bare hit gets ref=older. */
-export function WhosOlderShortLinkRoute() {
-  const { search } = useLocation();
-  return <Navigate to={whosOlderShortLinkTarget(search)} replace />;
+/**
+ * A short link that is also (or points at) a real page.
+ *
+ * Without children (`/older`, `/letters`) it always redirects to `target`.
+ * Wrapping the page it names (`/whos-older`, `/missing-letters`, `/weekend`)
+ * it redirects only on a COLD landing — the document's first route, which
+ * react-router keys "default" — so a caption or bio visitor still gets the
+ * `ref=` tag while an in-app tap on the same page keeps a clean URL.
+ * `force` redirects on any visit (WEEKEND's paid `?start=budget`).
+ */
+function ShortLink({
+  target,
+  force,
+  children,
+}: {
+  target: (search: string) => string;
+  force?: (search: string) => boolean;
+  children?: ReactNode;
+}) {
+  const { pathname, search, key } = useLocation();
+  if (!children) return <Navigate to={target(search)} replace />;
+  if (key === "default" || force?.(search)) {
+    const to = target(search);
+    if (to !== `${pathname}${search}`) return <Navigate to={to} replace />;
+  }
+  return <>{children}</>;
 }
 
-/** `/letters` and `/missing-letters` — the Missing Letters reel-caption short
- * links. Same attribution rule: a bare hit gets ref=letters. */
-export function MissingLettersShortLinkRoute() {
-  const { search } = useLocation();
-  return <Navigate to={missingLettersShortLinkTarget(search)} replace />;
+/** `/older` (always) and `/whos-older` (cold landings) — the Who's Older
+ * reel-caption links. Same attribution rule as /play: a bare hit gets ref=older. */
+export function WhosOlderShortLinkRoute({ children }: { children?: ReactNode }) {
+  return <ShortLink target={whosOlderShortLinkTarget}>{children}</ShortLink>;
 }
 
-/** `/weekend` — the off-platform short link for THE WEEKEND (reel captions,
- * the bio link). Redirects onto the shell Home with the teaser pinned to the
- * top of the viewport, preserving attribution params. Unlike a bare `/`, this
- * never routes through the cold-entry taste round — which carries no WEEKEND
- * card — so an anonymous visitor reaches the waitlist CTA directly. See
- * lib/weekendDeepLink.ts. */
-export function WeekendShortLinkRoute() {
-  const { search } = useLocation();
-  return <Navigate to={weekendShortLinkTarget(search)} replace />;
+/** `/letters` (always) and `/missing-letters` (cold landings) — the Missing
+ * Letters reel-caption links. A bare hit gets ref=letters. */
+export function MissingLettersShortLinkRoute({ children }: { children?: ReactNode }) {
+  return <ShortLink target={missingLettersShortLinkTarget}>{children}</ShortLink>;
+}
+
+/** `/weekend` — the WEEKEND hub, and the short link for reel captions and the
+ * bio link: a cold landing gets ref=weekend, and a paid `?start=budget` link
+ * goes straight into the budget-squad builder. See lib/weekendDeepLink.ts. */
+export function WeekendShortLinkRoute({ children }: { children?: ReactNode }) {
+  return (
+    <ShortLink target={weekendShortLinkTarget} force={hasWeekendStart}>
+      {children}
+    </ShortLink>
+  );
 }

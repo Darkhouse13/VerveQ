@@ -233,7 +233,7 @@ describe("Guest account-required route contracts", () => {
     //
     // The v1 mode screens (Quiz, Survival, Challenge, DailyQuiz, Blitz, Forge,
     // HigherLower, VerveGrid) left it 2026-10 when the v2 shell became the only
-    // shell: their URLs are now pure redirects to /v2 routes, which carry
+    // shell: their URLs are now pure redirects to /home routes, which carry
     // their own guards.
     for (const screen of ["DuelPlayScreen", "DuelResultScreen"]) {
       expect(appSource).toMatch(

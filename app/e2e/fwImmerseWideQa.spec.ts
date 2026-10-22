@@ -57,7 +57,7 @@ test("FW-IMMERSE B: wide hub, fixtures, side-by-side build, crew split", async (
   });
 
   // ── hub: persistent fixtures panel, no horizontal rail ──
-  await page.goto("/v2/weekend");
+  await page.goto("/weekend");
   const hero = page.getByTestId("matchday-hero");
   await expect(hero).toBeVisible({ timeout: 45_000 });
   const panel = page.getByTestId("hub-fixtures-panel");
@@ -76,7 +76,7 @@ test("FW-IMMERSE B: wide hub, fixtures, side-by-side build, crew split", async (
 
   // ── fixtures screen: day groups two-up ──
   await page.getByTestId("fixtures-rail-all").click();
-  await expect(page).toHaveURL(/\/v2\/weekend\/fixtures$/);
+  await expect(page).toHaveURL(/\/weekend\/fixtures$/);
   // The hub side panel carries the same testids and stays mounted through
   // the lazy-route transition — wait for the hub to actually unmount.
   await expect(page.getByTestId("matchday-hero")).toHaveCount(0, { timeout: 45_000 });
@@ -97,7 +97,7 @@ test("FW-IMMERSE B: wide hub, fixtures, side-by-side build, crew split", async (
   await page.screenshot({ path: "e2e/artifacts/fwi-wide-fixtures-1366.png", fullPage: true });
 
   // ── guest onboarding through the squad door ──
-  await page.goto("/v2/weekend");
+  await page.goto("/weekend");
   await page.getByTestId("weekend-door-squad").click();
   await page.getByText("Play as a guest").click();
   await page.getByRole("textbox").first().fill(RUN_TAG);
@@ -160,7 +160,7 @@ test("FW-IMMERSE B: wide hub, fixtures, side-by-side build, crew split", async (
   await page.screenshot({ path: "e2e/artifacts/fwi-wide-squad-pick-1366.png", fullPage: true });
 
   // ── crew page: two-up split ──
-  await page.goto("/v2/weekend/crews");
+  await page.goto("/weekend/crews");
   await expect(page.getByRole("button", { name: /Create crew/ })).toBeVisible({
     timeout: 45_000,
   });

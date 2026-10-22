@@ -1,5 +1,5 @@
 /**
- * `/v2/upgrade` — anonymous + username -> full account.
+ * `/upgrade` — anonymous + username -> full account.
  *
  * Reached from the full-account gate's "save your progress" CTA (or any
  * upgrade prompt). Only meaningful for a username-only (anonymous) session:

@@ -33,7 +33,7 @@ Hand-authored teaching ladders (21 modules across geography, history, science an
 
 ### Forge
 
-Community question submissions with voting (`/v2/forge`).
+Community question submissions with voting (`/forge`).
 
 The app ships in **English, Spanish, and French** (namespaces at exact key parity). Sentry is wired for production error reporting (errors-only, PII scrubbed).
 

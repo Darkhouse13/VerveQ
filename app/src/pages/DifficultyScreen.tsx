@@ -32,8 +32,8 @@ const DIFFICULTIES: ReadonlyArray<{ key: "easy" | "medium" | "hard"; apiValue: D
 // play screen via `?difficulty=`. Unlike Quiz, there is no in-game tier changer,
 // so the chosen tier holds for the run and changing it means coming back here.
 const CURATED_MODE_DESTINATIONS: Record<string, string> = {
-  "verve-grid": "/v2/verve-grid",
-  "higher-lower": "/v2/higher-lower",
+  "verve-grid": "/verve-grid",
+  "higher-lower": "/higher-lower",
 };
 
 /** The shell `modes.*` key that names the mode this picker is starting. */
@@ -51,10 +51,6 @@ export default function DifficultyScreen() {
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
   const mode = params.get("mode") || "quiz";
-  // `target=v2` routes the chosen difficulty into the v2 shell's Quiz prototype
-  // layout instead of the legacy `/quiz` screen. Additive: without it the legacy
-  // flow is unchanged, so the picker is the single difficulty source for both.
-  const target = params.get("target");
   const curatedDest = CURATED_MODE_DESTINATIONS[mode];
   const isCurated = !!curatedDest;
   const [selected, setSelected] = useState<Difficulty>(DEFAULT_DIFFICULTY);
@@ -69,8 +65,8 @@ export default function DifficultyScreen() {
       return;
     }
     const resolvedMode = mode === "came_first" ? "came_first" : "quiz";
-    const dest = target === "v2" ? "/v2/quiz" : "/quiz";
-    navigate(`${dest}?sport=${sport}&difficulty=${diff}&mode=${resolvedMode}`);
+    // `target=v2` on old links is ignored: there is one Quiz screen now.
+    navigate(`/quiz?sport=${sport}&difficulty=${diff}&mode=${resolvedMode}`);
   };
 
   return (

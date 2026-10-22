@@ -5,7 +5,7 @@
  * with the launch; its contract lives in git history. What this suite locks
  * now:
  *
- *  1. `/weekend` lands on the WEEKEND HUB (`/v2/weekend`) carrying
+ *  1. `/weekend` lands on the WEEKEND HUB (`/weekend`) carrying
  *     attribution — reel traffic promised the fantasy mode gets the mode
  *     itself, not a Home card. Bare hits are tagged `ref=weekend` so
  *     short-link traffic is never bucketed as direct; incoming utm_* params
@@ -221,7 +221,7 @@ beforeEach(() => {
   });
   trackMock.calls.length = 0;
   authMock.value = { hasUsername: true, accountState: "usernameOnly" };
-  window.history.replaceState({}, "", "/v2");
+  window.history.replaceState({}, "", "/home");
 });
 
 afterEach(() => {
@@ -230,7 +230,7 @@ afterEach(() => {
 });
 
 describe("THE WEEKEND tab (decision 10)", () => {
-  function renderNav(Nav: typeof ShellNav, at = "/v2") {
+  function renderNav(Nav: typeof ShellNav, at = "/home") {
     return render(
       <MemoryRouter initialEntries={[at]}>
         <Routes>
@@ -278,7 +278,7 @@ describe("Play order", () => {
     const { container } = render(
       <MemoryRouter initialEntries={[path]}>
         <Routes>
-          <Route path="/v2" element={<ShellHomeScreen />} />
+          <Route path="/home" element={<ShellHomeScreen />} />
         </Routes>
       </MemoryRouter>,
     );
@@ -300,7 +300,7 @@ describe("Play order", () => {
   // case stays as a REGRESSION GUARD: old short links still carry the param,
   // and it must not be able to reorder anything.
   it("leads with TODAY, THE DRAW joins it, and no Weekend card remains", async () => {
-    const { today, weekend, draw, featured } = await renderPlayAt("/v2");
+    const { today, weekend, draw, featured } = await renderPlayAt("/home");
     expect(today).toBeGreaterThanOrEqual(0);
     expect(draw).toBeGreaterThan(today);
     expect(featured).toBeGreaterThan(draw);
@@ -308,7 +308,7 @@ describe("Play order", () => {
   });
 
   it("keeps the same order on a ?w=1 visit (old links are a no-op for order)", async () => {
-    const { today, weekend, draw, featured } = await renderPlayAt("/v2?w=1");
+    const { today, weekend, draw, featured } = await renderPlayAt("/home?w=1");
     expect(today).toBeGreaterThanOrEqual(0);
     expect(draw).toBeGreaterThan(today);
     expect(featured).toBeGreaterThan(draw);

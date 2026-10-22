@@ -173,13 +173,13 @@ test("new visitor: Who's Older → Missing Letters → Play → Career Path", as
 
   // 3 · "Next today" → the other daily.
   await page.getByTestId("whos-older-next-today").click();
-  await expect(page).toHaveURL(/\/v2\/missing-letters/);
+  await expect(page).toHaveURL(/\/missing-letters/);
   await expect(page.getByTestId("missing-letters-keyboard")).toBeVisible({ timeout: 45_000 });
   await step(page, "03-letters-board");
 
   // 4 · Quit (a daily resumes later, so it leaves without asking) → Play.
   await page.getByTestId("stage-exit").click();
-  await expect(page).toHaveURL(/\/v2(\?|#|$)/);
+  await expect(page).toHaveURL(/\/home(\?|#|$)/);
   await expect(page.getByTestId("home-whos-older-card")).toBeVisible({ timeout: 30_000 });
   await step(page, "04-play");
 
@@ -187,11 +187,11 @@ test("new visitor: Who's Older → Missing Letters → Play → Career Path", as
   const playTab = page.getByRole("button", { name: "Play", exact: true });
   await expect(playTab).toBeVisible();
   await playTab.click();
-  await expect(page).toHaveURL(/\/v2(\?|#|$)/);
+  await expect(page).toHaveURL(/\/home(\?|#|$)/);
 
   // 6 · Start Career Path — the Featured mode.
   await page.getByTestId("home-career-path-card").click();
-  await expect(page).toHaveURL(/\/v2\/career-path/);
+  await expect(page).toHaveURL(/\/career-path/);
   await expect(page.getByText("Pick your challenge")).toBeVisible({ timeout: 30_000 });
   await step(page, "05-career-path-pick");
   await page.getByText("One At A Time").click();

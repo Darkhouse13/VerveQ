@@ -91,11 +91,11 @@ test.describe("FR-1B anonymous-first", () => {
   test("a: cold visitor plays the Daily with zero interstitials", async ({
     page,
   }) => {
-    await page.goto("/v2/daily?sport=football");
+    await page.goto("/daily?sport=football");
     await dismissLanguagePrompt(page);
 
     await expect(page.getByText(/Q \d+\/10/)).toBeVisible({ timeout: 45_000 });
-    await expectNoInterstitial(page, "/v2/daily");
+    await expectNoInterstitial(page, "/daily");
     expect(await hasSession(page)).toBe(true);
     // The server accepted the silent identity and dealt a real attempt:
     // this is the Daily's own chrome, not a generic screen.
@@ -108,13 +108,13 @@ test.describe("FR-1B anonymous-first", () => {
   test("b: cold visitor plays Higher or Lower instantly; tier control works", async ({
     page,
   }) => {
-    await page.goto("/v2/higher-lower?sport=football");
+    await page.goto("/higher-lower?sport=football");
     await dismissLanguagePrompt(page);
 
     await expect(page.getByText("WHO HAS MORE?").first()).toBeVisible({
       timeout: 45_000,
     });
-    await expectNoInterstitial(page, "/v2/higher-lower");
+    await expectNoInterstitial(page, "/higher-lower");
     expect(await hasSession(page)).toBe(true);
 
     // Tier control is present pre-run and defaults to easy.
@@ -139,13 +139,13 @@ test.describe("FR-1B anonymous-first", () => {
   test("c: cold visitor reaches Learn on an anonymous session", async ({
     page,
   }) => {
-    await page.goto("/v2/learn");
+    await page.goto("/learn");
     await dismissLanguagePrompt(page);
 
     await expect(page.getByText("TODAY'S SESSION").first()).toBeVisible({
       timeout: 45_000,
     });
-    await expectNoInterstitial(page, "/v2/learn");
+    await expectNoInterstitial(page, "/learn");
     expect(await hasSession(page)).toBe(true);
     // Subjects come from `learn.getLearnSubjects`, which is requireUserId —
     // seeing them proves the backend served the anonymous identity.
@@ -156,7 +156,7 @@ test.describe("FR-1B anonymous-first", () => {
   test("d: ranked Quiz shows a clean full-account wall, intent preserved", async ({
     page,
   }) => {
-    await page.goto("/v2/quiz?sport=football");
+    await page.goto("/quiz?sport=football");
     await dismissLanguagePrompt(page);
 
     await expect(page.getByText("Full account required").first()).toBeVisible({
@@ -167,20 +167,20 @@ test.describe("FR-1B anonymous-first", () => {
     await page.screenshot({ path: `${SHOTS}/d1-ranked-wall.png`, fullPage: true });
 
     await page.getByRole("button", { name: /get started/i }).click();
-    await expect(page).toHaveURL(/\/v2\/account\?next=%2Fv2%2Fquiz/);
+    await expect(page).toHaveURL(/\/account\?next=%2Fquiz/);
     await page.screenshot({ path: `${SHOTS}/d2-intent-kept.png`, fullPage: true });
   });
 
   test("e: cold visitor plays VerveGrid; tier control works", async ({
     page,
   }) => {
-    await page.goto("/v2/verve-grid?sport=football");
+    await page.goto("/verve-grid?sport=football");
     await dismissLanguagePrompt(page);
 
     await expect(page.getByText("VerveGrid").first()).toBeVisible({
       timeout: 60_000,
     });
-    await expectNoInterstitial(page, "/v2/verve-grid");
+    await expectNoInterstitial(page, "/verve-grid");
     expect(await hasSession(page)).toBe(true);
 
     const easy = page.getByRole("button", { name: "Easy", exact: true });
@@ -197,7 +197,7 @@ test.describe("FR-1B anonymous-first", () => {
     // The permit gate is per-IP with generous windows (50/10min, 150/day), so
     // consecutive visitors on one network must both sail through. This is the
     // observation the ticket asks for, not a limit probe.
-    await page.goto("/v2/blitz?sport=football");
+    await page.goto("/blitz?sport=football");
     await dismissLanguagePrompt(page);
     await expect(page.getByText("60-second sprint").first()).toBeVisible({
       timeout: 45_000,
@@ -210,7 +210,7 @@ test.describe("FR-1B anonymous-first", () => {
     page,
   }) => {
     test.slow(); // the real 60s Blitz clock has to run out
-    await page.goto("/v2/blitz?sport=football");
+    await page.goto("/blitz?sport=football");
     await dismissLanguagePrompt(page);
     await expect(page.getByText("60-second sprint").first()).toBeVisible({
       timeout: 45_000,
@@ -259,7 +259,7 @@ test.describe("FR-1B anonymous-first", () => {
     // The ticket's upgrade chain: anonymous → username → full account, one
     // users doc throughout. `upgradeUsernameOnly` links a password credential
     // to the EXISTING doc rather than creating one, so the id must again hold.
-    await page.goto("/v2/upgrade");
+    await page.goto("/upgrade");
     await dismissLanguagePrompt(page);
     const email = `${name}@example.com`;
     await page.getByLabel("Email", { exact: true }).fill(email);
@@ -274,13 +274,13 @@ test.describe("FR-1B anonymous-first", () => {
     // completed upgrade. Asserting the form's absence instead would pass while
     // the page is merely still rendering, and end the test (tearing down the
     // browser) before the mutation had landed.
-    await expect(page).toHaveURL(/\/v2$/, { timeout: 60_000 });
+    await expect(page).toHaveURL(/\/home$/, { timeout: 60_000 });
     await page.screenshot({ path: `${SHOTS}/g4-upgraded.png`, fullPage: true });
     expect(await currentUserId(page)).toBe(before);
 
     // Ranked is now open on the very same identity — the rung-3 proof, stated
     // as a question actually being dealt rather than as a wall being absent.
-    await page.goto("/v2/quiz?sport=football");
+    await page.goto("/quiz?sport=football");
     await dismissLanguagePrompt(page);
     await expect(page.getByText(/Q \d+\/10/)).toBeVisible({ timeout: 45_000 });
     await expect(page.getByText("Full account required")).toHaveCount(0);
@@ -306,7 +306,7 @@ test.describe("FR-1B anonymous-first", () => {
     const password = process.env.FR1B_REGRESSION_PASSWORD;
     test.skip(!email || !password, "set FR1B_REGRESSION_EMAIL / _PASSWORD");
 
-    await page.goto("/v2/account");
+    await page.goto("/account");
     await dismissLanguagePrompt(page);
     await page.getByRole("button", { name: /sign in/i }).first().click();
     await page.getByPlaceholder("Email").fill(email!);
@@ -318,10 +318,10 @@ test.describe("FR-1B anonymous-first", () => {
     // Wait for the redirect that only a COMPLETED sign-in produces. Navigating
     // straight to the next route here would abandon the in-flight mutation and
     // then assert against a still-logged-out app.
-    await expect(page).toHaveURL(/\/v2$/, { timeout: 60_000 });
+    await expect(page).toHaveURL(/\/home$/, { timeout: 60_000 });
 
     // Signed in: ranked is open (full-account tier intact).
-    await page.goto("/v2/quiz?sport=football");
+    await page.goto("/quiz?sport=football");
     await dismissLanguagePrompt(page);
     await expect(page.getByText(/Q \d+\/10/)).toBeVisible({ timeout: 60_000 });
     await expect(page.getByText("Full account required")).toHaveCount(0);
@@ -329,7 +329,7 @@ test.describe("FR-1B anonymous-first", () => {
 
     // …and a SessionRoute mode still works for them, with NO claim prompt
     // (they already have a name — the prompt must never nag an named user).
-    await page.goto("/v2/blitz?sport=football");
+    await page.goto("/blitz?sport=football");
     await dismissLanguagePrompt(page);
     await expect(page.getByText("60-second sprint").first()).toBeVisible({
       timeout: 45_000,

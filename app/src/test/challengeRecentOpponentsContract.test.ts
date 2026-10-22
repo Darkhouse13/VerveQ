@@ -74,6 +74,6 @@ describe("challenge duel hub contract", () => {
     expect(historyScreen).toContain("duelHistory.title");
     expect(screens.duelHistory.title).toBe("Duel history");
     expect(appSource).toContain('path="/duels/history"');
-    expect(appSource).toContain('path="/v2/duels/history"');
+    expect(appSource).toContain('path="/duels/history"');
   });
 });

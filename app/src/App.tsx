@@ -10,11 +10,10 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute, UsernameRequiredRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AnalyticsPageviews } from "./components/AnalyticsPageviews";
-// Entry routing: "/" resolves by session (cold landing, login, or the shell),
-// "/home" forwards to the shell Home.
+// Entry routing: "/" resolves by session (cold landing, login, or the shell
+// Home at "/home").
 import {
   EntryRoute,
-  HomeRoute,
   PlayShortLinkRoute,
   WhosOlderShortLinkRoute,
   MissingLettersShortLinkRoute,
@@ -23,7 +22,7 @@ import {
 // Deep-link aliases: legacy v1 mode URLs (and spelling variants like
 // /vervegrid) forward to the shell surface for that mode so shared links land
 // on the mode they name.
-import { LegacyRedirect, LegacyArenaCodeRedirect, LegacyRivalRedirect } from "./components/LegacyRedirect";
+import { LegacyRedirect, DropV2Redirect } from "./components/LegacyRedirect";
 // v1 screens still live in production (embedded in the shell or reused by the
 // v2 play flow) stay statically imported.
 import OnboardingScreen from "./pages/OnboardingScreen";
@@ -163,9 +162,6 @@ const AppRoutes = () => (
               on top of a game's bottom-docked buttons. */}
           <Routes>
             <Route path="/" element={<EntryRoute />} />
-            <Route path="/leaderboard" element={<LegacyRedirect to="/v2/leaderboard" />} />
-            <Route path="/ranks" element={<LegacyRedirect to="/v2/ranks" />} />
-            <Route path="/home" element={<HomeRoute />} />
             <Route
               path="/onboarding"
               element={
@@ -174,7 +170,7 @@ const AppRoutes = () => (
                 </ProtectedRoute>
               }
             />
-            <Route path="/sport-select" element={<LegacyRedirect to="/v2#more" />} />
+            <Route path="/sport-select" element={<LegacyRedirect to="/home#more" />} />
             {/* The difficulty picker is PURE CLIENT STATE: it reads query params
                 and navigates — it calls no Convex function and needs no
                 identity (see pages/DifficultyScreen). It used to sit behind the
@@ -187,21 +183,17 @@ const AppRoutes = () => (
                 step later, on the mode route, which preserves intent via
                 ?next=. */}
             <Route path="/difficulty" element={<DifficultyScreen />} />
-            <Route path="/quiz" element={<LegacyRedirect to="/v2/quiz?sport=football" />} />
-            <Route path="/survival" element={<LegacyRedirect to="/v2/survival?sport=football" />} />
             {/* The v1 result pages are retired (VerveQ ONE P3.1): every solo
                 mode shows its result in place, inside its own frame, so these
                 paths only catch stale links and history entries. A result
                 page with no run behind it has nothing to show, so each lands
                 where its mode lives: the mode grid, or Home's Today row for
                 the dailies. */}
-            <Route path="/results" element={<LegacyRedirect to="/compete" />} />
-            <Route path="/profile" element={<LegacyRedirect to="/v2/profile" />} />
-            <Route path="/challenge" element={<LegacyRedirect to="/v2/duels" />} />
+            <Route path="/results" element={<LegacyRedirect to="/home#more" />} />
+            <Route path="/challenge" element={<LegacyRedirect to="/duels" />} />
             {/* Bare /duel(s) name the head-to-head surface; only the deeper
                 /duel/:linkCode + play/result URLs are real v1 flows. */}
-            <Route path="/duel" element={<LegacyRedirect to="/v2/duels" />} />
-            <Route path="/duels" element={<LegacyRedirect to="/v2/duels" />} />
+            <Route path="/duel" element={<LegacyRedirect to="/duels" />} />
             <Route
               path="/duel/play/:duelId"
               element={
@@ -218,60 +210,46 @@ const AppRoutes = () => (
                 </UsernameRequiredRoute>
               }
             />
-            <Route path="/duels/history" element={<LegacyRedirect to="/v2/duels/history" />} />
             <Route path="/duel/:linkCode" element={<DuelLinkScreen />} />
-            {/* Bare /arena names the group-challenge-room hub (create/join). */}
-            <Route path="/arena" element={<LegacyRedirect to="/v2/arena" />} />
-            <Route path="/arena/:code" element={<LegacyArenaCodeRedirect />} />
-            <Route path="/rivals" element={<LegacyRedirect to="/v2/rivals" />} />
-            {/* The v1 rival page redirects into the shell one, keeping its id. */}
-            <Route path="/rivals/:opponentUserId" element={<LegacyRivalRedirect />} />
-            <Route path="/daily-quiz" element={<LegacyRedirect to="/v2/daily?sport=football" />} />
-            {/* /daily is the natural name for the Daily challenge. */}
-            <Route path="/daily" element={<LegacyRedirect to="/v2/daily?sport=football" />} />
+            <Route path="/daily-quiz" element={<LegacyRedirect to="/daily?sport=football" />} />
             <Route path="/daily-results" element={<LegacyRedirect to="/home" />} />
-            <Route path="/blitz" element={<LegacyRedirect to="/v2/blitz?sport=football" />} />
-            <Route path="/blitz-results" element={<LegacyRedirect to="/compete" />} />
+            <Route path="/blitz-results" element={<LegacyRedirect to="/home#more" />} />
             {/* Live Match was removed 2026-07: nothing in the product could
                 create a match (the challenge subsystem went in PR #11), so the
                 viewer routes advertised a dead end. Old /live-match and
                 /waiting-room URLs now fall through to NotFound. */}
-            <Route path="/forge" element={<LegacyRedirect to="/v2/forge" />} />
-            <Route path="/higher-lower" element={<LegacyRedirect to="/v2/higher-lower?sport=football" />} />
-            <Route path="/higherlower" element={<LegacyRedirect to="/v2/higher-lower?sport=football" />} />
-            <Route path="/verve-grid" element={<LegacyRedirect to="/v2/verve-grid?sport=football" />} />
-            <Route path="/vervegrid" element={<LegacyRedirect to="/v2/verve-grid?sport=football" />} />
+            <Route path="/higherlower" element={<LegacyRedirect to="/higher-lower?sport=football" />} />
+            <Route path="/vervegrid" element={<LegacyRedirect to="/verve-grid?sport=football" />} />
             {/* Old Learn prototype URLs forward to the Learn pillar. */}
-            <Route path="/learn" element={<LegacyRedirect to="/v2/learn" />} />
-            <Route path="/learn/geography" element={<LegacyRedirect to="/v2/learn" />} />
-            <Route path="/learn/geography/:nodeId" element={<LegacyRedirect to="/v2/learn" />} />
-            <Route path="/learn/prototype" element={<LegacyRedirect to="/v2/learn" />} />
+            <Route path="/learn/geography" element={<LegacyRedirect to="/learn" />} />
+            <Route path="/learn/geography/:nodeId" element={<LegacyRedirect to="/learn" />} />
+            <Route path="/learn/prototype" element={<LegacyRedirect to="/learn" />} />
             {/* Shell routes. ShellGate gives each a local Suspense boundary. */}
-            <Route path="/v2" element={<ShellGate><ShellHomeScreen /></ShellGate>} />
+            <Route path="/home" element={<ShellGate><ShellHomeScreen /></ShellGate>} />
             {/* Account chooser for logged-out visitors hitting a gated surface:
                 sign in / create account / play as guest. Carries ?next=. */}
-            <Route path="/v2/account" element={<ShellGate><AccountChoiceScreen /></ShellGate>} />
+            <Route path="/account" element={<ShellGate><AccountChoiceScreen /></ShellGate>} />
             {/* Username-only onboarding (no password) — the guest path and the
                 invite-flow ask. Carries ?next= + ?code=. */}
-            <Route path="/v2/welcome" element={<ShellGate><WelcomeScreen /></ShellGate>} />
+            <Route path="/welcome" element={<ShellGate><WelcomeScreen /></ShellGate>} />
             {/* Anonymous + username -> full account upgrade. Carries ?next=. */}
-            <Route path="/v2/upgrade" element={<ShellGate><UpgradeScreen /></ShellGate>} />
+            <Route path="/upgrade" element={<ShellGate><UpgradeScreen /></ShellGate>} />
             {/* Compete merged into Play (decision 10): every Compete URL lands
                 on Play with the More games catalogue open (#more) — that is
                 where the modes the grid listed now live. Params and an
                 incoming #anchor survive (LegacyRedirect). SEO pages and old
                 links still point at /compete, so these stay registered. */}
-            <Route path="/compete" element={<LegacyRedirect to="/v2#more" />} />
-            <Route path="/compete/sport" element={<LegacyRedirect to="/v2#more" />} />
-            <Route path="/compete/sport/:sport" element={<LegacyRedirect to="/v2#more" />} />
+            <Route path="/compete" element={<LegacyRedirect to="/home#more" />} />
+            <Route path="/compete/sport" element={<LegacyRedirect to="/home#more" />} />
+            <Route path="/compete/sport/:sport" element={<LegacyRedirect to="/home#more" />} />
             {/* Ranks (decision 10): ONE screen, Ladder | Leaderboard segments,
                 each with its own URL so old links open the right one. Open to
                 all (username-only sees the locked ranked pitch); Profile needs
                 a server identity, so it mirrors the casual-mode gate. */}
-            <Route path="/v2/ranks" element={<ShellGate><RanksScreen /></ShellGate>} />
-            <Route path="/v2/leaderboard" element={<ShellGate><RanksScreen /></ShellGate>} />
+            <Route path="/ranks" element={<ShellGate><RanksScreen /></ShellGate>} />
+            <Route path="/leaderboard" element={<ShellGate><RanksScreen /></ShellGate>} />
             <Route
-              path="/v2/profile"
+              path="/profile"
               element={
                 <ShellGate>
                   <UsernameOnlyRoute>
@@ -284,7 +262,7 @@ const AppRoutes = () => (
                 device preference everyone can change; the account section adapts
                 to auth state (sign-in CTA when logged out). */}
             <Route
-              path="/v2/settings"
+              path="/settings"
               element={
                 <ShellGate>
                   <SettingsScreen />
@@ -295,7 +273,7 @@ const AppRoutes = () => (
                 P3.3) that render their own ShellLayout. Gating mirrors the old
                 v1 routes. */}
             <Route
-              path="/v2/duels"
+              path="/duels"
               element={
                 <ShellGate>
                   <UsernameOnlyRoute>
@@ -305,7 +283,7 @@ const AppRoutes = () => (
               }
             />
             <Route
-              path="/v2/duels/history"
+              path="/duels/history"
               element={
                 <ShellGate>
                   <UsernameOnlyRoute>
@@ -319,7 +297,7 @@ const AppRoutes = () => (
                 any user WITH a username (assertUsernameRequiredUser); logged-out
                 visitors onboard with ?next= back here instead of bouncing home. */}
             <Route
-              path="/v2/arena"
+              path="/arena"
               element={
                 <ShellGate>
                   <UsernameOnlyRoute>
@@ -335,7 +313,7 @@ const AppRoutes = () => (
                 rejected, so the UI showed an empty Forge that errored on submit
                 (FR-0 Part 4c). The route now mirrors the server's own rule. */}
             <Route
-              path="/v2/forge"
+              path="/forge"
               element={
                 <ShellGate>
                   <FullAccountRoute>
@@ -345,7 +323,7 @@ const AppRoutes = () => (
               }
             />
             <Route
-              path="/v2/rivals"
+              path="/rivals"
               element={
                 <ShellGate>
                   <UsernameOnlyRoute>
@@ -355,7 +333,7 @@ const AppRoutes = () => (
               }
             />
             <Route
-              path="/v2/rivals/:opponentUserId"
+              path="/rivals/:opponentUserId"
               element={
                 <ShellGate>
                   <UsernameOnlyRoute>
@@ -365,72 +343,68 @@ const AppRoutes = () => (
               }
             />
             {/* Learn v2 — Learn pillar (entry / run / review / mastery). */}
-            <Route path="/v2/learn" element={<ShellGate><SessionRoute><LearnEntryScreen /></SessionRoute></ShellGate>} />
-            <Route path="/v2/learn/run" element={<ShellGate><SessionRoute><LearnRunnerScreen /></SessionRoute></ShellGate>} />
-            <Route path="/v2/learn/review" element={<ShellGate><SessionRoute><LearnReviewScreen /></SessionRoute></ShellGate>} />
-            <Route path="/v2/learn/mastery" element={<ShellGate><SessionRoute><LearnMasteryScreen /></SessionRoute></ShellGate>} />
+            <Route path="/learn" element={<ShellGate><SessionRoute><LearnEntryScreen /></SessionRoute></ShellGate>} />
+            <Route path="/learn/run" element={<ShellGate><SessionRoute><LearnRunnerScreen /></SessionRoute></ShellGate>} />
+            <Route path="/learn/review" element={<ShellGate><SessionRoute><LearnReviewScreen /></SessionRoute></ShellGate>} />
+            <Route path="/learn/mastery" element={<ShellGate><SessionRoute><LearnMasteryScreen /></SessionRoute></ShellGate>} />
             {/* In-game prototype layout — migrated modes. Gating reflects the
                 server's eligibility (convex/lib/authz.ts): ranked modes require a
                 full account; casual/social modes admit anyone with a username
                 (anonymous or full). Arena self-gates inline to preserve its code. */}
             {/* Ranked: full account required. */}
-            <Route path="/v2/quiz" element={<ShellGate><FullAccountRoute><QuizPlayScreen /></FullAccountRoute></ShellGate>} />
-            <Route path="/v2/survival" element={<ShellGate><FullAccountRoute><SurvivalPlayScreen /></FullAccountRoute></ShellGate>} />
+            <Route path="/quiz" element={<ShellGate><FullAccountRoute><QuizPlayScreen /></FullAccountRoute></ShellGate>} />
+            <Route path="/survival" element={<ShellGate><FullAccountRoute><SurvivalPlayScreen /></FullAccountRoute></ShellGate>} />
             {/* Casual/social: username-only playable. */}
-            <Route path="/v2/blitz" element={<ShellGate><SessionRoute><BlitzPlayScreen /></SessionRoute></ShellGate>} />
-            <Route path="/v2/higher-lower" element={<ShellGate><SessionRoute><HigherLowerPlayScreen /></SessionRoute></ShellGate>} />
+            <Route path="/blitz" element={<ShellGate><SessionRoute><BlitzPlayScreen /></SessionRoute></ShellGate>} />
+            <Route path="/higher-lower" element={<ShellGate><SessionRoute><HigherLowerPlayScreen /></SessionRoute></ShellGate>} />
             {/* Career Path is the marketed mode: GUEST-PLAYABLE with zero login.
                 No route guard — a logged-out visitor plays instantly via a client
                 guestToken (careerPath.ts accepts unauthenticated guests). */}
-            <Route path="/v2/career-path" element={<ShellGate><CareerPathPlayScreen /></ShellGate>} />
+            <Route path="/career-path" element={<ShellGate><CareerPathPlayScreen /></ShellGate>} />
             {/* /play — the short link on promo endcards + social bio links.
                 Public redirect into Career Path with attribution preserved
                 (a bare hit gets ?ref=play); see lib/playShortLink.ts. */}
             <Route path="/play" element={<PlayShortLinkRoute />} />
-            {/* /weekend — the short link for WEEKEND reel captions + the bio
-                link. Public redirect onto the WEEKEND hub (a bare hit gets
-                ?ref=weekend), or straight into the budget-squad builder for
-                paid links carrying ?start=budget (WKND-ENTRY); see
-                lib/weekendDeepLink.ts. Bypasses the cold-entry landing so
-                promo traffic lands on the mode itself. */}
-            <Route path="/weekend" element={<WeekendShortLinkRoute />} />
-            <Route path="/v2/verve-grid" element={<ShellGate><SessionRoute><VerveGridPlayScreen /></SessionRoute></ShellGate>} />
+            <Route path="/verve-grid" element={<ShellGate><SessionRoute><VerveGridPlayScreen /></SessionRoute></ShellGate>} />
             {/* Daily reuses the migrated Quiz view but runs the DAILY session.
                 Username tier (anonymous OK): the daily is the habit loop, so a
                 one-tap guest must reach it — attempts and streaks key off the
                 server identity, and the daily never touches ELO. */}
-            <Route path="/v2/daily" element={<ShellGate><SessionRoute><DailyQuizPlayScreen /></SessionRoute></ShellGate>} />
+            <Route path="/daily" element={<ShellGate><SessionRoute><DailyQuizPlayScreen /></SessionRoute></ShellGate>} />
             {/* Daily Survival — the same SurvivalPlayScreen running the shared
                 daily queue. Username tier like the daily quiz: casual, no ELO. */}
-            <Route path="/v2/daily-survival" element={<ShellGate><SessionRoute><SurvivalPlayScreen daily /></SessionRoute></ShellGate>} />
+            <Route path="/daily-survival" element={<ShellGate><SessionRoute><SurvivalPlayScreen daily /></SessionRoute></ShellGate>} />
             {/* WHO'S OLDER? — the daily twin of the reel format, then endless.
                 Username tier like the other dailies: casual, no ELO, so a reel
-                visitor plays on a silently-minted anonymous session. /older and
-                /whos-older are the caption short links (ref preserved). */}
-            <Route path="/v2/whos-older" element={<ShellGate><SessionRoute><WhosOlderPlayScreen /></SessionRoute></ShellGate>} />
+                visitor plays on a silently-minted anonymous session. /older is the
+                caption short link; a cold landing on either gets ?ref=older. */}
+            <Route path="/whos-older" element={<WhosOlderShortLinkRoute><ShellGate><SessionRoute><WhosOlderPlayScreen /></SessionRoute></ShellGate></WhosOlderShortLinkRoute>} />
             <Route path="/older" element={<WhosOlderShortLinkRoute />} />
-            <Route path="/whos-older" element={<WhosOlderShortLinkRoute />} />
             {/* MISSING LETTERS — the daily twin of the reel the feed runs three
                 times a day, then endless. Same tier and short-link rules as
-                Who's Older: /letters and /missing-letters (ref preserved). */}
-            <Route path="/v2/missing-letters" element={<ShellGate><SessionRoute><MissingLettersPlayScreen /></SessionRoute></ShellGate>} />
+                Who's Older: /letters is the short link; a cold landing on either
+                gets ?ref=letters. */}
+            <Route path="/missing-letters" element={<MissingLettersShortLinkRoute><ShellGate><SessionRoute><MissingLettersPlayScreen /></SessionRoute></ShellGate></MissingLettersShortLinkRoute>} />
             <Route path="/letters" element={<MissingLettersShortLinkRoute />} />
-            <Route path="/missing-letters" element={<MissingLettersShortLinkRoute />} />
             {/* Arena (multi-user) is username-only playable; the screen onboards
                 inline so a shared invite link never drops its lobby code. */}
-            <Route path="/v2/arena/:code" element={<ShellGate><ArenaPlayScreen /></ShellGate>} />
+            <Route path="/arena/:code" element={<ShellGate><ArenaPlayScreen /></ShellGate>} />
             {/* THE WEEKEND hub (FW-GO) — the mode's public front door. ShellGate
                 only, no session guard: a short-link visitor sees the mode before
                 being asked for anything; each door's route keeps its own tier. */}
-            <Route path="/v2/weekend" element={<ShellGate><WeekendHubScreen /></ShellGate>} />
+            {/* /weekend is also the reel-caption + bio link: a cold landing
+                gets ?ref=weekend, and paid links carrying ?start=budget go
+                straight into the budget-squad builder (WKND-ENTRY); see
+                lib/weekendDeepLink.ts. */}
+            <Route path="/weekend" element={<WeekendShortLinkRoute><ShellGate><WeekendHubScreen /></ShellGate></WeekendShortLinkRoute>} />
             {/* THE WEEKEND crew draft rooms (FW-3). Username tier, Arena-style:
                 crews are the social unit; UsernameOnlyRoute preserves ?next= so
                 a shared crew link onboards and lands back on the crew page,
                 where the screen attempts the idempotent code join. */}
-            <Route path="/v2/weekend/crews" element={<ShellGate><UsernameOnlyRoute><WeekendCrewsScreen /></UsernameOnlyRoute></ShellGate>} />
-            <Route path="/v2/weekend/crew/:code" element={<ShellGate><UsernameOnlyRoute><CrewScreen /></UsernameOnlyRoute></ShellGate>} />
-            <Route path="/v2/weekend/crew/:code/command" element={<ShellGate><UsernameOnlyRoute><CrewCommandScreen /></UsernameOnlyRoute></ShellGate>} />
-            <Route path="/v2/weekend/draft/:roomId" element={<ShellGate><UsernameOnlyRoute><DraftRoomScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/weekend/crews" element={<ShellGate><UsernameOnlyRoute><WeekendCrewsScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/weekend/crew/:code" element={<ShellGate><UsernameOnlyRoute><CrewScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/weekend/crew/:code/command" element={<ShellGate><UsernameOnlyRoute><CrewCommandScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/weekend/draft/:roomId" element={<ShellGate><UsernameOnlyRoute><DraftRoomScreen /></UsernameOnlyRoute></ShellGate>} />
             {/* THE WEEKEND budget mode (FW-LAUNCH O1). Linked from the hub; the
                 screen still gates on the backend answering (fail-closed).
                 SessionRoute, not UsernameOnlyRoute (WKND-ENTRY): the budget
@@ -438,25 +412,25 @@ const AppRoutes = () => (
                 asserts only an identity (fantasySquads.requireUserId), so the
                 username gate here was stricter than the backend and blocked
                 the paid direct-to-builder entry. */}
-            <Route path="/v2/weekend/squad" element={<ShellGate><SessionRoute><BudgetSquadScreen /></SessionRoute></ShellGate>} />
-            <Route path="/v2/weekend/vote" element={<ShellGate><UsernameOnlyRoute><VoteScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/weekend/squad" element={<ShellGate><SessionRoute><BudgetSquadScreen /></SessionRoute></ShellGate>} />
+            <Route path="/weekend/vote" element={<ShellGate><UsernameOnlyRoute><VoteScreen /></UsernameOnlyRoute></ShellGate>} />
             {/* DEV-only vote-card harness (EYE-TEST-CONTEXT; DrawMockHarness
                 precedent): fabricated pair, no auth. Redirects home in prod. */}
-            <Route path="/v2/weekend/vote-harness" element={<ShellGate><VoteCardHarness /></ShellGate>} />
-            <Route path="/v2/weekend/court" element={<ShellGate><UsernameOnlyRoute><CourtScreen /></UsernameOnlyRoute></ShellGate>} />
-            <Route path="/v2/weekend/sheet/:roomId" element={<ShellGate><UsernameOnlyRoute><CrewSheetScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/weekend/vote-harness" element={<ShellGate><VoteCardHarness /></ShellGate>} />
+            <Route path="/weekend/court" element={<ShellGate><UsernameOnlyRoute><CourtScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/weekend/sheet/:roomId" element={<ShellGate><UsernameOnlyRoute><CrewSheetScreen /></UsernameOnlyRoute></ShellGate>} />
             {/* THE WEEKEND rules screen (FW-EXPAND U3). Public like the hub —
                 rules need no session. */}
-            <Route path="/v2/weekend/how-to-play" element={<ShellGate><WeekendHowToPlayScreen /></ShellGate>} />
+            <Route path="/weekend/how-to-play" element={<ShellGate><WeekendHowToPlayScreen /></ShellGate>} />
             {/* THE WEEKEND fixtures (FW-IMMERSE A3). Public like the hub —
                 the weekend's matchday list is read-only, no session. */}
-            <Route path="/v2/weekend/fixtures" element={<ShellGate><FixturesScreen /></ShellGate>} />
+            <Route path="/weekend/fixtures" element={<ShellGate><FixturesScreen /></ShellGate>} />
             {/* Global THE WEEKEND table — public like the fixtures, and scoped
                 strictly to budget squads for the open gameweek. */}
-            <Route path="/v2/weekend/leaderboard" element={<ShellGate><WeekendLeaderboardScreen /></ShellGate>} />
+            <Route path="/weekend/leaderboard" element={<ShellGate><WeekendLeaderboardScreen /></ShellGate>} />
             {/* THE WEEKEND settlement receipt (FW-RECEIPT). Username tier —
                 a receipt is the caller's own squad, settled. */}
-            <Route path="/v2/weekend/receipt/:gameweekId" element={<ShellGate><UsernameOnlyRoute><WeekendReceiptScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/weekend/receipt/:gameweekId" element={<ShellGate><UsernameOnlyRoute><WeekendReceiptScreen /></UsernameOnlyRoute></ShellGate>} />
             {/* THE DRAW — dev/preview only, flag-gated (VITE_DRAW_ENABLED),
                 not linked from home, nav, or any mode grid. */}
             <Route path="/draw" element={<DrawScreen />} />
@@ -481,6 +455,11 @@ const AppRoutes = () => (
             <Route path="/fr/*" element={<SeoRouteOutlet />} />
             <Route path="/es/*" element={<SeoRouteOutlet />} />
             <Route path="/about/*" element={<SeoRouteOutlet />} />
+            {/* The shell used to live under /v2 (until 2026-10). nginx 301s those
+                URLs; this catches the ones that never reach nginx (an installed
+                PWA's service worker serves the app shell from cache). */}
+            <Route path="/v2" element={<DropV2Redirect />} />
+            <Route path="/v2/*" element={<DropV2Redirect />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AppFrame>

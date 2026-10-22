@@ -194,9 +194,9 @@ function renderView(today: ReadyToday, rank: number | null = null, now = Date.no
 
 function renderCardRoute() {
   return render(
-    <MemoryRouter initialEntries={["/v2"]}>
+    <MemoryRouter initialEntries={["/home"]}>
       <Routes>
-        <Route path="/v2" element={<HomeDrawCard />} />
+        <Route path="/home" element={<HomeDrawCard />} />
         <Route path="/draw" element={<div data-testid="draw-route" />} />
       </Routes>
     </MemoryRouter>,
@@ -205,7 +205,7 @@ function renderCardRoute() {
 
 function renderHome() {
   return render(
-    <MemoryRouter initialEntries={["/v2"]}>
+    <MemoryRouter initialEntries={["/home"]}>
       <ShellHomeScreen />
     </MemoryRouter>,
   );

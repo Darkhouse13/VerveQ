@@ -48,7 +48,7 @@ test("FW-SCOUT wide: sheet from the persistent market panel", async ({ page }) =
   });
 
   // ── guest onboarding through the squad door ──
-  await page.goto("/v2/weekend");
+  await page.goto("/weekend");
   await page.getByTestId("weekend-door-squad").click();
   await page.getByText("Play as a guest").click();
   await page.getByRole("textbox").first().fill(RUN_TAG);

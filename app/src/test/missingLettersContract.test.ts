@@ -147,7 +147,7 @@ describe("Missing Letters wiring", () => {
   });
 
   it("is reachable from Play's TODAY (decision 10) and the caption short links", () => {
-    expect(read("src/App.tsx")).toContain('path="/v2/missing-letters"');
+    expect(read("src/App.tsx")).toContain('path="/missing-letters"');
     expect(read("src/App.tsx")).toContain('path="/letters"');
     // Decision 10 merged Home and Compete into Play: one TODAY list, in the
     // catalogue module, rendered by the Play screen.
@@ -156,8 +156,8 @@ describe("Missing Letters wiring", () => {
     expect(tiles).toMatch(/key: "missingLetters",[^\n]*SHELL_ROUTES\.missingLettersPlay/);
     expect(read("src/pages/shell/ShellHomeScreen.tsx")).toContain("tilesByKeys(PLAY_TODAY_KEYS)");
     expect(read("../deploy/nginx.conf")).toMatch(/\|letters\|missing-letters\|/);
-    expect(missingLettersShortLinkTarget("")).toBe("/v2/missing-letters?ref=letters");
-    expect(missingLettersShortLinkTarget("?ref=ig_bio")).toBe("/v2/missing-letters?ref=ig_bio");
+    expect(missingLettersShortLinkTarget("")).toBe("/missing-letters?ref=letters");
+    expect(missingLettersShortLinkTarget("?ref=ig_bio")).toBe("/missing-letters?ref=ig_bio");
   });
 
   it("ends like Who's Older: streak, reminder, challenge share, head-to-head", () => {

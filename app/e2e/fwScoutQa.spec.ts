@@ -60,7 +60,7 @@ test("FW-SCOUT: sheet from picker, pitch and crew sheet at 380px", async ({ page
   });
 
   // ── guest onboarding through the squad door ──
-  await page.goto("/v2/weekend");
+  await page.goto("/weekend");
   await page.getByTestId("weekend-door-squad").click();
   await page.getByText("Play as a guest").click();
   await page.getByRole("textbox").first().fill(RUN_TAG);
@@ -148,7 +148,7 @@ test("FW-SCOUT: sheet from picker, pitch and crew sheet at 380px", async ({ page
     username: RUN_TAG,
   }) as { roomId: string };
   expect(drafted.roomId).toBeTruthy();
-  await page.goto(`/v2/weekend/sheet/${drafted.roomId}`);
+  await page.goto(`/weekend/sheet/${drafted.roomId}`);
   const crewChip = page.locator('[data-chip-state]:not([data-chip-state="empty"])').first();
   await expect(crewChip).toBeVisible({ timeout: 45_000 });
   await crewChip.click();

@@ -32,7 +32,7 @@ export function buildAbout(ctx) {
     body: `<div class="seo-hero"><span class="seo-tag">About</span>
 <h1>About VerveQ</h1>
 <p class="seo-lede">VerveQ is an independent football trivia site. We make free browser games (a daily quiz, career paths, a football grid, higher or lower, duels) for people who actually watch the matches, in English, French and Spanish.</p>
-${cta("/v2/career-path?ref=seo_about", "Play the most popular game")}</div>
+${cta("/career-path?ref=seo_about", "Play the most popular game")}</div>
 <h2>Where our football facts come from</h2>
 <p>A trivia game is only as good as its answers, so every fact has to come from a source we can cite and re-check. Our player data (clubs and the years a player spent at each, nationality, position, date of birth) comes from <a href="https://www.wikidata.org/">Wikidata</a>, the open, CC0-licensed knowledge base. Each fact is stored with the Wikidata item and property it came from and the date it was retrieved.</p>
 <p>Facts are graded. Only facts confirmed at the highest confidence are used on reference pages such as <a href="/who-played-for/">who played for both clubs</a>. Uncertain facts are held back until they are confirmed or corrected by hand.</p>

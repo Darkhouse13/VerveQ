@@ -201,7 +201,7 @@ describe("result status lines", () => {
 
 describe("Next today across the four dailies", () => {
   it("walks Home's Today row from the daily just played", () => {
-    expect(nextTodayFrom("quiz", { survival: false })).toEqual({ kind: "game", game: "survival", route: "/v2/daily-survival" });
+    expect(nextTodayFrom("quiz", { survival: false })).toEqual({ kind: "game", game: "survival", route: "/daily-survival" });
     expect(nextTodayFrom("survival", { older: true, letters: false })).toMatchObject({ kind: "game", game: "letters" });
     expect(nextTodayFrom("quiz", { survival: true, older: true, letters: true })).toEqual({
       kind: "home",
@@ -228,7 +228,7 @@ describe("Next today across the four dailies", () => {
       "missingLetters:getToday": { daily: null },
     };
     render(<MemoryRouter>{CASES[2].render(() => {})}</MemoryRouter>);
-    expect(screen.getByTestId("result-next-today")).toHaveAttribute("href", "/v2/daily-survival");
+    expect(screen.getByTestId("result-next-today")).toHaveAttribute("href", "/daily-survival");
   });
 });
 

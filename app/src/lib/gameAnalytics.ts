@@ -9,7 +9,7 @@ import type { AccountState } from "@/contexts/AuthContext";
  * Every run is keyed on the SERVER-minted session id, which is the only honest
  * evidence that a game exists. That choice does the real work here:
  *
- *  - Nothing fires on a route change. Navigating to /v2/career-path without
+ *  - Nothing fires on a route change. Navigating to /career-path without
  *    playing mints no session, so it produces silence.
  *  - A re-render that mints nothing stays silent. The auto-start owners (Career
  *    Path, Higher/Lower, VerveGrid) each provision ONE session per arrival and

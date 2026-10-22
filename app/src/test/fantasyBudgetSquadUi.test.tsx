@@ -153,9 +153,9 @@ function scoreSlot(overrides: Record<string, unknown>) {
 
 function renderScreen() {
   return render(
-    <MemoryRouter initialEntries={["/v2/weekend/squad"]}>
+    <MemoryRouter initialEntries={["/weekend/squad"]}>
       <Routes>
-        <Route path="/v2/weekend/squad" element={<BudgetSquadScreen />} />
+        <Route path="/weekend/squad" element={<BudgetSquadScreen />} />
       </Routes>
     </MemoryRouter>,
   );

@@ -51,8 +51,8 @@ export const COMPETE_MODE_TILES: ModeTile[] = [
   // and its route is `FullAccountRoute` like Quiz's — the two ranked modes gate
   // identically. Daily Survival is explicitly exempt server-side (games.ts:198-202
   // rejects `dailyDate` runs), which is why that tile belongs in TODAY, not here.
-  { key: "survival", icon: Heart, color: "orange", ranked: true, to: (s) => `/v2/survival?sport=${s}` },
-  { key: "blitz", icon: Zap, color: "yellow", to: (s) => `/v2/blitz?sport=${s}` },
+  { key: "survival", icon: Heart, color: "orange", ranked: true, to: (s) => `/survival?sport=${s}` },
+  { key: "blitz", icon: Zap, color: "yellow", to: (s) => `/blitz?sport=${s}` },
   // Higher/Lower + VerveGrid launch DIRECTLY, like Career Path. They used to
   // route via the shared difficulty picker, which cost a cold visitor an extra
   // screen before the mode and — while that picker was still gated — dropped
@@ -60,11 +60,11 @@ export const COMPETE_MODE_TILES: ModeTile[] = [
   // self-manage the tier: `parseDifficulty(null)` defaults to easy
   // (lib/difficulty.ts), which is the tier the picker's own default led with.
   // The picker stays reachable at /difficulty for the modes that still use it.
-  { key: "higherLower", icon: TrendingUp, color: "blue", to: (s) => `/v2/higher-lower?sport=${s}` },
-  { key: "verveGrid", icon: Grid3X3, color: "orange", to: (s) => `/v2/verve-grid?sport=${s}` },
-  { key: "careerPath", icon: Route, color: "orange", to: (s) => `/v2/career-path?sport=${s}` },
+  { key: "higherLower", icon: TrendingUp, color: "blue", to: (s) => `/higher-lower?sport=${s}` },
+  { key: "verveGrid", icon: Grid3X3, color: "orange", to: (s) => `/verve-grid?sport=${s}` },
+  { key: "careerPath", icon: Route, color: "orange", to: (s) => `/career-path?sport=${s}` },
   // Daily is migrated to the shell — reuses the Quiz prototype layout via the DAILY session.
-  { key: "daily", icon: Timer, color: "yellow", to: (s) => `/v2/daily?sport=${s}` },
+  { key: "daily", icon: Timer, color: "yellow", to: (s) => `/daily?sport=${s}` },
   // Daily Survival: the shared one-attempt run on the Reveal Ladder engine.
   // Football-only by design, so the builder ignores the carried sport.
   { key: "dailySurvival", icon: CalendarHeart, color: "yellow", to: () => SHELL_ROUTES.dailySurvival },
@@ -76,7 +76,7 @@ export const COMPETE_MODE_TILES: ModeTile[] = [
   { key: "missingLetters", icon: Type, color: "pink", to: () => SHELL_ROUTES.missingLettersPlay },
   // Live Match is parked: nothing in the product can create a live match any
   // more (the challenge subsystem and createFromChallenge were removed), so
-  // the tile would advertise a dead end. /v2/live-match stays routable as a
+  // the tile would advertise a dead end. /live-match stays routable as a
   // viewer for legacy matches.
 ];
 

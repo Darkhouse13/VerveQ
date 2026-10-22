@@ -3,7 +3,7 @@
  *
  * Hosts create a room (1v1 / 2v2 / FFA) and get a shareable code; friends join
  * with that code. Reuses the proven Create/Join modals and the existing
- * `challengeArenas` backend; play happens on `/v2/arena/:code`
+ * `challengeArenas` backend; play happens on `/arena/:code`
  * (ArenaPlayScreen), which preserves the code through inline onboarding.
  *
  * Mounted behind UsernameOnlyRoute: the server admits any user with a username

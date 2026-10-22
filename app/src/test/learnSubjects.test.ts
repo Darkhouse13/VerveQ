@@ -263,11 +263,11 @@ describe("resolveSelectedLearnSubject", () => {
 
 describe("learnPath", () => {
   it("appends the subject and extra params", () => {
-    expect(learnPath("/v2/learn", "geography")).toBe(
-      "/v2/learn?subject=geography",
+    expect(learnPath("/learn", "geography")).toBe(
+      "/learn?subject=geography",
     );
-    expect(learnPath("/v2/learn/run", "geography", { node: "geo.capitals.core" }))
-      .toBe("/v2/learn/run?node=geo.capitals.core&subject=geography");
-    expect(learnPath("/v2/learn", undefined)).toBe("/v2/learn");
+    expect(learnPath("/learn/run", "geography", { node: "geo.capitals.core" }))
+      .toBe("/learn/run?node=geo.capitals.core&subject=geography");
+    expect(learnPath("/learn", undefined)).toBe("/learn");
   });
 });

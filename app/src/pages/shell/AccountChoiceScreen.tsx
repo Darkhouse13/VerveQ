@@ -1,10 +1,10 @@
 /**
- * `/v2/account` — the account chooser for logged-out visitors who hit a gated
+ * `/account` — the account chooser for logged-out visitors who hit a gated
  * shell surface (profile tab, casual modes, Learn, ranked CTAs).
  *
  * Three explicit paths: sign in to an existing account, create a full account,
  * or continue as a guest (the username-only flow). The bare username ask
- * (`/v2/welcome`) is intentionally NOT the default any more — it is reserved
+ * (`/welcome`) is intentionally NOT the default any more — it is reserved
  * for the guest choice here and for invite flows (Arena codes, duel links),
  * where the inline join must stay one-field fast.
  *

@@ -55,9 +55,9 @@ function renderAt(url: string) {
   return render(
     <MemoryRouter initialEntries={[url]}>
       <Routes>
-        <Route path="/v2/account" element={<AccountChoiceScreen />} />
-        <Route path="/v2/profile" element={<div>PROFILE_TARGET</div>} />
-        <Route path="/v2" element={<div>HOME_TARGET</div>} />
+        <Route path="/account" element={<AccountChoiceScreen />} />
+        <Route path="/profile" element={<div>PROFILE_TARGET</div>} />
+        <Route path="/home" element={<div>HOME_TARGET</div>} />
       </Routes>
     </MemoryRouter>,
   );
@@ -69,21 +69,21 @@ describe("AccountChoiceScreen", () => {
       accountState: "loggedOut",
       hasUsername: false,
     });
-    renderAt("/v2/account?next=%2Fv2%2Fprofile");
+    renderAt("/account?next=%2Fprofile");
 
     fireEvent.click(screen.getByText("account.create"));
     expect(navigateSpy).toHaveBeenLastCalledWith(
-      "/?mode=signup&next=%2Fv2%2Fprofile",
+      "/?mode=signup&next=%2Fprofile",
     );
 
     fireEvent.click(screen.getByText("account.signIn"));
     expect(navigateSpy).toHaveBeenLastCalledWith(
-      "/?mode=signin&next=%2Fv2%2Fprofile",
+      "/?mode=signin&next=%2Fprofile",
     );
 
     fireEvent.click(screen.getByText("account.guest"));
     expect(navigateSpy).toHaveBeenLastCalledWith(
-      "/v2/welcome?next=%2Fv2%2Fprofile",
+      "/welcome?next=%2Fprofile",
     );
   });
 
@@ -92,7 +92,7 @@ describe("AccountChoiceScreen", () => {
       accountState: "usernameOnly",
       hasUsername: true,
     });
-    renderAt("/v2/account?next=%2Fv2%2Fprofile");
+    renderAt("/account?next=%2Fprofile");
     expect(screen.getByText("PROFILE_TARGET")).toBeInTheDocument();
   });
 
@@ -101,7 +101,7 @@ describe("AccountChoiceScreen", () => {
       accountState: "usernameOnly",
       hasUsername: true,
     });
-    renderAt("/v2/account?next=%2F%2Fevil.example");
+    renderAt("/account?next=%2F%2Fevil.example");
     expect(screen.getByText("HOME_TARGET")).toBeInTheDocument();
   });
 });
@@ -117,8 +117,8 @@ describe("gating routes through the chooser (source contract)", () => {
     expect(guards).not.toContain("welcomeUrl");
   });
 
-  it("registers /v2/account inside the shell without a username gate", () => {
-    const line = app.split("\n").find((l) => l.includes('path="/v2/account"'));
+  it("registers /account inside the shell without a username gate", () => {
+    const line = app.split("\n").find((l) => l.includes('path="/account"'));
     expect(line).toBeTruthy();
     expect(line).toContain("ShellGate");
     expect(line).not.toContain("UsernameOnlyRoute");

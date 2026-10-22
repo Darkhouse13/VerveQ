@@ -262,18 +262,18 @@ bounded batch.
 ## Frontend (MVP)
 
 Production runs the v2 shell, where the room UI is
-`app/src/pages/shell/play/ArenaPlayScreen.tsx` at route `/v2/arena/:code`
+`app/src/pages/shell/play/ArenaPlayScreen.tsx` at route `/arena/:code`
 (wrapped in `ShellGate`, no auth guard on the route itself). It reuses the same
 server-authoritative `challengeArenas` room read-model and mutations, and reuses
 the proven Lobby / Countdown / RoundBreak / Final views described below; only the
 in-game question/reveal layout differs. The v1 screen
 `app/src/pages/ChallengeArenaScreen.tsx` still compiles at `/arena/:code`, but
 that route is wrapped in `V2ArenaCodeRedirect`, which forwards code-intact to
-`/v2/arena/:code` while the shell flag is on — so v1 is a rollback seam, not a
+`/arena/:code` while the shell flag is on — so v1 is a rollback seam, not a
 live surface.
 
 Entry is a dedicated Arena hub, `app/src/pages/shell/ArenaHubScreen.tsx` at
-`/v2/arena` (gated by `UsernameOnlyRoute`), which offers create and join-by-code.
+`/arena` (gated by `UsernameOnlyRoute`), which offers create and join-by-code.
 It is distinct from Duels. The v1 modals still back the flow:
 
 - `app/src/pages/arena/CreateArenaModal.tsx` — pick mode (1v1 / 2v2 / FFA 3-5)
@@ -298,7 +298,7 @@ Cross-cutting:
 
 - A persistent header strip across every phase shows the code, mode, current
   phase + round, and a **Leave** button that calls `leave` then navigates back
-  to the Arena hub (`/v2/arena`). Leaving never blocks; rejoining is just
+  to the Arena hub (`/arena`). Leaving never blocks; rejoining is just
   re-opening the same code.
 - During the `lobby` phase the header also surfaces a **?** help button
   (`HelpCircle`) that opens `ArenaHelpModal`: a dismissible neo-brutalist card
@@ -332,7 +332,7 @@ Account requirement: hosting and joining both go through
 roster entry has a username. This is the username tier, not a full account — a
 one-tap anonymous user who has picked a username may play.
 
-Guests are not bounced to a sign-up flow. `/v2/arena/:code` carries no route
+Guests are not bounced to a sign-up flow. `/arena/:code` carries no route
 guard: the screen onboards inline so a shared invite link never drops its lobby
-code. Logged-out visitors to the `/v2/arena` hub onboard with `?next=` back to
+code. Logged-out visitors to the `/arena` hub onboard with `?next=` back to
 the hub rather than bouncing home.

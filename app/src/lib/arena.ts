@@ -263,9 +263,9 @@ export function arenaCategoryEmoji(slug: string) {
 }
 
 export function buildArenaUrl(code: string) {
-  // Shared invite links route to the shell Arena (/v2/arena/:code), whose gate
+  // Shared invite links route to the shell Arena (/arena/:code), whose gate
   // onboards code-preserving username-only users.
-  const path = `/v2/arena/${code}`;
+  const path = `/arena/${code}`;
   if (typeof window === "undefined") return path;
   return `${window.location.origin}${path}`;
 }

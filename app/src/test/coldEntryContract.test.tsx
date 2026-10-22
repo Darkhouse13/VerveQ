@@ -5,7 +5,7 @@
  *  - orient in one glance (positioning headline + one-liner + Play CTA);
  *  - play a full taste round with NO signup wall and NO navigation away;
  *  - only AFTER the round, see the deferred username claim that routes into
- *    the existing /v2/welcome username-only onboarding with ?next= threaded;
+ *    the existing /welcome username-only onboarding with ?next= threaded;
  *  - choose "Maybe later" and keep playing fresh rounds.
  *
  * i18n is passthrough-mocked (labels are raw keys) and navigation is spied so
@@ -110,14 +110,14 @@ describe("cold-entry landing", () => {
     expect(verdict).toBeTruthy();
   });
 
-  it("the claim prompt appears only AFTER the round and routes to /v2/welcome with next", () => {
+  it("the claim prompt appears only AFTER the round and routes to /welcome with next", () => {
     renderColdEntry();
     fireEvent.click(screen.getByText("landing.play"));
     playThroughRound();
 
     expect(screen.getByText("landing.claimTitle")).toBeTruthy();
     fireEvent.click(screen.getByText("landing.claimCta"));
-    expect(navigateSpy).toHaveBeenLastCalledWith("/v2/welcome?next=%2Fv2");
+    expect(navigateSpy).toHaveBeenLastCalledWith("/welcome?next=%2Fhome");
   });
 
   it("'Maybe later' keeps them playing — a fresh round starts, no navigation", () => {
@@ -161,7 +161,7 @@ describe("cold-entry landing", () => {
     playThroughRound();
 
     fireEvent.click(screen.getByText("landing.explore"));
-    expect(navigateSpy).toHaveBeenLastCalledWith("/v2");
+    expect(navigateSpy).toHaveBeenLastCalledWith("/home");
 
     fireEvent.click(screen.getByText("landing.signIn"));
     expect(navigateSpy).toHaveBeenLastCalledWith("/?mode=signin");
@@ -175,6 +175,6 @@ describe("cold-entry landing", () => {
     // Guest-playable marketed mode — the hop carries ?ref=taste so it stays
     // separable from promo/short-link traffic in funnel.careerPathMetrics.
     fireEvent.click(screen.getByText("landing.careerPathCta"));
-    expect(navigateSpy).toHaveBeenLastCalledWith("/v2/career-path?ref=taste");
+    expect(navigateSpy).toHaveBeenLastCalledWith("/career-path?ref=taste");
   });
 });

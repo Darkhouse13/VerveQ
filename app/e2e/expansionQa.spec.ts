@@ -102,7 +102,7 @@ test("FW-EXPAND: eight leagues seeded, matchup lines, one pick per in-window lea
 
   // ── 1. hub framing: every in-window league named, server order.
   //      FW-POLISH-3 O4: 4+ leagues collapse to a count with tap-to-expand. ──
-  await page.goto("/v2/weekend");
+  await page.goto("/weekend");
   const leaguesLine = page.getByTestId("weekend-hub-leagues-line");
   await expect(leaguesLine).toBeVisible({ timeout: 45_000 });
   const joinedLeagues = `This weekend: ${inWindow.map((id) => LEAGUE_NAMES[id]).join(" + ")}`;

@@ -54,7 +54,7 @@ test("FW-RECEIPT P1-P4: one header, honest copy, wrapped names, figures", async 
   });
 
   // ── P1: the hub says "This weekend" exactly once, inside the rail header ──
-  await page.goto("/v2/weekend");
+  await page.goto("/weekend");
   await expect(page.getByTestId("fixtures-rail")).toBeVisible({ timeout: 45_000 });
   const leaguesLine = page.getByTestId("weekend-hub-leagues-line");
   await expect(leaguesLine).toBeVisible();
@@ -71,7 +71,7 @@ test("FW-RECEIPT P1-P4: one header, honest copy, wrapped names, figures", async 
   await page.screenshot({ path: "e2e/artifacts/fwr-p1-hub-380.png", fullPage: false });
 
   // ── P3: club names clamp at two lines instead of one-line ellipsis ──
-  await page.goto("/v2/weekend/fixtures");
+  await page.goto("/weekend/fixtures");
   const firstCard = page.getByTestId("fixture-card").first();
   await expect(firstCard).toBeVisible({ timeout: 45_000 });
   const clamped = await firstCard
@@ -83,7 +83,7 @@ test("FW-RECEIPT P1-P4: one header, honest copy, wrapped names, figures", async 
   await page.screenshot({ path: "e2e/artifacts/fwr-p3-fixtures-380.png", fullPage: false });
 
   // ── P4: the three figures, present and static ──
-  await page.goto("/v2/weekend/how-to-play");
+  await page.goto("/weekend/how-to-play");
   await expect(page.getByTestId("how-to-play")).toBeVisible({ timeout: 45_000 });
   for (const figure of ["htp-figure-clock", "htp-figure-shape", "htp-figure-mismatch"]) {
     await page.getByTestId(figure).scrollIntoViewIfNeeded();
@@ -94,7 +94,7 @@ test("FW-RECEIPT P1-P4: one header, honest copy, wrapped names, figures", async 
   await page.screenshot({ path: "e2e/artifacts/fwr-p4-howtoplay-380.png", fullPage: false });
 
   // ── P2: a crew with no drafts says so in draft language ──
-  await page.goto("/v2/weekend/crews");
+  await page.goto("/weekend/crews");
   await page.getByText("Play as a guest").click();
   await page.getByRole("textbox").first().fill(RUN_TAG);
   await page.getByRole("button", { name: "Start playing" }).click();

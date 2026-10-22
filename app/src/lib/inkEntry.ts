@@ -4,7 +4,7 @@
  * no longer picks the palette: it picks the card-shaped InkLoader over the
  * spinner, and the language prompt's reel behaviour.
  */
-const INK_ENTRY = /^\/(older|whos-older|letters|missing-letters|draw|weekend)(\/|$)|^\/v2\/(whos-older|missing-letters|weekend)(\/|$)/;
+const INK_ENTRY = /^\/(older|whos-older|letters|missing-letters|draw|weekend)(\/|$)/;
 
 export function isInkEntryPath(pathname: string): boolean {
   return INK_ENTRY.test(pathname);
@@ -18,13 +18,13 @@ export function isInkEntryPath(pathname: string): boolean {
  */
 export function prefetchEntryRoute(pathname: string): void {
   const load =
-    /^\/(older|whos-older)(\/|$)|^\/v2\/whos-older/.test(pathname)
+    /^\/(older|whos-older)(\/|$)/.test(pathname)
       ? () => import("@/pages/shell/play/WhosOlderPlayScreen")
-      : /^\/(letters|missing-letters)(\/|$)|^\/v2\/missing-letters/.test(pathname)
+      : /^\/(letters|missing-letters)(\/|$)/.test(pathname)
         ? () => import("@/pages/shell/play/MissingLettersPlayScreen")
         : /^\/draw(\/|$)/.test(pathname)
           ? () => import("@/pages/draw/DrawScreen")
-          : /^\/(weekend)(\/|$)|^\/v2\/weekend\/?$/.test(pathname)
+          : /^\/weekend\/?$/.test(pathname)
             ? () => import("@/pages/shell/weekend/WeekendHubScreen")
             : null;
   // Failures are harmless: the real navigation retries through lazyWithRetry.

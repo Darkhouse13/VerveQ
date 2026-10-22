@@ -1,5 +1,5 @@
 /**
- * The Forge (`/v2/forge`) — write questions for the community pool and review
+ * The Forge (`/forge`) — write questions for the community pool and review
  * other players' submissions. Shell-native (VerveQ ONE P3.3): ShellLayout with
  * a back to Profile (the Forge's entry), a Segmented for Submit / Review / My
  * submissions, form fields on the ui primitives, and one lime action — Submit

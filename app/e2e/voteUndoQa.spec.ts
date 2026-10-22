@@ -1,7 +1,7 @@
 /**
  * EYE-TEST-SERVE — the didn't-see undo toast at 380px.
  *
- * Runs against the DEV-only harness (/v2/weekend/vote-harness?view=undo): no
+ * Runs against the DEV-only harness (/weekend/vote-harness?view=undo): no
  * auth, no Convex, no dependency on DEV having finished fixtures inside a live
  * voting window. What is asserted is what the ticket bought:
  *
@@ -34,7 +34,7 @@ async function openHarness(page: Page): Promise<string[]> {
   await page.addInitScript(() => {
     localStorage.setItem("verveq_lang_chosen", "1");
   });
-  await page.goto("/v2/weekend/vote-harness?view=undo");
+  await page.goto("/weekend/vote-harness?view=undo");
   return consoleErrors;
 }
 

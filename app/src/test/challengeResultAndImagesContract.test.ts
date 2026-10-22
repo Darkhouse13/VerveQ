@@ -13,7 +13,7 @@ describe("challenge result UX contract", () => {
 
     expect(types).toContain('"challenge"');
     expect(existsSync("src/pages/ResultScreen.tsx")).toBe(false);
-    expect(app).toContain('<Route path="/results" element={<LegacyRedirect to="/compete" />} />');
+    expect(app).toContain('<Route path="/results" element={<LegacyRedirect to="/home#more" />} />');
     expect(app).not.toContain('api.liveMatches.createFromChallenge');
   });
 });

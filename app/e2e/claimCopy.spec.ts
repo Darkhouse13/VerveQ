@@ -53,7 +53,7 @@ async function assertNoBoardPromise(page: Page, label: string) {
 
 test("daily quiz: claim prompt names no board", async ({ page }) => {
   test.slow();
-  await page.goto("/v2/daily?sport=football");
+  await page.goto("/daily?sport=football");
   await dismissLanguagePrompt(page);
   await expect(page.getByText(/Q \d+\/10/)).toBeVisible({ timeout: 45_000 });
 
@@ -85,7 +85,7 @@ test("daily quiz: claim prompt names no board", async ({ page }) => {
 
 test("daily survival: claim prompt names no board", async ({ page }) => {
   test.slow();
-  await page.goto("/v2/daily-survival");
+  await page.goto("/daily-survival");
   await dismissLanguagePrompt(page);
 
   await expect(page.getByPlaceholder("Type player name...")).toBeVisible({

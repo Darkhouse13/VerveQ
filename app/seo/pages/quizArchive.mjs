@@ -103,7 +103,7 @@ export function buildQuizArchive(archive) {
         body: `<div class="seo-hero"><span class="seo-tag">${count} questions · answers included</span>
 <h1>${esc(topic.h1)}</h1>
 <p class="seo-lede">${count} ${esc(topic.name)} questions, every one of them served in VerveQ's daily football quiz. Read the question, pick your answer, then tap <em>Show answer</em>. Updated every day as new quizzes close.</p>
-${cta("/v2/daily?ref=seo_quiz_topic", "Play today's quiz")}</div>
+${cta("/daily?ref=seo_quiz_topic", "Play today's quiz")}</div>
 ${items.map((it, i) => renderQuestion(it.q, i + 1, { dateLink: { href: `/football-quiz/${it.date}/`, label: dateLabel(it.date) } })).join("\n")}
 ${faqSection(faqs)}
 <h2>More football quiz topics</h2>
@@ -168,7 +168,7 @@ ${faqSection(faqs)}
       body: `<div class="seo-hero"><span class="seo-tag">${esc(long)}</span>
 <h1>Football Quiz: ${esc(dateLabel(day.date))}</h1>
 <p class="seo-lede">These are the ${day.questions.length} questions every VerveQ player faced in the daily football quiz on ${esc(long)}. Try them yourself, then reveal each answer. The live quiz only runs for one day; tomorrow's is always new.</p>
-${cta("/v2/daily?ref=seo_quiz_day", "Play today's quiz")}</div>
+${cta("/daily?ref=seo_quiz_day", "Play today's quiz")}</div>
 ${day.questions.map((q, n) => renderQuestion(q, n + 1)).join("\n")}
 ${topics.length ? `<h2>More questions like these</h2>${linkGrid(topics.map((t) => { const tp = topicPages.find((x) => x.topic.slug === t.slug); return { href: tp.page.path, label: `${t.name} quiz questions`, note: `${tp.count} questions` }; }))}` : ""}
 <h2>Other days</h2>
@@ -212,7 +212,7 @@ ${linkGrid([
     body: `<div class="seo-hero"><span class="seo-tag">${totalQuestions.toLocaleString("en")} questions · updated daily</span>
 <h1>Football Quiz Questions and Answers</h1>
 <p class="seo-lede">Every VerveQ daily football quiz, with the answers. Ten questions a day since ${esc(dateLabel(days[days.length - 1].date))}, covering the Premier League, the World Cup, transfers, legends and more. Use them for a pub quiz, a group chat or to warm up before today's quiz.</p>
-${cta("/v2/daily?ref=seo_quiz_hub", "Play today's quiz")}</div>
+${cta("/daily?ref=seo_quiz_hub", "Play today's quiz")}</div>
 <h2>Quizzes by topic</h2>
 ${linkGrid(topicLinks)}
 <h2>Latest quiz: ${esc(dateLabel(latest.date, { weekday: true }))}</h2>

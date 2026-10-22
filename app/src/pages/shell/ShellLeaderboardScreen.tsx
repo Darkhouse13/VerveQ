@@ -1,7 +1,7 @@
 /**
  * The Leaderboard — the Ranks screen's second segment (VerveQ ONE decision
  * 10: "The Ranks", "The ladder" and "Leaderboard" are one screen now, with a
- * Ladder | Leaderboard segmented control; `/v2/leaderboard` opens it on this
+ * Ladder | Leaderboard segmented control; `/leaderboard` opens it on this
  * segment). Renders the board only; RanksScreen owns the chrome.
  *
  * From md up it is the one sanctioned scroll surface in the shell: the

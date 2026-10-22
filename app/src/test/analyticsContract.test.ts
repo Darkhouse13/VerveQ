@@ -24,7 +24,7 @@ describe("analytics privacy scrubbing", () => {
     expect(scrubPath("/duel/play/abc123")).toBe("/duel/play/:id");
     expect(scrubPath("/duel/result/abc123")).toBe("/duel/result/:id");
     expect(scrubPath("/arena/X7K2P9")).toBe("/arena/:code");
-    expect(scrubPath("/v2/arena/X7K2P9")).toBe("/v2/arena/:code");
+    expect(scrubPath("/arena/X7K2P9")).toBe("/arena/:code");
     expect(scrubPath("/s/d/DQTESTLINK01")).toBe("/s/d/:code");
     expect(scrubPath("/rivals/j5762abcdef")).toBe("/rivals/:id");
   });
@@ -32,10 +32,10 @@ describe("analytics privacy scrubbing", () => {
   it("passes ordinary mode routes through untouched (the path IS the metric)", () => {
     for (const path of [
       "/",
-      "/v2/daily",
-      "/v2/survival",
-      "/v2/career-path",
-      "/v2/higher-lower",
+      "/daily",
+      "/survival",
+      "/career-path",
+      "/higher-lower",
       "/games/daily-football-quiz/",
     ]) {
       expect(scrubPath(path)).toBe(path);
@@ -69,7 +69,7 @@ describe("analytics fail-closed init", () => {
   });
 
   it("capture and track are no-ops while uninitialized", () => {
-    capturePageview("/v2/daily", "");
+    capturePageview("/daily", "");
     track("game_completed", { mode: "daily" });
     expect(posthogMock.capture).not.toHaveBeenCalled();
   });

@@ -168,7 +168,7 @@ curl --resolve verveq.com:443:178.104.196.36 https://verveq.com/robots.txt
 curl --resolve verveq.com:443:178.104.196.36 https://verveq.com/sitemap.xml
 ```
 
-Browser QA should walk `/privacy`, `/terms`, `/daily`, `/vervegrid`, `/v2/career-path`, `/higherlower`, `/arena/:code`, `/v2/arena`, `/v2/duels`, onboarding/upgrade validation states, and an unknown path. Capture final URL, visible content, console/page errors, failed requests, and non-2xx/3xx network responses.
+Browser QA should walk `/privacy`, `/terms`, `/daily`, `/vervegrid`, `/career-path`, `/higherlower`, `/arena/:code`, `/arena`, `/duels`, onboarding/upgrade validation states, and an unknown path. Capture final URL, visible content, console/page errors, failed requests, and non-2xx/3xx network responses.
 
 ## 2026-06-12 durable-cutover artifacts
 

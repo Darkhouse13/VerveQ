@@ -39,7 +39,7 @@ vi.mock("@/pages/shell/ColdEntryScreen", () => ({
   default: () => <div data-testid="cold-entry">COLD ENTRY</div>,
 }));
 
-import { EntryRoute, HomeRoute } from "@/components/EntryRoutes";
+import { EntryRoute } from "@/components/EntryRoutes";
 import { ShellGate } from "@/components/shell/ShellGate";
 
 function LocationProbe() {
@@ -53,9 +53,8 @@ function renderAt(path: string) {
     <MemoryRouter initialEntries={[path]}>
       <Routes>
         <Route path="/" element={<EntryRoute />} />
-        <Route path="/home" element={<HomeRoute />} />
         <Route
-          path="/v2"
+          path="/home"
           element={
             <ShellGate>
               <div data-testid="v2-home">V2 SHELL HOME</div>
@@ -90,7 +89,7 @@ describe("entry routing", () => {
     expect(screen.getByTestId("v2-home")).toBeTruthy();
     expect(screen.queryByTestId("v1-login")).toBeNull();
     expect(screen.queryByTestId("cold-entry")).toBeNull();
-    expect(pathname()).toBe("/v2");
+    expect(pathname()).toBe("/home");
   });
 
   it("a username-only (guest) session also lands in the v2 shell home", () => {
@@ -126,10 +125,10 @@ describe("entry routing", () => {
     expect(screen.queryByTestId("cold-entry")).toBeNull();
   });
 
-  it("/home redirects to the v2 shell home (post-login + post-game landing)", () => {
+  it("/home is the shell home (post-login + post-game landing)", () => {
     renderAt("/home");
     expect(screen.getByTestId("v2-home")).toBeTruthy();
-    expect(pathname()).toBe("/v2");
+    expect(pathname()).toBe("/home");
   });
 
   it("keeps the password LoginScreen reachable at / for ?mode= auth intents", () => {

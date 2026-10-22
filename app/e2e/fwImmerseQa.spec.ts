@@ -73,7 +73,7 @@ test("FW-IMMERSE A: filter bar axis, pitch, fixtures, matchday hub", async ({
   expect(displayable.length).toBeGreaterThan(0);
 
   // ── A4: the hub is the weekend ──
-  await page.goto("/v2/weekend");
+  await page.goto("/weekend");
   const boardLine = page.getByTestId("weekend-hub-board-line");
   await expect(boardLine).toBeVisible({ timeout: 45_000 });
   await expect(boardLine).toContainText(`Gameweek ${payload!.gwNumber} board is open`);
@@ -104,7 +104,7 @@ test("FW-IMMERSE A: filter bar axis, pitch, fixtures, matchday hub", async ({
 
   // The rail's all-fixtures path lands on the fixtures screen.
   await page.getByTestId("fixtures-rail-all").click();
-  await expect(page).toHaveURL(/\/v2\/weekend\/fixtures$/);
+  await expect(page).toHaveURL(/\/weekend\/fixtures$/);
   await expect(page.getByTestId("fixture-card").first()).toBeVisible({ timeout: 45_000 });
 
   // ── A3: the fixtures screen ──
@@ -132,7 +132,7 @@ test("FW-IMMERSE A: filter bar axis, pitch, fixtures, matchday hub", async ({
   await page.screenshot({ path: "e2e/artifacts/fwi-fixtures-380.png", fullPage: true });
 
   // ── guest onboarding through the squad door ──
-  await page.goto("/v2/weekend");
+  await page.goto("/weekend");
   await page.getByTestId("weekend-door-squad").click();
   await page.getByText("Play as a guest").click();
   await page.getByRole("textbox").first().fill(RUN_TAG);
@@ -198,13 +198,13 @@ test("FW-IMMERSE A: filter bar axis, pitch, fixtures, matchday hub", async ({
   await expectNoHorizontalScroll(page, "squad screen");
 
   // ── A4: the signed-in builder's hub carries the squad status card ──
-  await page.goto("/v2/weekend");
+  await page.goto("/weekend");
   const status = page.getByTestId("squad-status-card");
   await expect(status).toBeVisible({ timeout: 45_000 });
   await expect(status).toContainText("12 spots still open");
   await page.screenshot({ path: "e2e/artifacts/fwi-hub-squad-status-380.png" });
   await status.click();
-  await expect(page).toHaveURL(/\/v2\/weekend\/squad$/);
+  await expect(page).toHaveURL(/\/weekend\/squad$/);
 
   expect(consoleErrors, `console errors:\n${consoleErrors.join("\n")}`).toEqual([]);
 });

@@ -1,5 +1,5 @@
 /**
- * Duel history (`/v2/duels/history`) — every finished duel, filterable by
+ * Duel history (`/duels/history`) — every finished duel, filterable by
  * outcome. Shell-native (VerveQ ONE P3.3): ShellLayout with a back to Duels,
  * the W/L/D record, a Segmented filter, then the rows.
  */

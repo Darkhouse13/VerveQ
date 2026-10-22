@@ -196,20 +196,20 @@ describe("entry_source reads the door, not the destination", () => {
   it("classifies share/invite doors", () => {
     expect(classifyEntrySource("/s/d/DQTESTLINK01", "")).toBe("share-link");
     expect(classifyEntrySource("/duel/DQTESTLINK01", "")).toBe("share-link");
-    expect(classifyEntrySource("/v2/arena/X7K2P9", "")).toBe("share-link");
     expect(classifyEntrySource("/arena/X7K2P9", "")).toBe("share-link");
-    expect(classifyEntrySource("/v2/career-path", "?ref=daily_share")).toBe(
+    expect(classifyEntrySource("/arena/X7K2P9", "")).toBe("share-link");
+    expect(classifyEntrySource("/career-path", "?ref=daily_share")).toBe(
       "share-link",
     );
   });
 
   it("classifies homepage, profile and direct doors", () => {
     expect(classifyEntrySource("/", "")).toBe("homepage");
-    expect(classifyEntrySource("/v2", "")).toBe("homepage");
     expect(classifyEntrySource("/home", "")).toBe("homepage");
-    expect(classifyEntrySource("/v2/profile", "")).toBe("profile");
+    expect(classifyEntrySource("/home", "")).toBe("homepage");
+    expect(classifyEntrySource("/profile", "")).toBe("profile");
     expect(classifyEntrySource("/rivals/j5762abcdef", "")).toBe("profile");
-    expect(classifyEntrySource("/v2/career-path", "?ref=play")).toBe("direct");
-    expect(classifyEntrySource("/v2/daily", "")).toBe("direct");
+    expect(classifyEntrySource("/career-path", "?ref=play")).toBe("direct");
+    expect(classifyEntrySource("/daily", "")).toBe("direct");
   });
 });

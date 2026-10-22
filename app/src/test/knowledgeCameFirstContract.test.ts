@@ -28,7 +28,7 @@ describe("Knowledge Which Came First mode", () => {
     const games = readFileSync("convex/games.ts", "utf8");
 
     expect(tiles).toContain("/difficulty?sport=knowledge&mode=came_first");
-    expect(app).toContain('path="/v2/quiz"');
+    expect(app).toContain('path="/quiz"');
     // DifficultyScreen routes the came_first variant distinctly. Asserts the
     // real branch (not a planted URL fragment) so the picker keeps preserving
     // the Which Came First mode into the quiz deep link.

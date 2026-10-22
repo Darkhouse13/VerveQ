@@ -101,17 +101,17 @@ rather than using Convex Auth's `linkAccount`:
    `isGuest: false` and `isAnonymous: false` — the single write that moves
    the account from `usernameOnly` to `fullAccount`.
 
-The UI is `UpgradeAccountForm`, rendered by `UpgradeScreen` (`/v2/upgrade`).
+The UI is `UpgradeAccountForm`, rendered by `UpgradeScreen` (`/upgrade`).
 Behaviour is locked by `app/src/test/guestUpgradeContract.test.tsx`.
 
 ## Entry surfaces
 
 | Surface | What it is |
 |---------|-----------|
-| `WelcomeScreen` (`/v2/welcome`) | The onboarding card — `UsernameOnlyOnboarding`. |
+| `WelcomeScreen` (`/welcome`) | The onboarding card — `UsernameOnlyOnboarding`. |
 | `ColdEntryScreen` (`/`) | Signed-out cold visitors: instant taste round, deferred username ask. |
 | `ArenaPlayScreen` | Onboards **inline** so a shared invite link never drops its lobby code. |
-| `UpgradeScreen` (`/v2/upgrade`) | `UpgradeAccountForm`. |
+| `UpgradeScreen` (`/upgrade`) | `UpgradeAccountForm`. |
 | `LoginScreen` (`/`) | Email/password + reset. With the v2 shell on, it mounts only for an explicit auth intent (`?mode=` / `?from=`); it is not the default entry. |
 
 **`loginAsGuest()` is a legacy tab-local seam, not the anonymous provider.**

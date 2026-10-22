@@ -27,7 +27,7 @@ const TODAY_ROUTE: Record<TodayGame, string> = {
   older: SHELL_ROUTES.whosOlderPlay,
   letters: SHELL_ROUTES.missingLettersPlay,
   quiz: SHELL_ROUTES.dailyPlay,
-  survival: "/v2/daily-survival",
+  survival: "/daily-survival",
 };
 
 const OTHER: Record<DailyGame, DailyGame> = { older: "letters", letters: "older" };

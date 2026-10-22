@@ -1,7 +1,7 @@
 /**
  * EYE-TEST-CONTEXT — the vote card's memory at 380px.
  *
- * Runs against the DEV-only harness (/v2/weekend/vote-harness): a fabricated
+ * Runs against the DEV-only harness (/weekend/vote-harness): a fabricated
  * served pair, no auth, no dependency on DEV having finished fixtures inside
  * a live voting window. Asserts the ticket's fit rule — two FULL cards and
  * the skip affordance visible with NO scroll in either axis (EYE-TEST-TEN
@@ -45,7 +45,7 @@ test("EYE-TEST-CONTEXT: two full context cards + the skip affordance fit 380px w
     localStorage.setItem("verveq_lang_chosen", "1");
   });
 
-  await page.goto("/v2/weekend/vote-harness");
+  await page.goto("/weekend/vote-harness");
   await expect(page.getByText("Who had the better game?")).toBeVisible({ timeout: 45_000 });
 
   // ── the memory, card by card ──
