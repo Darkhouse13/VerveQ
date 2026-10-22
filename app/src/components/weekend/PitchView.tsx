@@ -14,7 +14,9 @@
  *   empty          → dashed jersey outline, position label, plus
  *   filled         → cream shirt (finishers pink), surname + price plates
  *   locked         → lock glyph, no edit affordance (tap = detail only)
- *   awaiting data  → "…" in the value plate — NEVER a number (FW-4R N5)
+ *   awaiting data  → "…" in the value plate — NEVER a number (FW-4R N5),
+ *                    once his match has started (locked); before kickoff
+ *                    the plate keeps his price
  *   scored         → value plate flips lime with the points; the honest zero
  *                    renders AS 0.0 with its "DNP" marker
  *   mismatch       → "×0.75" marker (applied) or "as {ROLE}" hint (browsing)
@@ -78,7 +80,12 @@ function slotChipState(
 ): "empty" | "awaiting" | "scored" | "locked" | "filled" {
   if (slot.playerId === null) return "empty";
   if (score !== undefined && score.state !== "empty") {
-    if (score.state === "awaiting" || score.points === null) return "awaiting";
+    // Before his kickoff a player has no points to wait for yet: the plate
+    // keeps his price (the number a manager is building with). "…" is for a
+    // match that has started or finished and whose points are still to land.
+    if (score.state === "awaiting" || score.points === null) {
+      return slot.locked ? "awaiting" : "filled";
+    }
     return "scored";
   }
   return slot.locked ? "locked" : "filled";

@@ -198,8 +198,18 @@ function WeekendStandings({ board }: { board: Board }) {
               : t("weekend.leaderboardFinalBody", { defaultValue: "This gameweek is settled." })}
           </p>
         </div>
-        <span className="font-mono font-bold text-body-sm tabular-nums shrink-0">
-          {board.ranked}/{board.participants}
+        {/* Squads on the table / squads entered. Labelled: a bare "0/3" read
+            as nothing at all to a newcomer. */}
+        <span
+          className="flex flex-col items-end shrink-0 text-right"
+          data-testid="weekend-board-count"
+        >
+          <span className="font-mono font-bold text-body-sm tabular-nums">
+            {board.ranked}/{board.participants}
+          </span>
+          <span className="text-meta text-muted-foreground">
+            {t("weekend.boardCountLabel", { defaultValue: "squads with points" })}
+          </span>
         </span>
       </Card>
 
@@ -211,7 +221,8 @@ function WeekendStandings({ board }: { board: Board }) {
           </p>
           <p className="text-body-sm text-muted-foreground mt-1">
             {t("weekend.leaderboardWaitingBody", {
-              defaultValue: "The table appears as soon as a player score lands.",
+              defaultValue:
+                "A squad joins the table once one of its players has points. Points land about 2 hours after each match ends.",
             })}
           </p>
         </Card>

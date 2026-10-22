@@ -20,7 +20,7 @@
  * Views are exported for the contract suite; the default export is the data
  * container (house pattern, DraftRoomScreen.tsx).
  */
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useConvex, useMutation, useQuery } from "convex/react";
@@ -39,7 +39,9 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { formatPoints } from "../../../../convex/lib/fantasyScoring";
 import { CROWD_LIQUIDITY_THRESHOLD } from "../../../../convex/lib/fantasyCrowd";
 import {
+  PRICE_MIN,
   SQUAD_BUDGET,
+  SQUAD_SIZE,
   type SlotRole,
 } from "../../../../convex/lib/fantasyConstants";
 import {
@@ -68,7 +70,7 @@ import {
   FormationChooser,
   FormationSection,
 } from "@/components/weekend/FormationChooser";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Sheet } from "@/components/ui/sheet";
 import { ShellLayout } from "@/components/shell/ShellLayout";
@@ -79,7 +81,7 @@ import { WeekendLeaguesLine } from "@/components/weekend/WeekendLeaguesLine";
 import { SquadTabs } from "@/components/weekend/SquadTabs";
 import { SquadLedgerView } from "@/components/weekend/SquadLedgerView";
 import { useWideScreen } from "@/hooks/useWideScreen";
-import { useWheelToHorizontalScroll } from "@/hooks/useWheelToHorizontalScroll";
+import { fitCap, readPickerMemory, rememberPicker } from "@/lib/weekendPickerMemory";
 import { track } from "@/lib/analytics";
 import { isBuilderEntry } from "@/lib/weekendDeepLink";
 import { roleLabel } from "@/lib/weekendRoles";
@@ -127,18 +129,44 @@ export function CreateSquadView({
     ...DEFAULT_FINISHERS,
   ]);
 
+  const start = () =>
+    onCreate(shapeToFormation(formation.shape), finishers, formation.name);
+
   return (
     <div className="flex flex-col gap-4">
-      <Card elevation="lifted" className="text-center">
-        <Eyebrow className="mb-1">
-          {t("weekend.buildFor", { defaultValue: "Building for" })}
-        </Eyebrow>
-        <p className="font-heading font-bold text-title-lg">GW {gwNumber}</p>
-        <p className="text-body-sm text-muted-foreground mt-1" data-testid="build-line">
-          {t("weekend.buildLine", {
-            defaultValue: "{{n}} players · {{budget}} budget",
-            n: 13,
-            budget: price(SQUAD_BUDGET),
+      {/* The one action sits in the card, above the chooser: the defaults are
+          a sound start and both choices stay editable on the squad screen, so
+          nothing has to be scrolled past (or hidden under a sticky bar) to
+          begin. */}
+      <Card elevation="lifted" className="flex flex-col gap-3">
+        <div className="flex items-baseline justify-between gap-3">
+          <div className="min-w-0">
+            <Eyebrow className="mb-0.5">
+              {t("weekend.buildFor", { defaultValue: "Building for" })}
+            </Eyebrow>
+            <p className="font-heading font-bold text-title">GW {gwNumber}</p>
+          </div>
+          <p className="text-body-sm text-muted-foreground text-right" data-testid="build-line">
+            {t("weekend.buildLine", {
+              defaultValue: "{{n}} players · {{budget}} budget",
+              n: 13,
+              budget: price(SQUAD_BUDGET),
+            })}
+          </p>
+        </div>
+        <Button
+          variant="primary"
+          size="lg"
+          block
+          disabled={busy}
+          data-testid="start-building"
+          onClick={start}
+        >
+          {t("weekend.startBuilding", { defaultValue: "Start building" })}
+        </Button>
+        <p className="text-meta text-muted-foreground">
+          {t("weekend.setupLater", {
+            defaultValue: "Shape and finishers below are optional. You can change both later.",
           })}
         </p>
       </Card>
@@ -155,24 +183,83 @@ export function CreateSquadView({
         }}
       />
 
-      {/* The one action stays above the bottom nav at the fold (390×664):
-          it sticks to the foot of the scrolling main, on an ink band so the
-          chooser scrolls under it rather than through it. */}
-      <div className="sticky bottom-0 z-raised -mx-1 bg-background px-1 pb-2 pt-2">
-        <Button
-          variant="primary"
-          size="lg"
-          block
-          disabled={busy}
-          data-testid="start-building"
-          onClick={() =>
-            onCreate(shapeToFormation(formation.shape), finishers, formation.name)
-          }
-        >
-          {t("weekend.startBuilding", { defaultValue: "Start building" })}
-        </Button>
-      </div>
     </div>
+  );
+}
+
+// ── first-time explainer (paid builder entry) ──
+
+/**
+ * A cold visitor from the paid link (`?start=budget` → `entry=builder`) with no
+ * squad yet sees what the game is before the builder: three plain lines and
+ * one action. Every line is true of budget mode as built: 13 real players, a
+ * fixed budget, points from this window's real matches (BUDGET_MODE_SPEC),
+ * and a global table. No prize is claimed because there is none.
+ */
+export function WeekendIntroView({
+  leagueCount,
+  busy,
+  onStart,
+  onRules,
+}: {
+  leagueCount: number | null;
+  busy: boolean;
+  onStart: () => void;
+  onRules: () => void;
+}) {
+  const { t } = useTranslation();
+  const price = usePriceFormat();
+  const lines = [
+    leagueCount !== null && leagueCount > 0
+      ? t("weekend.introPickLeagues", {
+          defaultValue: "Pick 13 real players from {{n}} leagues, for {{budget}} in total.",
+          n: leagueCount,
+          budget: price(SQUAD_BUDGET),
+        })
+      : t("weekend.introPick", {
+          defaultValue: "Pick 13 real players, for {{budget}} in total.",
+          budget: price(SQUAD_BUDGET),
+        }),
+    t("weekend.introScore", {
+      defaultValue:
+        "They score points from this weekend's real matches: goals, assists, clean sheets and more.",
+    }),
+    t("weekend.introTable", {
+      defaultValue: "Your total goes on the weekend table. Next weekend, a fresh start.",
+    }),
+  ];
+  return (
+    <Card elevation="lifted" className="flex flex-col gap-4" data-testid="weekend-intro">
+      <div>
+        <Eyebrow className="mb-1">
+          {t("weekend.introEyebrow", { defaultValue: "Free fantasy football" })}
+        </Eyebrow>
+        <h2 className="font-heading font-bold text-title-lg">
+          {t("weekend.introTitle", { defaultValue: "How The Weekend works" })}
+        </h2>
+      </div>
+      <ol className="flex flex-col gap-3">
+        {lines.map((line, i) => (
+          <li key={i} className="flex gap-3 text-body">
+            <span className="font-mono font-bold text-lime shrink-0">{i + 1}</span>
+            <span>{line}</span>
+          </li>
+        ))}
+      </ol>
+      <Button
+        variant="primary"
+        size="lg"
+        block
+        disabled={busy}
+        data-testid="weekend-intro-start"
+        onClick={onStart}
+      >
+        {t("weekend.introStart", { defaultValue: "Build my 13" })}
+      </Button>
+      <Button variant="link" className="self-center" onClick={onRules}>
+        {t("weekend.introRules", { defaultValue: "Full rules" })}
+      </Button>
+    </Card>
   );
 }
 
@@ -407,8 +494,8 @@ export function ScoreHeader({ score }: { score: BudgetSquadScore }) {
           ? t("weekend.settled", { defaultValue: "settled" })
           : t("weekend.provisional", { defaultValue: "provisional" })}
         {score.awaitingSlots > 0 &&
-          ` · ${t("weekend.slotsAwaiting", {
-            defaultValue: "{{count}} awaiting",
+          ` · ${t("weekend.slotsAwaitingBody", {
+            defaultValue: "{{count}} awaiting · points land ~2h after full time",
             count: score.awaitingSlots,
           })}`}
       </Eyebrow>
@@ -437,6 +524,7 @@ export function PickerPanel({
   leagues,
   inSquad,
   remaining,
+  openSlots = 1,
   now,
   onPick,
 }: {
@@ -452,6 +540,8 @@ export function PickerPanel({
   leagues?: ReadonlyArray<{ leagueId: number }> | null;
   inSquad: ReadonlySet<string>;
   remaining: number;
+  /** Open slots left to fill, counting the one this pick fills. */
+  openSlots?: number;
   now: number;
   onPick?: (playerId: string) => void;
 }) {
@@ -474,7 +564,19 @@ export function PickerPanel({
               ? t("weekend.pickAtt", { defaultValue: "Who leads the line?" })
               : t("weekend.pickAny", { defaultValue: "Who makes your 13?" });
   const [search, setSearch] = useState("");
-  const [affordableOnly, setAffordableOnly] = useState(false);
+  // League, club, sort and the budget filter outlive this mount (the panel
+  // remounts per slot): see lib/weekendPickerMemory.
+  const remembered = readPickerMemory();
+  const [fitsOnly, setFitsOnlyState] = useState(remembered.fitsOnly);
+  const [cheapestFirst, setCheapestFirstState] = useState(remembered.cheapestFirst);
+  const setFitsOnly = (next: boolean) => {
+    setFitsOnlyState(next);
+    rememberPicker({ fitsOnly: next });
+  };
+  const setCheapestFirst = (next: boolean) => {
+    setCheapestFirstState(next);
+    rememberPicker({ cheapestFirst: next });
+  };
   // D4: a partial gameweek is normal — players without a fixture are OUT of
   // the browse by default, behind an explicit "show all", instead of pages
   // of badge noise.
@@ -508,8 +610,16 @@ export function PickerPanel({
   // remove real options from the board; the manager turns it on when they have
   // decided they do not want to see them.
   const [hideFlagged, setHideFlagged] = useState(false);
-  const [leagueFilter, setLeagueFilter] = useState<number | null>(null);
-  const [clubFilter, setClubFilter] = useState<string | null>(null);
+  const [leagueFilter, setLeagueFilterState] = useState<number | null>(remembered.leagueFilter);
+  const [clubFilter, setClubFilterState] = useState<string | null>(remembered.clubFilter);
+  const setLeagueFilter = (next: number | null) => {
+    setLeagueFilterState(next);
+    rememberPicker({ leagueFilter: next });
+  };
+  const setClubFilter = (next: string | null) => {
+    setClubFilterState(next);
+    rememberPicker({ clubFilter: next });
+  };
   const [filterSheet, setFilterSheet] = useState<"league" | "club" | null>(null);
   const [clubSearch, setClubSearch] = useState("");
   // FW-SCOUT: the player whose detail sheet is open, living INSIDE the panel
@@ -518,9 +628,6 @@ export function PickerPanel({
   // (key on slot) closes it with the panel, which is correct: a new slot
   // context is a new question.
   const [detailPlayer, setDetailPlayer] = useState<Id<"fantasyPlayers"> | null>(null);
-  /* Desktop: the scrollbar is hidden and there is no touch, so a mouse wheel
-     is the only way to reach the chips past the edge. */
-  const filterRowRef = useWheelToHorizontalScroll<HTMLDivElement>();
 
   /** The market's club catalogue, grouped per league — there is deliberately
    *  no clubs table, so the list is derived from the rows themselves.
@@ -559,27 +666,38 @@ export function PickerPanel({
     return null;
   }, [clubCatalogue, clubFilter]);
 
-  const results = useMemo(() => {
-    if (effectiveMarket === null || effectiveMarket === undefined) return [];
+  // The most this pick can cost while the rest of the 13 still fits. The
+  // budget chip filters on this, not on the raw remainder (which hid nothing
+  // until the very last picks).
+  const budgetCap = fitCap(remaining, openSlots, PRICE_MIN);
+
+  const { results, matchCount } = useMemo(() => {
+    if (effectiveMarket === null || effectiveMarket === undefined) {
+      return { results: [], matchCount: 0 };
+    }
     // FW-NAMES: match on the accent-folded key, so "ljubicic" finds Ljubičić
     // and "hojlund" finds Højlund on a phone keyboard that offers neither
     // character. The rendered name keeps every accent.
     const needle = search.trim();
-    return effectiveMarket.players
+    const matches = effectiveMarket.players
       .filter(
         (p) =>
           (showAll || p.kickoffAt !== null) &&
           (allPositions || slotRole === null || p.position === slotRole) &&
           (leagueFilter === null || p.leagueId === leagueFilter) &&
           (clubFilter === null || p.clubId === clubFilter) &&
-          (!affordableOnly || (p.price !== null && p.price <= remaining)) &&
+          (!fitsOnly || (p.price !== null && p.price <= budgetCap)) &&
           (!hideFlagged || p.availability == null) &&
           (needle.length === 0 ||
             matchesNameSearch(p.name, needle) ||
             matchesNameSearch(p.clubName ?? "", needle)),
       )
-      .sort((a, b) => (b.price ?? 0) - (a.price ?? 0) || a.name.localeCompare(b.name))
-      .slice(0, MARKET_RESULT_CAP);
+      .sort((a, b) =>
+        cheapestFirst
+          ? (a.price ?? Infinity) - (b.price ?? Infinity) || a.name.localeCompare(b.name)
+          : (b.price ?? 0) - (a.price ?? 0) || a.name.localeCompare(b.name),
+      );
+    return { results: matches.slice(0, MARKET_RESULT_CAP), matchCount: matches.length };
   }, [
     effectiveMarket,
     search,
@@ -587,10 +705,11 @@ export function PickerPanel({
     allPositions,
     leagueFilter,
     clubFilter,
-    affordableOnly,
+    fitsOnly,
+    budgetCap,
+    cheapestFirst,
     showAll,
     hideFlagged,
-    remaining,
   ]);
 
   return (
@@ -631,8 +750,7 @@ export function PickerPanel({
             vertically under the finger. Clip the axis and pad the translate's
             travel so nothing is cut off mid-press. */}
         <div
-          ref={filterRowRef}
-          className="flex gap-2 overflow-x-auto overflow-y-hidden pb-1 shrink-0 min-w-0 w-full scrollbar-none"
+          className="flex flex-wrap gap-2 shrink-0 min-w-0 w-full"
           data-testid="picker-filter-row"
         >
           <FilterChip
@@ -657,10 +775,23 @@ export function PickerPanel({
             <ChevronDown size={16} strokeWidth={2.5} aria-hidden />
           </FilterChip>
           <FilterChip
-            selected={affordableOnly}
-            onClick={() => setAffordableOnly((v) => !v)}
+            selected={fitsOnly}
+            aria-pressed={fitsOnly}
+            data-testid="picker-fits-chip"
+            onClick={() => setFitsOnly(!fitsOnly)}
           >
-            ≤ {price(remaining)}
+            {t("weekend.fitsBudget", {
+              defaultValue: "Up to {{price}}",
+              price: price(budgetCap),
+            })}
+          </FilterChip>
+          <FilterChip
+            selected={cheapestFirst}
+            aria-pressed={cheapestFirst}
+            data-testid="picker-sort-chip"
+            onClick={() => setCheapestFirst(!cheapestFirst)}
+          >
+            {t("weekend.cheapestFirst", { defaultValue: "Cheapest first" })}
           </FilterChip>
           <FilterChip
             selected={showAll}
@@ -689,6 +820,17 @@ export function PickerPanel({
             </FilterChip>
           )}
         </div>
+
+        {effectiveMarket != null && (
+          <p className="text-meta text-muted-foreground -mt-2" data-testid="picker-count">
+            {fitsOnly
+              ? t("weekend.pickerCountFits", {
+                  defaultValue: "Fit your budget: {{n}}",
+                  n: matchCount,
+                })
+              : t("weekend.pickerCount", { defaultValue: "Players: {{n}}", n: matchCount })}
+          </p>
+        )}
 
         <div className="flex flex-col gap-1.5 overflow-y-auto min-h-0">
           {results.map((player) => {
@@ -811,11 +953,21 @@ export function PickerPanel({
               </Card>
             );
           })}
-          {results.length === MARKET_RESULT_CAP && (
+          {matchCount > MARKET_RESULT_CAP && (
             <p className="text-meta text-muted-foreground text-center">
-              {t("weekend.narrowSearch", {
-                defaultValue: "Showing the top 130 — search to narrow.",
-              })}
+              {cheapestFirst
+                ? t("weekend.narrowSearchCheap", {
+                    defaultValue:
+                      "Showing the {{cap}} cheapest of {{n}}. Search or pick a league to narrow.",
+                    cap: MARKET_RESULT_CAP,
+                    n: matchCount,
+                  })
+                : t("weekend.narrowSearchTop", {
+                    defaultValue:
+                      "Showing the {{cap}} priciest of {{n}}. Tap Cheapest first, search, or pick a league.",
+                    cap: MARKET_RESULT_CAP,
+                    n: matchCount,
+                  })}
             </p>
           )}
           {results.length === 0 && (
@@ -993,6 +1145,7 @@ export function PlayerPickerDialog({
   leagues,
   inSquad,
   remaining,
+  openSlots,
   now,
   onPick,
   onClose,
@@ -1004,13 +1157,20 @@ export function PlayerPickerDialog({
   leagues?: ReadonlyArray<{ leagueId: number }> | null;
   inSquad: ReadonlySet<string>;
   remaining: number;
+  openSlots?: number;
   now: number;
   onPick: (playerId: string) => void;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
       <DialogContent className="max-w-sm max-h-[85dvh] flex flex-col">
+        <DialogDescription className="sr-only">
+          {t("weekend.pickerDescription", {
+            defaultValue: "Search the market and pick a player for this spot.",
+          })}
+        </DialogDescription>
         <PickerPanel
           host="dialog"
           slotRole={slotRole}
@@ -1019,6 +1179,7 @@ export function PlayerPickerDialog({
           leagues={leagues}
           inSquad={inSquad}
           remaining={remaining}
+          openSlots={openSlots}
           now={now}
           onPick={onPick}
         />
@@ -1475,6 +1636,81 @@ export default function BudgetSquadScreen() {
     pickerSlot === null ? undefined : squad?.slots.find((s) => s.slotIndex === pickerSlot);
   const pickerRole = pickerSlotRow?.slotRole ?? null;
   const pickerFinisher = pickerSlotRow?.isFinisher ?? false;
+  // The picker prices against the squad this pick will leave: replacing a
+  // player frees his price, and every other empty slot still has to be filled.
+  const emptySlots = (squad?.slots ?? []).filter((s) => s.playerId === null && !s.locked).length;
+  const replacing = pickerSlotRow != null && pickerSlotRow.playerId !== null && !pickerSlotRow.locked;
+  const pickerRemaining = remaining + (replacing ? (pickerSlotRow?.playerPrice ?? 0) : 0);
+  const pickerOpenSlots = emptySlots + (replacing ? 1 : 0);
+
+  // The 13th pick lands: say so. Only on the transition, never on a load of
+  // an already-full squad.
+  const filledCount =
+    squad == null ? null : squad.slots.filter((s) => s.playerId !== null).length;
+  const prevFilled = useRef<number | null>(null);
+  const openGw = gate.state === "open" ? gate.gameweek.gwNumber : null;
+  useEffect(() => {
+    const before = prevFilled.current;
+    prevFilled.current = filledCount;
+    if (
+      before !== null &&
+      filledCount !== null &&
+      before < SQUAD_SIZE &&
+      filledCount === SQUAD_SIZE &&
+      openGw !== null
+    ) {
+      notify.success(
+        t("weekend.squadComplete", {
+          defaultValue: "You're in for GW {{gw}}. Points land after each match.",
+          gw: openGw,
+        }),
+        {
+          description: t("weekend.squadCompleteBody", {
+            defaultValue: "You can still change any player until his match kicks off.",
+          }),
+        },
+      );
+    }
+    // t is stable per language; the transition is all this watches.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filledCount, openGw]);
+
+  // First-time paid visitors see what the game is before the builder.
+  const [introDone, setIntroDone] = useState(false);
+
+  const createWith = (
+    gameweek: OpenGameweek,
+    formation: Record<SlotRole, number>,
+    finisherRoles: [SlotRole, SlotRole],
+    formationName: string,
+  ) =>
+    run(
+      () =>
+        createSquad({
+          gameweekId: gameweek.gameweekId,
+          context: "budget",
+          formation,
+          finisherRoles: [...finisherRoles],
+        }).then((created) => {
+          // Real server transition (ANALYTICS.md): the squad row
+          // exists. gw_number, never identity, rides along.
+          // `entry` splits the paid direct-to-builder funnel from
+          // hub-entry; the redirect's tag is still on this URL.
+          track("weekend_squad_created", {
+            gw_number: gameweek.gwNumber,
+            entry: isBuilderEntry(search) ? "builder" : "hub",
+          });
+          // The chosen display name survives the reload (R2).
+          if (created?.squadId != null) {
+            saveDisplayFormation(created.squadId, formationName);
+          }
+          setDisplayName(formationName);
+          return created;
+        }),
+      t("weekend.createFailed", {
+        defaultValue: "Could not create your squad.",
+      }),
+    );
 
   /** Swap two slots' (slotRole, isFinisher) atomically — the only legal way
    *  to traverse XI↔finisher or trade roles, since each setSlot call must
@@ -1659,38 +1895,29 @@ export default function BudgetSquadScreen() {
             </p>
           </Card>
         ) : squad === null ? (
-          editable ? (
+          editable && isBuilderEntry(search) && !introDone ? (
+            <WeekendIntroView
+              leagueCount={weekendLeagues?.leagues.length ?? null}
+              busy={busy}
+              // Straight onto the pitch with the default shape (4-4-2,
+              // MID + ATT finishers); both stay editable there.
+              onStart={() => {
+                setIntroDone(true);
+                createWith(
+                  gate.gameweek,
+                  shapeToFormation(FORMATION_CATALOGUE[0].shape),
+                  [...DEFAULT_FINISHERS],
+                  FORMATION_CATALOGUE[0].name,
+                );
+              }}
+              onRules={() => navigate(SHELL_ROUTES.weekendHowToPlay)}
+            />
+          ) : editable ? (
             <CreateSquadView
               gwNumber={gate.gameweek.gwNumber}
               busy={busy}
               onCreate={(formation, finisherRoles, formationName) =>
-                run(
-                  () =>
-                    createSquad({
-                      gameweekId: gate.gameweek.gameweekId,
-                      context: "budget",
-                      formation,
-                      finisherRoles: [...finisherRoles],
-                    }).then((created) => {
-                      // Real server transition (ANALYTICS.md): the squad row
-                      // exists. gw_number, never identity, rides along.
-                      // `entry` splits the paid direct-to-builder funnel from
-                      // hub-entry; the redirect's tag is still on this URL.
-                      track("weekend_squad_created", {
-                        gw_number: gate.gameweek.gwNumber,
-                        entry: isBuilderEntry(search) ? "builder" : "hub",
-                      });
-                      // The chosen display name survives the reload (R2).
-                      if (created?.squadId != null) {
-                        saveDisplayFormation(created.squadId, formationName);
-                      }
-                      setDisplayName(formationName);
-                      return created;
-                    }),
-                  t("weekend.createFailed", {
-                    defaultValue: "Could not create your squad.",
-                  }),
-                )
+                createWith(gate.gameweek, formation, finisherRoles, formationName)
               }
             />
           ) : (
@@ -1798,7 +2025,8 @@ export default function BudgetSquadScreen() {
                 market={market}
                 leagues={weekendLeagues?.leagues ?? null}
                 inSquad={inSquad}
-                remaining={remaining}
+                remaining={pickerRemaining}
+                openSlots={pickerOpenSlots}
                 now={Date.now()}
                 onPick={handlePick}
                 onClose={() => setPickerSlot(null)}
@@ -1857,7 +2085,8 @@ export default function BudgetSquadScreen() {
               market={market}
               leagues={weekendLeagues?.leagues ?? null}
               inSquad={inSquad}
-              remaining={remaining}
+              remaining={pickerRemaining}
+              openSlots={pickerOpenSlots}
               now={Date.now()}
               onPick={pickerSlot === null ? undefined : handlePick}
             />

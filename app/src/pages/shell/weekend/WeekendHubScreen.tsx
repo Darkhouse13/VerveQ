@@ -148,7 +148,9 @@ export function MatchdayHero({
       {(pulse.inPlay > 0 || pulse.played > 0) && next !== null && (
         <Eyebrow className="mt-1">
           {t("weekend.pulseLine", {
-            defaultValue: "{{inPlay}} in play · {{played}} played · {{scored}} scored",
+            // Fixtures, not squads: says so, so it can't be read against the
+            // table (a scored match only moves squads holding its players).
+            defaultValue: "Matches: {{inPlay}} live · {{played}} finished · {{scored}} with points in",
             inPlay: pulse.inPlay,
             played: pulse.played,
             scored: pulse.scored,
@@ -505,7 +507,7 @@ export default function WeekendHubScreen() {
       theme="theme-weekend"
       title={t("weekend.hubTitle", { defaultValue: "The Weekend" })}
       subtitle={t("weekend.hubSubtitle", {
-        defaultValue: "Eight leagues, one squad.",
+        defaultValue: "Free fantasy football, eight leagues",
       })}
       headerRight={
         // U3: the rules screen's natural front door.

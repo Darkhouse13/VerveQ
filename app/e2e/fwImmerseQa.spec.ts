@@ -152,35 +152,25 @@ test("FW-IMMERSE A: filter bar axis, pitch, fixtures, matchday hub", async ({
   await page.waitForTimeout(400);
   await page.screenshot({ path: "e2e/artifacts/fwi-pitch-empty-380.png", fullPage: true });
 
-  // ── A1: the picker filter bar scrolls horizontally only ──
+  // ── A1 (revised W4): the picker filter bar wraps — every chip in view ──
+  // The horizontal-scroll row hid its last chips off the right edge with no
+  // affordance (onboarding walkthrough D05). It wraps now, so nothing scrolls.
   await page.getByTestId("pitch-slot-0").click();
   const row = page.getByTestId("picker-filter-row");
   await expect(row).toBeVisible({ timeout: 30_000 });
   await page.waitForTimeout(450);
   const axes = await row.evaluate((el) => ({
-    overflowX: getComputedStyle(el).overflowX,
-    overflowY: getComputedStyle(el).overflowY,
+    wrap: getComputedStyle(el).flexWrap,
     horizontal: el.scrollWidth > el.clientWidth,
+    allChipsInside: [...el.children].every((chip) => {
+      const c = chip.getBoundingClientRect();
+      const r = el.getBoundingClientRect();
+      return c.left >= r.left - 1 && c.right <= r.right + 1;
+    }),
   }));
-  expect(axes.overflowX, "chips stay reachable by horizontal scroll").toBe("auto");
-  expect(axes.overflowY, "the vertical axis is clipped, not scrollable").toBe("hidden");
-  expect(axes.horizontal, "the row genuinely overflows horizontally at 380px").toBe(true);
-
-  // Even mid-press (the translate that caused the regression) the row cannot
-  // scroll vertically.
-  const chipBox = await page.getByTestId("picker-league-chip").boundingBox();
-  await page.mouse.move(chipBox!.x + chipBox!.width / 2, chipBox!.y + chipBox!.height / 2);
-  await page.mouse.down();
-  await page.waitForTimeout(120);
-  const pressed = await row.evaluate((el) => {
-    el.scrollTop = 50;
-    const scrolled = el.scrollTop;
-    el.scrollTop = 0;
-    return { scrolled, overflow: el.scrollHeight - el.clientHeight };
-  });
-  await page.mouse.up();
-  expect(pressed.scrolled, "no vertical scroll even while a chip is pressed").toBe(0);
-  expect(pressed.overflow, "pressed translate stays inside the padding box").toBe(0);
+  expect(axes.wrap, "chips wrap onto a second line").toBe("wrap");
+  expect(axes.horizontal, "nothing overflows sideways at 380px").toBe(false);
+  expect(axes.allChipsInside, "every chip sits inside the row").toBe(true);
   await page.waitForTimeout(300);
   await page.screenshot({ path: "e2e/artifacts/fwi-picker-filter-row-380.png" });
 
