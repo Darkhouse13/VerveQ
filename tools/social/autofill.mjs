@@ -149,5 +149,13 @@ for (const date of days) {
   }
 }
 
+// FACEBOOK-ONLY daily card (owner, 2026-10-22): the day's first Who's Older
+// pair as an image whose caption links to that day's game — a format Facebook
+// can carry and Instagram can't. The reels keep going to both platforms.
+for (const date of days) {
+  if (existsSync(join(QUEUE, date, "fbdaily", "post.json"))) continue;
+  must("node", ["app/scripts/fbDailyCard.mjs", "--date", date, "--out", join(QUEUE, date, "fbdaily")], REPO);
+}
+
 must("node", ["tools/social/queue.mjs", "push", today, days[days.length - 1]], REPO);
 log("done");
