@@ -1,4 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
+import { COLD_LANDING_STATE } from "@/lib/coldLanding";
 
 /**
  * Deep-link alias for a legacy (v1) URL or a spelling variant like /vervegrid:
@@ -29,8 +30,11 @@ export function LegacyRedirect({ to }: { to: string }) {
  * visits nginx never sees (an installed PWA serves the shell from its cache).
  */
 export function DropV2Redirect() {
-  const { pathname, search, hash } = useLocation();
+  const { pathname, search, hash, key } = useLocation();
   const rest = pathname.replace(/^\/v2(?=\/|$)/, "");
   const to = rest === "" || rest === "/" ? "/home" : rest;
-  return <Navigate to={`${to}${search}${hash}`} replace />;
+  // A cold landing stays one across the hop, so the page's short link still
+  // tags it (see ShortLink in EntryRoutes).
+  const state = key === "default" ? COLD_LANDING_STATE : undefined;
+  return <Navigate to={`${to}${search}${hash}`} replace state={state} />;
 }

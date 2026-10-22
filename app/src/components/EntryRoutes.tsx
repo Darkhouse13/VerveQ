@@ -22,6 +22,7 @@ import { lazyWithRetry } from "@/lib/lazyWithRetry";
 import { Navigate, useLocation, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
+import { isColdLanding } from "@/lib/coldLanding";
 import {
   missingLettersShortLinkTarget,
   playShortLinkTarget,
@@ -81,8 +82,9 @@ export function PlayShortLinkRoute() {
  * Without children (`/older`, `/letters`) it always redirects to `target`.
  * Wrapping the page it names (`/whos-older`, `/missing-letters`, `/weekend`)
  * it redirects only on a COLD landing — the document's first route, which
- * react-router keys "default" — so a caption or bio visitor still gets the
- * `ref=` tag while an in-app tap on the same page keeps a clean URL.
+ * react-router keys "default", or a `/v2` hop from it — so a caption or bio
+ * visitor still gets the `ref=` tag while an in-app tap on the same page
+ * keeps a clean URL.
  * `force` redirects on any visit (WEEKEND's paid `?start=budget`).
  */
 function ShortLink({
@@ -94,9 +96,10 @@ function ShortLink({
   force?: (search: string) => boolean;
   children?: ReactNode;
 }) {
-  const { pathname, search, key } = useLocation();
+  const location = useLocation();
+  const { pathname, search } = location;
   if (!children) return <Navigate to={target(search)} replace />;
-  if (key === "default" || force?.(search)) {
+  if (isColdLanding(location) || force?.(search)) {
     const to = target(search);
     if (to !== `${pathname}${search}`) return <Navigate to={to} replace />;
   }

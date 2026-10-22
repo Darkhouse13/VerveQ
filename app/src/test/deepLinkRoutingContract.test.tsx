@@ -189,3 +189,38 @@ describe("App.tsx deep-link wiring (source contract)", () => {
     expect(appSource).toContain('path="/terms"');
   });
 });
+
+describe("cold landings survive the /v2 hop", () => {
+  it("tags a /v2/whos-older landing with ref=older", async () => {
+    const { WhosOlderShortLinkRoute } = await import("@/components/EntryRoutes");
+    render(
+      <MemoryRouter initialEntries={["/v2/whos-older"]}>
+        <Routes>
+          <Route path="/v2/*" element={<DropV2Redirect />} />
+          <Route
+            path="/whos-older"
+            element={<WhosOlderShortLinkRoute><div data-testid="destination" /></WhosOlderShortLinkRoute>}
+          />
+        </Routes>
+        <FullProbe />
+      </MemoryRouter>,
+    );
+    expect(screen.getByTestId("full").textContent).toBe("/whos-older?ref=older");
+  });
+
+  it("leaves an in-app visit to the page untagged", async () => {
+    const { WhosOlderShortLinkRoute } = await import("@/components/EntryRoutes");
+    render(
+      <MemoryRouter initialEntries={[{ pathname: "/whos-older", key: "inapp1" }]}>
+        <Routes>
+          <Route
+            path="/whos-older"
+            element={<WhosOlderShortLinkRoute><div data-testid="destination" /></WhosOlderShortLinkRoute>}
+          />
+        </Routes>
+        <FullProbe />
+      </MemoryRouter>,
+    );
+    expect(screen.getByTestId("full").textContent).toBe("/whos-older");
+  });
+});
