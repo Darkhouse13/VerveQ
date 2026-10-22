@@ -31,7 +31,7 @@ export default function JoinArenaModal({
       closeLabel={t("joinArena.closeAria")}
     >
       <form className="px-5 py-4 flex-1 space-y-4" onSubmit={handleSubmit}>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-meta text-muted-foreground">
           {t("joinArena.instructions")}
         </p>
 
@@ -43,7 +43,7 @@ export default function JoinArenaModal({
           placeholder="ABCD23"
           value={code}
           onChange={(e) => setCode(e.target.value)}
-          className="tracking-[0.4em] uppercase text-center text-lg font-heading"
+          className="tracking-code uppercase text-center text-title-sm font-heading"
           maxLength={128}
         />
 

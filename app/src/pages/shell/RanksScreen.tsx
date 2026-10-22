@@ -62,7 +62,7 @@ type Segment = "ladder" | "leaderboard";
 const PLAY_RANKED_TO =
   RANKED_MODE_TILES[0]?.to(BOARD_SPORT) ?? SHELL_ROUTES.play;
 
-const HERO_BG = "linear-gradient(150deg, #2a2823, #1a1916)";
+const HERO_BG = "linear-gradient(150deg, hsl(var(--rank-hero-from)), hsl(var(--rank-hero-to)))";
 
 /** Division strip (III → I). Renders ONLY when the divisions backend ships. */
 function DivisionStrip() {

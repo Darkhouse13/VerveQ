@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { Card as UiCard } from "@/components/ui/card";
 import type { Card, Fixture } from "@/lib/drawEngine";
 import type { DrawRules, DrawRunView } from "@/lib/drawApi/types";
 import { Button } from "@/components/ui/button";
@@ -119,15 +120,17 @@ export function DraftStage({ view, rules, locked, onPick }: DraftStageProps) {
           data-testid="draw-offer-row"
         >
           {offers.map((card, i) => (
-            <button
+            <UiCard
               key={`${view.rowIndex}-${card.id}`}
-              type="button"
+              interactive
+              elevation="flat"
+              padding="none"
               disabled={locked}
               onClick={() => tapOffer(i)}
               aria-pressed={selected === i}
               className={cn(
-                "draw-rip neo-border rounded-lg bg-card text-card-foreground flex-1 min-w-0",
-                "cursor-pointer active:neo-shadow-pressed text-left",
+                "draw-rip flex-1 min-w-0",
+                "cursor-pointer text-left",
                 selected === i ? "draw-offer-selected draw-outline-lime neo-shadow-lg" : "neo-shadow",
               )}
               style={
@@ -141,7 +144,7 @@ export function DraftStage({ view, rules, locked, onPick }: DraftStageProps) {
               data-selected={selected === i ? "true" : undefined}
             >
               <DrawCardFace card={card} />
-            </button>
+            </UiCard>
           ))}
         </div>
 

@@ -17,6 +17,7 @@ import { useLocation } from "react-router-dom";
 import { Globe } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import i18n, { SUPPORTED_LANGUAGES, LANGUAGE_AUTONYMS } from "@/i18n";
 import { chooseLanguage, hasChosenLanguage, markLanguageChosen } from "@/lib/languagePref";
 import { isLikelyBot, isSeoPath } from "@/lib/seoPages";
@@ -87,9 +88,9 @@ export function FirstRunLanguagePrompt() {
             </span>
           </div>
           <DialogTitle className="text-center">
-            <span className="block font-heading font-bold text-lg">Choose your language</span>
-            <span className="block font-body text-sm text-muted-foreground">Choisissez votre langue</span>
-            <span className="block font-body text-sm text-muted-foreground">Elige tu idioma</span>
+            <span className="block font-heading font-bold text-title-sm">Choose your language</span>
+            <span className="block font-body text-body-sm text-muted-foreground">Choisissez votre langue</span>
+            <span className="block font-body text-body-sm text-muted-foreground">Elige tu idioma</span>
           </DialogTitle>
           <DialogDescription className="sr-only">
             Select your preferred language for VerveQ. You can change it later in Settings.
@@ -99,20 +100,16 @@ export function FirstRunLanguagePrompt() {
           {SUPPORTED_LANGUAGES.map((lng) => {
             const selected = active === lng;
             return (
-              <button
+              <Button
                 key={lng}
-                type="button"
+                variant={selected ? "primary" : "secondary"}
+                size="md"
                 aria-pressed={selected}
                 onClick={() => pick(lng)}
-                className={cn(
-                  "flex-1 neo-border rounded-lg px-2 py-3 font-heading font-bold text-[13px] transition-all",
-                  selected
-                    ? "bg-primary text-primary-foreground neo-shadow"
-                    : "bg-card active:neo-shadow-pressed",
-                )}
+                className="flex-1 px-2"
               >
                 {LANGUAGE_AUTONYMS[lng]}
-              </button>
+              </Button>
             );
           })}
         </div>

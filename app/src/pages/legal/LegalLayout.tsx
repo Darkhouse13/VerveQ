@@ -24,22 +24,22 @@ export function LegalLayout({
       <div className="max-w-md mx-auto">
         <Link
           to="/"
-          className="neo-border neo-shadow rounded-lg p-2 bg-background mb-6 inline-flex cursor-pointer active:neo-shadow-pressed transition-all"
+          className="neo-border neo-shadow rounded-lg p-2 bg-background mb-6 inline-flex cursor-pointer active:neo-shadow-pressed transition duration-press"
           aria-label="Back to home"
         >
           <ArrowLeft size={20} strokeWidth={2.5} />
         </Link>
 
-        <h1 className="text-3xl font-heading font-bold mb-1">{title}</h1>
-        <p className="text-xs text-muted-foreground mb-6">
+        <h1 className="text-title-lg font-heading font-bold mb-1">{title}</h1>
+        <p className="text-meta text-muted-foreground mb-6">
           Last updated: {lastUpdated}
         </p>
 
-        <div className="space-y-5 text-sm leading-relaxed [&_h2]:font-heading [&_h2]:font-bold [&_h2]:text-lg [&_h2]:mt-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1 [&_p+p]:mt-2">
+        <div className="space-y-5 text-body-sm leading-relaxed [&_h2]:font-heading [&_h2]:font-bold [&_h2]:text-title-sm [&_h2]:mt-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1 [&_p+p]:mt-2">
           {children}
         </div>
 
-        <div className="mt-8 pt-4 border-t-2 border-foreground/10 text-xs text-muted-foreground space-x-3">
+        <div className="mt-8 pt-4 border-t-2 border-foreground/10 text-meta text-muted-foreground space-x-3">
           <Link to="/" className="underline underline-offset-4">
             Home
           </Link>

@@ -209,7 +209,9 @@ export function StageFrame({
             {children}
           </div>
         ) : (
-          <div className="flex-1 min-h-0 flex flex-col md:grid md:grid-cols-[1fr_28rem_1fr] md:gap-6 md:items-stretch">
+          // A finished game (ResultScreen, `data-result-screen`) gets a
+          // 48rem column for its two-column desktop layout; play keeps 28rem.
+          <div className="flex-1 min-h-0 flex flex-col md:grid md:grid-cols-[1fr_28rem_1fr] md:has-[[data-result-screen]]:grid-cols-[1fr_minmax(0,48rem)_1fr] md:gap-6 md:items-stretch">
             <aside className={cn(RAIL, "md:justify-self-end md:pr-1")}>{left}</aside>
 
             {/* Visible scrollbar: on short viewports the controls live below the
@@ -217,7 +219,7 @@ export function StageFrame({
                 overflow-x stays clipped so the pressed-state translate never
                 spawns a horizontal scrollbar — px-1.5 keeps the 4px neo shadows
                 inside the clip so cards don't look cut on the right. */}
-            <div className="w-full max-w-md mx-auto flex-1 min-h-0 md:flex-none md:h-full overflow-y-auto overflow-x-hidden px-1.5 pb-4 md:py-3">
+            <div className="w-full max-w-md md:has-[[data-result-screen]]:max-w-3xl mx-auto flex-1 min-h-0 md:flex-none md:h-full overflow-y-auto overflow-x-hidden px-1.5 pb-4 md:py-3">
               {children}
             </div>
 

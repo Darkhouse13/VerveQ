@@ -6,6 +6,8 @@
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+// The screens read real copy: initialize i18next (no primitive does it as a side effect).
+import "@/i18n";
 import { MemoryRouter } from "react-router-dom";
 import type { ReactNode } from "react";
 

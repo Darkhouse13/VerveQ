@@ -23,6 +23,9 @@ import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { BrandMark } from "@/components/ui/BrandMark";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { StaticSeoSlot } from "@/components/seo/StaticSeoSlot";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -100,39 +103,42 @@ export default function ColdEntryScreen() {
             homepage's server-rendered games/quiz/grid-answer links follow
             below it, inside this scroll area (StaticSeoSlot). */}
         <div className="min-h-full flex flex-col justify-center">
-        <div className="w-full max-w-sm mx-auto flex flex-col items-center text-center">
+        {/* Phone: one centered column. Desktop (md+): a split hero — the
+            pitch on the left, the play card on the right — instead of a
+            380px column floating on an empty canvas. */}
+        <div className="w-full max-w-sm mx-auto flex flex-col items-center text-center md:max-w-5xl md:grid md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] md:items-center md:gap-12 lg:gap-16 md:text-left">
+          <div className="flex flex-col items-center md:items-start">
           <BrandMark variant="lockup" size="md" />
           <NeoBadge color="primary" rotated size="md" className="mt-6">
             {t("landing.eyebrow")}
           </NeoBadge>
-          <h1 className="font-heading font-bold text-5xl md:text-6xl mt-4 leading-none">
+          <h1 className="font-heading font-bold text-display md:text-score mt-4 leading-none">
             {t("landing.headline")}
           </h1>
-          <p className="text-sm md:text-base text-muted-foreground mt-3 text-balance">
+          <p className="text-body-sm md:text-title-sm text-muted-foreground mt-3 md:mt-5 text-balance">
             {t("landing.subline")}
           </p>
+          </div>
+          <div className="w-full flex flex-col items-center md:neo-border md:neo-shadow-lg md:rounded-lg md:bg-card md:p-8">
           <NeoButton
             variant="primary"
             size="full"
-            className="mt-8"
+            className="mt-8 md:mt-0"
             onClick={startRound}
           >
             <ArrowRight size={18} strokeWidth={3} />
             {t("landing.play")}
           </NeoButton>
-          <p className="text-[11px] text-muted-foreground mt-3">
+          <p className="text-meta text-muted-foreground mt-3">
             {t("landing.freeNote")}
           </p>
-          <p className="mt-6 text-sm font-heading text-muted-foreground">
+          <p className="mt-6 text-body-sm font-heading text-muted-foreground">
             {t("landing.haveAccount")}{" "}
-            <button
-              type="button"
-              onClick={goSignIn}
-              className="underline underline-offset-4 hover:text-foreground"
-            >
+            <Button variant="link" onClick={goSignIn}>
               {t("landing.signIn")}
-            </button>
+            </Button>
           </p>
+          </div>
         </div>
         </div>
         <StaticSeoSlot className="w-full mt-6" />
@@ -181,17 +187,17 @@ export default function ColdEntryScreen() {
       if (!revealed) return "bg-card text-card-foreground";
       if (idx === correctIdx) return "bg-success text-success-foreground";
       if (idx === picked) return "bg-destructive text-destructive-foreground";
-      return "bg-muted text-muted-foreground opacity-50";
+      return "bg-muted text-muted-foreground is-dimmed";
     };
 
     return (
       <ShellLayout hideNav>
-        <div className="w-full max-w-md mx-auto flex flex-col min-h-full pt-2 md:pt-6">
+        <div className="w-full max-w-md md:max-w-2xl mx-auto flex flex-col min-h-full pt-2 md:pt-6">
           <div className="flex items-center justify-between mb-3">
             <NeoBadge color="primary" size="sm">
               {t("landing.roundBadge")}
             </NeoBadge>
-            <p className="font-heading font-bold text-xs">
+            <p className="font-heading font-bold text-meta">
               {t("landing.progress", {
                 current: qIndex + 1,
                 total: round.length,
@@ -199,31 +205,31 @@ export default function ColdEntryScreen() {
             </p>
           </div>
           <div className="flex items-center justify-between mb-4">
-            <p className="font-mono font-bold text-sm">
+            <p className="font-mono font-bold text-body-sm">
               {t("landing.score", { score })}
             </p>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-meta text-muted-foreground">
               {t("landing.speedHint")}
             </p>
           </div>
 
           <NeoCard shadow="lg" className="mb-5">
-            <p className="font-heading font-bold text-xl leading-tight">
+            <p className="font-heading font-bold text-title-sm leading-tight">
               {question.question}
             </p>
           </NeoCard>
 
-          <div className="space-y-2.5">
+          <div className="space-y-2.5 md:space-y-0 md:grid md:grid-cols-2 md:gap-3">
             {question.options.map((opt, idx) => (
-              <button
+              <Card
                 key={idx}
-                type="button"
+                interactive
                 data-testid="taste-option"
                 disabled={revealed}
                 onClick={() => pick(idx)}
-                className={`w-full neo-border neo-shadow rounded-lg p-4 flex items-center gap-3 text-left transition-all cursor-pointer ${!revealed ? "active:neo-shadow-pressed" : ""} ${optionStyle(idx)}`}
+                className={cn("flex items-center gap-3", optionStyle(idx))}
               >
-                <span className="neo-border rounded-full w-8 h-8 flex items-center justify-center font-heading font-bold text-xs bg-background text-foreground shrink-0">
+                <span className="neo-border rounded-full w-8 h-8 flex items-center justify-center font-heading font-bold text-meta bg-background text-foreground shrink-0">
                   {revealed && idx === correctIdx ? (
                     <Check size={16} strokeWidth={3} />
                   ) : revealed && idx === picked ? (
@@ -232,17 +238,17 @@ export default function ColdEntryScreen() {
                     OPTION_LETTERS[idx]
                   )}
                 </span>
-                <span className="font-heading font-bold text-sm">{opt}</span>
-              </button>
+                <span className="font-heading font-bold text-body-sm">{opt}</span>
+              </Card>
             ))}
           </div>
 
           {revealed && (
             <NeoCard
               color={picked === correctIdx ? "success" : "default"}
-              className="mt-4 text-sm leading-snug"
+              className="mt-4 text-body-sm leading-snug"
             >
-              <p className="font-heading font-bold text-sm">
+              <p className="font-heading font-bold text-body-sm">
                 {picked === correctIdx
                   ? t("landing.correct", { points: lastPoints })
                   : t("landing.wrong")}
@@ -269,28 +275,28 @@ export default function ColdEntryScreen() {
   // done — the DEFERRED username ask, mirroring the duel guest-claim pattern.
   return (
     <ShellLayout hideNav center>
-      <div className="w-full max-w-sm mx-auto flex flex-col items-center">
+      <div className="w-full max-w-sm mx-auto flex flex-col items-center md:max-w-3xl md:grid md:grid-cols-2 md:items-center md:gap-x-10">
         <NeoCard shadow="lg" className="w-full text-center py-8">
           <Sparkles size={28} strokeWidth={2.5} className="mx-auto mb-3" />
-          <NeoBadge color="success" rotated size="md" className="text-base px-4">
+          <NeoBadge color="success" rotated size="md" className="text-body px-4">
             {t("landing.resultBadge")}
           </NeoBadge>
-          <p className="font-mono font-bold text-4xl mt-4">{score}</p>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="font-mono font-bold text-display mt-4">{score}</p>
+          <p className="text-meta text-muted-foreground mt-1">
             {t("landing.resultCorrect", {
               correct: correctCount,
               total: TASTE_ROUND_SIZE,
             })}
           </p>
-          <p className="font-heading font-bold text-lg mt-5">
+          <p className="font-heading font-bold text-title-sm mt-5">
             {t("landing.claimTitle")}
           </p>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-body-sm text-muted-foreground mt-1">
             {t("landing.claimBody")}
           </p>
         </NeoCard>
 
-        <div className="w-full mt-6 space-y-3">
+        <div className="w-full mt-6 space-y-3 md:mt-0">
           <NeoButton variant="primary" size="full" onClick={goClaim}>
             {t("landing.claimCta")}
           </NeoButton>
@@ -307,22 +313,14 @@ export default function ColdEntryScreen() {
             {t("landing.maybeLater")}
           </NeoButton>
         </div>
-        <p className="mt-4 text-sm font-heading text-muted-foreground">
-          <button
-            type="button"
-            onClick={() => navigate(SHELL_ROUTES.home)}
-            className="underline underline-offset-4 hover:text-foreground"
-          >
+        <p className="mt-4 text-body-sm font-heading text-muted-foreground md:col-span-2 md:text-center md:mt-6">
+          <Button variant="link" onClick={() => navigate(SHELL_ROUTES.home)}>
             {t("landing.explore")}
-          </button>
+          </Button>
           {" · "}
-          <button
-            type="button"
-            onClick={goSignIn}
-            className="underline underline-offset-4 hover:text-foreground"
-          >
+          <Button variant="link" onClick={goSignIn}>
             {t("landing.signIn")}
-          </button>
+          </Button>
         </p>
       </div>
     </ShellLayout>

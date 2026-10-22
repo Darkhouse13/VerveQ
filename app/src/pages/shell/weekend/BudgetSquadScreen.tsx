@@ -244,7 +244,7 @@ export function BudgetBar({ budget }: { budget: NonNullable<BudgetSquad["budget"
           <span className="text-muted-foreground"> / {price(ceiling)}</span>
         </span>
       </div>
-      <div className="neo-border rounded h-3 overflow-hidden bg-muted/40">
+      <div className="neo-border rounded-sm h-3 overflow-hidden bg-muted/40">
         <div
           className="h-full bg-primary"
           style={{ width: `${pct}%` }}
@@ -706,7 +706,7 @@ export function PickerPanel({
                 elevation="flat"
                 padding="sm"
                 data-testid="picker-row"
-                className={cn("flex items-center justify-between gap-2", !pickable && "opacity-45")}
+                className={cn("flex items-center justify-between gap-2", !pickable && "is-dimmed")}
               >
                 {/* FW-SCOUT: the row BODY opens the detail sheet; PICK stays
                     its own sibling button so the two taps can never collide.
@@ -716,7 +716,7 @@ export function PickerPanel({
                 <Button
                   variant="ghost"
                   data-testid="picker-row-body"
-                  className="min-w-0 flex-1 flex-col items-stretch justify-center gap-0 border-0 px-0 py-0 text-left font-body font-normal hover:bg-transparent active:opacity-60"
+                  className="min-w-0 flex-1 flex-col items-stretch justify-center gap-0 border-0 px-0 py-0 text-left font-body font-normal hover:bg-transparent active:is-dimmed"
                   onClick={() => setDetailPlayer(player.playerId)}
                 >
                   <p className="font-heading font-bold text-body-sm truncate">

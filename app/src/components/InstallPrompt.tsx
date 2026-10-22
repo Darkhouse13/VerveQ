@@ -17,7 +17,9 @@
  * the desktop Home is height-budgeted.
  */
 import { useState, useSyncExternalStore } from "react";
-import { Download, Share, X } from "lucide-react";
+import { Download, Share } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CloseButton } from "@/components/ui/icon-button";
 import {
   getDeferredInstallPrompt,
   hasDismissedInstall,
@@ -68,7 +70,7 @@ export function InstallPrompt() {
           )}
         </span>
 
-        <p className="font-body min-w-0 flex-1 text-sm leading-tight">
+        <p className="font-body min-w-0 flex-1 text-body-sm leading-tight">
           {mode === "android" ? (
             <span className="font-heading font-bold">Install VerveQ</span>
           ) : (
@@ -83,23 +85,16 @@ export function InstallPrompt() {
         </p>
 
         {mode === "android" && (
-          <button
-            type="button"
-            onClick={() => void install()}
-            className="neo-border font-heading bg-accent text-accent-foreground shrink-0 rounded-lg px-3 py-1.5 text-sm font-bold"
-          >
+          <Button size="sm" onClick={() => void install()} className="shrink-0 px-3">
             Install
-          </button>
+          </Button>
         )}
 
-        <button
-          type="button"
+        <CloseButton
           onClick={dismiss}
           aria-label="Dismiss install prompt"
-          className="text-muted-foreground shrink-0 p-1"
-        >
-          <X size={18} strokeWidth={2.5} />
-        </button>
+          className="text-muted-foreground"
+        />
       </div>
     </div>
   );

@@ -18,6 +18,8 @@ import { useQuery } from "convex/react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoAvatar } from "@/components/neo/NeoAvatar";
 import { NeoBadge } from "@/components/neo/NeoBadge";
+import { Chip } from "@/components/ui/chip";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
@@ -64,19 +66,15 @@ function ModeChip({
   onPick: (m: Mode) => void;
 }) {
   return (
-    <button
-      type="button"
+    <Chip
+      selected={active}
       onClick={() => onPick(mode)}
       // Cream, not lime, when picked: inside Ranks the lime belongs to the
       // Ladder | Leaderboard segment above, one level up.
-      className={`neo-border rounded-full px-3 min-h-11 text-eyebrow font-heading font-bold uppercase cursor-pointer transition-colors ${
-        active
-          ? "bg-foreground text-background neo-shadow-sm"
-          : "bg-background text-foreground"
-      }`}
+      className={cn("px-3 text-eyebrow uppercase", !active && "bg-background text-foreground")}
     >
       {label}
-    </button>
+    </Chip>
   );
 }
 
@@ -241,10 +239,10 @@ export function LeaderboardBoard() {
       ) : rows.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">
           <NeoCard className="text-center py-10 px-8">
-            <p className="font-heading font-bold text-lg">
+            <p className="font-heading font-bold text-title-sm">
               {t("leaderboard.emptyTitle", { defaultValue: "No entries yet" })}
             </p>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-body-sm text-muted-foreground mt-1">
               {t("leaderboard.emptyBody", { defaultValue: "Be the first to play!" })}
             </p>
           </NeoCard>
@@ -260,7 +258,7 @@ export function LeaderboardBoard() {
                 <div key={p.rank} className="flex flex-col items-center w-[30%] max-w-[150px] min-w-0">
                   {first && <Crown size={20} strokeWidth={2.5} className="text-primary mb-1" />}
                   <NeoAvatar name={p.username} size={first ? "lg" : "md"} />
-                  <p className={`font-heading font-bold text-xs mt-1.5 truncate max-w-full ${isMe ? "underline underline-offset-2" : ""}`}>
+                  <p className={`font-heading font-bold text-meta mt-1.5 truncate max-w-full ${isMe ? "underline underline-offset-2" : ""}`}>
                     {p.username}
                   </p>
                   <p className="font-mono font-bold text-eyebrow">
@@ -278,7 +276,7 @@ export function LeaderboardBoard() {
                             "h-8 bg-orange text-ink"
                     }`}
                   >
-                    <span className="font-heading font-bold text-xl leading-none pt-1.5">{p.rank}</span>
+                    <span className="font-heading font-bold text-title-sm leading-none pt-1.5">{p.rank}</span>
                   </div>
                 </div>
               );
@@ -300,7 +298,7 @@ export function LeaderboardBoard() {
             </div>
             <div className="md:flex-1 md:min-h-0 md:overflow-y-auto overflow-x-hidden">
               {chase.length === 0 ? (
-                <p className="text-center text-xs text-muted-foreground py-6 px-4">
+                <p className="text-center text-meta text-muted-foreground py-6 px-4">
                   {t("leaderboard.chaseEmpty", {
                     defaultValue: "The podium is the whole field — go climb it.",
                   })}
@@ -316,9 +314,9 @@ export function LeaderboardBoard() {
                         isMe ? "bg-primary text-primary-foreground" : ""
                       }`}
                     >
-                      <span className="font-mono font-bold text-sm w-7 text-right shrink-0">{r.rank}</span>
+                      <span className="font-mono font-bold text-body-sm w-7 text-right shrink-0">{r.rank}</span>
                       <NeoAvatar name={r.username} size="sm" />
-                      <p className="font-heading font-bold text-sm flex-1 min-w-0 truncate">
+                      <p className="font-heading font-bold text-body-sm flex-1 min-w-0 truncate">
                         {r.username}
                         {isMe && t("leaderboard.youSuffix", { defaultValue: " (you)" })}
                       </p>
@@ -334,7 +332,7 @@ export function LeaderboardBoard() {
                           {r.badge}
                         </NeoBadge>
                       )}
-                      <span className="font-mono font-bold text-sm shrink-0">
+                      <span className="font-mono font-bold text-body-sm shrink-0">
                         {formatValue(r.value)}{" "}
                         <span className="text-muted-foreground uppercase text-eyebrow">{unit}</span>
                       </span>
@@ -346,11 +344,11 @@ export function LeaderboardBoard() {
             {/* My standing, pinned under the list when I'm ranked. */}
             {myRow && (
               <div className="shrink-0 border-t-[3px] border-border bg-muted text-foreground flex items-center gap-2.5 px-3.5 py-2">
-                <span className="font-mono font-bold text-sm w-7 text-right shrink-0">{myRow.rank}</span>
-                <p className="font-heading font-bold text-sm flex-1 min-w-0 truncate">
+                <span className="font-mono font-bold text-body-sm w-7 text-right shrink-0">{myRow.rank}</span>
+                <p className="font-heading font-bold text-body-sm flex-1 min-w-0 truncate">
                   {t("leaderboard.you", { defaultValue: "You" })}
                 </p>
-                <span className="font-mono font-bold text-sm">
+                <span className="font-mono font-bold text-body-sm">
                   {formatValue(myRow.value)}{" "}
                   <span className="text-muted-foreground uppercase text-eyebrow">{unit}</span>
                 </span>

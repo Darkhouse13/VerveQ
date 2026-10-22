@@ -12,6 +12,60 @@ export default {
         "2xl": "1400px",
       },
     },
+    /*
+     * LOCKDOWN (VerveQ ONE P5.1). These scales REPLACE Tailwind's defaults
+     * instead of extending them, so an off-system size, radius, shadow, layer
+     * or duration has no class to reach for. Arbitrary values for the same
+     * properties (text-[Npx], rounded-[…], shadow-[…], tracking-[…]) are ESLint
+     * errors (eslint.config.js, DESIGN_LOCKDOWN), and the design ratchet
+     * (scripts/designRatchet.mjs) holds every off-system pattern count at zero.
+     */
+    // The type scale (spec: 12px floor, eyebrow only).
+    fontSize: {
+      eyebrow: ["12px", { lineHeight: "16px", letterSpacing: "0.12em" }],
+      meta: ["13px", { lineHeight: "18px" }],
+      "body-sm": ["14px", { lineHeight: "20px" }],
+      body: ["16px", { lineHeight: "24px" }],
+      "title-sm": ["18px", { lineHeight: "24px" }],
+      title: ["22px", { lineHeight: "28px" }],
+      "title-lg": ["28px", { lineHeight: "32px" }],
+      display: ["40px", { lineHeight: "44px" }],
+      score: ["64px", { lineHeight: "64px" }],
+    },
+    // Radii from the one --radius token (8px), plus pills and square corners.
+    borderRadius: {
+      none: "0px",
+      sm: "calc(var(--radius) - 4px)",
+      md: "calc(var(--radius) - 2px)",
+      lg: "var(--radius)",
+      full: "9999px",
+    },
+    // Hard offset shadows only (the same values as .neo-shadow* in index.css).
+    boxShadow: {
+      none: "none",
+      "neo-sm": "2px 2px 0px 0px hsl(var(--neo-shadow-color))",
+      neo: "var(--neo-shadow-x) var(--neo-shadow-y) 0px 0px hsl(var(--neo-shadow-color))",
+      "neo-lg": "6px 6px 0px 0px hsl(var(--neo-shadow-color))",
+    },
+    // Named layers. Every overlay sat on z-50 before; sheets, toasts and
+    // flashes now stack in a known order.
+    zIndex: {
+      auto: "auto",
+      0: "0",
+      raised: "10",
+      nav: "30",
+      frame: "40",
+      overlay: "50",
+      sheet: "60",
+      toast: "70",
+    },
+    transitionDuration: {
+      // What a bare `transition` class uses (Tailwind's own default).
+      DEFAULT: "150ms",
+      press: "120ms",
+      ui: "200ms",
+      reveal: "400ms",
+    },
     extend: {
       fontFamily: {
         heading: ["Space Grotesk", "sans-serif"],
@@ -86,42 +140,11 @@ export default {
         },
         "mode-accent": "hsl(var(--mode-accent))",
       },
-      // The type scale (spec: 12px floor, eyebrow only). Replaces the
-      // one-off text-[Npx] sizes the design ratchet counts down.
-      fontSize: {
-        eyebrow: ["12px", { lineHeight: "16px", letterSpacing: "0.12em" }],
-        meta: ["13px", { lineHeight: "18px" }],
-        "body-sm": ["14px", { lineHeight: "20px" }],
-        body: ["16px", { lineHeight: "24px" }],
-        "title-sm": ["18px", { lineHeight: "24px" }],
-        title: ["22px", { lineHeight: "28px" }],
-        "title-lg": ["28px", { lineHeight: "32px" }],
-        display: ["40px", { lineHeight: "44px" }],
-        score: ["64px", { lineHeight: "64px" }],
-      },
       // The VERVEQ wordmark's wide tracking (components/ui/BrandMark).
       letterSpacing: {
         brand: "0.18em",
-      },
-      // Named layers. Every overlay sat on z-50 before; sheets, toasts and
-      // flashes now stack in a known order.
-      zIndex: {
-        raised: "10",
-        nav: "30",
-        frame: "40",
-        overlay: "50",
-        sheet: "60",
-        toast: "70",
-      },
-      transitionDuration: {
-        press: "120ms",
-        ui: "200ms",
-        reveal: "400ms",
-      },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        // Room / join codes: one character per cell.
+        code: "0.4em",
       },
       keyframes: {
         "badge-land": {

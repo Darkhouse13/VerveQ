@@ -1,7 +1,8 @@
 import { useState, useRef } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { X, Upload, ImageIcon } from "lucide-react";
+import { Upload, ImageIcon } from "lucide-react";
+import { CloseButton } from "@/components/ui/icon-button";
 import type { Id } from "../../convex/_generated/dataModel";
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
@@ -116,13 +117,11 @@ export function ImageDropzone({ imageId, onUpload, onRemove }: ImageDropzoneProp
     return (
       <div className="relative neo-border p-2">
         <img src={preview} alt="Upload preview" className="w-full object-contain max-h-40" />
-        <button
-          type="button"
+        <CloseButton
+          variant="secondary"
           onClick={handleRemove}
-          className="absolute top-3 right-3 neo-border rounded-full w-7 h-7 flex items-center justify-center bg-destructive text-destructive-foreground cursor-pointer"
-        >
-          <X size={14} strokeWidth={3} />
-        </button>
+          className="absolute top-3 right-3 rounded-full bg-destructive text-destructive-foreground enabled:hover:bg-destructive"
+        />
       </div>
     );
   }
@@ -133,9 +132,9 @@ export function ImageDropzone({ imageId, onUpload, onRemove }: ImageDropzoneProp
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
-        className={`relative neo-border border-dashed p-6 text-center cursor-pointer transition-all ${
+        className={`relative neo-border border-dashed p-6 text-center cursor-pointer transition-colors duration-ui ${
           dragOver ? "bg-accent/20 border-primary" : "bg-background"
-        } ${uploading ? "opacity-50 pointer-events-none" : ""}`}
+        } ${uploading ? "is-dimmed pointer-events-none" : ""}`}
       >
         <input
           ref={inputRef}
@@ -150,7 +149,7 @@ export function ImageDropzone({ imageId, onUpload, onRemove }: ImageDropzoneProp
           }}
         />
         {uploading ? (
-          <p className="font-heading font-bold text-sm uppercase animate-pulse">
+          <p className="font-heading font-bold text-body-sm uppercase animate-pulse">
             UPLOADING...
           </p>
         ) : (
@@ -159,17 +158,17 @@ export function ImageDropzone({ imageId, onUpload, onRemove }: ImageDropzoneProp
               <ImageIcon size={20} strokeWidth={2.5} />
               <Upload size={20} strokeWidth={2.5} />
             </div>
-            <p className="font-heading font-bold text-xs uppercase">
+            <p className="font-heading font-bold text-eyebrow uppercase">
               Drop image or tap to upload
             </p>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-meta text-muted-foreground">
               JPG, PNG, WebP, HEIC - Max 2MB
             </p>
           </div>
         )}
       </div>
       {error && (
-        <p className="text-destructive font-heading font-bold text-xs mt-2">
+        <p className="text-destructive font-heading font-bold text-meta mt-2">
           {error}
         </p>
       )}

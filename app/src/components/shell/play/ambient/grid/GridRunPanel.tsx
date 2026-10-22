@@ -24,19 +24,24 @@ function Stat({
   return (
     <div
       className={cn(
-        "neo-border rounded-lg px-2 py-2.5 text-center flex-1 min-w-0",
+        // A row, not a column tile: at the 12px type floor three tiles
+        // side by side clipped "GUESSES" / "remaining" in a 16rem rail.
+        "neo-border rounded-lg px-3 py-2 flex items-center justify-between gap-3 min-w-0",
+        // Filled tones carry .on-fill so their muted labels go dark too.
         tone === "alert"
-          ? "bg-foreground text-background"
+          ? "bg-foreground text-background on-fill"
           : tone === "highlight"
-            ? "bg-mode-accent text-ink"
+            ? "bg-mode-accent text-ink on-fill"
             : "bg-card text-card-foreground",
       )}
     >
-      <p className="text-[9px] font-heading font-bold uppercase tracking-wide leading-none opacity-80">
+      <div className="min-w-0">
+      <p className="text-eyebrow font-heading font-bold uppercase leading-none text-muted-foreground">
         {label}
       </p>
-      <p className="font-heading font-bold text-2xl leading-none mt-1.5">{value}</p>
-      {sub && <p className="font-mono text-[8px] mt-1.5 opacity-70 leading-none">{sub}</p>}
+      {sub && <p className="font-mono text-meta mt-1 text-muted-foreground leading-none truncate">{sub}</p>}
+      </div>
+      <p className="font-heading font-bold text-title leading-none shrink-0 tabular-nums">{value}</p>
     </div>
   );
 }
@@ -58,9 +63,9 @@ export function GridRunPanel({
   const { t } = useTranslation("play");
   return (
     <div className="space-y-4">
-      <section className="neo-border neo-shadow rounded-xl bg-background p-3.5 space-y-3">
+      <section className="neo-border neo-shadow rounded-lg bg-background p-3.5 space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-[10px] font-heading font-bold uppercase tracking-wide text-muted-foreground">
+          <p className="text-eyebrow font-heading font-bold uppercase text-muted-foreground">
             {t("ambient.yourRun")}
           </p>
           <span className="neo-border rounded-full bg-card text-card-foreground px-2 py-0.5 font-mono font-bold text-eyebrow tracking-normal">
@@ -68,7 +73,7 @@ export function GridRunPanel({
           </span>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2">
           <Stat
             label={t("ambient.guesses")}
             value={stats.guessesLeft}
@@ -82,12 +87,12 @@ export function GridRunPanel({
         <div className="border-t-[3px] border-border" />
 
         <div>
-          <p className="text-[9px] font-heading font-bold uppercase tracking-wide text-muted-foreground mb-2">
+          <p className="text-eyebrow font-heading font-bold uppercase text-muted-foreground mb-2">
             {t("ambient.difficultyScale")}
           </p>
           <div className="flex flex-wrap gap-x-3 gap-y-1.5">
             {LEGEND.map((l) => (
-              <span key={l.id} className="inline-flex items-center gap-1.5 font-mono text-[9px] font-bold">
+              <span key={l.id} className="inline-flex items-center gap-1.5 font-mono text-meta font-bold">
                 <span className={cn("w-2.5 h-2.5 rounded-sm border-2 border-border", l.dot)} />
                 {t(l.labelKey)}
                 <span className="text-muted-foreground font-normal">{t("ambient.pts", { count: l.worth })}</span>
@@ -97,11 +102,11 @@ export function GridRunPanel({
         </div>
       </section>
 
-      <section className="neo-border neo-shadow rounded-xl bg-muted p-3.5">
-        <p className="text-[10px] font-heading font-bold uppercase tracking-wide text-muted-foreground mb-1.5">
+      <section className="neo-border neo-shadow rounded-lg bg-muted p-3.5">
+        <p className="text-eyebrow font-heading font-bold uppercase text-muted-foreground mb-1.5">
           {t("ambient.howItWorks")}
         </p>
-        <p className="text-xs leading-relaxed text-foreground/80">
+        <p className="text-meta leading-relaxed text-foreground/80">
           <Trans
             i18nKey="ambient.howItWorksBody"
             ns="play"
@@ -110,7 +115,7 @@ export function GridRunPanel({
           />
         </p>
         {timeLabel && (
-          <p className="font-mono text-[10px] text-muted-foreground mt-2">⏱ {timeLabel}</p>
+          <p className="font-mono text-meta text-muted-foreground mt-2">⏱ {timeLabel}</p>
         )}
       </section>
     </div>

@@ -264,7 +264,7 @@ describe("THE WEEKEND tab (decision 10)", () => {
   it("stays lit across the hub's sub-screens and fires nothing when already there", async () => {
     const { getByText } = renderNav(ShellNav, SHELL_ROUTES.weekendSquad);
     const tab = getByText("nav.weekend").closest("button")!;
-    expect(tab.className).toContain("text-[hsl(75_100%_55%)]");
+    expect(tab.className).toContain("text-lime");
     await act(async () => {
       tab.click();
     });

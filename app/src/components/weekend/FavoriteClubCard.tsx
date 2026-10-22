@@ -110,7 +110,7 @@ export function FavoriteClubCard() {
           <Heart size={18} strokeWidth={2.5} aria-hidden />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-heading font-bold text-base leading-tight">
+          <p className="font-heading font-bold text-body leading-tight">
             {t("weekend.favoriteClubTitle", { defaultValue: "Favorite club" })}
             <span className="text-primary">
               {" · "}
@@ -147,7 +147,7 @@ export function FavoriteClubCard() {
           <Heart size={18} strokeWidth={2.5} aria-hidden />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-heading font-bold text-base leading-tight">
+          <p className="font-heading font-bold text-body leading-tight">
             {t("weekend.favoriteClubTitle", { defaultValue: "Favorite club" })}
           </p>
           <p className="text-meta text-muted-foreground mt-0.5">

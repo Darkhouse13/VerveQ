@@ -69,6 +69,48 @@ const ANSWER_LEAK_GUARD = [
   { selector: `JSXAttribute[name.name=/${LEAK_RE}/]`, message: LEAK_MESSAGE },
 ];
 
+/**
+ * Design lockdown (VerveQ ONE P5.1).
+ *
+ * tailwind.config.ts REPLACES the type, radius, shadow, z-index and duration
+ * scales, so an off-system value has no named class. The remaining escape
+ * hatch is Tailwind's arbitrary-value syntax; these selectors close it for
+ * the four the design ratchet guards: pixel font sizes `text-[13px]`, any
+ * `shadow-[…]`, any `rounded-[…]` (incl. per-corner) and any `tracking-[…]`.
+ *
+ * Scope: the strings a class list is written in — a JSX `className` /
+ * `class` attribute (plain, in `{…}`, or any string/template nested in an
+ * expression there, e.g. `cn("…", on && "…")`) and the arguments of the
+ * class builders `cn` / `cva` / `clsx` / `cx`. Variant prefixes (`md:`,
+ * `hover:`, `!`) are covered. Proven by eslint-fixtures/designLockdown.
+ */
+const LOCKDOWN_CLASS_RE =
+  "(^|[\\s:!\"'`])-?(text-\\[[0-9.]+(px|rem|em)\\]|shadow-\\[|rounded(-[a-z]{1,2})?-\\[|tracking-\\[)";
+const LOCKDOWN_MESSAGE =
+  "Design lockdown: no arbitrary text-[Npx] / shadow-[…] / rounded-[…] / tracking-[…]. " +
+  "Use the named scale (text-eyebrow…text-score, rounded-sm/md/lg/full, neo-shadow*, " +
+  "tracking-brand/code) from tailwind.config.ts.";
+const CLASS_CONTAINERS = [
+  "JSXAttribute[name.name=/^(className|class)$/]",
+  "CallExpression[callee.name=/^(cn|cva|clsx|cx)$/]",
+];
+const DESIGN_LOCKDOWN = CLASS_CONTAINERS.flatMap((container) => [
+  { selector: `${container} Literal[value=/${LOCKDOWN_CLASS_RE}/]`, message: LOCKDOWN_MESSAGE },
+  { selector: `${container} TemplateElement[value.raw=/${LOCKDOWN_CLASS_RE}/]`, message: LOCKDOWN_MESSAGE },
+]);
+
+/** Test-seam rules for test code and every fixture (kept when a later block re-sets the rule). */
+const TEST_SEAM_RULES = [
+  {
+    "selector": "TSTypeReference[typeName.name='Parameters']",
+    "message": "Prefer explicit named testing seams (exported interfaces/types) over brittle 'Parameters<typeof ...>' inference in test code. See curatedParityFixtures.ts for a reference example."
+  },
+  {
+    "selector": "TSTypeReference[typeName.name='ReturnType']",
+    "message": "Prefer explicit named testing seams (exported interfaces/types) over brittle 'ReturnType<typeof ...>' inference in test code. See curatedParityFixtures.ts for a reference example."
+  }
+];
+
 export default tseslint.config(
   { ignores: ["dist", "convex/_generated/**", ".ops/**", "scripts/vendor/**"] },
   {
@@ -108,18 +150,27 @@ export default tseslint.config(
       "eslint-fixtures/**/*.tsx",
     ],
     rules: {
-      "no-restricted-syntax": [
-        "error",
-        {
-          "selector": "TSTypeReference[typeName.name='Parameters']",
-          "message": "Prefer explicit named testing seams (exported interfaces/types) over brittle 'Parameters<typeof ...>' inference in test code. See curatedParityFixtures.ts for a reference example."
-        },
-        {
-          "selector": "TSTypeReference[typeName.name='ReturnType']",
-          "message": "Prefer explicit named testing seams (exported interfaces/types) over brittle 'ReturnType<typeof ...>' inference in test code. See curatedParityFixtures.ts for a reference example."
-        }
-      ]
+      "no-restricted-syntax": ["error", ...TEST_SEAM_RULES],
     }
+  },
+  {
+    // Design lockdown (see DESIGN_LOCKDOWN above). Flat config REPLACES a rule's
+    // options per block, so the ambient block below repeats these selectors.
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/test/**"],
+    rules: {
+      "no-restricted-syntax": ["error", ...DESIGN_LOCKDOWN],
+    },
+  },
+  {
+    // The lockdown's proof: every violation in the fixture carries an
+    // eslint-disable-next-line, and an UNUSED directive is an error here, so
+    // `npm run lint` fails the moment a selector stops firing.
+    files: ["eslint-fixtures/designLockdown/**/*.{ts,tsx}"],
+    linterOptions: { reportUnusedDisableDirectives: "error" },
+    rules: {
+      "no-restricted-syntax": ["error", ...TEST_SEAM_RULES, ...DESIGN_LOCKDOWN],
+    },
   },
   {
     // VerveQ ONE design system: overlays and toasts go through the primitives
@@ -160,7 +211,7 @@ export default tseslint.config(
       "eslint-fixtures/ambientPanels/**/*.{ts,tsx}",
     ],
     rules: {
-      "no-restricted-syntax": ["error", ...ANSWER_LEAK_GUARD],
+      "no-restricted-syntax": ["error", ...ANSWER_LEAK_GUARD, ...DESIGN_LOCKDOWN],
     },
   }
 );

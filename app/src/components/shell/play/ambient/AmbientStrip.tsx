@@ -24,7 +24,7 @@ export function AmbientStrip({
 
   return (
     <div className="md:hidden space-y-1.5">
-      <div className="flex items-center justify-between gap-2 font-mono font-bold text-xs">
+      <div className="flex items-center justify-between gap-2 font-mono font-bold text-meta">
         {metrics?.seconds !== undefined ? (
           <span className="inline-flex items-center gap-1">
             <Clock size={13} strokeWidth={3} />
@@ -58,7 +58,7 @@ export function AmbientStrip({
         <div className="neo-border rounded-lg bg-card overflow-hidden h-2">
           <div
             className={cn(
-              "h-full transition-[width] duration-200 ease-linear",
+              "h-full transition-[width] duration-ui ease-linear",
               pct < 0.25 ? "bg-destructive" : pct < 0.5 ? "bg-accent" : "bg-success",
             )}
             style={{ width: `${pct * 100}%` }}

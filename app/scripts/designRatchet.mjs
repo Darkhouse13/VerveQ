@@ -59,6 +59,98 @@ export const PATTERNS = {
 const PRIMITIVE_DIR = "src/components/ui/";
 const PRIMITIVE_EXEMPT = new Set(["rawButton", "radixDialog"]);
 
+/**
+ * Legitimate exceptions (VerveQ ONE P5.1), each named with its reason. An
+ * entry excuses at most `count` occurrences of `pattern` in `file`, and only
+ * on lines matching `line` when given. Anything beyond is counted as usual, so
+ * a second hand-rolled frame in the same file still fails the ratchet. Never
+ * dodge a regex by renaming a class: add the case here, where review sees it.
+ * The ratchet test also fails on an entry that no longer excuses anything.
+ */
+export const ALLOWLIST = [
+  {
+    file: "src/components/shell/play/PlayStage.tsx",
+    pattern: "fixedInset",
+    count: 2,
+    reason: "StageFrame IS the in-game fixed-inset frame every mode renders inside (class + its doc comment)",
+  },
+  {
+    file: "src/components/shell/ShellLayout.tsx",
+    pattern: "fixedInset",
+    count: 2,
+    reason: "ShellLayout IS the hub fixed-inset frame (Home, Ranks, Profile, Settings) (class + its doc comment)",
+  },
+  {
+    file: "src/components/learn/LearnPrimitives.tsx",
+    pattern: "fixedInset",
+    count: 1,
+    reason: "LearnShell IS the Learn hub fixed-inset frame (Learn runs use StageFrame)",
+  },
+  {
+    file: "src/components/ui/overlay.tsx",
+    pattern: "fixedInset",
+    count: 1,
+    reason: "the Overlay primitive's own scrim, which every Dialog / Sheet / FullscreenFlow goes through",
+  },
+  {
+    file: "src/App.tsx",
+    pattern: "fixedInset",
+    count: 1,
+    line: /shell frames/,
+    reason: "a JSX comment naming the shell frames, not a class",
+  },
+  {
+    file: "src/index.css",
+    pattern: "hex",
+    count: 2,
+    line: /^\s*\*/,
+    reason: "the token documentation comment quotes the brand hex values the HSL tokens encode",
+  },
+  {
+    file: "src/components/shell/play/grid/GridBoard.tsx",
+    pattern: "rawButton",
+    count: 1,
+    reason: "an empty VerveGrid board cell: the board's grid lines are its border, so it is neither a Button nor a Card",
+  },
+  {
+    file: "src/pages/shell/play/MissingLettersPlayScreen.tsx",
+    pattern: "rawButton",
+    count: 1,
+    reason: "a letter blank on the word board, sized per word by the board's fit math, not a Button or Card",
+  },
+];
+
+function allowlistFor(rel, name) {
+  return ALLOWLIST.filter((e) => e.file === rel && e.pattern === name);
+}
+
+/**
+ * Count `re` in `text`, minus what the allowlist entries excuse. Returns the
+ * remaining count and, per entry, how many occurrences it excused.
+ */
+function countWithAllowlist(text, re, entries) {
+  const budget = entries.map((e) => e.count ?? Infinity);
+  const used = entries.map(() => 0);
+  let n = 0;
+  for (const line of text.split("\n")) {
+    for (let k = (line.match(re) ?? []).length; k > 0; k--) {
+      const i = entries.findIndex((e, j) => used[j] < budget[j] && (!e.line || e.line.test(line)));
+      if (i === -1) n++;
+      else used[i]++;
+    }
+  }
+  return { n, used };
+}
+
+/** Per allowlist entry, how many occurrences it excuses today (0 = stale). */
+export function allowlistUsage() {
+  return ALLOWLIST.map((entry) => {
+    const text = readFileSync(path.join(APP_ROOT, entry.file), "utf8");
+    const { used } = countWithAllowlist(text, PATTERNS[entry.pattern], [entry]);
+    return { ...entry, used: used[0] };
+  });
+}
+
 const EXTS = new Set([".ts", ".tsx", ".css"]);
 // Tests, generated code and the token sources themselves are out of scope.
 const SKIP_DIRS = new Set(["test", "node_modules"]);
@@ -86,7 +178,8 @@ export function countAll() {
     const counts = {};
     for (const [name, re] of Object.entries(PATTERNS)) {
       if (isPrimitive && PRIMITIVE_EXEMPT.has(name)) continue;
-      const n = (text.match(re) ?? []).length;
+      const entries = allowlistFor(rel, name);
+      const n = entries.length > 0 ? countWithAllowlist(text, re, entries).n : (text.match(re) ?? []).length;
       if (n > 0) counts[name] = n;
     }
     if (Object.keys(counts).length > 0) {

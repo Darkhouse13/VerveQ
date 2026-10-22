@@ -9,6 +9,9 @@ import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { FullscreenFlow } from "@/components/ui/fullscreen-flow";
+import { Card } from "@/components/ui/card";
+import { IconButton } from "@/components/ui/icon-button";
+import { cn } from "@/lib/utils";
 import { api } from "../../../convex/_generated/api";
 import {
   ARENA_CATEGORY_OPTIONS,
@@ -44,29 +47,29 @@ function Stepper({
 }) {
   return (
     <div className="flex items-center justify-between">
-      <p className="font-heading font-bold text-sm">{label}</p>
+      <p className="font-heading font-bold text-body-sm">{label}</p>
       <div className="flex items-center gap-3">
-        <button
-          type="button"
+        <IconButton
+          variant="secondary"
           onClick={onDec}
           disabled={!canDec}
           aria-label={`${label} −`}
-          className="neo-border neo-shadow rounded-lg w-9 h-9 bg-background inline-flex items-center justify-center cursor-pointer active:neo-shadow-pressed disabled:opacity-40 disabled:cursor-not-allowed disabled:active:neo-shadow"
+          className="disabled:is-dimmed"
         >
-          <Minus size={16} strokeWidth={3} />
-        </button>
-        <span className="font-mono font-bold text-base w-6 text-center tabular-nums">
+          <Minus strokeWidth={3} />
+        </IconButton>
+        <span className="font-mono font-bold text-body w-6 text-center tabular-nums">
           {value}
         </span>
-        <button
-          type="button"
+        <IconButton
+          variant="secondary"
           onClick={onInc}
           disabled={!canInc}
           aria-label={`${label} +`}
-          className="neo-border neo-shadow rounded-lg w-9 h-9 bg-background inline-flex items-center justify-center cursor-pointer active:neo-shadow-pressed disabled:opacity-40 disabled:cursor-not-allowed disabled:active:neo-shadow"
+          className="disabled:is-dimmed"
         >
-          <Plus size={16} strokeWidth={3} />
-        </button>
+          <Plus strokeWidth={3} />
+        </IconButton>
       </div>
     </div>
   );
@@ -165,7 +168,7 @@ export default function CreateArenaModal({
         </NeoButton>
       }
     >
-      <p className="text-xs text-muted-foreground mb-3">
+      <p className="text-meta text-muted-foreground mb-3">
         {t("createArena.pickModeHint")}
       </p>
 
@@ -178,10 +181,10 @@ export default function CreateArenaModal({
             className="flex items-center justify-between !p-3"
           >
             <div className="min-w-0">
-              <p className="font-heading font-bold text-sm leading-tight">
+              <p className="font-heading font-bold text-body-sm leading-tight">
                 {t(`createArena.mode_${opt.key}_label`, { defaultValue: opt.label })}
               </p>
-              <p className="text-[11px] opacity-90 truncate leading-tight mt-0.5">
+              <p className="text-meta text-muted-foreground truncate leading-tight mt-0.5">
                 {t(`createArena.mode_${opt.key}_desc`, { defaultValue: opt.description })}
               </p>
             </div>
@@ -195,7 +198,7 @@ export default function CreateArenaModal({
         ))}
       </div>
 
-      <p className="font-heading font-bold text-xs uppercase tracking-wide mt-5 mb-2">
+      <p className="font-heading font-bold text-eyebrow uppercase mt-5 mb-2">
         {t("createArena.formatHeading", { defaultValue: "Format" })}
       </p>
 
@@ -218,7 +221,7 @@ export default function CreateArenaModal({
           canDec={perRound > ARENA_MIN_PER_ROUND}
           canInc={canIncPerRound}
         />
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-meta text-muted-foreground">
           {t("createArena.totalSummary", {
             defaultValue: "{{total}} questions total (max {{max}}).",
             total,
@@ -227,10 +230,10 @@ export default function CreateArenaModal({
         </p>
       </NeoCard>
 
-      <p className="font-heading font-bold text-xs uppercase tracking-wide mt-5 mb-1">
+      <p className="font-heading font-bold text-eyebrow uppercase mt-5 mb-1">
         {t("createArena.subjectsHeading", { defaultValue: "Subjects" })}
       </p>
-      <p className="text-[11px] text-muted-foreground mb-2">
+      <p className="text-meta text-muted-foreground mb-2">
         {t("createArena.subjectsHint", {
           defaultValue: "Rounds rotate through the subjects you pick.",
         })}{" "}
@@ -245,37 +248,35 @@ export default function CreateArenaModal({
           const selected = subjects.includes(opt.key);
           const disabled = !selected && atSubjectCap;
           return (
-            <button
+            <Card
               key={opt.key}
-              type="button"
+              interactive
+              padding="none"
               onClick={() => toggleSubject(opt.key)}
               aria-pressed={selected}
               disabled={disabled}
-              className={`neo-border rounded-lg p-2.5 text-left flex items-start gap-2 transition-colors ${
-                selected
-                  ? "bg-primary text-primary-foreground neo-shadow cursor-pointer"
-                  : disabled
-                    ? "bg-background neo-shadow opacity-40 cursor-not-allowed"
-                    : "bg-background neo-shadow active:neo-shadow-pressed cursor-pointer"
-              }`}
+              className={cn(
+                "p-2.5 flex items-start gap-2",
+                selected ? "bg-primary text-primary-foreground on-fill" : "bg-background disabled:is-dimmed",
+              )}
             >
-              <span className="text-lg leading-none mt-0.5">{opt.emoji}</span>
+              <span className="text-title-sm leading-none mt-0.5">{opt.emoji}</span>
               <span className="min-w-0 flex-1">
-                <span className="font-heading font-bold text-[13px] leading-tight flex items-center gap-1">
+                <span className="font-heading font-bold text-meta leading-tight flex items-center gap-1">
                   {t(`createArena.subject_${opt.key}`, { defaultValue: opt.label })}
                   {selected && <Check size={13} strokeWidth={3} className="shrink-0" />}
                 </span>
-                <span className="block text-[10px] opacity-80 leading-tight mt-0.5">
+                <span className="block text-meta text-muted-foreground leading-tight mt-0.5">
                   {t(`createArena.subjectBlurb_${opt.key}`, { defaultValue: opt.blurb })}
                 </span>
               </span>
-            </button>
+            </Card>
           );
         })}
       </div>
 
       {configErrorText && (
-        <p className="text-[11px] text-destructive font-medium mt-3">
+        <p className="text-meta text-destructive font-medium mt-3">
           {configErrorText}
         </p>
       )}

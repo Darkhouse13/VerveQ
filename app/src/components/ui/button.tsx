@@ -8,6 +8,9 @@ import { cn } from "@/lib/utils";
  *
  * - `primary` is THE action on a screen (orange on cream hubs, lime on ink).
  *   One per screen.
+ * - `link` is an inline text action inside a sentence ("… · Sign in"): no
+ *   box, an underline, the surrounding type. Inline links are the one place a
+ *   control may sit under the 44px tap target (WCAG 2.5.8 inline exception).
  * - `secondary` is a card-filled, bordered alternative; `danger` is for
  *   destructive confirmations; `ghost` is chrome (no border, no shadow).
  * - Every size is a ≥44px tap target. Text on every fill is ink.
@@ -26,6 +29,7 @@ const buttonVariants = cva(
         secondary: "neo-border bg-card text-card-foreground",
         danger: "neo-border bg-destructive text-destructive-foreground",
         ghost: "border-2 border-transparent bg-transparent text-foreground",
+        link: "bg-transparent underline underline-offset-4 hover:text-foreground",
       },
       size: {
         sm: "min-h-11 px-4 py-2 text-body-sm",
@@ -52,6 +56,8 @@ const buttonVariants = cva(
       { variant: ["primary", "danger"], inert: false, class: "hover:brightness-105" },
       { variant: ["secondary", "ghost"], inert: false, class: "hover:bg-muted" },
       { variant: "ghost", inert: true, class: "bg-transparent" },
+      // A link takes the sentence's size, weight and color; no box at all.
+      { variant: "link", class: "inline min-h-0 rounded-none p-0 font-body font-normal text-[length:inherit]" },
     ],
     defaultVariants: {
       variant: "primary",
@@ -62,7 +68,7 @@ const buttonVariants = cva(
   },
 );
 
-type ButtonVariant = "primary" | "secondary" | "danger" | "ghost";
+type ButtonVariant = "primary" | "secondary" | "danger" | "ghost" | "link";
 type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {

@@ -643,14 +643,16 @@ export default function WhosOlderPlayScreen() {
     const pickedWrong = reveal && !reveal.correct && reveal.guess === side;
     const pickedRight = reveal && reveal.correct && isOlder;
     return (
-      <button
+      <Card
         key={`${shownIndex}-${side}`}
-        type="button"
+        interactive
+        elevation="flat"
+        padding="none"
         disabled={busy}
         onClick={() => (reveal ? skipReveal() : answer(side))}
         data-testid={`whos-older-card-${side}`}
         className={cn(
-          "relative flex-1 min-h-0 w-full rounded-lg px-4 py-3 text-cream neo-border",
+          "relative flex-1 min-h-0 w-full px-4 py-3 text-cream",
           "flex flex-col items-center justify-center text-center overflow-visible",
           "transition-[transform,box-shadow,border-color] duration-ui motion-reduce:transition-none",
           side === "a" ? "bg-electric-blue animate-older-in-top" : "bg-hot-pink animate-older-in-bottom",
@@ -664,7 +666,7 @@ export default function WhosOlderPlayScreen() {
         {/* The younger card dims under a scrim — not via opacity, which the
             swing-in animation's fill would override. */}
         {reveal && !isOlder && (
-          <span aria-hidden className="absolute inset-0 rounded-[inherit] bg-ink/55 pointer-events-none" />
+          <span aria-hidden className="absolute inset-0 rounded-lg bg-ink/55 pointer-events-none" />
         )}
         {isOlder && (
           <Badge
@@ -690,7 +692,7 @@ export default function WhosOlderPlayScreen() {
             </span>
           )}
         </span>
-      </button>
+      </Card>
     );
   };
 

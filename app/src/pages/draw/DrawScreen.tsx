@@ -469,11 +469,12 @@ function DrawScreenInner() {
   // we fall through and let DrawExperience surface the error stage.
   if (!authFailed && (accountState === "loading" || accountState === "loggedOut")) {
     return (
-      <div
-        className="notranslate fixed inset-0 z-40 bg-background text-foreground flex items-center justify-center"
-        translate="no"
-      >
-        <p className="font-heading font-bold animate-pulse">{t("loading")}</p>
+      <div className="theme-draw notranslate" translate="no">
+        <StageFrame mode="draw" wide>
+          <div className="h-full flex items-center justify-center">
+            <p className="font-heading font-bold animate-pulse">{t("loading")}</p>
+          </div>
+        </StageFrame>
       </div>
     );
   }

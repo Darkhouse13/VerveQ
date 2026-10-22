@@ -78,7 +78,7 @@ export function QuestionImage({
     >
       {errored ? (
         <div className="absolute inset-0 flex items-center justify-center">
-          <p className="font-heading font-bold text-xs uppercase tracking-wide text-muted-foreground">
+          <p className="font-heading font-bold text-eyebrow uppercase text-muted-foreground">
             Image unavailable
           </p>
         </div>
@@ -86,7 +86,7 @@ export function QuestionImage({
         <>
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center bg-accent/30">
-              <p className="font-mono font-bold text-xs uppercase tracking-wide animate-pulse">
+              <p className="font-mono font-bold text-eyebrow uppercase animate-pulse">
                 Loading media…
               </p>
             </div>

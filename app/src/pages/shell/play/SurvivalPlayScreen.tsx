@@ -97,20 +97,20 @@ function MaskedName({ maskedName }: { maskedName: string }) {
             char === MASK_CHAR ? (
               <div
                 key={ci}
-                className="neo-border rounded w-7 h-9 bg-muted"
+                className="neo-border rounded-sm w-7 h-9 bg-muted"
                 aria-hidden
               />
             ) : /\p{L}|\p{N}/u.test(char) ? (
               <div
                 key={ci}
-                className="neo-border rounded w-7 h-9 flex items-center justify-center bg-mode-accent text-ink"
+                className="neo-border rounded-sm w-7 h-9 flex items-center justify-center bg-mode-accent text-ink"
               >
-                <span className="font-heading font-bold text-sm">{char}</span>
+                <span className="font-heading font-bold text-body-sm">{char}</span>
               </div>
             ) : (
               <span
                 key={ci}
-                className="w-3 h-9 flex items-center justify-center font-heading font-bold text-sm"
+                className="w-3 h-9 flex items-center justify-center font-heading font-bold text-body-sm"
               >
                 {char}
               </span>
@@ -802,7 +802,7 @@ function SurvivalRun({
       >
         <DialogContent className="neo-border neo-shadow-lg max-w-sm">
           <DialogHeader>
-            <DialogTitle className="font-heading text-xl text-center">
+            <DialogTitle className="font-heading text-title-sm text-center">
               {cheatModal === "warning"
                 ? `⚠️ ${t("survival.tabSwitchCaughtTitle")} ⚠️`
                 : `\u{1F6A8} ${t("survival.cheatingDetected")} \u{1F6A8}`}

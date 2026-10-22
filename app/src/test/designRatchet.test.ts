@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { countAll, readBaseline } from "../../scripts/designRatchet.mjs";
+import { ALLOWLIST, PATTERNS, allowlistUsage, countAll, readBaseline } from "../../scripts/designRatchet.mjs";
 
 type CountMap = Record<string, Record<string, number>>;
 
@@ -33,5 +33,23 @@ describe("design ratchet", () => {
       }
     }
     expect(falls, "run `npm run design:baseline` to lock these in").toEqual([]);
+  });
+
+  // VerveQ ONE P5.1: the ratchet reached zero. The baseline stays empty, so a
+  // new off-system pattern can't be "locked in" by rewriting it; a real
+  // exception goes in ALLOWLIST (scripts/designRatchet.mjs) with its reason.
+  it("holds every count at zero", () => {
+    expect(baseline, "add a reasoned ALLOWLIST entry instead of a baseline count").toEqual({});
+  });
+
+  it("every allowlist exception is reasoned, real and still needed", () => {
+    for (const entry of ALLOWLIST) {
+      expect(entry.reason.length, `${entry.file}: ${entry.pattern} needs a reason`).toBeGreaterThan(20);
+      expect(PATTERNS[entry.pattern], `${entry.file}: unknown pattern ${entry.pattern}`).toBeDefined();
+    }
+    const stale = allowlistUsage()
+      .filter((e) => e.used === 0 || (e.count !== undefined && e.used < e.count))
+      .map((e) => `${e.file}: ${e.pattern} excuses ${e.used} of ${e.count ?? "∞"}`);
+    expect(stale, "tighten or remove these allowlist entries").toEqual([]);
   });
 });

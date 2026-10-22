@@ -38,14 +38,14 @@ export default function ArenaHubScreen() {
     >
       <div className="flex flex-col gap-4 h-full justify-center md:max-w-md md:mx-auto md:w-full">
         <NeoCard color="pink" shadow="lg" className="flex flex-col gap-3">
-          <div className="neo-border rounded-xl bg-background w-fit p-2.5">
+          <div className="neo-border rounded-lg bg-background w-fit p-2.5">
             <Users size={24} strokeWidth={2.5} className="text-foreground" />
           </div>
           <div>
-            <p className="font-heading font-bold text-lg leading-tight">
+            <p className="font-heading font-bold text-title-sm leading-tight">
               {t("arenaHub.cardTitle", { defaultValue: "Live rooms, one code" })}
             </p>
-            <p className="text-sm opacity-80 mt-1">
+            <p className="text-body-sm text-muted-foreground mt-1">
               {t("arenaHub.cardBody", {
                 defaultValue:
                   "Host a room (1v1, 2v2, or free-for-all), share the code, and everyone answers the same questions in real time.",

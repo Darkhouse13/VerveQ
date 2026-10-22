@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Share2, Copy, Flame } from "lucide-react";
 import { notify } from "@/lib/notify";
 import { cn } from "@/lib/utils";
+import { Card as UiCard } from "@/components/ui/card";
 import { ResultScreen } from "@/components/shell/play/result/ResultScreen";
 import { HeroPill, ResultHero } from "@/components/shell/play/result/ResultHero";
 import { ResultActions } from "@/components/shell/play/result/ResultActions";
@@ -177,18 +178,20 @@ export function ResultStage({ view, rarity, streak, leaderboard, nextBoardAt, sh
                       {/* F7 — the reveal is outside the pick flow, so a tap
                           here is unambiguous: it opens the card's detail. */}
                       {row.map((card) => (
-                        <button
+                        <UiCard
                           key={card.id}
-                          type="button"
+                          interactive
+                          elevation="flat"
+                          padding="none"
                           onClick={() => setDetailCard(card)}
                           className={cn(
-                            "neo-border rounded-md flex-1 min-w-0 h-14 bg-card text-card-foreground cursor-pointer active:neo-shadow-pressed",
+                            "rounded-md flex-1 min-w-0 h-14 text-center cursor-pointer",
                             squadIds.has(card.id) ? "draw-outline-lime neo-shadow-sm" : "draw-border-quiet text-muted-foreground",
                           )}
                           data-testid={`draw-reveal-card-${card.id}`}
                         >
                           <DrawCardFace card={card} size="mini" />
-                        </button>
+                        </UiCard>
                       ))}
                     </div>
                   ))}

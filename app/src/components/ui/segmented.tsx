@@ -12,6 +12,8 @@ export interface SegmentedProps<T extends string> {
   onChange: (value: T) => void;
   "aria-label": string;
   block?: boolean;
+  /** Locks every segment (e.g. while the change it makes is in flight). */
+  disabled?: boolean;
   className?: string;
 }
 
@@ -27,13 +29,14 @@ function Segmented<T extends string>({
   onChange,
   "aria-label": label,
   block = false,
+  disabled = false,
   className,
 }: SegmentedProps<T>) {
   const refs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const onKeyDown = (event: React.KeyboardEvent, index: number) => {
     const delta = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
-    if (!delta) return;
+    if (!delta || disabled) return;
     event.preventDefault();
     const next = (index + delta + options.length) % options.length;
     onChange(options[next].value);
@@ -58,11 +61,15 @@ function Segmented<T extends string>({
             role="tab"
             aria-selected={selected}
             tabIndex={selected ? 0 : -1}
+            disabled={disabled}
             onClick={() => onChange(option.value)}
             onKeyDown={(event) => onKeyDown(event, index)}
             className={cn(
               "min-h-11 flex-1 cursor-pointer rounded-md px-4 font-heading text-body-sm font-bold transition-colors duration-ui",
-              selected ? "bg-foreground text-background" : "bg-transparent text-foreground hover:bg-muted",
+              "disabled:cursor-not-allowed",
+              selected
+                ? "bg-foreground text-background"
+                : "bg-transparent text-foreground enabled:hover:bg-muted disabled:is-dimmed",
             )}
           >
             {option.label}

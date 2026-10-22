@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { BrandMark } from "@/components/ui/BrandMark";
+import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics";
 import { readColdSource } from "@/lib/coldSession";
 import { SHELL_TABS, activeTabKey, type ShellTab } from "@/lib/shellTabs";
@@ -53,7 +54,7 @@ export function ShellNav() {
 
   return (
     // App-wide chrome, one surface everywhere (FW-POLISH-2 R3): the bar is
-    // LITERAL near-black, not a theme token. It used to be bg-foreground +
+    // the brand-constant ink (--ink never changes per theme), not a role token. It used to be bg-foreground +
     // text-background, which flip inside `.theme-weekend` (foreground=cream) —
     // rendering the nav as a cream slab on the dark WEEKEND canvas — and its
     // light border-t (background/40) read as a floating halo over every page.
@@ -65,34 +66,35 @@ export function ShellNav() {
     // (the buttons below drop to pt-2.5 and this carries their bottom
     // padding), so a notched device gets 34px under the labels instead of 44.
     // max() keeps the normal-tab case at exactly the 10px it has today.
-    <nav className="md:hidden shrink-0 bg-[hsl(0_0%_7%)] pb-[max(0.625rem,env(safe-area-inset-bottom))]">
+    <nav className="md:hidden shrink-0 bg-ink pb-[max(0.625rem,env(safe-area-inset-bottom))]">
       <div className="flex max-w-md mx-auto">
         {tabs.map((tab) => {
           const active = isActive(tab);
           return (
-            <button
+            <Button
               key={tab.path}
+              variant="ghost"
               onClick={() => go(tab)}
               className={cn(
-                "flex-1 flex flex-col items-center gap-0.5 pt-2.5 transition-colors relative cursor-pointer active:opacity-60",
+                "relative flex-1 flex-col gap-0.5 min-h-0 rounded-none border-0 px-0 pt-2.5 pb-0 transition-colors hover:bg-transparent active:is-dimmed",
                 // On near-black: lime for the active tab (the brand accent —
                 // the orange primary muddies against this surface), and the
-                // established muted-cream-on-dark tint for the rest. Literal
-                // values for the same reason as the surface above.
+                // established muted-cream-on-dark tint for the rest. Brand
+                // constants for the same reason as the surface above.
                 active
-                  ? "text-[hsl(75_100%_55%)]"
-                  : "text-[hsl(30_100%_97%/0.6)]",
+                  ? "text-lime"
+                  : "text-cream/60",
               )}
             >
               {active && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] bg-[hsl(75_100%_55%)] rounded-b-full" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] bg-lime rounded-b-full" />
               )}
               <tab.icon size={22} strokeWidth={2.5} />
               {/* 12px: the floor for any text (design floors); 10px failed it. */}
               <span className="text-eyebrow tracking-normal font-heading font-bold uppercase">
                 {t(tab.labelKey)}
               </span>
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -108,32 +110,34 @@ export function ShellTopNav() {
   return (
     <nav className="hidden md:block shrink-0 border-b-[3px] border-border bg-background">
       <div className="mx-auto w-full max-w-6xl flex items-center gap-2 px-8 py-3">
-        <button
+        <Button
+          variant="ghost"
           onClick={() => navigate(SHELL_ROUTES.play)}
-          className="mr-4 cursor-pointer rounded-lg"
+          className="mr-4 min-h-0 border-0 p-0 hover:bg-transparent"
         >
           <BrandMark variant="lockup" size="md" />
-        </button>
+        </Button>
         <div className="flex items-center gap-1">
           {tabs.map((tab) => {
             const active = isActive(tab);
             return (
-              <button
+              <Button
                 key={tab.path}
+                variant="ghost"
                 onClick={() => go(tab)}
                 className={cn(
-                  "inline-flex items-center gap-2 px-4 py-2 rounded-lg font-heading font-bold text-sm uppercase tracking-wide transition-all cursor-pointer active:opacity-60",
+                  "min-h-0 px-4 py-2 uppercase tracking-wide active:is-dimmed",
                   active
                     ? // A raised tab with lime words, like the mobile bar's
                       // lime label: a lime FILL here would compete with the
                       // screen's one action (R4).
-                      "neo-border neo-shadow bg-card text-lime"
-                    : "text-muted-foreground hover:bg-muted",
+                      "neo-border neo-shadow bg-card text-lime hover:bg-card"
+                    : "text-muted-foreground",
                 )}
               >
                 <tab.icon size={18} strokeWidth={2.5} />
                 {t(tab.labelKey)}
-              </button>
+              </Button>
             );
           })}
         </div>

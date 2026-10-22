@@ -284,7 +284,7 @@ function KitchenSinkPage() {
   // Portalled to <body>: the app frame is a phone column (max-w-md), and the
   // desktop view needs the full width to put the palettes side by side.
   return createPortal(
-    <main data-testid="kitchen-sink" className="absolute inset-x-0 top-0 z-10 min-h-screen bg-background">
+    <main data-testid="kitchen-sink" className="absolute inset-x-0 top-0 z-raised min-h-screen bg-background">
       <div className={cn("grid grid-cols-1", themes.length >= 4 ? "xl:grid-cols-4" : "xl:grid-cols-3")}>
         {themes.map((t) => (
           <Column key={t.id} theme={t} />

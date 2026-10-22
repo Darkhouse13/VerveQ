@@ -7,6 +7,8 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { readFileSync } from "node:fs";
+// The screens read real copy: initialize i18next (no primitive does it as a side effect).
+import "@/i18n";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { getFunctionName } from "convex/server";

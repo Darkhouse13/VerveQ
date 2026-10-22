@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { Check, ChevronDown, ChevronUp, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { IconButton } from "@/components/ui/icon-button";
+import { Card } from "@/components/ui/card";
 import { RevealedAnswer } from "@/components/shell/play/StageSignals";
 import type {
   LearnMcqQuestion,
@@ -71,15 +72,17 @@ function McqRenderer({ question, draft, setDraft, reveal, verdict }: RendererPro
         const wrong = reveal && isPicked && !!verdict && !verdict.correct && !isAnswer;
         const dimmed = reveal && !isPicked && !isAnswer;
         return (
-          <button
+          <Card
             key={o.key}
-            type="button"
+            interactive
+            elevation="flat"
+            padding="none"
             disabled={reveal}
             onClick={() => setDraft(o.key)}
             aria-pressed={!reveal ? isPicked : undefined}
             data-verdict={correct ? "right" : wrong ? "wrong" : undefined}
             className={cn(
-              "neo-border rounded-lg min-h-12 px-4 py-2.5 text-left flex items-center gap-3 font-medium text-body",
+              "min-h-12 px-4 py-2.5 flex items-center gap-3 font-medium text-body disabled:cursor-default",
               "transition-[transform,background-color] duration-press md:py-3.5",
               correct && "bg-verdict-right text-ink",
               wrong && "bg-verdict-wrong text-ink",
@@ -96,7 +99,7 @@ function McqRenderer({ question, draft, setDraft, reveal, verdict }: RendererPro
             <span className="flex-1">{o.text}</span>
             {correct && <Check size={18} strokeWidth={3} aria-hidden="true" />}
             {wrong && <X size={18} strokeWidth={3} aria-hidden="true" />}
-          </button>
+          </Card>
         );
       })}
     </div>

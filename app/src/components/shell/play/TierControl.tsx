@@ -21,6 +21,7 @@
  */
 import { useTranslation } from "react-i18next";
 import { DIFFICULTIES, type Difficulty } from "@/lib/difficulty";
+import { Segmented } from "@/components/ui/segmented";
 
 interface TierControlProps {
   value: Difficulty;
@@ -40,40 +41,30 @@ export function TierControl({
 
   return (
     <div className={className}>
-      <p className="font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground mb-1 text-center">
+      <p className="font-mono text-eyebrow font-bold uppercase text-muted-foreground mb-1 text-center">
         {t("tier.label", { defaultValue: "Difficulty" })}
       </p>
-      <div
-        role="group"
-        aria-label={t("tier.label", { defaultValue: "Difficulty" })}
-        className="flex gap-1.5 justify-center"
-      >
-        {DIFFICULTIES.map((tier) => {
-          const active = tier === value;
-          return (
-            <button
-              key={tier}
-              type="button"
-              aria-pressed={active}
-              disabled={disabled || active}
-              onClick={() => onChange(tier)}
-              className={`neo-border rounded-full px-3 py-1 text-[11px] font-heading font-bold uppercase transition-all disabled:cursor-default ${
-                active
-                  ? "bg-primary text-primary-foreground neo-shadow-sm"
-                  : "bg-background text-foreground cursor-pointer disabled:opacity-50"
-              }`}
-            >
-              {t(`tier.${tier}`, {
+      <div className="flex justify-center">
+        <Segmented
+          aria-label={t("tier.label", { defaultValue: "Difficulty" })}
+          value={value}
+          disabled={disabled}
+          // Re-picking the current tier is a no-op, never a second start.
+          onChange={(tier) => {
+            if (tier !== value) onChange(tier);
+          }}
+          options={DIFFICULTIES.map((tier) => ({
+            value: tier,
+            label: t(`tier.${tier}`, {
                 defaultValue:
                   tier === "easy"
                     ? "Easy"
                     : tier === "intermediate"
                       ? "Medium"
                       : "Hard",
-              })}
-            </button>
-          );
-        })}
+              }),
+          }))}
+        />
       </div>
     </div>
   );
