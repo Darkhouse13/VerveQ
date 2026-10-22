@@ -46,15 +46,17 @@ export function buildHome(ctx) {
     extraHead: `<style>#root:empty{min-height:100vh}</style>`,
     body: `<h2>Free football quiz games</h2>
 <p class="seo-lede">VerveQ is a set of free football trivia games for people who actually watch the matches. Name the player from his career path, fill a 3×3 football grid, call higher or lower on real league stats, and take the same ten-question daily quiz as everyone else in the world. No download, and no account needed to start.</p>
-${linkGrid([
-  { href: "/games/career-path/", label: "Guess the footballer", note: "Name the player from his clubs, the most played game" },
-  { href: "/games/daily-football-quiz/", label: "Daily football quiz", note: "10 questions, same for everyone, once a day" },
-  { href: "/games/football-grid/", label: "Football grid", note: "Club × country tic-tac-toe" },
-  { href: "/games/higher-or-lower/", label: "Higher or lower", note: "Real league stats, one wrong call ends it" },
-  { href: "/games/football-survival/", label: "Footballer initials quiz", note: "Two initials, name any player" },
-  { href: "/games/60-second-football-quiz/", label: "60-second football quiz", note: "Beat the clock" },
-  { href: "/games/football-duels/", label: "Football quiz with friends", note: "Send a link, settle it 1v1" },
-])}
+${/* A tap on a game opens the game, not its article page: someone on the
+    homepage came to play. The article pages keep their homepage links in the
+    FAQ answer below, which names all seven. */ ""}${linkGrid([
+  { href: "/career-path?ref=home_career", label: "Guess the footballer", note: "Name the player from his clubs, the most played game" },
+  { href: "/daily?ref=home_daily", label: "Daily football quiz", note: "10 questions, same for everyone, once a day" },
+  { href: "/verve-grid?ref=home_grid", label: "Football grid", note: "Club × country tic-tac-toe" },
+  { href: "/higher-lower?ref=home_hol", label: "Higher or lower", note: "Real league stats, one wrong call ends it" },
+  { href: "/daily-survival?ref=home_survival", label: "Footballer initials quiz", note: "Two initials, name any player" },
+  { href: "/blitz?ref=home_blitz", label: "60-second football quiz", note: "Beat the clock" },
+  { href: "/duels?ref=home_duels", label: "Football quiz with friends", note: "Send a link, settle it 1v1" },
+], { spa: true })}
 <h2>Football quiz questions and answers</h2>
 <p>Every daily quiz is published with its answers once it closes${latest ? `. The latest is the <a href="/football-quiz/${latest.date}/">${latest.label} quiz</a>` : ""}. Browse by topic:</p>
 ${linkGrid(ctx.topicPages.slice(0, 9).map((t) => ({ href: t.page.path, label: `${t.topic.name} quiz`, note: `${t.count} questions with answers` })))}

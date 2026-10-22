@@ -239,9 +239,10 @@ export function faqSection(faqs, heading = "FAQ") {
   return `<section><h2>${esc(heading)}</h2>\n${items}\n</section>`;
 }
 
-export function linkGrid(links) {
+/** `spa: true` marks the links as app launches (SeoPageHost routes them with no page load). */
+export function linkGrid(links, { spa = false } = {}) {
   return `<ul class="seo-links">${links
-    .map((l) => `<li><a href="${esc(l.href)}"><strong>${esc(l.label)}</strong>${l.note ? `<span>${esc(l.note)}</span>` : ""}</a></li>`)
+    .map((l) => `<li><a${spa ? " data-spa" : ""} href="${esc(l.href)}"><strong>${esc(l.label)}</strong>${l.note ? `<span>${esc(l.note)}</span>` : ""}</a></li>`)
     .join("")}</ul>`;
 }
 
