@@ -1,6 +1,7 @@
 /**
  * The VerveQ ONE brand colors as HSL triples, for surfaces CSS can't reach —
- * today the 1080×1920 story PNG painted on a canvas (lib/dailyShare.ts).
+ * the 1080×1920 story PNG (lib/dailyShare.ts) and the WEEKEND receipt PNG
+ * (lib/receiptImage.ts), both painted on a canvas.
  *
  * The source of truth is `src/index.css` (`:root`); `brandTokens.test.ts`
  * reads that file and fails when a value here drifts from it.
@@ -18,6 +19,12 @@ export const BRAND_HSL = {
   /** `--right` / `--wrong`: answer feedback only. */
   right: [152, 100, 41],
   wrong: [1, 100, 60],
+  /** `--card` on the ink ground: a raised panel. */
+  card: [0, 0, 12],
+  /** `--muted-foreground` on the ink ground: secondary text. */
+  mutedText: [30, 20, 72],
+  /** `--neo-shadow-color` on the ink ground: the hard offset shadow. */
+  shadow: [0, 0, 0],
 } as const satisfies Record<string, Hsl>;
 
 export type BrandColor = keyof typeof BRAND_HSL;

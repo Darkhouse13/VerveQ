@@ -3,9 +3,9 @@
  *
  * Paints the settlement receipt onto a 1080×1920 canvas (9:16, group-chat
  * native) so "share" can hand over an actual image file and "download" can
- * save one, with no DOM-rasterising dependency. The palette is the WEEKEND
- * theme's, stated literally: near-black ground, cream ink, lime accent —
- * the same numbers `.theme-weekend` derives from (index.css).
+ * save one, with no DOM-rasterising dependency. Colors are the brand tokens
+ * (lib/brandTokens.ts, parity-tested against index.css): ink ground, cream
+ * type, lime accent; the VerveQ lockup (lib/brandCanvas.ts) signs it.
  *
  * Honesty rule: every string painted here comes from the receipt payload —
  * the same numbers the on-screen card shows. No club crests, no likenesses:
@@ -13,17 +13,30 @@
  */
 import { formatPoints } from "../../convex/lib/fantasyScoring";
 import type { SquadReceipt } from "../../convex/fantasyReceipts";
+import { drawBrandLockup } from "@/lib/brandCanvas";
+import { brandColor } from "@/lib/brandTokens";
 
 const W = 1080;
 const H = 1920;
 
-// .theme-weekend, resolved (index.css): hsl(0 0% 5%), hsl(30 100% 97%),
-// hsl(74 100% 50%), border hsl(30 40% 90%).
-const BG = "#0d0d0d";
-const INK = "#fff8f0";
-const LIME = "#c6ff00";
-const MUTED = "#a89f94";
-const CARD = "#161616";
+/** The palette, by role. Exported for the token-parity test. */
+export const RECEIPT_COLORS = {
+  ground: brandColor("ink"),
+  text: brandColor("cream"),
+  accent: brandColor("lime"),
+  muted: brandColor("mutedText"),
+  card: brandColor("card"),
+  shadow: brandColor("shadow"),
+  negative: brandColor("wrong"),
+  /** Type on a lime fill. */
+  onAccent: brandColor("ink"),
+} as const;
+
+const BG = RECEIPT_COLORS.ground;
+const INK = RECEIPT_COLORS.text;
+const LIME = RECEIPT_COLORS.accent;
+const MUTED = RECEIPT_COLORS.muted;
+const CARD = RECEIPT_COLORS.card;
 
 const HEADING = "'Space Grotesk', sans-serif";
 const MONO = "'JetBrains Mono', monospace";
@@ -41,7 +54,7 @@ function panel(
   h: number,
   fill: string,
 ): void {
-  ctx.fillStyle = "#000000";
+  ctx.fillStyle = RECEIPT_COLORS.shadow;
   ctx.fillRect(x + 10, y + 10, w, h);
   ctx.fillStyle = fill;
   ctx.fillRect(x, y, w, h);
@@ -131,7 +144,7 @@ export async function paintReceipt(receipt: SquadReceipt): Promise<Blob> {
       ctx.fillStyle = MUTED;
       ctx.fillText("awaiting", W - M - 40, rowY);
     } else {
-      ctx.fillStyle = slot.points >= 0 ? INK : "#ff6b6b";
+      ctx.fillStyle = slot.points >= 0 ? INK : RECEIPT_COLORS.negative;
       ctx.fillText(formatPoints(slot.points), W - M - 40, rowY);
     }
     ctx.textAlign = "left";
@@ -171,15 +184,19 @@ export async function paintReceipt(receipt: SquadReceipt): Promise<Blob> {
       (a, b) => Math.abs(b.crowdFactor) - Math.abs(a.crowdFactor),
     )[0];
     const pct = Math.round(strongest.crowdFactor * 100);
-    ctx.fillStyle = MUTED;
-    ctx.font = `28px ${MONO}`;
-    ctx.fillText(
+    const line =
       receipt.crowdMoved.length === 1
         ? `The crowd's verdict moved ${strongest.playerName} ${pct >= 0 ? "+" : ""}${pct}%`
-        : `The crowd's verdict moved ${receipt.crowdMoved.length} of your 13 — biggest: ${strongest.playerName} ${pct >= 0 ? "+" : ""}${pct}%`,
-      M,
-      y + 8,
-    );
+        : `The crowd's verdict moved ${receipt.crowdMoved.length} of your 13 — biggest: ${strongest.playerName} ${pct >= 0 ? "+" : ""}${pct}%`;
+    ctx.fillStyle = MUTED;
+    // Shrink to the panel width: a long name must not run off the image.
+    let size = 28;
+    ctx.font = `${size}px ${MONO}`;
+    while (size > 18 && ctx.measureText(line).width > W - 2 * M) {
+      size -= 1;
+      ctx.font = `${size}px ${MONO}`;
+    }
+    ctx.fillText(line, M, y + 8);
     y += 56;
   }
 
@@ -189,12 +206,12 @@ export async function paintReceipt(receipt: SquadReceipt): Promise<Blob> {
       (100 * receipt.percentile.beatCount) / receipt.percentile.population,
     );
     panel(ctx, M, y, W - 2 * M, 170, LIME);
-    ctx.fillStyle = "#0d0d0d";
+    ctx.fillStyle = RECEIPT_COLORS.onAccent;
     ctx.font = `bold 64px ${HEADING}`;
     ctx.fillText(`Beat ${pct}% of budget squads`, M + 44, y + 105);
   } else if (receipt.crewRank !== null) {
     panel(ctx, M, y, W - 2 * M, 170, LIME);
-    ctx.fillStyle = "#0d0d0d";
+    ctx.fillStyle = RECEIPT_COLORS.onAccent;
     ctx.font = `bold 64px ${HEADING}`;
     ctx.fillText(
       `${receipt.crewRank.tied ? "T" : ""}${receipt.crewRank.rank} of ${receipt.crewRank.of} in the room`,
@@ -203,10 +220,13 @@ export async function paintReceipt(receipt: SquadReceipt): Promise<Blob> {
     );
   }
 
-  // Wordmark, bottom-left.
+  // Signature: the lockup bottom-left, the link bottom-right.
+  drawBrandLockup(ctx, { x: M, y: H - 90, cap: 30 });
   ctx.fillStyle = MUTED;
   ctx.font = `bold 32px ${MONO}`;
-  ctx.fillText("verveq.com/weekend", M, H - 90);
+  ctx.textAlign = "right";
+  ctx.fillText("verveq.com/weekend", W - M, H - 90);
+  ctx.textAlign = "left";
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(

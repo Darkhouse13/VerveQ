@@ -13,6 +13,7 @@
 
 import { uiFor } from "./pages/gamesIntl.mjs";
 import { HOME_CARD } from "./entries.mjs";
+import { markSvg, wordmarkSvg } from "../scripts/lib/brand.mjs";
 
 export const ORIGIN = "https://verveq.com";
 export const SITE_NAME = "VerveQ";
@@ -167,6 +168,24 @@ const FOOTER_LINKS = [
   { href: "/who-played-for/", label: "Who played for both clubs" },
 ];
 
+/**
+ * The brand lockup for the header bar (VerveQ ONE P4.4): the mark + VERVEQ in
+ * cream, as one inline SVG of glyph OUTLINES — no font dependency, so it
+ * paints in its final shape on first paint (the pages' system-font rule is a
+ * CLS fix). The mark keeps its faint cream rim so the ink square reads on the
+ * ink bar. Decorative: the link around it carries the accessible name.
+ */
+const LOCKUP_H = 64;
+const LOCKUP_GAP = 16;
+const LOCKUP_CAP = 26; // wordmark cap height ≈ 40% of the mark, centered on it
+const LOCKUP_WORD = wordmarkSvg(LOCKUP_H + LOCKUP_GAP, (LOCKUP_H + LOCKUP_CAP) / 2, LOCKUP_CAP);
+const LOCKUP_W = Math.ceil(LOCKUP_H + LOCKUP_GAP + LOCKUP_WORD.width);
+export const BRAND_LOCKUP_SVG =
+  `<svg class="seo-lockup" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${LOCKUP_W} ${LOCKUP_H}" width="${Math.round((LOCKUP_W * 36) / LOCKUP_H)}" height="36" aria-hidden="true" focusable="false">` +
+  markSvg(0, 0, LOCKUP_H, { rim: 0.22 }) +
+  LOCKUP_WORD.svg +
+  `</svg>`;
+
 export function renderBreadcrumbs(crumbs) {
   if (!crumbs || crumbs.length < 2) return "";
   const parts = crumbs.map((c, i) =>
@@ -191,10 +210,10 @@ export function renderBody(page) {
   const footerIntro = ui ? esc(ui.footerIntro) : "VerveQ: free football trivia games in your browser.";
   return `    <!--seo:block-->
     <div id="seo" data-seo-path="${esc(page.path)}">
-      ${page.hideHeader ? "" : `<header class="seo-top">
-        <a class="seo-brand" href="/" aria-label="VerveQ home"><span class="seo-mark" aria-hidden="true">V</span><span class="seo-word">Verve<span>Q</span></span></a>
+      ${page.hideHeader ? "" : `<header class="seo-top"><div class="seo-top-in">
+        <a class="seo-brand" href="/" aria-label="VerveQ home">${BRAND_LOCKUP_SVG}</a>
         <nav class="seo-nav" aria-label="Main">${nav}</nav>
-      </header>`}
+      </div></header>`}
       <main class="seo-main">
         ${renderBreadcrumbs(page.breadcrumbs)}
 ${page.body}
@@ -235,14 +254,13 @@ html,body{margin:0;background:#FFF7F0}
 #seo{--ink:#121212;--cream:#FFF7F0;--lime:#C6FF1A;--orange:#FF6A00;--yellow:#FFCD1A;--muted:#555;color:var(--ink);background:var(--cream);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.6;font-size:16px}
 #seo *{box-sizing:border-box}
 #seo a{color:var(--ink)}
-#seo .seo-top{max-width:880px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-#seo .seo-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
-#seo .seo-mark{width:34px;height:34px;border:3px solid var(--ink);border-radius:8px;background:var(--ink);color:var(--lime);font:900 19px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:grid;place-items:center;transform:rotate(-4deg)}
-#seo .seo-word{font:900 21px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;letter-spacing:-.5px}
-#seo .seo-word span{color:var(--orange)}
+#seo .seo-top{background:var(--ink);color:var(--cream);margin-bottom:14px}
+#seo .seo-top-in{max-width:880px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:10px 20px;flex-wrap:wrap}
+#seo .seo-brand{display:flex;align-items:center;text-decoration:none;flex:none}
+#seo .seo-lockup{display:block;width:auto;height:36px}
 #seo .seo-nav{display:flex;gap:14px;flex-wrap:wrap;font:600 14px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-#seo .seo-nav a{text-decoration:none;border-bottom:2px solid transparent}
-#seo .seo-nav a:hover{border-color:var(--ink)}
+#seo .seo-nav a{color:var(--cream);text-decoration:none;border-bottom:2px solid transparent}
+#seo .seo-nav a:hover{border-color:var(--lime)}
 #seo .seo-main{max-width:880px;margin:0 auto;padding:8px 20px 48px}
 #seo .crumbs{font-size:13px;color:var(--muted);margin:4px 0 14px}
 #seo .crumbs a{color:var(--muted)}

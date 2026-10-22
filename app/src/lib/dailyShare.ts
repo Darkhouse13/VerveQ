@@ -3,7 +3,7 @@
  * (components/shell/play/whosOlder/DailyShare.tsx, docs/RETURN_LOOP.md).
  */
 import type { DailyGame } from "@/components/shell/play/whosOlder/WhosOlderRetention";
-import brandGeometry from "@/components/ui/brandMark.geometry.json";
+import { drawBrandLockup } from "@/lib/brandCanvas";
 import { brandColor } from "@/lib/brandTokens";
 
 export const INSTAGRAM_HANDLE = "playverveq";
@@ -105,71 +105,6 @@ function fitFont(ctx: CanvasRenderingContext2D, text: string, weight: number, si
 }
 
 /**
- * The VerveQ lockup — the tilted VQ mark and the tracked VERVEQ wordmark —
- * drawn from the brand's glyph outlines (components/ui/brandMark.geometry.json),
- * so it is the real wordmark whether or not a webfont loaded. Centered on
- * `cx`, cap height `cap` px, baseline at `y`.
- */
-function drawLockup(ctx: CanvasRenderingContext2D, cx: number, y: number, cap: number) {
-  const { mark, wordmark } = brandGeometry;
-  const unit = cap / wordmark.capHeight;
-  const step = (wordmark.advance + wordmark.tracking) * unit;
-  const wordW = wordmark.text.length * step - wordmark.tracking * unit;
-  const markPx = cap * 1.9;
-  const gap = cap * 0.55;
-  const left = cx - (markPx + gap + wordW) / 2;
-
-  if (typeof Path2D === "undefined") {
-    ctx.fillStyle = LIME;
-    ctx.font = `700 ${Math.round(cap * 1.35)}px 'JetBrains Mono', monospace`;
-    ctx.fillText(wordmark.text, cx, y);
-    return;
-  }
-
-  // Mark: ink square tilted -4°, a faint cream rim so it reads on the ink
-  // ground, lime "VQ".
-  const s = markPx / mark.viewBox;
-  ctx.save();
-  ctx.translate(left + markPx / 2, y - cap / 2);
-  ctx.rotate((mark.tilt * Math.PI) / 180);
-  ctx.translate(-markPx / 2, -markPx / 2);
-  ctx.scale(s, s);
-  const inset = (mark.viewBox - mark.square.size) / 2;
-  roundRect(ctx, inset, inset, mark.square.size, mark.square.size, mark.square.radius);
-  ctx.fillStyle = INK;
-  ctx.fill();
-  ctx.lineWidth = 1.5;
-  ctx.strokeStyle = CREAM;
-  ctx.globalAlpha = 0.25;
-  ctx.stroke();
-  ctx.globalAlpha = 1;
-  ctx.translate(mark.letters.x, mark.letters.baseline);
-  ctx.scale(mark.letters.scale, mark.letters.scale);
-  ctx.fillStyle = LIME;
-  for (const glyph of mark.letters.glyphs) {
-    ctx.save();
-    ctx.translate(glyph.x, 0);
-    ctx.fill(new Path2D(glyph.d));
-    ctx.restore();
-  }
-  ctx.restore();
-
-  // Wordmark, in cream like the app's header eyebrow.
-  const glyphs = wordmark.glyphs as Record<string, string>;
-  ctx.save();
-  ctx.translate(left + markPx + gap, y);
-  ctx.scale(unit, unit);
-  ctx.fillStyle = CREAM;
-  [...wordmark.text].forEach((ch, i) => {
-    ctx.save();
-    ctx.translate(i * (wordmark.advance + wordmark.tracking), 0);
-    ctx.fill(new Path2D(glyphs[ch]));
-    ctx.restore();
-  });
-  ctx.restore();
-}
-
-/**
  * 1080×1920, everything inside the reels' safe zone (top 220 / bottom 320 /
  * sides 60) so Instagram's story chrome never covers the score.
  */
@@ -194,7 +129,7 @@ export async function renderStoryImage(input: StoryInput): Promise<Blob> {
   ctx.textBaseline = "alphabetic";
 
   // Brand lockup + game title
-  drawLockup(ctx, W / 2, TOP + 50, 40);
+  drawBrandLockup(ctx, { x: W / 2, y: TOP + 50, cap: 40, align: "center" });
   ctx.fillStyle = CREAM;
   fitFont(ctx, input.title.toUpperCase(), 700, 110, HEAD, W - SIDE * 2);
   ctx.fillText(input.title.toUpperCase(), W / 2, TOP + 190);
