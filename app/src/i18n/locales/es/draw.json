@@ -147,5 +147,30 @@
     "rarity": "SOLO EL {{pct}} % ELIGIÓ ESTA LÍNEA",
     "pts": "PTS",
     "trailLabel": "Recorrido de las rondas"
+  },
+  "homeCard": {
+    "eyebrow": "The Draw · Tablero n.º {{n}}",
+    "streak": "Racha {{n}}",
+    "todaysBoard": "Tablero de hoy n.º {{n}}",
+    "runInProgress": "Partida en curso",
+    "draftRow": "Fila del draft {{row}} de {{rows}}",
+    "roundProgress": "Ronda {{round}} de {{total}} · {{pts}} pts",
+    "pts": "pts",
+    "rank": "Puesto n.º {{rank}}",
+    "nextBoard": "Próximo tablero {{time}}"
+  },
+  "archetype": {
+    "ARCH_WALL": "MURO",
+    "ARCH_BLITZ": "BLITZ",
+    "ARCH_ENGINE": "MOTOR",
+    "ARCH_THROWBACK": "RETRO",
+    "ARCH_NEWWAVE": "NUEVA OLA",
+    "ARCH_FORTRESS_KEEPER": "FORTALEZA"
+  },
+  "positionShort": {
+    "GK": "POR",
+    "DEF": "DEF",
+    "MID": "MED",
+    "ATT": "DEL"
   }
 }

@@ -40,7 +40,7 @@ export default function AccountChoiceScreen() {
     return (
       <ShellLayout hideNav center>
         <div className="flex justify-center">
-          <Loader2 className="animate-spin" size={28} strokeWidth={2.5} aria-label="Loading" />
+          <Loader2 className="animate-spin" size={28} strokeWidth={2.5} aria-label={t("common.loading")} />
         </div>
       </ShellLayout>
     );

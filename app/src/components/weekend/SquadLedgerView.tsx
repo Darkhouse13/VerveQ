@@ -21,6 +21,7 @@ import type {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { roleLabel } from "@/lib/weekendRoles";
 
 function signed(points: number): string {
   return points >= 0 ? `+${formatPoints(points)}` : formatPoints(points);
@@ -59,9 +60,10 @@ function RoleBadge({
   slotRole: "GK" | "DEF" | "MID" | "ATT";
   isFinisher: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <Badge tone="muted">
-      {slotRole}
+      {roleLabel(slotRole, t)}
       {isFinisher ? " · FIN" : ""}
     </Badge>
   );

@@ -82,7 +82,7 @@ export function FixtureStrip({
     return (
       <ol className="flex flex-col gap-2" data-testid="draw-fixture-strip">
         {fixtures.map((fixture) => {
-          const { label, Icon } = archetypeMeta(fixture.archetypeId);
+          const { label, Icon } = archetypeMeta(fixture.archetypeId, t);
           const descriptor = entryDescriptor(fixture, t);
           return (
             <li
@@ -133,7 +133,7 @@ export function FixtureStrip({
       data-testid="draw-fixture-strip"
     >
       {fixtures.map((fixture) => {
-        const { label, Icon } = archetypeMeta(fixture.archetypeId);
+        const { label, Icon } = archetypeMeta(fixture.archetypeId, t);
         const cleared = fixture.index < clearedCount;
         const busted = bustedIndex === fixture.index;
         const active = !cleared && !busted && fixture.index === activeIndex;

@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useMutation } from "convex/react";
+import { useTranslation } from "react-i18next";
 import { api } from "../../convex/_generated/api";
 import { X, Upload, ImageIcon } from "lucide-react";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -50,6 +51,7 @@ interface ImageDropzoneProps {
 }
 
 export function ImageDropzone({ imageId, onUpload, onRemove }: ImageDropzoneProps) {
+  const { t } = useTranslation("screens");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -62,11 +64,11 @@ export function ImageDropzone({ imageId, onUpload, onRemove }: ImageDropzoneProp
     setError(null);
 
     if (!ALLOWED_TYPES.includes(file.type)) {
-      setError("Unsupported format. Use JPG, PNG, WebP, or HEIC.");
+      setError(t("imageDropzone.unsupported"));
       return;
     }
     if (file.size > MAX_FILE_SIZE) {
-      setError("File too large (max 2MB).");
+      setError(t("imageDropzone.tooLarge"));
       return;
     }
 
@@ -78,7 +80,7 @@ export function ImageDropzone({ imageId, onUpload, onRemove }: ImageDropzoneProp
       } catch {
         // Couldn't decode locally (e.g. HEIC outside Safari) — the pool must
         // never receive a blob this very browser can't render.
-        setError("Couldn't read that image. Try a JPG, PNG, or WebP.");
+        setError(t("imageDropzone.unreadable"));
         return;
       }
       const uploadUrl = await generateUploadUrl();
@@ -92,7 +94,7 @@ export function ImageDropzone({ imageId, onUpload, onRemove }: ImageDropzoneProp
       setPreview(URL.createObjectURL(normalized));
       onUpload(storageId);
     } catch {
-      setError("Upload failed. Please try again.");
+      setError(t("imageDropzone.failed"));
     } finally {
       setUploading(false);
     }
@@ -115,10 +117,11 @@ export function ImageDropzone({ imageId, onUpload, onRemove }: ImageDropzoneProp
   if (imageId && preview) {
     return (
       <div className="relative neo-border p-2">
-        <img src={preview} alt="Upload preview" className="w-full object-contain max-h-40" />
+        <img src={preview} alt={t("imageDropzone.previewAlt")} className="w-full object-contain max-h-40" />
         <button
           type="button"
           onClick={handleRemove}
+          aria-label={t("imageDropzone.remove")}
           className="absolute top-3 right-3 neo-border rounded-full w-7 h-7 flex items-center justify-center bg-destructive text-destructive-foreground cursor-pointer"
         >
           <X size={14} strokeWidth={3} />
@@ -141,7 +144,7 @@ export function ImageDropzone({ imageId, onUpload, onRemove }: ImageDropzoneProp
           ref={inputRef}
           type="file"
           accept="image/*"
-          aria-label="Add a question image"
+          aria-label={t("imageDropzone.inputLabel")}
           className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
           disabled={uploading}
           onChange={(e) => {
@@ -151,7 +154,7 @@ export function ImageDropzone({ imageId, onUpload, onRemove }: ImageDropzoneProp
         />
         {uploading ? (
           <p className="font-heading font-bold text-sm uppercase animate-pulse">
-            UPLOADING...
+            {t("imageDropzone.uploading")}
           </p>
         ) : (
           <div className="flex flex-col items-center gap-2 pointer-events-none">
@@ -160,10 +163,10 @@ export function ImageDropzone({ imageId, onUpload, onRemove }: ImageDropzoneProp
               <Upload size={20} strokeWidth={2.5} />
             </div>
             <p className="font-heading font-bold text-xs uppercase">
-              Drop image or tap to upload
+              {t("imageDropzone.prompt")}
             </p>
             <p className="text-[10px] text-muted-foreground">
-              JPG, PNG, WebP, HEIC - Max 2MB
+              {t("imageDropzone.formats")}
             </p>
           </div>
         )}

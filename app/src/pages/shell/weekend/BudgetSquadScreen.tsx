@@ -82,6 +82,7 @@ import { useWideScreen } from "@/hooks/useWideScreen";
 import { useWheelToHorizontalScroll } from "@/hooks/useWheelToHorizontalScroll";
 import { track } from "@/lib/analytics";
 import { isBuilderEntry } from "@/lib/weekendDeepLink";
+import { roleLabel } from "@/lib/weekendRoles";
 import {
   readWeekendMarketCache,
   writeWeekendMarketCache,
@@ -722,7 +723,7 @@ export function PickerPanel({
                   <p className="font-heading font-bold text-body-sm truncate">
                     {player.name}
                     <span className="ml-1.5 font-mono text-eyebrow text-muted-foreground uppercase">
-                      {player.position}
+                      {roleLabel(player.position, t)}
                     </span>
                   </p>
                   <p
@@ -1190,7 +1191,9 @@ export function SquadView({
               </DialogTitle>
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge tone={sheet.isFinisher ? "pink" : "muted"}>
-                  {sheet.isFinisher ? `F·${sheet.slotRole}` : sheet.slotRole}
+                  {sheet.isFinisher
+                    ? `F·${roleLabel(sheet.slotRole, t)}`
+                    : roleLabel(sheet.slotRole, t)}
                 </Badge>
                 {sheet.locked && (
                   <Badge tone="muted">

@@ -1,13 +1,7 @@
 {
   "common": {
     "back": "Atrás",
-    "play": "Jugar",
-    "new": "Nuevo",
-    "soon": "Pronto",
-    "comingSoon": "Próximamente",
-    "enter": "Entrar",
     "cancel": "Cancelar",
-    "inLearn": "En Aprender",
     "close": "Cerrar",
     "exit": "Salir",
     "copied": "Copiado",
@@ -18,10 +12,7 @@
   "nav": {
     "weekend": "Weekend",
     "play": "Jugar",
-    "home": "Inicio",
-    "compete": "Competir",
     "ranks": "Rangos",
-    "learn": "Aprender",
     "profile": "Perfil"
   },
   "auth": {
@@ -29,9 +20,9 @@
     "haveAccount": "¿Ya tienes una cuenta?"
   },
   "landing": {
-    "eyebrow": "Trivia de fútbol · mano a mano",
-    "headline": "Resuélvelo.",
-    "subline": "Demuestra que sabes más que tus amigos: primero el fútbol, después todo lo demás.",
+    "eyebrow": "Juegos de fútbol diarios",
+    "headline": "¿Puedes superarlo?",
+    "subline": "Nuevos juegos de fútbol cada día — ¿Quién es mayor?, Letras perdidas, el Quiz diario y más. Dos minutos por partida.",
     "play": "Jugar ahora",
     "freeNote": "Gratis · sin registro: juega primero, elige un nombre después.",
     "haveAccount": "¿Ya estás en VerveQ?",
@@ -47,7 +38,7 @@
     "resultBadge": "Buena ronda",
     "resultCorrect": "{{correct}} / {{total}} correctas",
     "claimTitle": "Elige un nombre de usuario",
-    "claimBody": "Empieza a competir y reta a un amigo: sin correo, sin contraseña.",
+    "claimBody": "Guarda tu racha y reta a un amigo — sin correo ni contraseña.",
     "claimCta": "Elegir nombre de usuario",
     "maybeLater": "Quizá más tarde — seguir jugando",
     "careerPathCta": "Prueba Career Path: adivina al jugador por sus clubes",
@@ -77,94 +68,88 @@
       "eyebrow": "Destacado"
     },
     "pillars": {
-      "competeTitle": "Competir",
-      "competeChip": "Clasificatorio",
-      "competeBody": "Arenas en directo, duelos y desafíos mentales de fútbol. Elige una categoría y sube de rango.",
-      "rankChip": "Rango: {{tier}}",
-      "learnTitle": "Aprender",
-      "learnChip": "Ruta tranquila",
-      "learnBody": "Construye conocimiento de verdad. Preguntas adaptativas, explicaciones y repaso espaciado: no es un examen.",
-      "lockedInChip": "{{count}} consolidadas",
-      "dueChip": "{{count}} para hoy"
+      "learnTitle": "Aprender"
     },
-    "today": { "eyebrow": "Los juegos de hoy — iguales para todos", "score": "{{score}}/{{total}} hoy", "inProgress": "En curso" },
+    "today": {
+      "eyebrow": "Juegos de hoy — iguales para todos",
+      "score": "{{score}}/{{total}} hoy",
+      "inProgress": "En curso"
+    },
     "guestChip": "Invitado",
-    "mostPlayed": { "eyebrow": "Más jugados" },
     "hooks": {
-      "eyebrow": "Retos diarios · mantén la racha",
-      "eyebrowShort": "Retos diarios",
-      "resetsIn": "Se reinicia en {{time}}",
-      "played": "Jugado ✓",
-      "quizSub": "10 P · elige tu nivel"
-    },
-    "ranksCard": {
-      "view": "Ver rangos"
+      "resetsIn": "Nuevos juegos en {{time}}",
+      "played": "Jugado ✓"
     },
     "stats": {
-      "streak": "Racha",
-      "unranked": "Sin clasificar"
+      "streak": "Racha"
     },
     "supportCoffeePrefix": "¿Te gusta VerveQ?",
     "supportCoffeeLink": "Invítanos un café ☕"
   },
   "compete": {
-    "title": "Competir",
-    "chooseCategory": "Elige una categoría",
-    "categoryHint": "Geografía, Historia y Ciencia también tienen una ruta guiada en Aprender.",
-    "categories": {
-      "sport": "Deporte",
-      "sportDesc": "Fútbol",
-      "history": "Historia",
-      "geography": "Geografía",
-      "science": "Ciencia"
-    },
-    "chooseSport": "Elige un deporte",
-    "sports": {
-      "football": "Fútbol",
-      "basketball": "Baloncesto",
-      "tennis": "Tenis"
-    },
-    "chooseMode": "Elige un modo",
-    "modeGridHint": "{{sport}} · elige cómo quieres jugar",
-    "sections": {
-      "popular": "Más jugados",
-      "today": "Hoy",
-      "solo": "Modos individuales",
-      "ranked": "Clasificatorio",
-      "casual": "Solo por diversión",
-      "knowledge": "Cultura general",
-      "friends": "Con amigos"
-    },
-    "rankedBadge": "Cuenta para tu ELO",
-    "casualHint": "No afectan tu rango."
+    "title": "Competir"
   },
   "modes": {
-    "quiz": { "name": "Quiz", "desc": "10 preguntas, puntuación por tiempo" },
-    "survival": { "name": "Survival", "desc": "Adivina jugadores por sus iniciales" },
-    "blitz": { "name": "Blitz", "desc": "Ronda rápida de 60 segundos" },
-    "higherLower": { "name": "Más o Menos", "desc": "Compara estadísticas de jugadores" },
-    "verveGrid": { "name": "VerveGrid", "desc": "Completa la cuadrícula 3x3" },
-    "careerPath": { "name": "Trayectoria", "desc": "Nombra al jugador por sus clubes" },
-    "daily": { "name": "Reto diario", "desc": "Las mismas preguntas para todos", "worldCupName": "Diario del Mundial", "worldCupDesc": "Preguntas del Mundial durante todo el torneo — las mismas para todos" },
-    "dailySurvival": { "name": "Survival diario", "desc": "La partida de hoy, igual para todos — un intento" },
-    "whosOlder": {"name": "¿Quién es mayor?", "desc": "Toca al jugador mayor — 10 al día", "playedDesc": "Jugado · modo infinito desbloqueado"},
-    "missingLetters": {"name": "Letras perdidas", "desc": "Adivina el jugador — 10 al día", "playedDesc": "Jugado · modo infinito desbloqueado"},
-    "arena": { "name": "Arena", "desc": "Salas de desafío en grupo" },
-    "duel": { "name": "Duelos", "desc": "Mano a mano, envía un enlace" },
-    "knowledgeQuiz": { "name": "Quiz de cultura", "desc": "Ciencia, historia y descubrimientos" },
-    "cameFirst": { "name": "¿Qué fue primero?", "desc": "Ordena los eventos en la línea de tiempo" }
+    "quiz": {
+      "name": "Quiz",
+      "desc": "10 preguntas — cuanto más rápido, más puntos"
+    },
+    "survival": {
+      "name": "Survival",
+      "desc": "Nombra jugadores por sus iniciales"
+    },
+    "blitz": {
+      "name": "Blitz",
+      "desc": "Ronda rápida de 60 segundos"
+    },
+    "higherLower": {
+      "name": "Más o Menos",
+      "desc": "Compara estadísticas de jugadores"
+    },
+    "verveGrid": {
+      "name": "VerveGrid",
+      "desc": "Completa la cuadrícula 3x3"
+    },
+    "careerPath": {
+      "name": "Trayectoria",
+      "desc": "Nombra al jugador por sus clubes"
+    },
+    "daily": {
+      "name": "Quiz diario",
+      "desc": "10 preguntas, las mismas para todos",
+      "worldCupName": "Diario del Mundial"
+    },
+    "dailySurvival": {
+      "name": "Survival diario",
+      "desc": "La partida de hoy, igual para todos — un intento"
+    },
+    "whosOlder": {
+      "name": "¿Quién es mayor?",
+      "desc": "Toca al jugador mayor — 10 al día"
+    },
+    "missingLetters": {
+      "name": "Letras perdidas",
+      "desc": "Adivina el jugador — 10 al día"
+    },
+    "arena": {
+      "name": "Arena",
+      "desc": "Salas de quiz en directo con amigos"
+    },
+    "duel": {
+      "name": "Duelos",
+      "desc": "Mano a mano, envía un enlace"
+    },
+    "knowledgeQuiz": {
+      "name": "Quiz de cultura",
+      "desc": "Ciencia, historia y descubrimientos"
+    },
+    "cameFirst": {
+      "name": "¿Qué fue primero?",
+      "desc": "Ordena los eventos en la línea de tiempo"
+    }
   },
   "drawer": {
-    "title": "Elige una categoría",
-    "subtitle": "Elige sobre qué te pondremos a prueba",
-    "categories": {
-      "whichCameFirst": "¿Qué fue primero?",
-      "whichCameFirstDesc": "Ordena los eventos en la línea de tiempo",
-      "knowledge": "Cultura",
-      "knowledgeDesc": "Ciencia, historia y descubrimientos",
-      "mixedBag": "Cajón de sastre",
-      "mixedBagDesc": "Un poco de todo"
-    }
+    "title": "Elige una categoría"
   },
   "ranks": {
     "weekendTable": "Tabla Weekend",
@@ -174,14 +159,14 @@
     },
     "segmentsAria": "Vista de rangos",
     "title": "Rangos",
-    "eyebrow": "Escalera competitiva",
-    "eyebrowSeason": "Escalera competitiva · Temporada {{n}}",
+    "eyebrow": "Partidas clasificatorias",
+    "eyebrowSeason": "Partidas clasificatorias · Temporada {{n}}",
     "seasonChip": "Temporada {{n}}",
     "rankedChip": "Clasificatorio",
     "endsIn": "Termina en {{days}} días",
-    "endsInShort": "TERMINA EN {{days}}D",
+    "endsInShort": "Termina en {{days}} d",
     "seasonDatesSoon": "Fechas de temporada pronto",
-    "eloRating": "Puntuación ELO",
+    "eloRating": "Puntuación",
     "unranked": "Sin clasificar",
     "tiers": {
       "bronze": "Bronce",
@@ -189,9 +174,9 @@
       "gold": "Oro",
       "platinum": "Platino"
     },
-    "tierRange": "{{min}}–{{max}} ELO",
-    "tierRangeTop": "{{min}}+ ELO",
-    "progressTo": "{{elo}} / {{next}} ELO para {{tier}}",
+    "tierRange": "{{min}}–{{max}} pts",
+    "tierRangeTop": "{{min}}+ pts",
+    "progressTo": "{{elo}} / {{next}} para llegar a {{tier}}",
     "topTier": "Máximo nivel — defiende tu corona",
     "allTimeRecord": "Histórico",
     "playRanked": "Jugar clasificatorio →",
@@ -201,23 +186,16 @@
     "globalRankOf": "#{{rank}} de {{total}}",
     "globalRankShort": "#{{rank}} global",
     "globalRankUnplaced": "Aún sin partidas clasificatorias",
-    "ladder": "La escalera",
+    "ladder": "Niveles",
     "ladderHint": "Sube ↑ · Bronce → Platino",
     "youAreHere": "Estás aquí",
     "newPlayersStart": "Los nuevos jugadores empiezan aquí",
     "seasonalCrown": "Corona de temporada",
-    "board": "Clasificación",
-    "boardScope": "⚽ Fútbol · Quiz",
-    "boardTop": "Top {{n}}",
-    "boardEmpty": "La clasificación abre pronto",
-    "boardYou": "Tú",
-    "boardLockedRow": "Tu fila se desbloquea con una cuenta completa",
-    "fullBoard": "Clasificación completa →",
     "locked": {
       "chip": "Cuentas completas",
       "title": "El clasificatorio te espera",
-      "body": "El ELO, los niveles y la escalera de temporada son para cuentas completas, así que cada rango lo gana un jugador real. Tus estadísticas casuales se mantienen; la clasificación empieza en cuanto te pasas a cuenta completa.",
-      "slot": "Tu ELO · tu nivel · tu rango global — aparecen aquí",
+      "body": "Las puntuaciones, los niveles y los rangos de temporada son para cuentas completas, así que cada rango lo gana un jugador real. Tus estadísticas casuales se mantienen; la clasificación empieza en cuanto te pasas a cuenta completa.",
+      "slot": "Tu puntuación, tu nivel y tu rango global aparecen aquí",
       "create": "Crear cuenta completa →",
       "keepCasual": "Seguir jugando en casual"
     }
@@ -239,9 +217,9 @@
     "ranked": "Clasificatorio",
     "rankedSeason": "Clasificatorio · Temporada {{n}}",
     "lockedChip": "Bloqueado",
-    "lockedTitle": "El ELO y los niveles requieren una cuenta completa",
+    "lockedTitle": "La puntuación y los niveles requieren una cuenta completa",
     "lockedBody": "Los modos casuales siguen contando para tus partidas. La clasificación empieza en cuanto te pasas a cuenta completa.",
-    "peekLadder": "Echar un vistazo a la escalera →",
+    "peekLadder": "Ver los rangos →",
     "viewRanks": "Ver rangos →",
     "global": "global",
     "upgradeTitle": "Guarda tu progreso — crea una cuenta completa",
@@ -251,8 +229,7 @@
       "games": "Partidas jugadas",
       "winRate": "Tasa de victorias",
       "bestStreak": "Mejor racha",
-      "favTopic": "Tema favorito",
-      "rankedOnly": "Solo clasificatorio"
+      "favTopic": "Tema favorito"
     },
     "achievements": "Logros",
     "achievementsNone": "Los logros se cargan una vez configurados",
@@ -261,7 +238,7 @@
     "activityRanked": "Clasificatorio",
     "activityEmpty": "Aún sin partidas clasificatorias",
     "activityEmptyGuest": "El historial clasificatorio se desbloquea con una cuenta completa",
-    "decay": "Decaimiento de ELO",
+    "decay": "Bajada de puntuación",
     "seasonReset": "Reinicio de temporada",
     "seasons": "Historial de temporadas",
     "seasonsPeak": "Nivel final",
@@ -270,7 +247,7 @@
     "signOut": "Cerrar sesión",
     "signOutWarning": "⚠ Solo nombre de usuario: cerrar sesión borra tu progreso en este dispositivo.",
     "signOutConfirmTitle": "¿Cerrar sesión?",
-    "signOutConfirmBody": "Tu cuenta está guardada. Vuelve a iniciar sesión cuando quieras para ver tu ELO, tus logros y tus rangos.",
+    "signOutConfirmBody": "Tu cuenta está guardada. Vuelve a iniciar sesión cuando quieras para ver tu puntuación, tus logros y tus rangos.",
     "signOutConfirmBodyGuest": "Este nombre de usuario no tiene contraseña ni correo. Al cerrar sesión se borran de forma permanente esta cuenta y su progreso — no hay forma de volver a entrar.",
     "signOutConfirmCta": "Cerrar sesión",
     "signOutConfirmCtaGuest": "Borrar y cerrar sesión",
@@ -278,8 +255,7 @@
   },
   "forge": {
     "title": "La Forja",
-    "subtitle": "Crea y revisa preguntas",
-    "enter": "Entrar a la Forja"
+    "subtitle": "Crea y revisa preguntas"
   },
   "settings": {
     "title": "Ajustes",
@@ -291,7 +267,7 @@
     "accountNoHandle": "Sesión iniciada",
     "notSignedIn": "No has iniciado sesión.",
     "signInCta": "Inicia sesión o crea una cuenta",
-    "dailyHeading": "Reto diario",
+    "dailyHeading": "Quiz diario",
     "dailyDescription": "Elige el tema de tu cuestionario diario.",
     "dailySaved": "Tema del reto actualizado",
     "dailySubjects": {
@@ -300,11 +276,12 @@
       "tennis": "Tenis",
       "knowledge": "Cultura general"
     },
-    "supportHeading": "Soporte y Comunidad",
+    "supportHeading": "Soporte y comunidad",
     "supportDescription": "Contáctanos para obtener ayuda o síguenos para novedades.",
     "supportFollowX": "Seguir en X",
     "supportContact": "Contactar con soporte",
-    "supportCoffee": "Invítanos un café"
+    "supportCoffee": "Invítanos un café",
+    "dailySaveFailed": "No se pudo guardar el tema de tu Quiz diario."
   },
   "arenaHub": {
     "cardTitle": "Salas en directo, un solo código",
@@ -313,17 +290,16 @@
     "join": "Unirse con código"
   },
   "leaderboard": {
-    "title": "Clasificación",
-    "subtitle": "Quién manda en la escalera",
-    "rankedElo": "Clasificatorio · ELO",
+    "title": "Rangos",
+    "rankedElo": "Clasificatorio · puntuación",
     "highScore": "Puntuación máxima",
     "allTime": "Histórico",
     "seasonAria": "Temporada",
     "liveSeason": "T{{n}} · En vivo",
     "seasonOption": "Temporada {{n}}",
     "blitzBlurb": "La mejor ronda Blitz de 60 segundos de cada jugador — histórica, no por temporada.",
-    "rankedBlurb": "Puntuación ELO de partidas clasificatorias de {{mode}} — gana para subir, de Bronce a Platino.",
-    "loading": "Cargando la escalera…",
+    "rankedBlurb": "Puntuación de partidas clasificatorias de {{mode}} — gana para subir, de Bronce a Platino.",
+    "loading": "Cargando los rangos…",
     "emptyTitle": "Aún no hay entradas",
     "emptyBody": "¡Sé el primero en jugar!",
     "chase": "La persecución",
@@ -334,11 +310,14 @@
   },
   "gate": {
     "title": "Se requiere cuenta completa",
-    "bodyUpgrade": "Estás jugando solo con nombre de usuario, así que esta partida es casual. Los modos clasificatorios y las clasificaciones globales requieren una cuenta completa — al pasarte conservas tu nombre de usuario y tu progreso casual.",
-    "bodyCreate": "Los modos clasificatorios y las clasificaciones globales requieren una cuenta completa. Crea una para empezar a subir.",
+    "bodyUpgrade": "Estás jugando solo con nombre de usuario, así que esta partida es casual. Las partidas clasificatorias y los rangos globales requieren una cuenta completa — al pasarte conservas tu nombre de usuario y tu progreso casual.",
+    "bodyCreate": "Las partidas clasificatorias y los rangos globales requieren una cuenta completa. Crea una para empezar a subir.",
     "ctaUpgrade": "Guardar mi progreso y pasar a clasificatorio",
     "ctaCreate": "Empezar",
-    "later": "Quizá más tarde"
+    "later": "Quizá más tarde",
+    "usernameTitle": "Elige primero un nombre de usuario",
+    "usernameBody": "Los invitados no pueden guardar aquí. Crea un nombre de usuario (es gratis y tardas 10 segundos) para jugar a este modo.",
+    "usernameCta": "Crear nombre de usuario"
   },
   "weekend": {
     "countdownDays": "{{d}} d {{h}} h",
@@ -367,9 +346,8 @@
     "bestFinish": "Mejor puesto: #{{rank}}",
     "boardBetween": "Se abre un tablero nuevo cada fin de semana",
     "boardOpen": "El tablero de la jornada {{gw}} está abierto",
-    "budget": "presupuesto",
     "budgetGrandfathered": "Los nuevos precios dejan este equipo por encima del presupuesto de {{limit}}. Sigue siendo válido, pero ningún cambio puede aumentar su coste.",
-    "budgetTitle": "Tus 13 del fin de semana",
+    "budgetTitle": "Tus 13",
     "buildFor": "Construyendo para",
     "change": "Cambiar",
     "chipDnp": "NJD",
@@ -381,7 +359,7 @@
     "clearSlot": "Vaciar",
     "climbedPlaces": "Subiste {{count}} puestos",
     "committedCost": "{{cost}} bloqueado",
-    "courtTitle": "Tribunal de reclamaciones",
+    "courtTitle": "Tribunal de posiciones",
     "courtVoteFailed": "Ese voto no se pudo registrar.",
     "create": "Crear",
     "createCrew": "Crear grupo",
@@ -403,8 +381,8 @@
     "doneKeepGoing": "Sigue — los pares extra no cuentan, pero ayudan.",
     "doneTen": "Esos son los diez de hoy.",
     "doneThanks": "El público te da las gracias.",
-    "doorCourtBodyShort": "Defiende la posición real de un jugador.",
-    "doorCourtTitle": "Tribunal de reclamaciones",
+    "doorCourtBodyShort": "¿Crees que la posición de un jugador está mal? Vota para corregirla.",
+    "doorCourtTitle": "Tribunal de posiciones",
     "doorCrewsBodyShort": "Un código, elecciones únicas.",
     "doorCrewsTitle": "Draft de grupo",
     "doorSquadBodyShort": "Un 13 nuevo bajo presupuesto.",
@@ -445,7 +423,7 @@
     "fixtureLocked": "Bloqueado",
     "fixturePointsIn": "puntos en",
     "fixturePostponed": "Aplazado",
-    "fixtureVoid": "FUERA",
+    "fixtureVoid": "Fuera",
     "fixturesSubtitle": "Jornada {{gw}} · cada saque inicial en tu hora",
     "fixturesTitle": "Partidos",
     "fullStandings": "Clasificación completa",
@@ -478,7 +456,7 @@
     "leaderboardLiveBody": "Los totales provisionales se actualizan cuando llegan los puntos.",
     "leaderboardScored": "{{scored}}/13 puntuados",
     "leaderboardSubtitle": "Jornada {{gw}} · equipos con presupuesto globales",
-    "leaderboardTitle": "Clasificación",
+    "leaderboardTitle": "Tabla Weekend",
     "leaderboardWaiting": "Esperando los primeros puntos",
     "leaderboardWaitingBody": "La tabla aparece cuando llega la puntuación de un jugador.",
     "leaderboardYou": "Tú",
@@ -620,7 +598,6 @@
     "sheetTitle": "Tu alineación",
     "showAll": "Mostrar todo",
     "showLog": "Mostrar registro del draft",
-    "slots": "jugadores",
     "slotsAwaiting": "{{count}} esperando",
     "slotsAwaitingBody": "{{count}} esperando · los puntos llegan ~2 h después del final",
     "snakeNote": "Orden serpiente — el último elige dos veces.",
@@ -700,202 +677,380 @@
     "claim_passed": "aprobada",
     "claim_failed": "rechazada",
     "claim_died": "archivada",
-    "claim_expired": "caducada"
-    ,"homeEyebrow": "Fantasy · esta jornada"
-    ,"homeBulletLeagues": "Ocho ligas, un equipo"
-    ,"homeBulletCrowd": "El público valora a los jugadores, no un algoritmo"
-    ,"homeBulletFresh": "Draft nuevo cada semana, sin temporada eterna"
-    ,"homeHeadline": "Forma todo el fin de semana europeo de fútbol."
-    ,"homePlay": "Jugar ahora"
-    ,"homeNote": "Equipo con presupuesto o draft de grupo — tablero nuevo cada fin de semana."
-    ,"activity": "Actividad"
-    ,"ahead": "{{points}} por delante"
-    ,"allSeatsClaimed": "Las 8 plazas están ocupadas"
-    ,"allTime": "Histórico"
-    ,"allTimeStandings": "Clasificación histórica"
-    ,"appearancesAverage": "{{appearances}} apariciones · {{average}} de media"
-    ,"appsAverage": "{{apps}} partidos · {{average}} de media"
-    ,"autoPickQueue": "Cola privada de elecciones automáticas"
-    ,"autoPickQueueBody": "Tu orden es privado. Si se acaba el tiempo, se prueban primero los jugadores válidos de la cola."
-    ,"awaiting": "esperando"
-    ,"bestFinishLabel": "Mejor puesto"
-    ,"claimSeat": "Reclamar plaza de draft"
-    ,"command": "Comando"
-    ,"copyCodeFailed": "No se pudo copiar el código."
-    ,"creator": "Creador"
-    ,"creatorOnly": "Solo el creador puede acceder"
-    ,"creatorOnlyBody": "Solo la persona que gestiona este grupo puede abrir Crew Command."
-    ,"creatorOpensNext": "El creador abrirá el próximo fin de semana."
-    ,"crewCommandDraftBody": "abre la sala semanal y gestiona su tiempo y sus ocho plazas en la sala de espera."
-    ,"crewCommandHowTitle": "Cómo funciona Crew Command"
-    ,"crewCommandInfoAria": "Cómo funciona Crew Command"
-    ,"crewCommandInviteBody": "comparte el enlace permanente o el código del grupo."
-    ,"crewCommandMembersBody": "elimina a personas inactivas sin borrar los resultados anteriores."
-    ,"crewCommandOwnershipBody": "al salir transfieres el control; solo se puede borrar antes del primer draft completado."
-    ,"crewCommandTitle": "Crew Command"
-    ,"crewCompetition": "Competición de grupo"
-    ,"crewRecapReady": "El resumen del grupo está listo para compartir."
-    ,"crewTitle": "Grupo"
-    ,"deleteCrew": "Borrar grupo"
-    ,"deleteCrewBody": "Esto elimina el grupo para todos. No se puede deshacer."
-    ,"deleteCrewConfirmLabel": "Escribe DELETE para confirmar"
-    ,"deleteCrewFailed": "No se pudo borrar el grupo."
-    ,"deleteCrewForever": "Borrar el grupo para siempre"
-    ,"deleteCrewTitle": "¿Borrar este grupo?"
-    ,"draftLabel": "Draft:"
-    ,"draftRooms": "Salas de draft"
-    ,"drafters": "{{count}} participantes"
-    ,"enterLiveDraft": "Entrar al draft en directo"
-    ,"enterLobby": "Entrar a la sala de espera"
-    ,"gameweek": "Jornada"
-    ,"howBudgetBody": "Forma tus 13 jugadores con un presupuesto de 91,0 M£. Los precios van de 4,0 M£ a 13,0 M£ en pasos de 0,5 M£, iguales para todos y fijos durante la jornada."
-    ,"howBudgetLabel": "Equipo con presupuesto."
-    ,"howCardsBody": "amarilla −1, roja −4 (una expulsión por doble amarilla suma −6)."
-    ,"howCardsLabel": "Tarjetas:"
-    ,"howClubCapBody": "como máximo 3 jugadores de un club — 4 de tu club favorito. Elígelo una sola vez desde la tarjeta Club favorito en el inicio de Weekend. Es permanente: nunca podrá cambiarse, así que elige el club que de verdad apoyas."
-    ,"favoriteClubTitle": "Club favorito"
-    ,"favoriteClubLockedBody": "4 jugadores permitidos en vez de 3. Permanente — no se puede cambiar."
-    ,"favoriteClubWarning": "Elige con cuidado: tu club favorito es permanente. Nunca podrá cambiarse — ni la próxima jornada, ni la próxima temporada."
-    ,"favoriteClubConfirmTitle": "¿{{club}}, para siempre?"
-    ,"favoriteClubConfirmBody": "Desde ahora podrás alinear 4 jugadores de {{club}} en vez de 3 en cada plantilla. Esta elección es permanente y nunca podrá cambiarse."
-    ,"favoriteClubBack": "Atrás"
-    ,"favoriteClubConfirm": "Confirmar, para siempre"
-    ,"clubCapFriendly": "Solo {{cap}} de {{club}} — tu club favorito tiene uno más. Elígelo una vez (es permanente) en el inicio de Weekend."
-    ,"clubCapFavoriteFriendly": "Solo {{cap}} de {{club}}, incluso siendo tu club favorito."
-    ,"clubCapAction": "Elegir favorito"
-    ,"favoriteClubEmptyBody": "Elige uno — podrás alinear 4 en vez de 3. Una sola elección, para siempre."
-    ,"favoriteClubSet": "{{club}} es tu club favorito — para siempre."
-    ,"favoriteClubFailed": "No se pudo guardar tu club favorito."
-    ,"noClubsMatch": "Ningún club coincide."
-    ,"howClubCapLabel": "Límite por club:"
-    ,"howCourt": "El tribunal"
-    ,"howCourtBody": "¿Crees que el feed indicó mal la posición de un jugador? Presenta una reclamación: tienes 2 por jornada y presentar cuenta como el primer apoyo. Una reclamación con suficientes apoyos (al menos 15 o el 0,5% de los activos) va a juicio; gana con el 60% y quórum (al menos 30 o el 1%). Las reclamaciones cierran el lunes a las 23:59; los veredictos llegan el martes por la tarde y vuelven a puntuar al jugador antes del cierre."
-    ,"howCrewBody": "2–8 amigos, únete con un código y haz un draft serpiente donde cada jugador solo puede pertenecer a una persona por sala. Cada participante tiene 30 segundos de banco por ronda — 390 s para los 13 picks; si se agota, las elecciones restantes son automáticas."
-    ,"howCrewLabel": "Draft de grupo."
-    ,"howCrowdBody": "Los votos del público, cara a cara sobre actuaciones reales, mueven la puntuación hasta ±15%. Las actuaciones con pocos votos conservan su puntuación base."
-    ,"howCrowdLabel": "Veredicto del público:"
-    ,"howDefendingBody": "Las porterías a cero pagan GK +5 / DEF +4 / MID +1 (60+ minutos); los GK y DEF pierden 1 punto por cada 2 goles encajados. Entradas, intercepciones, bloqueos, paradas, pases clave y regates dan pequeñas cantidades, con límites para que el volumen no se pueda explotar. La excelencia sostenida da hasta +2 mediante bonificaciones de dominio defensivo y precisión de pase."
-    ,"howDefendingLabel": "Defensa:"
-    ,"howDuplicatesBody": "un equipo son 13 jugadores, no 13 posiciones."
-    ,"howDuplicatesLabel": "Sin duplicados:"
-    ,"howFinalityBody": "las puntuaciones se cierran a las 23:59 (hora de París) del día siguiente al cierre de la ventana."
-    ,"howFinalityLabel": "Cierre:"
-    ,"howFinishersBody": "solo puntúan desde su minuto de entrada, y sus goles y asistencias después del minuto 75 reciben ×1,25 — el multiplicador del momento decisivo."
-    ,"howFinishersLabel": "Finalizadores:"
-    ,"howGoalsBody": "los goles pagan +5 a +8 y las asistencias +3 a +6 — cuanto más profunda la posición, más paga (un gol de GK vale +8 y el de un delantero +5)."
-    ,"howGoalsLabel": "Goles y asistencias:"
-    ,"howLocks": "Bloqueos"
-    ,"howLocksBody": "Cada jugador se bloquea en su propio saque inicial. Hasta entonces puedes cambiarlo, recolocarlo y reordenarlo; después la posición queda congelada y el coste comprometido. Un jugador cuyo partido ya empezó no puede entrar — nada de elegir con ventaja retrospectiva. Ajustar el domingo alrededor del sábado bloqueado es parte de la habilidad."
-    ,"howModes": "Dos formas de jugar"
-    ,"howScoring": "Puntuación, en lenguaje claro"
-    ,"howShapeBody": "exactamente 1 GK, 3–5 DEF, 2–5 MID y 1–3 ATT en el XI. Los finalizadores conservan su propia posición, elegida libremente."
-    ,"howShapeLabel": "Cualquier esquema válido:"
-    ,"howShowingBody": "+1 por cualquier minuto jugado."
-    ,"howShowingLabel": "Salir al campo:"
-    ,"howSquad": "Tu equipo"
-    ,"howTableBody": "ordenada por puntos acumulados; los empates se rompen con victorias cara a cara del fin de semana; si sigue el empate, se muestra como tal."
-    ,"howTableLabel": "Tabla de grupos:"
-    ,"howTeamBody": "+1 por ganar, +0,5 por empatar, si el jugador disputó 60+ minutos."
-    ,"howTeamLabel": "Resultado del equipo:"
-    ,"howTemplatesBody": "el jugador puntúa con la plantilla de la posición en la que TÚ lo alineaste. Si el veredicto dice que jugó en otra posición, la puntuación positiva se reduce ×0,75 — colocarlo mal nunca supera a colocarlo bien."
-    ,"howTemplatesLabel": "Plantillas de posición:"
-    ,"howThirteenBody": "un XI más 2 finalizadores (tu banquillo con intención)."
-    ,"howThirteenLabel": "Trece jugadores:"
-    ,"howTies": "Empates y cierre"
-    ,"howWeekend": "El fin de semana"
-    ,"howWeekendBody": "Un equipo para todo el fin de semana europeo de fútbol. Ocho ligas, todos los partidos de la ventana cuentan y el tablero se reinicia en cada jornada — los fines de semana van de viernes a lunes y las ventanas entre semana, de martes a jueves. Sin desgaste de temporada completa."
-    ,"invite": "Invitar"
-    ,"inviteLabel": "Invitar:"
-    ,"latestActivity": "Actividad reciente"
-    ,"leaveCrewFailed": "No se pudo salir del grupo."
-    ,"leaveTransfer": "Salir y transferir el control"
-    ,"loadingStandings": "Cargando clasificación…"
-    ,"markRead": "Marcar como leído · {{count}}"
-    ,"memberRemoved": "Se eliminó a {{name}}."
-    ,"membersLabel": "Miembros:"
-    ,"membershipNote": "No hay límite de miembros. Cada fin de semana tiene ocho plazas de draft."
-    ,"moveDown": "Bajar"
-    ,"moveUp": "Subir"
-    ,"movement": "movimiento"
-    ,"myRecord": "Mi historial"
-    ,"noDraftOpen": "No hay ningún draft abierto"
-    ,"noDraftsYet": "aún no hay drafts"
-    ,"openCrewCommand": "Abrir Crew Command"
-    ,"openDraftFailed": "No se pudo abrir la sala de draft."
-    ,"openNextFromCommand": "Abre el próximo desde Crew Command."
-    ,"ownershipLabel": "Control:"
-    ,"ownershipTitle": "Control"
-    ,"planDraft": "Planificar el draft"
-    ,"planned": "Planificado: {{date}}"
-    ,"podiums": "Podios"
-    ,"rankShort": "P"
-    ,"releaseSeat": "Liberar mi plaza"
-    ,"remove": "Eliminar"
-    ,"removeMemberBody": "Sale del grupo y de cualquier plaza de sala aún no iniciada. Sus resultados anteriores permanecen."
-    ,"removeMemberFailed": "No se pudo eliminar a ese miembro."
-    ,"removeMemberTitle": "¿Eliminar a {{name}}?"
-    ,"replace": "Sustituir…"
-    ,"replacePlayer": "Sustituir a {{name}}"
-    ,"roleAtt": "ATA"
-    ,"roleDef": "DEF"
-    ,"roleGk": "POR"
-    ,"roleMid": "MED"
-    ,"save": "Guardar"
-    ,"searchAddPlayers": "Buscar jugadores para añadir…"
-    ,"seasonTitles": "Títulos de temporada"
-    ,"shareLink": "Compartir enlace"
-    ,"slotMatchesVerdict": "la posición coincide con el veredicto"
-    ,"slotMismatched": "posición incorrecta"
-    ,"standings": "Clasificación"
-    ,"standingsEmpty": "La clasificación aparece cuando un fin de semana se ha drafteado y puntuado."
-    ,"topHalfLabel": "Racha en la mitad superior"
-    ,"trophyCabinet": "Vitrina de trofeos"
-    ,"weekendWrapped": "Fin de semana terminado"
-    ,"weekends": "Fines de semana"
-    ,"weeklyResults": "Resultados semanales"
-    ,"weeklyWins": "Victorias semanales"
-    ,"yourCrewRace": "Tu carrera de grupo"
-    ,"yourRivalries": "Tus rivalidades"
-    ,"copyCode": "Copiar código"
-    ,"crewDeleted": "Grupo borrado."
-    ,"draftInProgress": "Draft en curso"
-    ,"lobbyIsOpen": "La sala está abierta"
-    ,"manage": "Gestionar"
-    ,"openDraftRoom": "Abrir la sala de draft"
-    ,"seatsClaimed": "{{count}} de 8 plazas ocupadas"
-    ,"crewDeleted": "Grupo borrado."
-    ,"poolPricedForm": "Forma de {{season}} de 2025-26"
-    ,"poolTopFive": "Precio según la forma de los cinco mejores de 2025-26"
-    ,"poolPromotedForm": "Club ascendido — precio según su forma de {{season}} de 2025-26"
-    ,"poolSecondDivision": "Club ascendido — precio según la segunda división de 2025-26"
-    ,"poolLeague": "Precio según la forma de liga de 2025-26"
-    ,"poolFlagged": "No hay datos de temporada utilizables para 2025-26 — precio mínimo"
-    ,"position_GK": "Portero"
-    ,"position_DEF": "Defensa"
-    ,"position_MID": "Centrocampista"
-    ,"position_ATT": "Delantero"
-    ,"claimSeatFailed": "No se pudo reclamar esa plaza."
-    ,"releaseSeatFailed": "No se pudo liberar esa plaza."
-    ,"saveDraftTimeFailed": "No se pudo guardar la hora del draft."
-    ,"replaceSeatFailed": "No se pudo sustituir esa plaza."
-    ,"saveShortlistFailed": "No se pudo guardar tu lista."
-    ,"drafted": "Completado"
-    ,"roomStatus": "Estado de la sala"
-    ,"shareJoinText": "Únete a mi grupo del fin de semana en VerveQ."
-    ,"draftTurnLive": "Tu turno de draft está activo."
-    ,"shareReceiptHeader": "EL FIN DE SEMANA — J{{gw}} resuelta: {{points}} pts."
-    ,"shareReceiptBest": "Mejor elección: {{name}} {{points}}."
-    ,"shareReceiptBeat": "Superaste al {{pct}}% de los equipos con presupuesto."
-    ,"shareReceiptRank": "{{rank}} de {{of}} en la sala."
-    ,"draftTurnNext": "Eres el siguiente en el draft."
-    ,"leaveCrew": "Salir del grupo"
-    ,"membersWithCount": "Miembros · {{count}}"
-    ,"removeMemberAria": "Eliminar a {{name}}"
-    ,"final": "Final"
-    ,"scheduledDraft": "Draft · {{date}}"
-    ,"crewRecapTitle": "Resumen de {{name}}"
-    ,"gameweekRecap": "J{{gw}} · resumen"
-    ,"recapClimbed": "{{name}} subió {{count}} puestos"
-    ,"recapMvp": "MVP: {{player}} · {{points}} ({{owner}})"
+    "claim_expired": "caducada",
+    "activity": "Actividad",
+    "ahead": "{{points}} por delante",
+    "allSeatsClaimed": "Las 8 plazas están ocupadas",
+    "allTime": "Histórico",
+    "allTimeStandings": "Clasificación histórica",
+    "appearancesAverage": "{{appearances}} apariciones · {{average}} de media",
+    "appsAverage": "{{apps}} partidos · {{average}} de media",
+    "autoPickQueue": "Cola privada de elecciones automáticas",
+    "autoPickQueueBody": "Tu orden es privado. Si se acaba el tiempo, se prueban primero los jugadores válidos de la cola.",
+    "awaiting": "esperando",
+    "bestFinishLabel": "Mejor puesto",
+    "claimSeat": "Reclamar plaza de draft",
+    "command": "Comando",
+    "copyCodeFailed": "No se pudo copiar el código.",
+    "creator": "Creador",
+    "creatorOnly": "Solo el creador puede acceder",
+    "creatorOnlyBody": "Solo la persona que gestiona este grupo puede abrir Crew Command.",
+    "creatorOpensNext": "El creador abrirá el próximo fin de semana.",
+    "crewCommandDraftBody": "abre la sala semanal y gestiona su tiempo y sus ocho plazas en la sala de espera.",
+    "crewCommandHowTitle": "Cómo funciona Crew Command",
+    "crewCommandInfoAria": "Cómo funciona Crew Command",
+    "crewCommandInviteBody": "comparte el enlace permanente o el código del grupo.",
+    "crewCommandMembersBody": "elimina a personas inactivas sin borrar los resultados anteriores.",
+    "crewCommandOwnershipBody": "al salir transfieres el control; solo se puede borrar antes del primer draft completado.",
+    "crewCommandTitle": "Ajustes del grupo",
+    "crewCompetition": "Competición de grupo",
+    "crewRecapReady": "El resumen del grupo está listo para compartir.",
+    "crewTitle": "Grupo",
+    "deleteCrew": "Borrar grupo",
+    "deleteCrewBody": "Esto elimina el grupo para todos. No se puede deshacer.",
+    "deleteCrewConfirmLabel": "Escribe DELETE para confirmar",
+    "deleteCrewFailed": "No se pudo borrar el grupo.",
+    "deleteCrewForever": "Borrar el grupo para siempre",
+    "deleteCrewTitle": "¿Borrar este grupo?",
+    "draftLabel": "Draft:",
+    "draftRooms": "Salas de draft",
+    "drafters": "{{count}} participantes",
+    "enterLiveDraft": "Entrar al draft en directo",
+    "enterLobby": "Entrar a la sala de espera",
+    "gameweek": "Jornada",
+    "howBudgetBody": "Forma tus 13 jugadores con un presupuesto de 91,0 M£. Los precios van de 4,0 M£ a 13,0 M£ en pasos de 0,5 M£, iguales para todos y fijos durante la jornada.",
+    "howBudgetLabel": "Equipo con presupuesto.",
+    "howCardsBody": "amarilla −1, roja −4 (una expulsión por doble amarilla suma −6).",
+    "howCardsLabel": "Tarjetas:",
+    "howClubCapBody": "como máximo 3 jugadores de un club — 4 de tu club favorito. Elígelo una sola vez desde la tarjeta Club favorito en el inicio de Weekend. Es permanente: nunca podrá cambiarse, así que elige el club que de verdad apoyas.",
+    "favoriteClubTitle": "Club favorito",
+    "favoriteClubLockedBody": "4 jugadores permitidos en vez de 3. Permanente — no se puede cambiar.",
+    "favoriteClubWarning": "Elige con cuidado: tu club favorito es permanente. Nunca podrá cambiarse — ni la próxima jornada, ni la próxima temporada.",
+    "favoriteClubConfirmTitle": "¿{{club}}, para siempre?",
+    "favoriteClubConfirmBody": "Desde ahora podrás alinear 4 jugadores de {{club}} en vez de 3 en cada plantilla. Esta elección es permanente y nunca podrá cambiarse.",
+    "favoriteClubBack": "Atrás",
+    "favoriteClubConfirm": "Confirmar, para siempre",
+    "clubCapFriendly": "Solo {{cap}} de {{club}} — tu club favorito tiene uno más. Elígelo una vez (es permanente) en el inicio de Weekend.",
+    "clubCapFavoriteFriendly": "Solo {{cap}} de {{club}}, incluso siendo tu club favorito.",
+    "clubCapAction": "Elegir favorito",
+    "favoriteClubEmptyBody": "Elige uno — podrás alinear 4 en vez de 3. Una sola elección, para siempre.",
+    "favoriteClubSet": "{{club}} es tu club favorito — para siempre.",
+    "favoriteClubFailed": "No se pudo guardar tu club favorito.",
+    "noClubsMatch": "Ningún club coincide.",
+    "howClubCapLabel": "Límite por club:",
+    "howCourt": "El tribunal de posiciones",
+    "howCourtBody": "¿Crees que el feed indicó mal la posición de un jugador? Presenta una reclamación: tienes 2 por jornada y presentar cuenta como el primer apoyo. Una reclamación con suficientes apoyos (al menos 15 o el 0,5% de los activos) va a juicio; gana con el 60% y quórum (al menos 30 o el 1%). Las reclamaciones cierran el lunes a las 23:59; los veredictos llegan el martes por la tarde y vuelven a puntuar al jugador antes del cierre.",
+    "howCrewBody": "2–8 amigos, únete con un código y haz un draft serpiente donde cada jugador solo puede pertenecer a una persona por sala. Cada participante tiene 30 segundos de banco por ronda — 390 s para los 13 picks; si se agota, las elecciones restantes son automáticas.",
+    "howCrewLabel": "Draft de grupo.",
+    "howCrowdBody": "Los votos del público, cara a cara sobre actuaciones reales, mueven la puntuación hasta ±15%. Las actuaciones con pocos votos conservan su puntuación base.",
+    "howCrowdLabel": "Veredicto del público:",
+    "howDefendingBody": "Las porterías a cero pagan GK +5 / DEF +4 / MID +1 (60+ minutos); los GK y DEF pierden 1 punto por cada 2 goles encajados. Entradas, intercepciones, bloqueos, paradas, pases clave y regates dan pequeñas cantidades, con límites para que el volumen no se pueda explotar. La excelencia sostenida da hasta +2 mediante bonificaciones de dominio defensivo y precisión de pase.",
+    "howDefendingLabel": "Defensa:",
+    "howDuplicatesBody": "un equipo son 13 jugadores, no 13 posiciones.",
+    "howDuplicatesLabel": "Sin duplicados:",
+    "howFinalityBody": "las puntuaciones se cierran a las 23:59 (hora de París) del día siguiente al cierre de la ventana.",
+    "howFinalityLabel": "Cierre:",
+    "howFinishersBody": "solo puntúan desde su minuto de entrada, y sus goles y asistencias después del minuto 75 reciben ×1,25 — el multiplicador del momento decisivo.",
+    "howFinishersLabel": "Finalizadores:",
+    "howGoalsBody": "los goles pagan +5 a +8 y las asistencias +3 a +6 — cuanto más profunda la posición, más paga (un gol de GK vale +8 y el de un delantero +5).",
+    "howGoalsLabel": "Goles y asistencias:",
+    "howLocks": "Bloqueos",
+    "howLocksBody": "Cada jugador se bloquea en su propio saque inicial. Hasta entonces puedes cambiarlo, recolocarlo y reordenarlo; después la posición queda congelada y el coste comprometido. Un jugador cuyo partido ya empezó no puede entrar — nada de elegir con ventaja retrospectiva. Ajustar el domingo alrededor del sábado bloqueado es parte de la habilidad.",
+    "howModes": "Dos formas de jugar",
+    "howScoring": "Puntuación, en lenguaje claro",
+    "howShapeBody": "exactamente 1 GK, 3–5 DEF, 2–5 MID y 1–3 ATT en el XI. Los finalizadores conservan su propia posición, elegida libremente.",
+    "howShapeLabel": "Cualquier esquema válido:",
+    "howShowingBody": "+1 por cualquier minuto jugado.",
+    "howShowingLabel": "Salir al campo:",
+    "howSquad": "Tu equipo",
+    "howTableBody": "ordenada por puntos acumulados; los empates se rompen con victorias cara a cara del fin de semana; si sigue el empate, se muestra como tal.",
+    "howTableLabel": "Tabla de grupos:",
+    "howTeamBody": "+1 por ganar, +0,5 por empatar, si el jugador disputó 60+ minutos.",
+    "howTeamLabel": "Resultado del equipo:",
+    "howTemplatesBody": "el jugador puntúa con la plantilla de la posición en la que TÚ lo alineaste. Si el veredicto dice que jugó en otra posición, la puntuación positiva se reduce ×0,75 — colocarlo mal nunca supera a colocarlo bien.",
+    "howTemplatesLabel": "Plantillas de posición:",
+    "howThirteenBody": "un XI más 2 finalizadores (tu banquillo con intención).",
+    "howThirteenLabel": "Trece jugadores:",
+    "howTies": "Empates y cierre",
+    "howWeekend": "El fin de semana",
+    "howWeekendBody": "Un equipo para todo el fin de semana europeo de fútbol. Ocho ligas, todos los partidos de la ventana cuentan y el tablero se reinicia en cada jornada — los fines de semana van de viernes a lunes y las ventanas entre semana, de martes a jueves. Sin desgaste de temporada completa.",
+    "invite": "Invitar",
+    "inviteLabel": "Invitar:",
+    "latestActivity": "Actividad reciente",
+    "leaveCrewFailed": "No se pudo salir del grupo.",
+    "leaveTransfer": "Salir y transferir el control",
+    "loadingStandings": "Cargando clasificación…",
+    "markRead": "Marcar como leído · {{count}}",
+    "memberRemoved": "Se eliminó a {{name}}.",
+    "membersLabel": "Miembros:",
+    "membershipNote": "No hay límite de miembros. Cada fin de semana tiene ocho plazas de draft.",
+    "moveDown": "Bajar",
+    "moveUp": "Subir",
+    "movement": "movimiento",
+    "myRecord": "Mi historial",
+    "noDraftOpen": "No hay ningún draft abierto",
+    "noDraftsYet": "aún no hay drafts",
+    "openCrewCommand": "Abrir ajustes del grupo",
+    "openDraftFailed": "No se pudo abrir la sala de draft.",
+    "openNextFromCommand": "Abre el próximo desde Crew Command.",
+    "ownershipLabel": "Control:",
+    "ownershipTitle": "Control",
+    "planDraft": "Planificar el draft",
+    "planned": "Planificado: {{date}}",
+    "podiums": "Podios",
+    "rankShort": "P",
+    "releaseSeat": "Liberar mi plaza",
+    "remove": "Eliminar",
+    "removeMemberBody": "Sale del grupo y de cualquier plaza de sala aún no iniciada. Sus resultados anteriores permanecen.",
+    "removeMemberFailed": "No se pudo eliminar a ese miembro.",
+    "removeMemberTitle": "¿Eliminar a {{name}}?",
+    "replace": "Sustituir…",
+    "replacePlayer": "Sustituir a {{name}}",
+    "roleAtt": "DEL",
+    "roleDef": "DEF",
+    "roleGk": "POR",
+    "roleMid": "MED",
+    "save": "Guardar",
+    "searchAddPlayers": "Buscar jugadores para añadir…",
+    "seasonTitles": "Títulos de temporada",
+    "shareLink": "Compartir enlace",
+    "slotMatchesVerdict": "la posición coincide con el veredicto",
+    "slotMismatched": "posición incorrecta",
+    "standings": "Clasificación",
+    "standingsEmpty": "La clasificación aparece cuando un fin de semana se ha drafteado y puntuado.",
+    "topHalfLabel": "Racha en la mitad superior",
+    "trophyCabinet": "Vitrina de trofeos",
+    "weekendWrapped": "Fin de semana terminado",
+    "weekends": "Fines de semana",
+    "weeklyResults": "Resultados semanales",
+    "weeklyWins": "Victorias semanales",
+    "yourCrewRace": "Tu carrera de grupo",
+    "yourRivalries": "Tus rivalidades",
+    "copyCode": "Copiar código",
+    "crewDeleted": "Grupo borrado.",
+    "draftInProgress": "Draft en curso",
+    "lobbyIsOpen": "La sala está abierta",
+    "manage": "Gestionar",
+    "openDraftRoom": "Abrir la sala de draft",
+    "seatsClaimed": "{{count}} de 8 plazas ocupadas",
+    "poolPricedForm": "Forma de {{season}} de 2025-26",
+    "poolTopFive": "Precio según la forma de los cinco mejores de 2025-26",
+    "poolPromotedForm": "Club ascendido — precio según su forma de {{season}} de 2025-26",
+    "poolSecondDivision": "Club ascendido — precio según la segunda división de 2025-26",
+    "poolLeague": "Precio según la forma de liga de 2025-26",
+    "poolFlagged": "No hay datos de temporada utilizables para 2025-26 — precio mínimo",
+    "position_GK": "Portero",
+    "position_DEF": "Defensa",
+    "position_MID": "Centrocampista",
+    "position_ATT": "Delantero",
+    "claimSeatFailed": "No se pudo reclamar esa plaza.",
+    "releaseSeatFailed": "No se pudo liberar esa plaza.",
+    "saveDraftTimeFailed": "No se pudo guardar la hora del draft.",
+    "replaceSeatFailed": "No se pudo sustituir esa plaza.",
+    "saveShortlistFailed": "No se pudo guardar tu lista.",
+    "drafted": "Completado",
+    "roomStatus": "Estado de la sala",
+    "shareJoinText": "Únete a mi grupo del fin de semana en VerveQ.",
+    "draftTurnLive": "Tu turno de draft está activo.",
+    "shareReceiptHeader": "EL FIN DE SEMANA — J{{gw}} resuelta: {{points}} pts.",
+    "shareReceiptBest": "Mejor elección: {{name}} {{points}}.",
+    "shareReceiptBeat": "Superaste al {{pct}}% de los equipos con presupuesto.",
+    "shareReceiptRank": "{{rank}} de {{of}} en la sala.",
+    "draftTurnNext": "Eres el siguiente en el draft.",
+    "leaveCrew": "Salir del grupo",
+    "membersWithCount": "Miembros · {{count}}",
+    "removeMemberAria": "Eliminar a {{name}}",
+    "final": "Final",
+    "scheduledDraft": "Draft · {{date}}",
+    "crewRecapTitle": "Resumen de {{name}}",
+    "gameweekRecap": "J{{gw}} · resumen",
+    "recapClimbed": "{{name}} subió {{count}} puestos",
+    "recapMvp": "MVP: {{player}} · {{points}} ({{owner}})",
+    "availability": "Disponibilidad",
+    "availabilityRead": "Datos leídos {{when}}",
+    "availabilityClear": "No se ha informado de ningún problema de disponibilidad este fin de semana.",
+    "availabilityNoReport": "Su liga no publica parte de disponibilidad — no sabemos si está disponible.",
+    "availabilityOut": "Baja",
+    "availabilityDoubt": "Duda",
+    "availabilityOutLong": "Se espera que se pierda este partido",
+    "availabilityDoubtLong": "Es duda para este partido",
+    "squadFlaggedOut_one": "{{count}} jugador de tu plantilla se perderá este fin de semana.",
+    "squadFlaggedOut_other": "{{count}} jugadores de tu plantilla se perderán este fin de semana.",
+    "squadFlaggedDoubt_one": "{{count}} jugador de tu plantilla es duda este fin de semana.",
+    "squadFlaggedDoubt_other": "{{count}} jugadores de tu plantilla son duda este fin de semana.",
+    "hideFlagged": "Ocultar señalados",
+    "receiptSettledLine": "{{season}} · cerrado el {{date}}"
+  },
+  "errors": {
+    "generic": "Algo salió mal. Inténtalo de nuevo.",
+    "connection": "Problema de conexión. Revisa tu internet e inténtalo de nuevo.",
+    "signIn": "Inicia sesión para continuar.",
+    "noAccess": "No tienes acceso a esto.",
+    "usernameFirst": "Elige primero un nombre de usuario.",
+    "usernameTaken": "Ese nombre de usuario ya está en uso.",
+    "alreadyPlayed": "Ya jugaste el juego de hoy.",
+    "alreadyClaimed": "Alguien ya lo ha cogido.",
+    "duelYourself": "No puedes batirte en duelo contigo mismo.",
+    "notFound": "Esto ya no está disponible — puede que haya caducado.",
+    "expired": "Se acabó el tiempo — esta ronda ha terminado.",
+    "declined": "Este duelo fue rechazado.",
+    "roomFull": "Esta sala ya está llena.",
+    "rateLimited": "Demasiados intentos desde tu red. Inténtalo de nuevo en un rato.",
+    "outOfSync": "Algo se desincronizó — recarga la página e inténtalo de nuevo."
+  },
+  "meta": {
+    "default": {
+      "title": "Juegos de trivia de fútbol — Gratis | VerveQ",
+      "description": "Juegos de quiz de fútbol gratis: un quiz diario, adivina al futbolista por su trayectoria, una cuadrícula, mayor o menor y duelos 1v1. Sin registro."
+    },
+    "compete": {
+      "title": "Juega a quizzes de fútbol — Clasificatorio y casual | VerveQ",
+      "description": "Todos los juegos de fútbol de VerveQ en un sitio: quiz y survival clasificatorios, quizzes diarios, duelos y salas de arena con amigos. Gratis."
+    },
+    "daily": {
+      "title": "Quiz diario — 10 preguntas de fútbol | VerveQ",
+      "description": "Las diez preguntas de fútbol de hoy, las mismas para todos. Un intento, puntos por rapidez y una racha que proteger. Se renueva a medianoche UTC."
+    },
+    "dailySurvival": {
+      "title": "Survival diario — Una partida para todos | VerveQ",
+      "description": "Una partida de survival al día, igual para todos: nombra jugadores por sus iniciales hasta quedarte sin vidas. Un solo intento."
+    },
+    "whosOlder": {
+      "title": "Who's Older? — El juego diario de edades | VerveQ",
+      "description": "Dos futbolistas: toca el mayor. Diez rondas al día y la diferencia baja de años a días. Las mismas parejas para todos y después, modo infinito."
+    },
+    "missingLetters": {
+      "title": "Missing Letters — Adivina el futbolista del día | VerveQ",
+      "description": "Adivina el futbolista con las letras que faltan. Diez nombres al día, de fácil a imposible, con su país como pista. Después, modo infinito."
+    },
+    "blitz": {
+      "title": "Blitz — Quiz de fútbol en 60 segundos | VerveQ",
+      "description": "Sesenta segundos para responder todas las preguntas de fútbol que puedas. Sin comodines ni segundas oportunidades. Gratis."
+    },
+    "higherLower": {
+      "title": "Higher or Lower — El juego de estadísticas | VerveQ",
+      "description": "¿La estadística del siguiente jugador es mayor o menor? Goles, partidos y títulos, de uno en uno. Un fallo y se acaba la racha."
+    },
+    "careerPath": {
+      "title": "Career Path — Nombra al jugador por sus clubes | VerveQ",
+      "description": "Lee la trayectoria de un futbolista club a club y nómbralo antes de quedarte sin intentos. Se perdonan erratas, cientos de carreras."
+    },
+    "verveGrid": {
+      "title": "VerveGrid — La cuadrícula de fútbol | VerveQ",
+      "description": "Nueve casillas, nueve intentos. Nombra un jugador que encaje en la fila y la columna — club, país o posición. Sin repetir jugador."
+    },
+    "arena": {
+      "title": "Arena — Salas de quiz en directo con amigos | VerveQ",
+      "description": "Crea una sala, comparte el código y todos responden las mismas preguntas de fútbol a la vez. Puntuación en directo, para todo el grupo."
+    },
+    "duels": {
+      "title": "Duelos — Trivia de fútbol cara a cara | VerveQ",
+      "description": "Envía un enlace, los dos respondéis las mismas preguntas de fútbol y se decide quién gana. Tu rival no necesita cuenta para jugar."
+    },
+    "ranks": {
+      "title": "Rangos — Puntuaciones y mejores jugadores | VerveQ",
+      "description": "Tu posición en la trivia de fútbol de VerveQ: puntuaciones globales, los mejores de cada modo clasificatorio y quién va justo por delante."
+    },
+    "weekendTable": {
+      "title": "The Weekend — Tabla en directo | VerveQ",
+      "description": "La clasificación global en directo del juego fantasy The Weekend: los puntos provisionales de las plantillas se actualizan con cada partido."
+    }
+  },
+  "app": {
+    "notFound": {
+      "title": "Esta página está fuera del campo",
+      "body": "Puede que el enlace sea antiguo o que la página se haya movido. Vuelve y elige un juego.",
+      "cta": "Volver al inicio"
+    },
+    "install": {
+      "title": "Instalar VerveQ",
+      "iosTitle": "Añade VerveQ a tu pantalla de inicio",
+      "iosShare": "Compartir",
+      "iosAdd": "→ Añadir a pantalla de inicio",
+      "cta": "Instalar",
+      "dismiss": "Cerrar la sugerencia de instalación"
+    }
+  },
+  "taste": {
+    "wc-most-titles": {
+      "question": "¿Qué país ha ganado más Mundiales?",
+      "explanation": "Brasil tiene cinco títulos: 1958, 1962, 1970, 1994 y 2002.",
+      "o0": "Brasil",
+      "o1": "Alemania",
+      "o2": "Italia",
+      "o3": "Argentina"
+    },
+    "messi-club": {
+      "question": "¿En qué club pasó Lionel Messi la mayor parte de su carrera?",
+      "explanation": "Messi salió de La Masia y jugó 17 temporadas en el Barça."
+    },
+    "wc-2022-winner": {
+      "question": "¿Quién ganó el Mundial 2022 de Catar?",
+      "explanation": "Argentina venció a Francia en los penaltis tras una final 3–3.",
+      "o0": "Argentina",
+      "o1": "Francia",
+      "o2": "Brasil",
+      "o3": "Croacia"
+    },
+    "red-devils": {
+      "question": "¿Qué club inglés tiene el apodo de «los Diablos Rojos»?",
+      "explanation": "El Manchester United de Old Trafford lleva el apodo de Red Devils."
+    },
+    "ucl-most-titles": {
+      "question": "¿Qué club ha ganado más Copas de Europa / Champions League?",
+      "explanation": "El Real Madrid lidera Europa con diferencia; el AC Milan es el siguiente."
+    },
+    "el-clasico": {
+      "question": "«El Clásico» enfrenta al Real Madrid con qué club?",
+      "explanation": "Real Madrid contra Barcelona: la gran rivalidad del fútbol español."
+    },
+    "hand-of-god": {
+      "question": "¿En qué Mundial marcó Maradona el gol de «la mano de Dios»?",
+      "explanation": "México 1986, contra Inglaterra, minutos antes de su obra maestra en solitario."
+    },
+    "wc-1966": {
+      "question": "¿Qué país organizó Y ganó el Mundial de 1966?",
+      "explanation": "El único Mundial de Inglaterra: 4–2 a la RFA en Wembley.",
+      "o0": "Inglaterra",
+      "o1": "RFA",
+      "o2": "Brasil",
+      "o3": "Italia"
+    },
+    "ronaldo-sporting": {
+      "question": "¿Qué club portugués dejó Cristiano Ronaldo para fichar por el Manchester United?",
+      "explanation": "El United lo fichó del Sporting CP en 2003, con 18 años."
+    },
+    "henry-arsenal": {
+      "question": "¿De qué club es Thierry Henry el máximo goleador histórico?",
+      "explanation": "228 goles con el Arsenal: nadie ha marcado más en el club."
+    },
+    "pele-santos": {
+      "question": "¿En qué club brasileño jugó Pelé la mayor parte de su carrera?",
+      "explanation": "Pelé pasó casi dos décadas en el Santos antes del New York Cosmos."
+    },
+    "old-lady": {
+      "question": "¿Qué club italiano de rayas blancas y negras es «la Vieja Señora»?",
+      "explanation": "La Juventus, «la Vecchia Signora» de Turín.",
+      "o0": "Juventus",
+      "o1": "Inter de Milán",
+      "o2": "AC Milan",
+      "o3": "Nápoles"
+    },
+    "players-per-side": {
+      "question": "¿Cuántos jugadores alinea cada equipo al inicio del partido?",
+      "explanation": "Once por equipo: diez de campo y un portero."
+    },
+    "ballon-dor": {
+      "question": "El Balón de Oro se entrega a…",
+      "explanation": "El premio de France Football al mejor jugador del mundo.",
+      "o0": "El mejor jugador del mundo",
+      "o1": "El máximo goleador de la temporada",
+      "o2": "El mejor portero",
+      "o3": "El mejor jugador joven"
+    },
+    "invincibles": {
+      "question": "¿Qué club terminó invicto la Premier League 2003–04?",
+      "explanation": "Los «Invencibles» de Arsène Wenger: 26 victorias, 12 empates y 0 derrotas."
+    }
   }
 }

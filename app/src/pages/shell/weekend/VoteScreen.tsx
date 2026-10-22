@@ -46,6 +46,7 @@ import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { friendlyError } from "@/lib/errors";
 import { leagueName } from "@/lib/leagueNames";
 import { groupFixturesByDay } from "@/lib/weekendFixtures";
+import { roleLabel } from "@/lib/weekendRoles";
 import {
   kickoffDayTag,
   localDayStart,
@@ -416,7 +417,7 @@ export function PairCard({
         onClick={busy ? undefined : onPick}
       >
         <Badge tone="muted">
-          {player.position}
+          {roleLabel(player.position, t)}
         </Badge>
         <p className="font-heading font-bold text-lg leading-tight mt-2">{player.name}</p>
         <p className="text-meta text-muted-foreground mt-1">
@@ -436,7 +437,7 @@ export function PairCard({
       onClick={busy ? undefined : onPick}
     >
       <Badge tone="muted">
-        {player.position}
+        {roleLabel(player.position, t)}
       </Badge>
       <p className="font-heading font-bold text-lg leading-tight mt-2">{player.name}</p>
       {/* where the memory happened: club, opponent, venue */}

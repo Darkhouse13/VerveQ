@@ -15,6 +15,20 @@ import { formatPoints } from "../../convex/lib/fantasyScoring";
 import type { SquadReceipt } from "../../convex/fantasyReceipts";
 import { drawBrandLockup } from "@/lib/brandCanvas";
 import { brandColor } from "@/lib/brandTokens";
+import { roleLabel } from "@/lib/weekendRoles";
+
+/**
+ * The screen's `t` (shell namespace). Labels resolve through the same
+ * `weekend.receipt*` keys as the DOM card, so the shared image speaks the
+ * player's language; without one, the English defaults are painted.
+ */
+export type ReceiptT = (
+  key: string,
+  options: { defaultValue: string } & Record<string, unknown>,
+) => string;
+
+const englishT: ReceiptT = (_key, { defaultValue, ...vars }) =>
+  defaultValue.replace(/\{\{(\w+)\}\}/g, (_match, name: string) => String(vars[name] ?? ""));
 
 const W = 1080;
 const H = 1920;
@@ -71,7 +85,10 @@ export function receiptFilename(receipt: SquadReceipt): string {
  * Render the receipt. Waits for the app's fonts so the card matches the
  * product; falls back to the generic families if they never load.
  */
-export async function paintReceipt(receipt: SquadReceipt): Promise<Blob> {
+export async function paintReceipt(
+  receipt: SquadReceipt,
+  t: ReceiptT = englishT,
+): Promise<Blob> {
   try {
     await document.fonts.ready;
   } catch {
@@ -94,16 +111,29 @@ export async function paintReceipt(receipt: SquadReceipt): Promise<Blob> {
   ctx.fillStyle = LIME;
   ctx.font = `bold 34px ${MONO}`;
   ctx.textBaseline = "alphabetic";
-  ctx.fillText("THE WEEKEND — SETTLED", M, y);
+  // The eyebrow is the one uppercase line (canvas has no text-transform).
+  ctx.fillText(
+    t("weekend.receiptEyebrow", { defaultValue: "The Weekend — settled" }).toUpperCase(),
+    M,
+    y,
+  );
   y += 70;
   ctx.fillStyle = INK;
   ctx.font = `bold 80px ${HEADING}`;
-  ctx.fillText(`Gameweek ${receipt.gwNumber} receipt`, M, y);
+  ctx.fillText(
+    t("weekend.receiptTitle", { defaultValue: "Gameweek {{gw}} receipt", gw: receipt.gwNumber }),
+    M,
+    y,
+  );
   y += 40;
   ctx.fillStyle = MUTED;
   ctx.font = `28px ${MONO}`;
   ctx.fillText(
-    `${receipt.season} · settled ${new Date(receipt.settledAt).toLocaleDateString()}`,
+    t("weekend.receiptSettledLine", {
+      defaultValue: "{{season}} · settled {{date}}",
+      season: receipt.season,
+      date: new Date(receipt.settledAt).toLocaleDateString(),
+    }),
     M,
     y,
   );
@@ -118,7 +148,11 @@ export async function paintReceipt(receipt: SquadReceipt): Promise<Blob> {
   ctx.fillText(totalText, M + 44, y + 158);
   ctx.fillStyle = MUTED;
   ctx.font = `bold 34px ${MONO}`;
-  ctx.fillText("PTS FINAL", M + 44 + totalWidth + 28, y + 158);
+  ctx.fillText(
+    t("weekend.receiptFinal", { defaultValue: "pts final" }).toUpperCase(),
+    M + 44 + totalWidth + 28,
+    y + 158,
+  );
   y += 210 + 40;
 
   // The 13
@@ -130,7 +164,7 @@ export async function paintReceipt(receipt: SquadReceipt): Promise<Blob> {
   for (const slot of filled) {
     ctx.fillStyle = MUTED;
     ctx.font = `bold 26px ${MONO}`;
-    ctx.fillText(`${slot.slotRole}${slot.isFinisher ? "·F" : ""}`, M + 40, rowY);
+    ctx.fillText(`${roleLabel(slot.slotRole, t)}${slot.isFinisher ? "·F" : ""}`, M + 40, rowY);
     ctx.fillStyle = INK;
     ctx.font = `bold 34px ${HEADING}`;
     const name =
@@ -142,7 +176,7 @@ export async function paintReceipt(receipt: SquadReceipt): Promise<Blob> {
     ctx.textAlign = "right";
     if (slot.points === null) {
       ctx.fillStyle = MUTED;
-      ctx.fillText("awaiting", W - M - 40, rowY);
+      ctx.fillText(t("weekend.awaitingData", { defaultValue: "awaiting data" }), W - M - 40, rowY);
     } else {
       ctx.fillStyle = slot.points >= 0 ? INK : RECEIPT_COLORS.negative;
       ctx.fillText(formatPoints(slot.points), W - M - 40, rowY);
@@ -157,7 +191,7 @@ export async function paintReceipt(receipt: SquadReceipt): Promise<Blob> {
     panel(ctx, M, y, W - 2 * M, 150, CARD);
     ctx.font = `bold 30px ${MONO}`;
     ctx.fillStyle = LIME;
-    ctx.fillText("BEST CALL", M + 40, y + 58);
+    ctx.fillText(t("weekend.receiptBest", { defaultValue: "Best call" }).toUpperCase(), M + 40, y + 58);
     ctx.fillStyle = INK;
     ctx.font = `bold 34px ${HEADING}`;
     ctx.fillText(
@@ -167,7 +201,7 @@ export async function paintReceipt(receipt: SquadReceipt): Promise<Blob> {
     );
     ctx.fillStyle = MUTED;
     ctx.font = `bold 30px ${MONO}`;
-    ctx.fillText("WORST CALL", M + 40, y + 112);
+    ctx.fillText(t("weekend.receiptWorst", { defaultValue: "Worst call" }).toUpperCase(), M + 40, y + 112);
     ctx.fillStyle = INK;
     ctx.font = `bold 34px ${HEADING}`;
     ctx.fillText(
@@ -184,10 +218,20 @@ export async function paintReceipt(receipt: SquadReceipt): Promise<Blob> {
       (a, b) => Math.abs(b.crowdFactor) - Math.abs(a.crowdFactor),
     )[0];
     const pct = Math.round(strongest.crowdFactor * 100);
+    const signedPct = `${pct >= 0 ? "+" : ""}${pct}`;
     const line =
       receipt.crowdMoved.length === 1
-        ? `The crowd's verdict moved ${strongest.playerName} ${pct >= 0 ? "+" : ""}${pct}%`
-        : `The crowd's verdict moved ${receipt.crowdMoved.length} of your 13 — biggest: ${strongest.playerName} ${pct >= 0 ? "+" : ""}${pct}%`;
+        ? t("weekend.receiptCrowdOne", {
+            defaultValue: "The crowd's verdict moved {{name}} {{pct}}%",
+            name: strongest.playerName,
+            pct: signedPct,
+          })
+        : t("weekend.receiptCrowdMany", {
+            defaultValue: "The crowd's verdict moved {{n}} of your 13 — biggest: {{name}} {{pct}}%",
+            n: receipt.crowdMoved.length,
+            name: strongest.playerName,
+            pct: signedPct,
+          });
     ctx.fillStyle = MUTED;
     // Shrink to the panel width: a long name must not run off the image.
     let size = 28;
@@ -208,13 +252,21 @@ export async function paintReceipt(receipt: SquadReceipt): Promise<Blob> {
     panel(ctx, M, y, W - 2 * M, 170, LIME);
     ctx.fillStyle = RECEIPT_COLORS.onAccent;
     ctx.font = `bold 64px ${HEADING}`;
-    ctx.fillText(`Beat ${pct}% of budget squads`, M + 44, y + 105);
+    ctx.fillText(
+      t("weekend.receiptPercentile", { defaultValue: "Beat {{pct}}% of budget squads", pct }),
+      M + 44,
+      y + 105,
+    );
   } else if (receipt.crewRank !== null) {
     panel(ctx, M, y, W - 2 * M, 170, LIME);
     ctx.fillStyle = RECEIPT_COLORS.onAccent;
     ctx.font = `bold 64px ${HEADING}`;
     ctx.fillText(
-      `${receipt.crewRank.tied ? "T" : ""}${receipt.crewRank.rank} of ${receipt.crewRank.of} in the room`,
+      t("weekend.receiptCrewRank", {
+        defaultValue: "{{rank}} of {{of}} in the room",
+        rank: `${receipt.crewRank.tied ? "T" : ""}${receipt.crewRank.rank}`,
+        of: receipt.crewRank.of,
+      }),
       M + 44,
       y + 105,
     );

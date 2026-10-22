@@ -147,5 +147,30 @@
     "rarity": "ONLY {{pct}}% DRAFTED THIS LINE",
     "pts": "PTS",
     "trailLabel": "Rounds trail"
+  },
+  "homeCard": {
+    "eyebrow": "The Draw · Board #{{n}}",
+    "streak": "Streak {{n}}",
+    "todaysBoard": "Today's board #{{n}}",
+    "runInProgress": "Run in progress",
+    "draftRow": "Draft row {{row}} of {{rows}}",
+    "roundProgress": "Round {{round}} of {{total}} · {{pts}} pts",
+    "pts": "pts",
+    "rank": "Rank #{{rank}}",
+    "nextBoard": "Next board {{time}}"
+  },
+  "archetype": {
+    "ARCH_WALL": "WALL",
+    "ARCH_BLITZ": "BLITZ",
+    "ARCH_ENGINE": "ENGINE",
+    "ARCH_THROWBACK": "THROWBACK",
+    "ARCH_NEWWAVE": "NEW WAVE",
+    "ARCH_FORTRESS_KEEPER": "FORTRESS"
+  },
+  "positionShort": {
+    "GK": "GK",
+    "DEF": "DEF",
+    "MID": "MID",
+    "ATT": "ATT"
   }
 }

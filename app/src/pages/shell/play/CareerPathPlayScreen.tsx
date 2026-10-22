@@ -29,7 +29,7 @@ export default function CareerPathPlayScreen() {
   return (
     <PlayStage
       mode="career-path"
-      title="Career Path"
+      title={t("careerPath.title")}
       subtitle={t("careerPath.modePickerSubtitle")}
       onExit={() => navigate(SHELL_ROUTES.home)}
       exitLabel={t("careerPath.quit")}

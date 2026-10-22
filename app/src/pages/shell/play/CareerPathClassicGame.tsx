@@ -323,7 +323,7 @@ export default function CareerPathClassicGame() {
 
   if (loading) {
     return (
-      <PlayStage mode="career-path" title="Career Path" onExit={exit} exitLabel={t("careerPath.quit")}>
+      <PlayStage mode="career-path" title={t("careerPath.title")} onExit={exit} exitLabel={t("careerPath.quit")}>
         <div className="flex items-center justify-center py-16">
           <p className="font-heading font-bold text-title-sm animate-pulse motion-reduce:animate-none">{t("careerPath.loading")}</p>
         </div>
@@ -333,7 +333,7 @@ export default function CareerPathClassicGame() {
 
   if (startupState) {
     return (
-      <PlayStage mode="career-path" title="Career Path" onExit={exit} exitLabel={t("careerPath.quit")}>
+      <PlayStage mode="career-path" title={t("careerPath.title")} onExit={exit} exitLabel={t("careerPath.quit")}>
         <div className="flex flex-col items-center justify-center py-10">
           <Card elevation="lifted" padding="lg" className="w-full text-center">
             <p className="font-heading font-bold text-title">
@@ -380,7 +380,7 @@ export default function CareerPathClassicGame() {
     return (
       <PlayStage
         mode="career-path"
-        title="Career Path"
+        title={t("careerPath.title")}
         subtitle={t("careerPath.classicModeTitle")}
         onExit={exit}
         exitLabel={t("careerPath.quit")}
@@ -412,7 +412,7 @@ export default function CareerPathClassicGame() {
   return (
     <PlayStage
       mode="career-path"
-      title="Career Path"
+      title={t("careerPath.title")}
       subtitle={t("careerPath.classicModeTitle")}
       onExit={exit}
       exitLabel={t("careerPath.quit")}

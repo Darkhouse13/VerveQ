@@ -17,6 +17,7 @@
  * the desktop Home is height-budgeted.
  */
 import { useState, useSyncExternalStore } from "react";
+import { useTranslation } from "react-i18next";
 import { Download, Share, X } from "lucide-react";
 import {
   getDeferredInstallPrompt,
@@ -29,6 +30,7 @@ import {
 } from "@/lib/installPrompt";
 
 export function InstallPrompt() {
+  const { t } = useTranslation("shell");
   const deferred = useSyncExternalStore(subscribeInstallPrompt, getDeferredInstallPrompt);
   const [dismissed, setDismissed] = useState(() => isStandalone() || hasDismissedInstall());
   // No event ever arrives on iOS, so its hint is decided synchronously.
@@ -56,7 +58,7 @@ export function InstallPrompt() {
     <div
       className="vq-install-prompt md:hidden shrink-0 w-full px-3 pt-1 pb-2"
       role="region"
-      aria-label="Install VerveQ"
+      aria-label={t("app.install.title")}
       data-testid="install-prompt"
     >
       <div className="neo-border neo-shadow bg-card mx-auto flex max-w-md items-center gap-3 rounded-lg p-3">
@@ -70,13 +72,14 @@ export function InstallPrompt() {
 
         <p className="font-body min-w-0 flex-1 text-sm leading-tight">
           {mode === "android" ? (
-            <span className="font-heading font-bold">Install VerveQ</span>
+            <span className="font-heading font-bold">{t("app.install.title")}</span>
           ) : (
             <>
-              <span className="font-heading font-bold">Add VerveQ to your Home Screen</span>
+              <span className="font-heading font-bold">{t("app.install.iosTitle")}</span>
               <span className="text-muted-foreground block">
-                Share <Share size={12} className="inline align-[-1px]" strokeWidth={2.5} /> → Add to
-                Home Screen
+                {t("app.install.iosShare")}{" "}
+                <Share size={12} className="inline align-[-1px]" strokeWidth={2.5} />{" "}
+                {t("app.install.iosAdd")}
               </span>
             </>
           )}
@@ -88,14 +91,14 @@ export function InstallPrompt() {
             onClick={() => void install()}
             className="neo-border font-heading bg-accent text-accent-foreground shrink-0 rounded-lg px-3 py-1.5 text-sm font-bold"
           >
-            Install
+            {t("app.install.cta")}
           </button>
         )}
 
         <button
           type="button"
           onClick={dismiss}
-          aria-label="Dismiss install prompt"
+          aria-label={t("app.install.dismiss")}
           className="text-muted-foreground shrink-0 p-1"
         >
           <X size={18} strokeWidth={2.5} />

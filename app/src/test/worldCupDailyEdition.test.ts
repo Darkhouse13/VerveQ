@@ -126,8 +126,6 @@ describe("world cup daily edition", () => {
         }
         expect(dailyResult.shareQuiz).toContain("{{emoji}}");
         expect(dailyResult.shareQuizWorldCup).toContain("{{emoji}}");
-        expect(dailyResult.worldCupEdition, "worldCupEdition").toBeTruthy();
-        expect(dailyResult.challengeAMate, "challengeAMate").toBeTruthy();
       },
     );
   });

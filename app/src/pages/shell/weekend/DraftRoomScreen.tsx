@@ -33,6 +33,7 @@ import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useClockOffset, useTick } from "@/lib/arena";
 import { formatBank } from "@/lib/weekend";
 import { friendlyError } from "@/lib/errors";
+import { roleLabel } from "@/lib/weekendRoles";
 
 export type DraftRoom = NonNullable<FunctionReturnType<typeof api.fantasyDraftRooms.getRoom>>;
 export type DraftPool = NonNullable<FunctionReturnType<typeof api.fantasyDraftRooms.getDraftPool>>;
@@ -475,7 +476,7 @@ export function DraftBoardView({
                 <p className="font-heading font-bold text-sm truncate">
                   {player.name}
                   <span className="ml-1.5 font-mono text-eyebrow text-muted-foreground uppercase">
-                    {player.position}
+                    {roleLabel(player.position, t)}
                   </span>
                 </p>
                 <p className="text-meta text-muted-foreground truncate">

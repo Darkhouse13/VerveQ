@@ -12,7 +12,8 @@
  */
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { canonicalFor, resolveRouteMeta } from "@/lib/routeMeta";
+import { useTranslation } from "react-i18next";
+import { canonicalFor, localizeRouteMeta } from "@/lib/routeMeta";
 import { isOnStaticPage, staticSeoPath } from "@/lib/seoPages";
 
 /**
@@ -54,6 +55,11 @@ function setLinkByRel(rel: string, href: string) {
 
 export function RouteMeta() {
   const { pathname } = useLocation();
+  // The tab title follows the UI language; re-run when it changes. No
+  // Suspense: this sits above every boundary, and until the shell namespace
+  // loads the English defaults are the right title anyway.
+  const { t, i18n } = useTranslation("shell", { useSuspense: false });
+  const language = i18n.resolvedLanguage ?? i18n.language;
 
   useEffect(() => {
     if (STATIC_HEAD && isOnStaticPage(pathname)) {
@@ -62,11 +68,13 @@ export function RouteMeta() {
       if (STATIC_HEAD.canonical) setLinkByRel("canonical", STATIC_HEAD.canonical);
       return;
     }
-    const { title, description } = resolveRouteMeta(pathname);
+    const { title, description } = localizeRouteMeta(pathname, (key, options) =>
+      String(t(key, options)),
+    );
     document.title = title;
     setMetaByName("description", description);
     setLinkByRel("canonical", canonicalFor(pathname));
-  }, [pathname]);
+  }, [pathname, t, language]);
 
   return null;
 }

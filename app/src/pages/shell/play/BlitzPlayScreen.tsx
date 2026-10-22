@@ -34,7 +34,7 @@ function BlitzRun({ onFinish, onExit }: { onFinish: (result: BlitzResultData) =>
 
   if (b.loading) {
     return (
-      <PlayStage mode="blitz" title="Blitz" onExit={onExit}>
+      <PlayStage mode="blitz" title={t("blitz.title")} onExit={onExit}>
         <div className="flex items-center justify-center py-16">
           <p className="font-heading font-bold text-title-sm animate-pulse motion-reduce:animate-none">
             {t("blitz.starting")}
@@ -47,7 +47,7 @@ function BlitzRun({ onFinish, onExit }: { onFinish: (result: BlitzResultData) =>
   return (
     <PlayStage
       mode="blitz"
-      title="Blitz"
+      title={t("blitz.title")}
       subtitle={t("blitz.subtitle")}
       onExit={onExit}
       exitLabel={t("blitz.quit")}

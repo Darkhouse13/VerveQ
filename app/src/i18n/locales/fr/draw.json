@@ -147,5 +147,30 @@
     "rarity": "SEULS {{pct}} % ONT CHOISI CETTE LIGNE",
     "pts": "PTS",
     "trailLabel": "Parcours des manches"
+  },
+  "homeCard": {
+    "eyebrow": "The Draw · Plateau n°{{n}}",
+    "streak": "Série {{n}}",
+    "todaysBoard": "Plateau du jour n°{{n}}",
+    "runInProgress": "Partie en cours",
+    "draftRow": "Ligne de draft {{row}} sur {{rows}}",
+    "roundProgress": "Manche {{round}} sur {{total}} · {{pts}} pts",
+    "pts": "pts",
+    "rank": "Rang n°{{rank}}",
+    "nextBoard": "Prochain plateau {{time}}"
+  },
+  "archetype": {
+    "ARCH_WALL": "MUR",
+    "ARCH_BLITZ": "BLITZ",
+    "ARCH_ENGINE": "MOTEUR",
+    "ARCH_THROWBACK": "RÉTRO",
+    "ARCH_NEWWAVE": "NOUVELLE VAGUE",
+    "ARCH_FORTRESS_KEEPER": "FORTERESSE"
+  },
+  "positionShort": {
+    "GK": "GB",
+    "DEF": "DEF",
+    "MID": "MIL",
+    "ATT": "ATT"
   }
 }

@@ -11,7 +11,10 @@
 export type GridCellDifficulty = "rare" | "uncommon" | "common";
 
 export interface DifficultyStyle {
+  /** English fallback label. */
   label: string;
+  /** `play` locale key for the label — render `t(style.labelKey)`. */
+  labelKey: string;
   /** Neo badge classes (border + fill + foreground). */
   badgeClass: string;
   /** Text tint for compact contexts. */
@@ -23,16 +26,19 @@ export interface DifficultyStyle {
 const STYLES: Record<GridCellDifficulty, DifficultyStyle> = {
   rare: {
     label: "RARE",
+    labelKey: "grid.tierRare",
     badgeClass: "bg-mode-accent text-ink border-border",
     textClass: "text-mode-accent",
   },
   uncommon: {
     label: "UNCOMMON",
+    labelKey: "grid.tierUncommon",
     badgeClass: "bg-card text-card-foreground border-border",
     textClass: "text-foreground",
   },
   common: {
     label: "COMMON",
+    labelKey: "grid.tierCommon",
     badgeClass: "bg-muted text-muted-foreground border-border",
     textClass: "text-muted-foreground",
   },

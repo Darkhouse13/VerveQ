@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import type { Card } from "@/lib/drawEngine";
 import { shortTag } from "./meta";
 import { tagCode } from "./tags";
+import { useDrawT } from "./drawI18n";
 
 interface DrawCardFaceProps {
   card: Card;
@@ -32,13 +33,14 @@ const TAG = "rounded-sm font-mono font-bold text-eyebrow tracking-normal leading
  * opens the detail sheet with every tag.
  */
 export function DrawCardFace({ card, size = "offer" }: DrawCardFaceProps) {
+  const t = useDrawT();
   if (size === "mini") {
     return (
       <div className="flex flex-col justify-between h-full w-full min-w-0 px-1.5 py-1 text-left">
         <div className="flex items-center justify-between gap-1">
           <span className="font-mono font-bold text-body-sm leading-none">{card.rating}</span>
           <span className={cn(TAG, "neo-border", POSITION_CLASS[card.position] ?? "bg-muted")}>
-            {card.position}
+            {t(`positionShort.${card.position}`)}
           </span>
         </div>
         <p className="font-heading font-bold text-eyebrow tracking-normal leading-tight truncate">{card.name}</p>
@@ -50,7 +52,7 @@ export function DrawCardFace({ card, size = "offer" }: DrawCardFaceProps) {
       <div className="flex items-start justify-between gap-1">
         <span className="font-mono font-bold leading-none text-2xl">{card.rating}</span>
         <span className={cn(TAG, "neo-border", POSITION_CLASS[card.position] ?? "bg-muted")}>
-          {card.position}
+          {t(`positionShort.${card.position}`)}
         </span>
       </div>
       <p className="font-heading font-bold flex-1 min-h-0 flex items-center leading-tight text-body-sm">

@@ -69,7 +69,7 @@ export default function SettingsScreen() {
       await setPreferredDailySport({ sport });
       notify.success(t("settings.dailySaved"));
     } catch (error) {
-      notify.error(friendlyError(error, t("settings.dailyHeading")));
+      notify.error(friendlyError(error, t("settings.dailySaveFailed")));
     } finally {
       setSavingDailySport(null);
     }

@@ -31,6 +31,7 @@ import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { paintReceipt, receiptFilename } from "@/lib/receiptImage";
 import { track } from "@/lib/analytics";
+import { roleLabel } from "@/lib/weekendRoles";
 
 function signed(points: number): string {
   return points >= 0 ? `+${formatPoints(points)}` : formatPoints(points);
@@ -115,7 +116,7 @@ export function ReceiptCard({ receipt }: { receipt: SquadReceipt }) {
             className="flex items-center gap-2 py-1 border-b-2 border-border/40 last:border-b-0"
           >
             <span className="font-mono text-eyebrow font-bold uppercase text-muted-foreground w-11 shrink-0">
-              {slot.slotRole}
+              {roleLabel(slot.slotRole, t)}
               {slot.isFinisher ? "·F" : ""}
             </span>
             <span className="font-heading font-bold text-xs min-w-0 flex-1 truncate">
@@ -252,7 +253,7 @@ export default function WeekendReceiptScreen() {
     try {
       // Best: the painted card itself, where files can be shared.
       try {
-        const blob = await paintReceipt(receipt);
+        const blob = await paintReceipt(receipt, t);
         const file = new File([blob], receiptFilename(receipt), { type: "image/png" });
         if (navigator.canShare?.({ files: [file] })) {
           await navigator.share({ files: [file], title: "VerveQ", text });
@@ -281,7 +282,7 @@ export default function WeekendReceiptScreen() {
     if (receipt == null || busy) return;
     setBusy(true);
     try {
-      const blob = await paintReceipt(receipt);
+      const blob = await paintReceipt(receipt, t);
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;

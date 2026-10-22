@@ -148,6 +148,42 @@ export const TASTE_QUESTION_POOL: readonly TasteQuestion[] = [
   },
 ];
 
+/**
+ * Questions whose answer options read differently per language (country
+ * names, descriptive answers). Every other question's options are proper
+ * nouns — club names, years, a number — that stay as written.
+ */
+const LOCALIZED_OPTION_IDS: ReadonlySet<string> = new Set([
+  "wc-most-titles",
+  "wc-2022-winner",
+  "wc-1966",
+  "ballon-dor",
+  "old-lady",
+]);
+
+type TasteT = (key: string, options: { defaultValue: string }) => string;
+
+/**
+ * The question in the visitor's language. The pool above is the English
+ * source; `shell:taste.<id>.question|explanation` (and `.o<n>` for the option
+ * at pool index n, for LOCALIZED_OPTION_IDS) carry fr/es. Works on a SAMPLED
+ * question: options are matched back to their pool index, so the shuffle and
+ * `correctIndex` are untouched.
+ */
+export function localizeTasteQuestion(q: TasteQuestion, t: TasteT): TasteQuestion {
+  const source = TASTE_QUESTION_POOL.find((p) => p.id === q.id);
+  const localizeOptions = source !== undefined && LOCALIZED_OPTION_IDS.has(q.id);
+  return {
+    ...q,
+    question: t(`taste.${q.id}.question`, { defaultValue: q.question }),
+    explanation: t(`taste.${q.id}.explanation`, { defaultValue: q.explanation }),
+    options: q.options.map((opt) => {
+      const poolIndex = localizeOptions ? source.options.indexOf(opt) : -1;
+      return poolIndex < 0 ? opt : t(`taste.${q.id}.o${poolIndex}`, { defaultValue: opt });
+    }),
+  };
+}
+
 function shuffled<T>(items: readonly T[], rng: () => number): T[] {
   const out = items.slice();
   for (let i = out.length - 1; i > 0; i -= 1) {

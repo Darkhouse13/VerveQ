@@ -50,7 +50,7 @@ describe("challenge duel hub contract", () => {
     expect(challengeScreen).toContain("challenge.waitingTitle");
     expect(screens.challenge.waitingTitle).toBe("Waiting on them");
     expect(challengeScreen).toContain("challenge.newDuel");
-    expect(screens.challenge.newDuel).toBe("New Duel");
+    expect(screens.challenge.newDuel).toBe("New duel");
     expect(challengeScreen).toContain("formatModeLabel(d.mode, t)");
     expect(challengeScreen).toContain("const topRivals = useMemo");
   });

@@ -106,7 +106,7 @@ describe("LoginScreen — mode override + guest notice", () => {
   it("defaults to signin mode when no mode query param is present", async () => {
     await renderLogin("/");
     expect(
-      await screen.findByRole("button", { name: /^sign in$/i }),
+      await screen.findByRole("button", { name: "login.signIn" }),
     ).toBeInTheDocument();
     expect(screen.queryByTestId("guest-upgrade-notice")).not.toBeInTheDocument();
   });
@@ -114,7 +114,7 @@ describe("LoginScreen — mode override + guest notice", () => {
   it("renders signup fields on first mount when ?mode=signup", async () => {
     await renderLogin("/?mode=signup");
     expect(
-      await screen.findByRole("button", { name: /^create account$/i }),
+      await screen.findByRole("button", { name: "login.createAccount" }),
     ).toBeInTheDocument();
     // Signup-only fields (raw i18n keys — react-i18next is passthrough-mocked)
     expect(
@@ -132,12 +132,12 @@ describe("LoginScreen — mode override + guest notice", () => {
     await renderLogin("/?mode=signup&from=guest");
     expect(
       await screen.findByTestId("guest-upgrade-notice"),
-    ).toHaveTextContent(/guest progress is not carried over/i);
+    ).toHaveTextContent("login.guestNotice");
   });
 
   it("does not show the guest-upgrade notice on a plain signup visit", async () => {
     await renderLogin("/?mode=signup");
-    await screen.findByRole("button", { name: /^create account$/i });
+    await screen.findByRole("button", { name: "login.createAccount" });
     expect(
       screen.queryByTestId("guest-upgrade-notice"),
     ).not.toBeInTheDocument();
@@ -146,7 +146,7 @@ describe("LoginScreen — mode override + guest notice", () => {
   it("ignores unknown mode values and falls back to signin", async () => {
     await renderLogin("/?mode=not-a-mode");
     expect(
-      await screen.findByRole("button", { name: /^sign in$/i }),
+      await screen.findByRole("button", { name: "login.signIn" }),
     ).toBeInTheDocument();
   });
 
@@ -156,7 +156,7 @@ describe("LoginScreen — mode override + guest notice", () => {
       isGuest: true,
     });
     expect(
-      await screen.findByRole("button", { name: /^sign in$/i }),
+      await screen.findByRole("button", { name: "login.signIn" }),
     ).toBeInTheDocument();
     // No redirect was issued.
     expect(navigateSpy).not.toHaveBeenCalled();
@@ -167,16 +167,16 @@ describe("LoginScreen — mode override + guest notice", () => {
       isAuthenticated: true,
       isGuest: true,
     });
-    await screen.findByRole("button", { name: /^sign in$/i });
+    await screen.findByRole("button", { name: "login.signIn" });
     expect(
-      screen.getByRole("button", { name: /play as guest/i }),
+      screen.getByRole("button", { name: "login.playAsGuest" }),
     ).toBeInTheDocument();
   });
 
   it("still shows 'Play as Guest' for a plain unauthenticated visit", async () => {
     await renderLogin("/?mode=signin");
     expect(
-      await screen.findByRole("button", { name: /play as guest/i }),
+      await screen.findByRole("button", { name: "login.playAsGuest" }),
     ).toBeInTheDocument();
   });
 
@@ -199,7 +199,7 @@ describe("Guest account-required route contracts", () => {
     );
 
     expect(source).toContain("export function UsernameRequiredRoute");
-    expect(source).toContain("Username required");
+    expect(source).toContain("gate.usernameTitle");
     expect(source).toContain("/?mode=signup&from=guest");
     expect(source).toContain("isGuest");
   });

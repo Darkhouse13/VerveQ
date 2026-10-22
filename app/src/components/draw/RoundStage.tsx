@@ -166,7 +166,7 @@ export function RoundStage({
   const shownFixtureIndex =
     mode === "select" || lastRound === null ? view.fixtureIndex : lastRound.fixtureIndex;
   const fixture = view.fixtures[shownFixtureIndex];
-  const { label, Icon } = archetypeMeta(fixture.archetypeId);
+  const { label, Icon } = archetypeMeta(fixture.archetypeId, t);
 
   // Synergy meters run on the FIELDED five (engine contract A2). While
   // choosing, they preview the field implied by the current bench selection.
@@ -418,7 +418,7 @@ export function RoundStage({
                   )}
                   <span className="font-mono font-bold text-body leading-none">{card.rating}</span>
                   <span className="font-mono text-eyebrow tracking-normal leading-none text-muted-foreground">
-                    {card.position}
+                    {t(`positionShort.${card.position}`)}
                   </span>
                   {statShown && stat && (
                     <span

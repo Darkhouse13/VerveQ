@@ -43,10 +43,10 @@ export const ROUTE_META: Record<string, RouteMeta> = {
   "/compete": {
     title: "Play Football Quiz Games — Ranked & Casual | VerveQ",
     description:
-      "Every VerveQ football game in one place: ranked quiz and survival, daily challenges, duels and arena rooms with friends. Free, no download.",
+      "Every VerveQ football game in one place: ranked quiz and survival, daily quizzes, duels and arena rooms with friends. Free, no download.",
   },
   "/v2/daily": {
-    title: "Daily Football Quiz — Today's Challenge | VerveQ",
+    title: "Daily Quiz — Today's 10 Football Questions | VerveQ",
     description:
       "Today's ten football questions, the same for every player worldwide. One attempt, speed scoring, and a streak to protect. Resets at midnight UTC.",
   },
@@ -76,7 +76,7 @@ export const ROUTE_META: Record<string, RouteMeta> = {
       "Is the next player's stat higher or lower? Goals, appearances and trophies, one call at a time. One wrong answer ends the streak.",
   },
   "/v2/career-path": {
-    title: "Career Path — Guess the Player | VerveQ",
+    title: "Career Path — Name the Player From His Clubs | VerveQ",
     description:
       "Read a footballer's club history in order and name him before you run out of guesses. Typo-friendly, hundreds of careers, no sign-up.",
   },
@@ -96,16 +96,59 @@ export const ROUTE_META: Record<string, RouteMeta> = {
       "Send a link, both of you answer the same football questions, and settle it. Your opponent doesn't need an account to play.",
   },
   "/v2/leaderboard": {
-    title: "Leaderboards | VerveQ",
+    title: "Ranks — Ratings & Top Players | VerveQ",
     description:
-      "Where you stand in VerveQ football trivia: global ELO rankings, mode leaderboards and the players ahead of you. Updated as games finish.",
+      "Where you stand in VerveQ football trivia: global ratings, the top players in each ranked mode and who is just ahead of you.",
   },
   "/v2/weekend/leaderboard": {
-    title: "The Weekend Leaderboard | VerveQ",
+    title: "The Weekend — Live Table | VerveQ",
     description:
       "Live global standings for The Weekend fantasy game: provisional budget-squad points update as each fixture is scored.",
   },
 };
+
+/**
+ * i18n key per route: the tab title and description live at
+ * `shell:meta.<key>.title|description`. The English above is the en locale's
+ * source of truth (a contract test keeps the two equal) and the fallback when
+ * the shell namespace has not loaded. Unlisted routes use `meta.default`.
+ */
+export const ROUTE_META_KEYS: Record<string, string> = {
+  "/compete": "compete",
+  "/v2/daily": "daily",
+  "/v2/daily-survival": "dailySurvival",
+  "/v2/whos-older": "whosOlder",
+  "/v2/missing-letters": "missingLetters",
+  "/v2/blitz": "blitz",
+  "/v2/higher-lower": "higherLower",
+  "/v2/career-path": "careerPath",
+  "/v2/verve-grid": "verveGrid",
+  "/v2/arena": "arena",
+  "/v2/duels": "duels",
+  "/v2/leaderboard": "ranks",
+  "/v2/weekend/leaderboard": "weekendTable",
+};
+
+type MetaT = (key: string, options: { defaultValue: string }) => string;
+
+/**
+ * `resolveRouteMeta` in the active UI language: the browser tab title and the
+ * description meta follow the player's language, falling back to English.
+ */
+export function localizeRouteMeta(pathname: string, t: MetaT): RouteMeta {
+  const meta = resolveRouteMeta(pathname);
+  const key = ROUTE_META_KEYS[normalizePath(pathname)] ?? "default";
+  return {
+    title: t(`meta.${key}.title`, { defaultValue: meta.title }),
+    description: t(`meta.${key}.description`, { defaultValue: meta.description }),
+  };
+}
+
+function normalizePath(pathname: string): string {
+  return pathname.length > 1 && pathname.endsWith("/")
+    ? pathname.replace(/\/+$/, "")
+    : pathname;
+}
 
 /** Search-result truncation budgets — asserted in the contract test. */
 export const TITLE_MAX = 60;

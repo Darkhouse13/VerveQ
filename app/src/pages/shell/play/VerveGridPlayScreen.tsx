@@ -46,7 +46,7 @@ export default function VerveGridPlayScreen() {
 
   if (vm.loading) {
     return (
-      <PlayStage mode="grid" title="VerveGrid" onExit={goCompete} exitLabel={t("grid.quit")}>
+      <PlayStage mode="grid" title={t("verveGrid.title")} onExit={goCompete} exitLabel={t("grid.quit")}>
         <div className="flex items-center justify-center py-16">
           <p className="font-heading font-bold text-title-sm animate-pulse motion-reduce:animate-none">{t("verveGrid.building")}</p>
         </div>
@@ -56,7 +56,7 @@ export default function VerveGridPlayScreen() {
 
   if (vm.startupState) {
     return (
-      <PlayStage mode="grid" title="VerveGrid" onExit={goCompete} exitLabel={t("grid.quit")}>
+      <PlayStage mode="grid" title={t("verveGrid.title")} onExit={goCompete} exitLabel={t("grid.quit")}>
         <div className="flex flex-col items-center justify-center py-10">
           <Card elevation="lifted" padding="lg" className="w-full text-center">
             <p className="font-heading font-bold text-title">

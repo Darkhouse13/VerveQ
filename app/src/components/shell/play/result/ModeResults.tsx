@@ -504,7 +504,7 @@ export function BlitzResult({
     result.score,
   );
   return (
-    <ResultFrame mode="blitz" title="Blitz" onExit={onExit}>
+    <ResultFrame mode="blitz" title={t("blitz.title")} onExit={onExit}>
       <ResultScreen
         testId="blitz-result"
         hero={
