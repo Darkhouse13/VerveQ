@@ -7,8 +7,13 @@ describe("post-QA regression contracts", () => {
   it("Daily Quiz stops the live question query before navigating to completed results", () => {
     const source = read("src/hooks/useDailyQuiz.ts");
     expect(source).toContain("attemptFinished");
-    expect(source).toContain("attemptId && !attemptFinished && questionNum < MAX_QUESTIONS");
-    expect(source).toContain("setAttemptFinished(true)");
+    expect(source).toContain("attemptId && !attemptFinished && !forfeited && questionNum < MAX_QUESTIONS");
+    // Unsubscribe BEFORE completeAttempt lands, or the live query re-runs on
+    // the completed attempt and throws "Attempt already finished" (Sentry E).
+    expect(source.indexOf("setAttemptFinished(true)")).toBeGreaterThan(-1);
+    expect(source.indexOf("setAttemptFinished(true)")).toBeLessThan(
+      source.indexOf("await completeAttemptMut("),
+    );
     expect(source).toContain("setAttemptId(null)");
   });
 

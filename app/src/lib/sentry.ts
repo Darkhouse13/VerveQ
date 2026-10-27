@@ -100,6 +100,32 @@ export const IGNORE_ERROR_PATTERNS: (string | RegExp)[] = [
   /window\.webkit\.messageHandlers/,
 ];
 
+/**
+ * Stack overflows thrown by code the browser injected into the page (Google
+ * Translate's DOM rewriting, seen with <font> crumbs on every event). Those
+ * frames carry the page URL or no filename at all — never our bundle — so an
+ * overflow with no /assets/ frame is not ours. One with a bundle frame is a
+ * real recursion bug and still reports.
+ */
+export function isForeignStackOverflow(event: ErrorEvent): boolean {
+  const exceptions = event.exception?.values ?? [];
+  const overflow = exceptions.some((ex) =>
+    /Maximum call stack size exceeded/i.test(ex.value ?? ""),
+  );
+  if (!overflow) return false;
+  return !exceptions.some((ex) =>
+    (ex.stacktrace?.frames ?? []).some((frame) =>
+      /\/assets\/[^/]+\.js/.test(frame.filename ?? ""),
+    ),
+  );
+}
+
+/** beforeSend: drop injected-script noise, then scrub what's left. */
+export function filterAndScrubEvent(event: ErrorEvent): ErrorEvent | null {
+  if (isForeignStackOverflow(event)) return null;
+  return scrubEvent(event);
+}
+
 function sentryEnabled(): boolean {
   return import.meta.env.PROD && !!import.meta.env.VITE_SENTRY_DSN;
 }
@@ -125,7 +151,7 @@ function loadSentry(): Promise<SentryModule | null> {
             integrations: (defaults) =>
               defaults.filter((integration) => integration.name !== "BrowserSession"),
             ignoreErrors: IGNORE_ERROR_PATTERNS,
-            beforeSend: scrubEvent,
+            beforeSend: filterAndScrubEvent,
             beforeBreadcrumb: scrubBreadcrumb,
           });
         }

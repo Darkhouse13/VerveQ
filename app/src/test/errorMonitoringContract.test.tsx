@@ -29,6 +29,7 @@ import {
   scrubEvent,
   scrubBreadcrumb,
   IGNORE_ERROR_PATTERNS,
+  filterAndScrubEvent,
 } from "@/lib/sentry";
 import type { ErrorEvent } from "@sentry/react";
 
@@ -178,6 +179,40 @@ describe("in-app-browser bridge errors are ignored", () => {
     expect(
       ignored("Failed to fetch dynamically imported module: /assets/x.js"),
     ).toBe(false);
+  });
+});
+
+describe("injected-script stack overflows (Google Translate) are dropped", () => {
+  const overflow = (filenames: (string | undefined)[]) =>
+    ({
+      type: undefined,
+      exception: {
+        values: [
+          {
+            type: "RangeError",
+            value: "Maximum call stack size exceeded.",
+            stacktrace: { frames: filenames.map((filename) => ({ filename })) },
+          },
+        ],
+      },
+    }) as unknown as ErrorEvent;
+
+  it("drops overflows whose frames are the page itself or have no file", () => {
+    expect(filterAndScrubEvent(overflow(["https://verveq.com/", "https://verveq.com/"]))).toBeNull();
+    expect(filterAndScrubEvent(overflow(["/football-quiz/bundesliga-quiz-questions/"]))).toBeNull();
+    expect(filterAndScrubEvent(overflow([undefined]))).toBeNull();
+  });
+
+  it("keeps an overflow that runs through our bundle", () => {
+    expect(
+      filterAndScrubEvent(overflow(["https://verveq.com/", "https://verveq.com/assets/index-D95K8FAh.js"])),
+    ).not.toBeNull();
+  });
+
+  it("keeps other errors from the page", () => {
+    const event = overflow(["https://verveq.com/"]);
+    event.exception!.values![0].value = "boom";
+    expect(filterAndScrubEvent(event)).not.toBeNull();
   });
 });
 

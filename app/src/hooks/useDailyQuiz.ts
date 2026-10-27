@@ -98,7 +98,10 @@ export function useDailyQuiz(onFinish: (result: DailyQuizResultData) => void): D
   const attemptStatus = useQuery(api.dailyChallenge.getAttemptStatus, { sport, mode: "quiz" });
   const dailyQuestion = useQuery(
     api.dailyChallenge.getQuestion,
-    attemptId && !attemptFinished && questionNum < MAX_QUESTIONS
+    // Unsubscribe the moment the attempt ends (forfeit or completion), BEFORE
+    // the server marks it: the live query re-runs on that write and throws
+    // "Attempt already finished", which crashes the render.
+    attemptId && !attemptFinished && !forfeited && questionNum < MAX_QUESTIONS
       ? {
           attemptId,
           questionIndex: questionNum,
@@ -268,6 +271,8 @@ export function useDailyQuiz(onFinish: (result: DailyQuizResultData) => void): D
     autoAdvanceInFlight.current = true;
     try {
       if (questionNum + 1 >= MAX_QUESTIONS) {
+        // Stop the getQuestion subscription before completeAttempt lands.
+        setAttemptFinished(true);
         if (attemptId) {
           try {
             await completeAttemptMut({ attemptId });
@@ -278,7 +283,6 @@ export function useDailyQuiz(onFinish: (result: DailyQuizResultData) => void): D
         // Reported before setAttemptId(null) clears the key. No `result`: the
         // daily is scored, it has no win/loss.
         completeRun(attemptId, { score: totalScore });
-        setAttemptFinished(true);
         setAttemptId(null);
         const finalResults =
           results.length > questionNum || !checkResult
