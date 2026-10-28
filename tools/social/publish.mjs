@@ -99,6 +99,30 @@ async function upload(absPath, filename) {
   return api("/upload", { method: "POST", body: form });
 }
 
+/* ── YouTube Shorts ───────────────────────────────────────────────────────── */
+
+// The same caption goes to every platform; YouTube also needs a title, and
+// its play links carry ref=yt so PostHog can tell YouTube players apart.
+const tagLinks = (caption, ref) =>
+  caption.replace(/\b((?:https?:\/\/)?verveq\.com\/[\w\-/]*)(\?[^\s]*)?/g, (_, path, query) =>
+    query ? `${path}${query.replace(/([?&])ref=[^&\s]*/, `$1ref=${ref}`)}${/[?&]ref=/.test(query) ? "" : `&ref=${ref}`}` : `${path}?ref=${ref}`,
+  );
+
+// Title = the caption's opening sentence(s), up to ~90 characters, + #shorts.
+function youtubeTitle(caption) {
+  const firstLine = caption.trim().split("\n")[0].trim();
+  const sentences = firstLine.match(/[^.?!]+[.?!]*/g) || [firstLine];
+  let title = "";
+  for (const s of sentences) {
+    const next = (title + s).trim();
+    if (title && (title.length >= 30 || next.length > 90)) break;
+    title = next.length > 90 ? next.slice(0, 89).trimEnd() + "…" : next;
+  }
+  return `${title} #shorts`.slice(0, 100);
+}
+
+const youtubeTags = (caption) => [...new Set(caption.match(/#[\p{L}\p{N}_]+/gu) || [])].map((h) => h.slice(1)).filter((t) => t !== "shorts").map((t) => ({ value: t, label: t }));
+
 /* ── the run ──────────────────────────────────────────────────────────────── */
 
 const startedAt = Date.now();
@@ -120,7 +144,7 @@ for (const date of dates) {
     if (typeof meta.caption !== "string" || !meta.caption.trim()) throw new Error(`queue ${date}/${slot}: caption missing`);
     if (!Array.isArray(meta.media) || !meta.media.length) throw new Error(`queue ${date}/${slot}: media missing`);
     for (const f of meta.media) if (!existsSync(join(slotDir, f))) throw new Error(`queue ${date}/${slot}: ${f} not found`);
-    for (const platform of meta.platforms || ["instagram", "facebook"]) {
+    for (const platform of meta.platforms || config.defaultPlatforms || ["instagram", "facebook"]) {
       const local = addMinutes(hhmm, config.platformOffsetMinutes?.[platform] || 0);
       const key = `${date}:${platform}:${slot}`;
       planned.push({ key, date, slot, platform, slotDir, meta, local, at: zonedToUtc(date, local, TZ), postId: uuidv5(key) });
@@ -191,10 +215,21 @@ for (const p of planned) {
         posts: [
           {
             integration: { id: channel.id },
-            value: [{ id: p.postId, content: p.meta.caption.trim(), image: media }],
+            value: [{ id: p.postId, content: p.platform === "youtube" ? tagLinks(p.meta.caption.trim(), "yt") : p.meta.caption.trim(), image: media }],
             // Postiz v2.10 validates settings through the __type discriminator;
             // a single mp4 with post_type "post" goes out as an Instagram Reel.
-            settings: p.platform === "instagram" ? { __type: channel.identifier, post_type: "post" } : { __type: channel.identifier },
+            // YouTube needs a title and a privacy status; a vertical video
+            // under 3 minutes is a Short.
+            settings:
+              p.platform === "instagram" ? { __type: channel.identifier, post_type: "post" }
+              : p.platform === "youtube" ? {
+                  __type: channel.identifier,
+                  title: p.meta.youtubeTitle || youtubeTitle(p.meta.caption),
+                  type: p.meta.youtubePrivacy || "public",
+                  selfDeclaredMadeForKids: "no",
+                  tags: youtubeTags(p.meta.caption),
+                }
+              : { __type: channel.identifier },
           },
         ],
       }),

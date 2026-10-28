@@ -302,3 +302,6 @@ research/fantasy/.env
 # the generated trees are excluded from inside the directory instead, which is
 # the only way to exclude some children while tracking their siblings — git
 # cannot re-include below an excluded parent.
+
+# Google OAuth client keys (YouTube publisher) — never commit
+client_secret_*.json
