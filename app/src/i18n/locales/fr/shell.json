@@ -1022,7 +1022,8 @@
       "iosShare": "Partager",
       "iosAdd": "→ Sur l'écran d'accueil",
       "cta": "Installer",
-      "dismiss": "Fermer la proposition d'installation"
+      "dismiss": "Fermer la proposition d'installation",
+      "androidMenu": "Puis menu ⋮ → Ajouter à l'écran d'accueil"
     }
   },
   "taste": {

@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { CloseButton } from "@/components/ui/icon-button";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import {
+  isAndroidChrome,
   getDeferredInstallPrompt,
   hasDismissedInstall,
   isInstallBarDue,
@@ -39,21 +40,31 @@ import {
   takeDeferredInstallPrompt,
 } from "@/lib/installPrompt";
 
-export function InstallPrompt() {
+/**
+ * `placement="result"`: on a daily game's result screen, for a browser reached
+ * through the one-tap hand-off from Instagram (lib/openInBrowser). Those
+ * players just chose to leave Instagram to keep their streak, so the hint
+ * comes on that first visit instead of waiting for a return (owner ruling
+ * 2026-10-29), and Android Chrome without an install event gets the menu
+ * route in words. Dismissal is the same permanent one.
+ */
+export function InstallPrompt({ placement = "home" }: { placement?: "home" | "result" } = {}) {
   const { t } = useTranslation("shell");
   const deferred = useSyncExternalStore(subscribeInstallPrompt, getDeferredInstallPrompt);
   const [dismissed, setDismissed] = useState(() => isStandalone() || hasDismissedInstall());
   // No event ever arrives on iOS, so its hint is decided synchronously.
   const [ios] = useState(() => isIosSafari());
+  const [androidManual] = useState(() => placement === "result" && isAndroidChrome());
   const { pathname } = useLocation();
   const [due] = useState(() => isInstallBarDue());
-  const mode = deferred ? "android" : ios ? "ios" : null;
-  const visible = !dismissed && due && mode !== null && pathname === SHELL_ROUTES.home;
+  const mode = deferred ? "android" : ios ? "ios" : androidManual ? "androidMenu" : null;
+  const placed = placement === "result" || (due && pathname === SHELL_ROUTES.home);
+  const visible = !dismissed && placed && mode !== null;
 
   // Shown once = this session is its one chance.
   useEffect(() => {
-    if (visible) markInstallShown();
-  }, [visible]);
+    if (visible && placement === "home") markInstallShown();
+  }, [visible, placement]);
 
   if (!visible) return null;
 
@@ -80,7 +91,7 @@ export function InstallPrompt() {
     >
       <div className="neo-border neo-shadow bg-card mx-auto flex max-w-md items-center gap-3 rounded-lg p-3">
         <span className="neo-border bg-accent shrink-0 rounded-full p-1.5">
-          {mode === "android" ? (
+          {mode !== "ios" ? (
             <Download size={18} strokeWidth={2.5} />
           ) : (
             <Share size={18} strokeWidth={2.5} />
@@ -90,6 +101,11 @@ export function InstallPrompt() {
         <p className="font-body min-w-0 flex-1 text-body-sm leading-tight">
           {mode === "android" ? (
             <span className="font-heading font-bold">{t("app.install.title")}</span>
+          ) : mode === "androidMenu" ? (
+            <>
+              <span className="font-heading font-bold">{t("app.install.iosTitle")}</span>
+              <span className="text-muted-foreground block">{t("app.install.androidMenu")}</span>
+            </>
           ) : (
             <>
               <span className="font-heading font-bold">{t("app.install.iosTitle")}</span>

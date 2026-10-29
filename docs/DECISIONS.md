@@ -32,6 +32,27 @@ Newest first.
 
 ---
 
+## DECISION 2026-10-29 — One-tap "Open in Chrome/Safari" from Instagram
+
+Since the 10-22 redesign almost no new player comes back the next day (1 of
+180, PostHog device count; the prod tables agree). Phone-browser players
+return about twice as often as players inside Instagram's in-app browser, and
+the email reminder (0 sign-ups), the follow link (1 click) and the copy-a-link
+streak card (2 links) brought nobody back. The owner approved building it and
+testing it on prod.
+
+1. **The card:** on a finished daily's result inside Instagram, one button
+   opens the game in Chrome (Android, `intent://`) or Safari (iOS,
+   `x-safari-https://`) with the streak carried over (`?st=` +
+   `ref=open_in_browser`). The copy-a-link card stays only where the OS is
+   unknown. Code: `app/src/lib/openInBrowser.ts`.
+2. **Install hint exception:** a browser reached through that button shows the
+   "Add to Home screen" hint on the result screen on its first visit,
+   overriding rule 4 of the 2026-10-22 entry for these players only.
+3. **Judge it on:** `open_in_browser_clicked` / `_shown`, `_arrived`, and
+   next-day return of the players who arrive (phone-browser baseline ~12%,
+   in-app ~5%).
+
 ## DECISION 2026-10-22 — First-time player rulings
 
 From a fresh-browser walkthrough of every way a new player arrives. The owner

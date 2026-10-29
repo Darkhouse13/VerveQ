@@ -578,7 +578,12 @@
     "linkExpired": "That streak link has expired. Copy a new one from where you play.",
     "linkUsedUp": "That streak link can't be used any more. Copy a new one.",
     "storyStreak_one": "{{count}}-day streak",
-    "storyStreak_other": "{{count}}-day streak"
+    "storyStreak_other": "{{count}}-day streak",
+    "handoffTitle_one": "Keep your {{count}}-day streak",
+    "handoffTitle_other": "Keep your {{count}}-day streak",
+    "handoffBody": "Instagram forgets your streak. {{browser}} keeps it, and tomorrow's puzzle is one tap away.",
+    "handoffCta": "Open in {{browser}}",
+    "handoffFallback": "Nothing opened? Copy this link into {{browser}}:"
   },
   "result": {
     "nextToday": "Next today",

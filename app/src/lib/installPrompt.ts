@@ -122,6 +122,14 @@ export function isIosSafari(nav: Navigator = navigator): boolean {
   return true;
 }
 
+/** Android Chrome itself (not an in-app webview, not another Android browser). */
+export function isAndroidChrome(nav: Navigator = navigator): boolean {
+  const ua = nav.userAgent;
+  if (!/Android/.test(ua) || !/Chrome\//.test(ua)) return false;
+  if (/; wv\)|SamsungBrowser|EdgA|OPR\/|Firefox/.test(ua)) return false;
+  return !IN_APP_BROWSER_MARKERS.some((marker) => ua.includes(marker));
+}
+
 export function hasDismissedInstall(): boolean {
   try {
     return localStorage.getItem(INSTALL_DISMISSED_KEY) === "1";

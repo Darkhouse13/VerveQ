@@ -1022,7 +1022,8 @@
       "iosShare": "Share",
       "iosAdd": "→ Add to Home Screen",
       "cta": "Install",
-      "dismiss": "Dismiss install prompt"
+      "dismiss": "Dismiss install prompt",
+      "androidMenu": "Then open the ⋮ menu → Add to Home screen"
     }
   },
   "taste": {

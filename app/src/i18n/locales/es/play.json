@@ -578,7 +578,12 @@
     "linkExpired": "Ese enlace de racha ha caducado. Copia uno nuevo desde donde juegas.",
     "linkUsedUp": "Ese enlace de racha ya no se puede usar. Copia uno nuevo.",
     "storyStreak_one": "Racha de {{count}} día",
-    "storyStreak_other": "Racha de {{count}} días"
+    "storyStreak_other": "Racha de {{count}} días",
+    "handoffTitle_one": "Conserva tu racha de {{count}} día",
+    "handoffTitle_other": "Conserva tu racha de {{count}} días",
+    "handoffBody": "Instagram olvida tu racha. {{browser}} la guarda, y el juego de mañana está a un toque.",
+    "handoffCta": "Abrir en {{browser}}",
+    "handoffFallback": "¿No se abrió nada? Copia este enlace en {{browser}}:"
   },
   "result": {
     "nextToday": "Siguiente hoy",

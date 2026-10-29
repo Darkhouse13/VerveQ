@@ -578,7 +578,12 @@
     "linkExpired": "Ce lien de série a expiré. Copies-en un nouveau là où tu joues.",
     "linkUsedUp": "Ce lien de série ne peut plus servir. Copies-en un nouveau.",
     "storyStreak_one": "Série de {{count}} jour",
-    "storyStreak_other": "Série de {{count}} jours"
+    "storyStreak_other": "Série de {{count}} jours",
+    "handoffTitle_one": "Garde ta série de {{count}} jour",
+    "handoffTitle_other": "Garde ta série de {{count}} jours",
+    "handoffBody": "Instagram oublie ta série. {{browser}} la garde, et le jeu de demain est à un clic.",
+    "handoffCta": "Ouvrir dans {{browser}}",
+    "handoffFallback": "Rien ne s'est ouvert ? Copie ce lien dans {{browser}} :"
   },
   "result": {
     "nextToday": "Ensuite aujourd'hui",

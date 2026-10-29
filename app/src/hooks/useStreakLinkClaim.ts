@@ -13,6 +13,7 @@ import { useMutation } from "convex/react";
 import { useTranslation } from "react-i18next";
 import { notify } from "@/lib/notify";
 import { track } from "@/lib/analytics";
+import { HANDOFF_REF, noteHandoffArrival } from "@/lib/openInBrowser";
 import type { DailyGame } from "@/components/shell/play/whosOlder/WhosOlderRetention";
 import { api } from "../../convex/_generated/api";
 
@@ -21,6 +22,16 @@ export function useStreakLinkClaim(game: DailyGame) {
   const claim = useMutation(api.dailyStreakLinks.claimTransfer);
   const done = useRef(false);
   const [settled, setSettled] = useState(() => !new URLSearchParams(window.location.search).has("st"));
+  const arrival = useRef(false);
+  // Came over from Instagram's in-app browser (lib/openInBrowser): count it
+  // even when the streak claim fails, and let the result offer the install hint.
+  useEffect(() => {
+    if (arrival.current) return;
+    arrival.current = true;
+    if (noteHandoffArrival()) {
+      track("open_in_browser_arrived", { game, with_streak: new URLSearchParams(window.location.search).has("st") });
+    }
+  }, [game]);
   useEffect(() => {
     if (done.current) return;
     const url = new URL(window.location.href);
@@ -33,6 +44,7 @@ export function useStreakLinkClaim(game: DailyGame) {
       .then((res) => {
         track("daily_streak_link_claimed", {
           game,
+          via: url.searchParams.get("ref") === HANDOFF_REF ? "open_in_browser" : "copied_link",
           ok: res.ok,
           ...(res.ok ? { accounts: res.accounts, already_linked: res.alreadyLinked } : { reason: res.reason }),
         });

@@ -14,7 +14,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { notify } from "@/lib/notify";
-import { Image as ImageIcon, Instagram, Link2, Send } from "lucide-react";
+import { ExternalLink, Image as ImageIcon, Instagram, Link2, Send } from "lucide-react";
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
 import { Sheet } from "@/components/ui/sheet";
@@ -24,6 +24,14 @@ import { track } from "@/lib/analytics";
 import type { DailyGame } from "./WhosOlderRetention";
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL, SHARE_UI, renderStoryImage, streakLinkUrl, tierGrid } from "@/lib/dailyShare";
 import { getShareBaseUrl } from "@/lib/shareBase";
+import {
+  type HandoffPlatform,
+  cacheToken,
+  handoffHref,
+  handoffPlatform,
+  handoffTargetUrl,
+  readCachedToken,
+} from "@/lib/openInBrowser";
 import { api } from "../../../../../convex/_generated/api";
 
 // ── Share sheet ────────────────────────────────────────────────────────────
@@ -307,6 +315,99 @@ export function StreakLinkOffer({ game, streak }: { game: DailyGame; streak: num
           <Link2 size={16} aria-hidden="true" />
           {t("dailyShare.keepCta")}
         </Button>
+      )}
+    </Card>
+  );
+}
+
+// ── Open in browser ────────────────────────────────────────────────────────
+
+/**
+ * Inside Instagram's in-app browser: one tap opens this game in Chrome
+ * (Android) or Safari (iOS) with the streak carried over (lib/openInBrowser).
+ * The streak link is minted as the card mounts so the tap is a plain link with
+ * nothing to wait on. Where the OS can't be told apart, the copy-a-link card
+ * stays. After the tap the card also offers the link to copy, for when
+ * Instagram swallows the hand-off.
+ */
+export function StreakHandoff({ game, streak }: { game: DailyGame; streak: number }) {
+  const platform = handoffPlatform();
+  if (!platform) return <StreakLinkOffer game={game} streak={streak} />;
+  return <OpenInBrowserOffer game={game} streak={streak} platform={platform} />;
+}
+
+function OpenInBrowserOffer({
+  game,
+  streak,
+  platform,
+}: {
+  game: DailyGame;
+  streak: number;
+  platform: HandoffPlatform;
+}) {
+  const { t } = useTranslation("play");
+  const ui = SHARE_UI[game];
+  const path = game === "letters" ? "letters" : "older";
+  const create = useMutation(api.dailyStreakLinks.createTransfer);
+  // undefined = minting; null = no token (the link still opens the browser, without the streak).
+  const [token, setToken] = useState<string | null | undefined>(() => readCachedToken(path) ?? undefined);
+  const [tapped, setTapped] = useState(false);
+  const shown = useRef(false);
+
+  useEffect(() => {
+    if (token !== undefined) return;
+    let cancelled = false;
+    create({})
+      .then(({ token: minted }) => {
+        cacheToken(path, minted);
+        if (!cancelled) setToken(minted);
+      })
+      .catch(() => !cancelled && setToken(null));
+    return () => {
+      cancelled = true;
+    };
+  }, [create, path, token]);
+
+  useEffect(() => {
+    if (shown.current) return;
+    shown.current = true;
+    track("open_in_browser_shown", { game, platform, streak });
+  }, [game, platform, streak]);
+
+  const target = handoffTargetUrl(getShareBaseUrl(), path, token ?? null);
+  const browser = platform === "ios" ? "Safari" : "Chrome";
+
+  return (
+    <Card elevation="flat" padding="sm" className="grid gap-2" data-testid={`${ui.tid}-open-in-browser`}>
+      <p className="text-body-sm font-bold">{t("dailyShare.handoffTitle", { count: streak })}</p>
+      <p className="text-body-sm text-muted-foreground">{t("dailyShare.handoffBody", { browser })}</p>
+      <Button
+        variant="primary"
+        size="md"
+        block
+        loading={token === undefined}
+        onClick={() => {
+          setTapped(true);
+          track("open_in_browser_clicked", { game, platform, streak, with_streak: token !== null });
+          // Straight from the tap: Instagram only lets a user gesture leave its browser.
+          window.location.href = handoffHref(target, platform);
+        }}
+        data-testid={`${ui.tid}-open-in-browser-cta`}
+      >
+        <ExternalLink size={16} aria-hidden="true" />
+        {t("dailyShare.handoffCta", { browser })}
+      </Button>
+      {tapped && (
+        <>
+          <p className="text-meta text-muted-foreground">{t("dailyShare.handoffFallback", { browser })}</p>
+          <input
+            readOnly
+            value={target}
+            onFocus={(e) => e.currentTarget.select()}
+            aria-label={t("dailyShare.keepCta")}
+            className="w-full min-w-0 rounded-md neo-border bg-background px-2 py-1.5 font-mono text-meta text-foreground"
+          />
+        </>
       )}
     </Card>
   );

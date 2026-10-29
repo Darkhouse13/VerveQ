@@ -54,7 +54,9 @@ import {
   ReminderCard,
   StreakBlock,
 } from "@/components/shell/play/whosOlder/WhosOlderRetention";
-import { FollowLink, ShareSheet, StreakLinkOffer } from "@/components/shell/play/whosOlder/DailyShare";
+import { FollowLink, ShareSheet, StreakHandoff } from "@/components/shell/play/whosOlder/DailyShare";
+import { InstallPrompt } from "@/components/InstallPrompt";
+import { cameThroughHandoff } from "@/lib/openInBrowser";
 import { isInstagramInAppBrowser, isInstagramVisitor, visibleStandingPct } from "@/lib/dailyShare";
 import { useStreakLinkClaim } from "@/hooks/useStreakLinkClaim";
 import { useAuth } from "@/contexts/AuthContext";
@@ -529,7 +531,8 @@ export default function WhosOlderPlayScreen() {
             }
             details={
               <>
-                {streak && isInstagramInAppBrowser() && <StreakLinkOffer game="older" streak={streak.current} />}
+                {streak && isInstagramInAppBrowser() && <StreakHandoff game="older" streak={streak.current} />}
+                {streak && !isInstagramInAppBrowser() && cameThroughHandoff() && <InstallPrompt placement="result" />}
                 {!isChallengeRun && today?.challenges && <ChallengeResults challenges={today.challenges} />}
                 <ResultDetails summary={t("result.answers")}>
                   {/* The ten answers — each row marked with its verdict. */}

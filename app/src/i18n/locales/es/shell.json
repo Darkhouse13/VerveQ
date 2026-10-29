@@ -1022,7 +1022,8 @@
       "iosShare": "Compartir",
       "iosAdd": "→ Añadir a pantalla de inicio",
       "cta": "Instalar",
-      "dismiss": "Cerrar la sugerencia de instalación"
+      "dismiss": "Cerrar la sugerencia de instalación",
+      "androidMenu": "Luego menú ⋮ → Añadir a pantalla de inicio"
     }
   },
   "taste": {
