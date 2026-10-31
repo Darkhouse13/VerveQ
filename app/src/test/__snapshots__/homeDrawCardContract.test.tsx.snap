@@ -313,7 +313,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
           </div>
           <section
             aria-labelledby="home-today"
-            class="shrink-0 flex flex-col gap-2 pb-4 md:pb-3"
+            class="shrink-0 flex flex-col gap-2 pb-4 md:pb-3 md:pt-6"
           >
             <div
               class="flex items-baseline justify-between gap-3"
