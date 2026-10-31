@@ -287,7 +287,15 @@ export default function ShellHomeScreen() {
         </div>
 
         {/* TODAY — the four dailies, first for everyone. */}
-        <section className="shrink-0 flex flex-col gap-2 pb-4 md:pb-3" aria-labelledby="home-today">
+        <section
+          className={cn(
+            "shrink-0 flex flex-col gap-2 pb-4 md:pb-3",
+            // With the brand row hidden (md+, nothing to show) this is the
+            // first thing under the top nav: match ShellLayout's header gap.
+            streak <= 0 && !showSignIn && !showGuest && "md:pt-6",
+          )}
+          aria-labelledby="home-today"
+        >
           <div className="flex items-baseline justify-between gap-3">
             <Eyebrow id="home-today" className="font-bold">
               {t("home.today.eyebrow")}
