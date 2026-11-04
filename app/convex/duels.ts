@@ -10,7 +10,7 @@ import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
 import {
-  areRankedEligibleUsers,
+  areRivalryEligibleUsers,
   isFullAccountUserDoc,
   isUsernameRequiredUserDoc,
 } from "./lib/authz";
@@ -463,7 +463,7 @@ async function applyRivalryOnce(
   now: number,
 ) {
   if (duel.rivalryAppliedAt || !duel.opponentId) return false;
-  if (!(await areRankedEligibleUsers(ctx, [duel.challengerId, duel.opponentId]))) {
+  if (!(await areRivalryEligibleUsers(ctx, [duel.challengerId, duel.opponentId]))) {
     return true;
   }
 

@@ -275,7 +275,7 @@
       },
       "dedicated_player": {
         "name": "Jugador constante",
-        "desc": "Juega 50 partidas"
+        "desc": "Juega 50 partidas clasificatorias"
       },
       "elo_champion": {
         "name": "Campeón de la clasificación",

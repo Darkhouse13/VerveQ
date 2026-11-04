@@ -15,7 +15,7 @@ pairing are corrected in place below.
 | --- | --- |
 | Repo backend code | Complete in repo |
 | Frontend wiring | Complete — Duel Hub, play, result + share, rivals, link landing |
-| Live backend validation | Functions are present on the configured dev backend (`admired-warthog-495`). The create/play/complete/rematch/link-guest/expiry/rivalry lifecycle is covered by `src/test/duelLifecycleIntegration.test.ts` as a deterministic two-player integration test. A real-browser two-player walk remains the outstanding manual validation step. |
+| Live backend validation | Functions are present on the configured dev backend (`admired-warthog-495`). The create/play/complete/rematch/link-guest/expiry/rivalry lifecycle is covered by `src/test/duelLifecycleIntegration.test.ts` as a deterministic two-player integration test. 2026-11-04: the full link-duel lifecycle was also run against DEV by the Android app's smoke script — two anonymous sessions claimed usernames, A created a link duel, played 10 and shared, B opened the link, played and finished, the duel resolved and appeared in A's `listMine`. Username-only players now get a rivalry ledger too (owner ruling, `lib/authz.ts` `isRivalryEligibleUserDoc`). A real-browser two-player walk of the web landing (`/s/d/:code` → `/duel/:code`) is still open. |
 | Remote deployment | Not part of this pass |
 
 ## Content Model

@@ -2791,7 +2791,14 @@ export const getRoom = query({
         left: player.left,
         totalScore: player.totalScore,
         isHost: player.userId === arena.hostId,
+        // Presence (docs/OPEN_BUGS.md #4): clients heartbeat every 15 s while
+        // the room is open; a client compares this against `serverNow` to show
+        // a player as away.
+        lastSeenAt: player.lastSeenAt ?? null,
       })),
+      // Server clock for presence math in every phase (the question timer
+      // keeps its own serverNow below).
+      serverNow: Date.now(),
       currentQuestion,
       timer:
         arena.phase === "question"

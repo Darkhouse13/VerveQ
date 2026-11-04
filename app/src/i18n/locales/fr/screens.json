@@ -591,6 +591,7 @@
     "waitingOn": "En attente de",
     "ready": "Prêt",
     "notReady": "Pas prêt",
+    "away": "Absent",
     "markReady": "Je suis prêt",
     "start": "Lancer l'arène",
     "forceStart": "Lancer sans les joueurs pas prêts",

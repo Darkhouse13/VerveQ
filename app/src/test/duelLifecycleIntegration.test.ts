@@ -16,6 +16,7 @@ vi.mock("@convex-dev/auth/server", () => ({
 }));
 
 import * as duels from "../../convex/duels";
+import * as rivalries from "../../convex/rivalries";
 
 type Args = { [key: string]: unknown };
 type Row = Record<string, unknown> & { _id: string };
@@ -878,5 +879,60 @@ describe("duel lifecycle integration", () => {
     expect(listMine.awaiting).toHaveLength(0);
     expect(listMine.resolved).toHaveLength(0);
     expect(JSON.stringify(listMine)).not.toContain(secretOpponentAnswer);
+  });
+
+  it("writes and reads a rivalry for a username-only player (docs/OPEN_BUGS.md #2)", async () => {
+    const db = makeSeededDb();
+    // Username-only: an anonymous session that claimed a name.
+    db.seed("users", "user_d", {
+      username: "delta",
+      displayName: "Delta",
+      isGuest: false,
+      isAnonymous: true,
+    });
+    // A nameless anonymous session stays out of the ledger.
+    db.seed("users", "user_e", { isGuest: false, isAnonymous: true });
+
+    setAuth("user_a");
+    const created = (await handlerOf(duels.create)(makeCtx(db), {
+      type: "knowledge",
+      category: "science",
+      difficulty: "easy",
+      mode: "quiz",
+      viaLink: true,
+    })) as { duelId: string; linkCode: string | null };
+
+    setAuth("user_d");
+    await handlerOf(duels.getByLinkCode)(makeCtx(db), { linkCode: created.linkCode });
+    expect(db.row<DuelRow>(created.duelId).opponentId).toBe("user_d");
+
+    await answerAll(db, created.duelId, "user_a", (question) => question.correctAnswer);
+    setAuth("user_a");
+    await handlerOf(duels.complete)(makeCtx(db), { duelId: created.duelId });
+    await answerAll(db, created.duelId, "user_d", (question, index) =>
+      wrongAnswer(question, `uo-${index}`),
+    );
+    setAuth("user_d");
+    const resolved = (await handlerOf(duels.complete)(makeCtx(db), {
+      duelId: created.duelId,
+    })) as { status: string; winnerId: string | null };
+    expect(resolved).toEqual({ status: "resolved", winnerId: "user_a" });
+
+    expect(db.all<RivalryRow>("rivalries")).toHaveLength(1);
+
+    setAuth("user_d");
+    const fromD = (await handlerOf(rivalries.get)(makeCtx(db), {
+      opponentUserId: "user_a",
+    })) as { wins: number; losses: number } | null;
+    expect(fromD).toMatchObject({ wins: 0, losses: 1 });
+    const listD = (await handlerOf(rivalries.listMine)(makeCtx(db), {})) as {
+      rivalries: unknown[];
+    };
+    expect(listD.rivalries).toHaveLength(1);
+
+    setAuth("user_e");
+    expect(
+      await handlerOf(rivalries.get)(makeCtx(db), { opponentUserId: "user_a" }),
+    ).toBeNull();
   });
 });

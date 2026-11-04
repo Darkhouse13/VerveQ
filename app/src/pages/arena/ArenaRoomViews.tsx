@@ -41,6 +41,8 @@ import {
   arenaModeVerboseLabel,
   buildArenaUrl,
   shareArenaLink,
+  isArenaPlayerAway,
+  useClockOffset,
   usePhaseAnchor,
   useTick,
 } from "@/lib/arena";
@@ -363,6 +365,8 @@ function Roster({
   const { t } = useTranslation("screens");
   const active = room.players.filter((p) => !p.left);
   const slotsToFill = Math.max(0, capacity - active.length);
+  const offset = useClockOffset(room.serverNow);
+  const serverNowEstimate = useTick(5_000) - offset;
   return (
     <div>
       <p className="text-eyebrow font-heading font-bold uppercase mb-2 flex items-center gap-1.5">
@@ -374,6 +378,7 @@ function Roster({
             key={p.userId}
             player={p}
             isMe={!!userId && p.userId === userId}
+            away={isArenaPlayerAway(p, serverNowEstimate)}
           />
         ))}
         {Array.from({ length: slotsToFill }).map((_, i) => (
@@ -392,9 +397,11 @@ function Roster({
 function PlayerRow({
   player,
   isMe,
+  away,
 }: {
   player: RoomPlayer;
   isMe: boolean;
+  away: boolean;
 }) {
   const { t } = useTranslation("screens");
   return (
@@ -415,9 +422,15 @@ function PlayerRow({
               <Shield size={10} strokeWidth={3} /> {player.team}
             </NeoBadge>
           )}
-          <NeoBadge color={player.ready ? "success" : "muted"} size="sm">
-            {player.ready ? t("arenaRoom.ready") : t("arenaRoom.notReady")}
-          </NeoBadge>
+          {away ? (
+            <NeoBadge color="muted" size="sm">
+              {t("arenaRoom.away")}
+            </NeoBadge>
+          ) : (
+            <NeoBadge color={player.ready ? "success" : "muted"} size="sm">
+              {player.ready ? t("arenaRoom.ready") : t("arenaRoom.notReady")}
+            </NeoBadge>
+          )}
         </div>
       </div>
     </NeoCard>

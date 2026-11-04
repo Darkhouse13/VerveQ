@@ -275,7 +275,7 @@
       },
       "dedicated_player": {
         "name": "Joueur assidu",
-        "desc": "Joue 50 parties"
+        "desc": "Joue 50 parties classées"
       },
       "elo_champion": {
         "name": "Champion du classement",

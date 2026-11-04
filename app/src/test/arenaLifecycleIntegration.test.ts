@@ -1102,6 +1102,29 @@ describe("challenge arena lifecycle integration", () => {
     });
   });
 
+  it("exposes presence: heartbeat stamps lastSeenAt and getRoom returns it with serverNow (docs/OPEN_BUGS.md #4)", async () => {
+    const db = makeSeededDb();
+    const { arenaId } = await createJoinedArena(db, "ffa3", ["user_a", "user_b"]);
+
+    setAuth("user_b");
+    await handlerOf(challengeArenas.heartbeat)(makeCtx(db), { arenaId });
+
+    setAuth("user_a");
+    const lobby = (await handlerOf(challengeArenas.getRoom)(makeCtx(db), {
+      arenaId,
+    })) as unknown as {
+      serverNow: number;
+      players: Array<{ userId: string; lastSeenAt: number | null }>;
+    };
+    expect(lobby.serverNow).toEqual(expect.any(Number));
+    const b = lobby.players.find((p) => p.userId === "user_b");
+    expect(b?.lastSeenAt).toEqual(expect.any(Number));
+    expect(b!.lastSeenAt!).toBeLessThanOrEqual(lobby.serverNow);
+    for (const p of lobby.players) {
+      expect(p).toHaveProperty("lastSeenAt");
+    }
+  });
+
   it("scores 2v2 teams as member sums and treats wrong or missed answers as zero", async () => {
     const db = makeSeededDb();
     const { arenaId } = await createJoinedArena(db, "2v2", [

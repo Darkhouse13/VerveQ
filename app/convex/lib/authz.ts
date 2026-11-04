@@ -124,6 +124,39 @@ export async function assertFullAccountUser(
   return user;
 }
 
+/**
+ * Rivalries (duel W/D/L ledger): any player with a CLAIMED username, anonymous
+ * or not. Owner ruling 2026-11-04 (docs/OPEN_BUGS.md #2): username-only
+ * players can open /rivals and play duels, so they get a ledger too. Guests
+ * (isGuest) and nameless anonymous sessions stay out — their ledger would
+ * have no name to show.
+ */
+export function isRivalryEligibleUserDoc(
+  user:
+    | Pick<Doc<"users">, "_id" | "username" | "isGuest">
+    | null
+    | undefined,
+) {
+  return hasUsableUsername(user ?? null);
+}
+
+export async function isRivalryEligibleUserId(
+  ctx: Pick<QueryCtx, "db"> | Pick<MutationCtx, "db">,
+  userId: Id<"users">,
+) {
+  return isRivalryEligibleUserDoc(await ctx.db.get(userId));
+}
+
+export async function areRivalryEligibleUsers(
+  ctx: Pick<QueryCtx, "db"> | Pick<MutationCtx, "db">,
+  userIds: Id<"users">[],
+) {
+  for (const userId of userIds) {
+    if (!(await isRivalryEligibleUserId(ctx, userId))) return false;
+  }
+  return true;
+}
+
 export async function areRankedEligibleUsers(
   ctx: Pick<QueryCtx, "db"> | Pick<MutationCtx, "db">,
   userIds: Id<"users">[],

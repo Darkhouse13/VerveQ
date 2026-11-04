@@ -39,6 +39,7 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import type { FunctionReturnType } from "convex/server";
 import { localizedAnswerLabel } from "../../../../convex/lib/contentI18n";
 import {
+  ARENA_HEARTBEAT_MS,
   arenaCategoryEmoji,
   arenaCategoryLabel,
   arenaModeLabel,
@@ -167,6 +168,7 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
   const joinMut = useMutation(api.challengeArenas.join);
   const leaveMut = useMutation(api.challengeArenas.leave);
   const rematchMut = useMutation(api.challengeArenas.rematch);
+  const heartbeatMut = useMutation(api.challengeArenas.heartbeat);
 
   const [joinError, setJoinError] = useState<string | null>(null);
   const [leaving, setLeaving] = useState(false);
@@ -177,6 +179,26 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
   const offset = useClockOffset(room?.timer?.serverNow ?? null);
   const tick = useTick(150);
   useImagePreload(room?.upcomingImageUrls);
+
+  // Presence (docs/OPEN_BUGS.md #4): beat while the room is open and the tab
+  // is visible, so the lobby can show who has left the app.
+  const arenaId = room?.arenaId;
+  const roomOpen = !!room && room.status !== "final" && room.status !== "abandoned";
+  useEffect(() => {
+    if (!arenaId || !roomOpen) return;
+    const beat = () => {
+      if (document.visibilityState === "visible") {
+        void heartbeatMut({ arenaId }).catch(() => undefined);
+      }
+    };
+    beat();
+    const id = window.setInterval(beat, ARENA_HEARTBEAT_MS);
+    document.addEventListener("visibilitychange", beat);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", beat);
+    };
+  }, [arenaId, roomOpen, heartbeatMut]);
 
   useEffect(() => {
     if (room !== null) return;

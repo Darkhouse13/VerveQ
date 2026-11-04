@@ -591,6 +591,7 @@
     "waitingOn": "Falta",
     "ready": "Listo",
     "notReady": "No listo",
+    "away": "Ausente",
     "markReady": "Estoy listo",
     "start": "Empezar arena",
     "forceStart": "Empezar sin los que no están listos",

@@ -1,6 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { hasPerfectQuiz } from "./lib/achievementRules";
 
 export const list = query({
   args: {},
@@ -77,9 +78,22 @@ export const checkAndUnlock = mutation({
     const user = await ctx.db.get(userId);
     const approvedQuestions = user?.approvedQuestionsCount ?? 0;
 
+    // Quiz Master was defined but never checked (docs/OPEN_BUGS.md #1).
+    // gameSessions keeps every finished ranked game, so earlier perfect
+    // quizzes unlock it too. Skip the read once it's unlocked.
+    const perfectQuiz =
+      !unlockedSet.has("quiz_master") &&
+      hasPerfectQuiz(
+        await ctx.db
+          .query("gameSessions")
+          .withIndex("by_user", (q) => q.eq("userId", userId))
+          .collect(),
+      );
+
     const checks: [string, boolean][] = [
       ["first_quiz", quizGames >= 1],
       ["first_survival", survivalGames >= 1],
+      ["quiz_master", perfectQuiz],
       ["survival_legend", maxSurvivalScore >= 15],
       ["multi_sport_athlete", sportsPlayed >= 2],
       ["dedicated_player", totalGames >= 50],

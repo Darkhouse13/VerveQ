@@ -315,6 +315,24 @@ export function useClockOffset(serverNow: number | null | undefined) {
   return offset;
 }
 
+/** Clients heartbeat every 15 s; three missed beats = away. */
+export const ARENA_HEARTBEAT_MS = 15_000;
+export const ARENA_AWAY_AFTER_MS = 45_000;
+
+/**
+ * A player is away when their last heartbeat is older than
+ * ARENA_AWAY_AFTER_MS on the server's clock. `serverNowEstimate` is the
+ * client's tick corrected by useClockOffset. Players with no beat yet
+ * (lastSeenAt null) are never shown as away.
+ */
+export function isArenaPlayerAway(
+  player: { left: boolean; lastSeenAt: number | null },
+  serverNowEstimate: number,
+) {
+  if (player.left || player.lastSeenAt == null) return false;
+  return serverNowEstimate - player.lastSeenAt > ARENA_AWAY_AFTER_MS;
+}
+
 // Ticking clock that updates every `intervalMs` for smooth countdowns.
 export function useTick(intervalMs = 200) {
   const [now, setNow] = useState(() => Date.now());

@@ -591,6 +591,7 @@
     "waitingOn": "Waiting on",
     "ready": "Ready",
     "notReady": "Not ready",
+    "away": "Away",
     "markReady": "I'm ready",
     "start": "Start arena",
     "forceStart": "Start without the unready",

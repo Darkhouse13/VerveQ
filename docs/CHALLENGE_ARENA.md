@@ -266,11 +266,17 @@ Production runs the v2 shell, where the room UI is
 (wrapped in `ShellGate`, no auth guard on the route itself). It reuses the same
 server-authoritative `challengeArenas` room read-model and mutations, and reuses
 the proven Lobby / Countdown / RoundBreak / Final views described below; only the
-in-game question/reveal layout differs. The v1 screen
-`app/src/pages/ChallengeArenaScreen.tsx` still compiles at `/arena/:code`, but
-that route is wrapped in `V2ArenaCodeRedirect`, which forwards code-intact to
-`/arena/:code` while the shell flag is on — so v1 is a rollback seam, not a
-live surface.
+in-game question/reveal layout differs. The v1 screen (`ChallengeArenaScreen`)
+and its `V2ArenaCodeRedirect` wrapper no longer exist; `/arena/:code` renders
+`ArenaPlayScreen` directly (no route wrapper; it onboards inline so an invite
+keeps its code). The shared room views live in
+`app/src/pages/arena/ArenaRoomViews.tsx`.
+
+Presence (2026-11-04): the room screen calls `challengeArenas.heartbeat` every
+15 s while the tab is visible; `getRoom` returns each player's `lastSeenAt` and
+a top-level `serverNow`; the lobby roster shows a player as "Away" after 45 s
+without a beat (`isArenaPlayerAway` in `app/src/lib/arena.ts`). The Android app
+sends the same heartbeat.
 
 Entry is a dedicated Arena hub, `app/src/pages/shell/ArenaHubScreen.tsx` at
 `/arena` (gated by `UsernameOnlyRoute`), which offers create and join-by-code.

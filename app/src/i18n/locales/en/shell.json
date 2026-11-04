@@ -275,7 +275,7 @@
       },
       "dedicated_player": {
         "name": "Dedicated Player",
-        "desc": "Play 50 games"
+        "desc": "Play 50 ranked games"
       },
       "elo_champion": {
         "name": "Rating Champion",
