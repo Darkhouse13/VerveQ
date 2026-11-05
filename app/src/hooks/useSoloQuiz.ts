@@ -46,6 +46,13 @@ interface QuestionData {
   // Server hint: the next planned question's image, warmed into the browser
   // cache while this question is on screen. Never rendered directly.
   nextImageUrl?: string | null;
+  // Ranked answer window (owner ruling 2026-11-05): the server grades an
+  // answer wrong once graceMs + answerLimitMs have passed since it served the
+  // question; elapsedMs is how much of that had already run (carried-over
+  // questions keep their original clock).
+  answerLimitMs?: number;
+  graceMs?: number;
+  elapsedMs?: number;
 }
 
 /** Warm the browser cache so the next question's image paints instantly. */
@@ -107,7 +114,12 @@ export function useSoloQuiz(onFinish: (result: QuizResultData) => void): SoloQui
     correct: boolean;
     explanation?: string | null;
   } | null>(null);
+  // Count-up seconds, or — when the server sends an answer window — the
+  // seconds LEFT in it (the stage shows either as m:ss).
   const [timer, setTimer] = useState(0);
+  // Wall-clock deadline of the current question's answer window (null = none).
+  const deadlineRef = useRef<number | null>(null);
+  const timeoutSentRef = useRef(false);
   const [loading, setLoading] = useState(true);
   const [checking, setChecking] = useState(false);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
@@ -123,6 +135,7 @@ export function useSoloQuiz(onFinish: (result: QuizResultData) => void): SoloQui
   const checkAnswerMut = useMutation(api.quizSessions.checkAnswer);
   const completeQuizMut = useMutation(api.games.completeQuiz);
   const penalizeTabSwitchMut = useMutation(api.quizSessions.penalizeTabSwitch);
+  const endSessionMut = useMutation(api.quizSessions.endSession);
 
   const applyQuestion = useCallback((q: QuestionData) => {
     setQuestion(q);
@@ -130,7 +143,16 @@ export function useSoloQuiz(onFinish: (result: QuizResultData) => void): SoloQui
     setSelected(null);
     setRevealed(false);
     setCheckResult(null);
-    setTimer(0);
+    if (q.answerLimitMs) {
+      const deadline =
+        Date.now() - (q.elapsedMs ?? 0) + (q.graceMs ?? 0) + q.answerLimitMs;
+      deadlineRef.current = deadline;
+      setTimer(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
+    } else {
+      deadlineRef.current = null;
+      setTimer(0);
+    }
+    timeoutSentRef.current = false;
     preloadImage(q.nextImageUrl);
   }, []);
 
@@ -196,11 +218,38 @@ export function useSoloQuiz(onFinish: (result: QuizResultData) => void): SoloQui
   // unmounts this loop) can never be re-reported as an abandon.
   const liveSessionRef = useRef<Id<"quizSessions"> | null>(null);
   liveSessionRef.current = sessionId;
-  useEffect(() => () => abandonRun(liveSessionRef.current), []);
+  // Quitting a ranked run ends it on the server too: with ≥1 answer that
+  // settles as a loss (convex/lib/rankedSettle.ts), so a bad start can't be
+  // walked away from. A no-op for a run that already completed.
+  const endSessionMutRef = useRef(endSessionMut);
+  endSessionMutRef.current = endSessionMut;
+  useEffect(
+    () => () => {
+      const sid = liveSessionRef.current;
+      abandonRun(sid);
+      if (sid) void endSessionMutRef.current({ sessionId: sid }).catch(() => {});
+    },
+    [],
+  );
 
+  // Ticks the clock. With an answer window it counts DOWN from the server's
+  // deadline and, at 0, submits a timeout in the same single checkAnswer round
+  // trip a pick uses — the server grades it wrong (past the window) and the
+  // reveal shows the right answer.
+  const submitTimeoutRef = useRef<() => void>(() => {});
   useEffect(() => {
     if (revealed || loading) return;
-    const id = setInterval(() => setTimer((t) => t + 1), 1000);
+    if (deadlineRef.current == null) {
+      const id = setInterval(() => setTimer((t) => t + 1), 1000);
+      return () => clearInterval(id);
+    }
+    const tick = () => {
+      const left = Math.max(0, Math.ceil(((deadlineRef.current ?? 0) - Date.now()) / 1000));
+      setTimer(left);
+      if (left === 0) submitTimeoutRef.current();
+    };
+    tick();
+    const id = setInterval(tick, 250);
     return () => clearInterval(id);
   }, [revealed, loading]);
 
@@ -223,7 +272,7 @@ export function useSoloQuiz(onFinish: (result: QuizResultData) => void): SoloQui
   );
 
   const handleCheck = useCallback(
-    async (optionIndex: number) => {
+    async (optionIndex: number | null) => {
       if (
         !question ||
         !sessionId ||
@@ -239,7 +288,8 @@ export function useSoloQuiz(onFinish: (result: QuizResultData) => void): SoloQui
         const res = await checkAnswerMut({
           sessionId,
           // Canonical English value — grading compares against correctAnswer.
-          answer: question.optionValues[optionIndex],
+          // A timeout submits an empty answer: always graded wrong.
+          answer: optionIndex == null ? "" : question.optionValues[optionIndex],
         });
         noteQuestionAnswered(sessionId);
         setRevealedAnswer(res.correctAnswer);
@@ -261,6 +311,15 @@ export function useSoloQuiz(onFinish: (result: QuizResultData) => void): SoloQui
     },
     [checkAnswerMut, checking, question, revealed, sessionId, t],
   );
+
+  useEffect(() => {
+    submitTimeoutRef.current = () => {
+      if (timeoutSentRef.current || revealed || checking || answerSubmitInFlight.current) return;
+      timeoutSentRef.current = true;
+      notify(t("quiz.timeUp"));
+      void handleCheck(null);
+    };
+  }, [revealed, checking, handleCheck, t]);
 
   const onOption = useCallback(
     (idx: number) => {

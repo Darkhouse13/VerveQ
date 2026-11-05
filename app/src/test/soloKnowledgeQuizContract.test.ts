@@ -69,6 +69,21 @@ function makeQuestion(overrides: Partial<QuestionRow>): QuestionRow {
 
 function makeQuestionQuery(questions: QuestionRow[], queried: Array<Record<string, unknown>>) {
   return (table: string) => {
+    // createSession checks for a parked ranked question (lib/rankedPending).
+    if (table === "rankedPendingQuestions") {
+      return {
+        withIndex: () => ({ first: async () => null }),
+      };
+    }
+    // createSession closes the player's other live ranked runs
+    // (lib/rankedOpenRuns) and plans from the slice catalog when one exists
+    // (lib/questionCatalog). Neither exists in this fixture.
+    if (table === "quizSessions") {
+      return { withIndex: () => ({ take: async () => [] }) };
+    }
+    if (table === "quizQuestionCatalogs") {
+      return { withIndex: () => ({ first: async () => null }) };
+    }
     if (table !== "quizQuestions") {
       throw new Error(`Unexpected table query: ${table}`);
     }

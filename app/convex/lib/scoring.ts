@@ -8,17 +8,27 @@ export const QUIZ_SERVE_GRACE_SEC = 1.5;
 // like duels it swallows the reveal pause plus two network legs.
 export const DAILY_SERVE_GRACE_SEC = 2.5;
 
+// Ranked quiz (owner ruling 2026-11-05): every question has a 15 s answer
+// window on the server clock, counted after the serve grace. No answer inside
+// it = wrong; points fall LINEARLY from full at 0 s to 0 at the limit.
+export const RANKED_ANSWER_LIMIT_SEC = 15;
+
+/** True while a ranked answer (seconds after the serve grace) is in time. */
+export function rankedAnswerInTime(timeTakenSec: number): boolean {
+  return timeTakenSec <= RANKED_ANSWER_LIMIT_SEC;
+}
+
+/** Linear ranked time score: full at 0 s, 0 at RANKED_ANSWER_LIMIT_SEC. */
 export function calculateTimeScore(
   basePoints: number,
   timeTaken: number,
-  maxTime = 10.0,
+  maxTime = RANKED_ANSWER_LIMIT_SEC,
 ): number {
-  if (timeTaken > maxTime) return 0;
-  if (timeTaken <= 1.0) return basePoints;
-  return Math.max(
-    0,
-    Math.floor(basePoints * ((maxTime - timeTaken) / (maxTime - 1.0))),
-  );
+  if (timeTaken >= maxTime) return 0;
+  if (timeTaken <= 0) return basePoints;
+  // (maxTime - t) * base / maxTime keeps whole seconds exact (12 s → 20, not
+  // 19.999…); the epsilon guards the remaining float noise before flooring.
+  return Math.max(0, Math.floor(((maxTime - timeTaken) * basePoints) / maxTime + 1e-9));
 }
 
 // Async duels stamp a question as served the moment the previous answer is

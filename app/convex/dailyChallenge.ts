@@ -35,6 +35,7 @@ import {
   isStandardMcqQuestion,
 } from "./lib/mcqEligibility";
 import type { Doc, Id } from "./_generated/dataModel";
+import { assertDailyQuestionReadable } from "./lib/dailyQuestionGate";
 
 const DAILY_QUIZ_COUNT = 10;
 const MAX_TIME_SEC = 10;
@@ -141,6 +142,26 @@ function getAttemptResultCount(attempt: { results?: unknown }) {
   return Array.isArray(attempt.results) ? attempt.results.length : 0;
 }
 
+/**
+ * An attempt that ran past its TTL after ≥1 answer, on today's daily, stays
+ * resumable at the current question (app killed, phone died). Nothing is
+ * re-served or reset: answered questions stay answered, and the current
+ * question keeps its original start stamp (set when the previous answer
+ * landed), so the time away earns no time points — no free thinking time.
+ * Only a fresh, unanswered attempt is ever restarted (canRestartAttempt).
+ */
+export function isResumableExpiredAttempt(
+  attempt: { date: string; completed?: boolean; forfeited?: boolean; results?: unknown },
+  today: string,
+) {
+  return (
+    !attempt.completed &&
+    !attempt.forfeited &&
+    getAttemptResultCount(attempt) > 0 &&
+    attempt.date === today
+  );
+}
+
 function getQuestionStartedAts(attempt: {
   questionStartedAts?: number[];
 }): number[] {
@@ -183,6 +204,29 @@ function setDailyQuestionStartedAt(
   return startedAts;
 }
 
+/** A started, unfinished attempt with ≥1 answer that may continue right now. */
+function isResumableNow(
+  attempt: {
+    date: string;
+    completed: boolean;
+    forfeited: boolean;
+    results?: unknown;
+    startedAt: number;
+    expiresAt?: number;
+  },
+  now: number,
+  today: string,
+) {
+  if (attempt.completed || attempt.forfeited) return false;
+  if (getAttemptResultCount(attempt) === 0) return false;
+  return getAttemptExpiresAt(attempt) > now || isResumableExpiredAttempt(attempt, today);
+}
+
+function resumeView(attempt: { _id: Id<"dailyAttempts">; results?: unknown; score: number }) {
+  const results = Array.isArray(attempt.results) ? attempt.results : [];
+  return { attemptId: attempt._id, resumeAt: results.length, results, score: attempt.score };
+}
+
 function canRestartAttempt(
   attempt: {
     completed: boolean;
@@ -191,10 +235,12 @@ function canRestartAttempt(
     startedAt: number;
     expiresAt?: number;
   },
-  now: number,
 ) {
   if (attempt.completed || attempt.forfeited) return false;
-  return getAttemptResultCount(attempt) === 0 || getAttemptExpiresAt(attempt) <= now;
+  // Only an attempt with no answers can be restarted. An expired attempt that
+  // has answers is spent: submitAnswer revealed those correctAnswers, so a
+  // restart would replay today's quiz with the answer key in hand.
+  return getAttemptResultCount(attempt) === 0;
 }
 
 // The daily quiz candidate pool + shuffle seed for a given date. Normally the
@@ -480,7 +526,6 @@ export const getAttemptStatus = query({
     if (!isSessionUserDoc(await ctx.db.get(userId))) return null;
 
     const date = getTodayUTC();
-    const now = Date.now();
     const attempt = await ctx.db
       .query("dailyAttempts")
       .withIndex("by_user_date_sport_mode", (q) =>
@@ -493,13 +538,16 @@ export const getAttemptStatus = query({
       .first();
 
     if (!attempt) return null;
-    if (canRestartAttempt(attempt, now)) return null;
+    if (canRestartAttempt(attempt)) return null;
 
     return {
       attemptId: attempt._id,
       score: attempt.score,
       completed: attempt.completed,
       forfeited: attempt.forfeited,
+      // Mid-run and continuable: clients resume it (startAttempt returns the
+      // position) instead of showing "already played".
+      resumable: isResumableNow(attempt, Date.now(), date),
       answeredCount: getAttemptResultCount(attempt),
       results: attempt.results,
       startedAt: attempt.startedAt,
@@ -564,23 +612,39 @@ export const startAttempt = mutation({
       .first();
 
     if (existing) {
-      if (!canRestartAttempt(existing, now)) {
+      // Mid-run with ≥1 answer (app killed, other device): continue where it
+      // stands. Nothing is reset or re-revealed; the current question keeps
+      // the clock submitAnswer stamped.
+      if (isResumableNow(existing, now, date)) {
+        return resumeView(existing);
+      }
+      if (!canRestartAttempt(existing)) {
         throw alreadyAttemptedError();
       }
+      // Still live and unanswered (refresh / app restart on question 1):
+      // resume it with its original clock. Resetting here would let a player
+      // read question 1, restart, and answer it on a fresh timer.
+      if (getAttemptExpiresAt(existing) > now) {
+        return resumeView(existing);
+      }
 
+      // Expired with question 1 served but never answered. A fresh clock on
+      // the same question would be free thinking time, so question 1 is
+      // recorded as a timeout (0 points, wrong) and the run continues at
+      // question 2 on a fresh clock. (Question 1 is served the moment the
+      // attempt starts — clients read it straight after startAttempt — so an
+      // expired attempt is treated as served.)
+      const q1StartedAt = getDailyQuestionStartedAt(existing, 0);
+      const timedOut = { correct: false, timeTaken: MAX_TIME_SEC, score: 0, timedOut: true };
       await ctx.db.patch(existing._id, {
         score: 0,
-        completed: false,
-        forfeited: false,
-        results: [],
-        startedAt: now,
+        results: [timedOut],
         completedAt: undefined,
         currentQuestionStartedAt: now,
-        questionStartedAts: [now],
+        questionStartedAts: [q1StartedAt, now],
         expiresAt: now + DAILY_ATTEMPT_TTL_MS,
       });
-
-      return { attemptId: existing._id };
+      return { attemptId: existing._id, resumeAt: 1, results: [timedOut], score: 0 };
     }
 
     const attemptId = await ctx.db.insert("dailyAttempts", {
@@ -598,7 +662,7 @@ export const startAttempt = mutation({
       questionStartedAts: [now],
     });
 
-    return { attemptId };
+    return { attemptId, resumeAt: 0, results: [], score: 0 };
   },
 });
 
@@ -620,7 +684,10 @@ export const getQuestion = query({
     if (attempt.completed || attempt.forfeited) {
       throw new Error("Attempt already finished");
     }
-    if (Date.now() > getAttemptExpiresAt(attempt)) {
+    if (
+      Date.now() > getAttemptExpiresAt(attempt) &&
+      !isResumableExpiredAttempt(attempt, getTodayUTC())
+    ) {
       throw new Error("Attempt expired");
     }
 
@@ -633,6 +700,13 @@ export const getQuestion = query({
           .eq("mode", attempt.mode),
       )
       .collect();
+
+    // Only an answered question or the current one may be read. Serving
+    // ahead of progress would hand the whole daily to the client at the start
+    // (every question readable before its clock runs). The current question's
+    // clock starts when the previous answer lands (submitAnswer), so reading
+    // it early — e.g. prefetching during the reveal — never buys free time.
+    assertDailyQuestionReadable(attempt.results, questionIndex);
 
     const challenge = pickCanonicalChallenge(challenges);
     if (!challenge) throw new Error("Challenge not found");
@@ -717,7 +791,11 @@ export const submitAnswer = mutation({
     if (attempt.completed || attempt.forfeited) {
       throw new Error("Attempt already finished");
     }
-    if (Date.now() > getAttemptExpiresAt(attempt)) {
+    // Past the TTL: a resumable attempt (≥1 answer, today's daily) continues
+    // with a fresh TTL; anything else is spent.
+    const expired = Date.now() > getAttemptExpiresAt(attempt);
+    const resumed = expired && isResumableExpiredAttempt(attempt, getTodayUTC());
+    if (expired && !resumed) {
       await ctx.db.patch(attemptId, {
         forfeited: true,
         completedAt: Date.now(),
@@ -804,6 +882,7 @@ export const submitAnswer = mutation({
     await ctx.db.patch(attemptId, {
       results: newResults,
       score: totalScore,
+      ...(resumed ? { expiresAt: now + DAILY_ATTEMPT_TTL_MS } : {}),
       currentQuestionStartedAt: now,
       questionStartedAts: setDailyQuestionStartedAt(
         attempt,
@@ -858,7 +937,10 @@ export const completeAttempt = mutation({
     }
     if (attempt.completed) throw new Error("Already completed");
     if (attempt.forfeited) throw new Error("Attempt forfeited");
-    if (Date.now() > getAttemptExpiresAt(attempt)) {
+    if (
+      Date.now() > getAttemptExpiresAt(attempt) &&
+      !isResumableExpiredAttempt(attempt, getTodayUTC())
+    ) {
       await ctx.db.patch(attemptId, {
         forfeited: true,
         completedAt: Date.now(),

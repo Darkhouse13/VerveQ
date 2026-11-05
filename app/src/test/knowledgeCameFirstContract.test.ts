@@ -25,7 +25,8 @@ describe("Knowledge Which Came First mode", () => {
     const difficulty = readFileSync("src/pages/DifficultyScreen.tsx", "utf8");
     const quizHook = readFileSync("src/hooks/useSoloQuiz.ts", "utf8");
     const quizSessions = readFileSync("convex/quizSessions.ts", "utf8");
-    const games = readFileSync("convex/games.ts", "utf8");
+    // Rating settlement moved to convex/lib/rankedSettle.ts (loop round 4).
+    const games = readFileSync("convex/lib/rankedSettle.ts", "utf8");
 
     expect(tiles).toContain("/difficulty?sport=knowledge&mode=came_first");
     expect(app).toContain('path="/quiz"');

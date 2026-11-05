@@ -6,7 +6,8 @@
     "tabSwitchEnded": "Quiz terminado — cambiaste de pestaña",
     "tabSwitchWarning": "No cambies de pestaña — tu quiz terminará",
     "checkFailedToast": "No se pudo verificar la respuesta",
-    "cameFirstBadge": "¿Qué fue primero?"
+    "cameFirstBadge": "¿Qué fue primero?",
+    "timeUp": "Se acabó el tiempo"
   },
   "dailyQuiz": {
     "title": "Quiz diario",

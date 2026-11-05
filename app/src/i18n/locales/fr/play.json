@@ -6,7 +6,8 @@
     "tabSwitchEnded": "Quiz terminé — tu as changé d'onglet",
     "tabSwitchWarning": "Ne change pas d'onglet — ton quiz se terminera",
     "checkFailedToast": "Échec de la vérification de la réponse",
-    "cameFirstBadge": "Lequel est venu en premier"
+    "cameFirstBadge": "Lequel est venu en premier",
+    "timeUp": "Temps écoulé"
   },
   "dailyQuiz": {
     "title": "Quiz du jour",

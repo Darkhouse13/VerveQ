@@ -28,6 +28,7 @@ import {
 } from "./lib/dailyGames";
 import players from "./data/missing_letters_players.json";
 import type { Doc, Id } from "./_generated/dataModel";
+import { readDailyStanding, recordDailyFinish } from "./lib/dailyScoreHistogram";
 
 /**
  * MISSING LETTERS — the app twin of the reel. Same shape as convex/whosOlder.ts:
@@ -157,18 +158,18 @@ async function myChallenges(ctx: Pick<QueryCtx, "db">, userId: Id<"users">) {
   return out;
 }
 
-/** Where a finished daily score sits among everyone who finished that date. */
-async function dailyStanding(ctx: Pick<QueryCtx, "db">, dateKey: string, score: number) {
-  const finished = await ctx.db
+function scanDailyFinishers(ctx: Pick<QueryCtx, "db">, dateKey: string) {
+  return ctx.db
     .query("missingLettersSessions")
     .withIndex("by_kind_date_status", (q) =>
       q.eq("kind", "daily").eq("dateKey", dateKey).eq("status", "completed"),
     )
     .collect();
-  return {
-    finishers: finished.length,
-    below: finished.filter((s) => s.score < score).length,
-  };
+}
+
+/** Where a finished daily score sits among everyone who finished that date. */
+async function dailyStanding(ctx: Pick<QueryCtx, "db">, dateKey: string, score: number) {
+  return readDailyStanding(ctx, "letters", dateKey, score, () => scanDailyFinishers(ctx, dateKey));
 }
 
 /** Today's edition + this player's state in it. Signed-out callers get the edition only. */
@@ -330,6 +331,11 @@ export const guess = mutation({
       ...(finished ? { status: "completed" as const, completedAt: Date.now() } : {}),
     });
     if (finished) await incrementTotalGames(ctx, userId);
+    if (finished && session.kind === "daily") {
+      await recordDailyFinish(ctx, "letters", session.dateKey, score, () =>
+        scanDailyFinishers(ctx, session.dateKey),
+      );
+    }
 
     const updated = (await ctx.db.get(sessionId))!;
     return {

@@ -56,6 +56,11 @@ class IndexPredicateBuilder {
     return this;
   }
 
+  gt(field: string, value: unknown) {
+    this.predicates.push((row) => (row[field] as number) > (value as number));
+    return this;
+  }
+
   matches(row: Row) {
     return this.predicates.every((predicate) => predicate(row));
   }

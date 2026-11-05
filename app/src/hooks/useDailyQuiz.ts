@@ -123,7 +123,8 @@ export function useDailyQuiz(onFinish: (result: DailyQuizResultData) => void): D
   // Start (or block) the daily attempt — one attempt per day, server-enforced.
   useEffect(() => {
     if (attemptStatus === undefined) return;
-    if (attemptStatus) {
+    // A mid-run attempt (≥1 answer, still continuable) is resumed, not refused.
+    if (attemptStatus && !attemptStatus.resumable) {
       const hasLocalAttempt = localAttemptSport.current === sport || attemptId !== null;
       if (startAttemptInFlight.current || hasLocalAttempt) return;
       notify.error(t("dailyQuiz.alreadyPlayed"));
@@ -139,7 +140,19 @@ export function useDailyQuiz(onFinish: (result: DailyQuizResultData) => void): D
     (async () => {
       try {
         await getOrCreateChallengeMut({ sport, mode: "quiz" });
-        const { attemptId: aid } = await startAttemptMut({ sport, mode: "quiz" });
+        const started = await startAttemptMut({ sport, mode: "quiz" });
+        const aid = started.attemptId;
+        // Resume where the server says the run stands (a mid-run attempt, or
+        // an expired one whose question 1 was recorded as a timeout).
+        const resumeAt = started.resumeAt ?? 0;
+        if (resumeAt > 0) {
+          const prior = Array.isArray(started.results)
+            ? (started.results as Array<{ correct: boolean; timeTaken: number; score: number }>)
+            : [];
+          setResults(prior.map(({ correct, timeTaken, score }) => ({ correct, timeTaken, score })));
+          setTotalScore(started.score ?? 0);
+          setQuestionNum(resumeAt);
+        }
         // A game genuinely began — the server minted the attempt, and the
         // attempt IS this mode's session (there is no quizSession here).
         startRun(aid, "daily", { accountState: accountStateRef.current });

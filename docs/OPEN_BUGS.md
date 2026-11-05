@@ -182,3 +182,18 @@ Severity: P1 wrong behavior · P2 broken but low reach · P3 docs/nit.
   `/players/squads?team=` lists (what `fantasySquadReconcile.ts` already
   fetches on Thursdays) and list players whose provider squad differs. Run it
   as a read-only script against PROD data with the provider key; no writes.
+
+## 9. LOW (storage) — finished ranked quiz sessions are never deleted
+
+- **Seen 2026-11-05** (perf/security loop, round-5 review): the hourly cleanup
+  (`convex/maintenance.ts`) only deletes expired *unfinished* or abandoned
+  `quizSessions`; completed rows are kept forever, so the table only grows.
+  Not a hot-path cost (every hot read is by id or by a bounded index range),
+  only storage.
+- **Constraint for any fix:** the one-time Quiz Master backfill
+  (`convex/lib/achievementUnlock.ts`, guarded by `users.quizMasterBackfilled`)
+  scans a user's past ranked sessions. Deleting completed sessions must either
+  wait until that user is backfilled, or first record the facts the backfill
+  needs (a perfect run) on the user / `gameSessions`.
+- **Suggested fix:** a windowed cron that deletes completed sessions older than
+  N days only for users with `quizMasterBackfilled = true`.

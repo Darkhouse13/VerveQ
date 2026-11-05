@@ -145,15 +145,7 @@ describe("daily challenge attempt gating", () => {
     });
   });
 
-  it("restarts an unanswered existing attempt instead of rejecting it as already played", async () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-05-23T12:00:00.000Z"));
-    const now = Date.now();
-    const attempt = makeAttempt({
-      startedAt: now - 5 * 60_000,
-      expiresAt: now + 25 * 60_000,
-      currentQuestionStartedAt: now - 5 * 60_000,
-    });
+  function startCtx(attempt: DailyAttemptRow) {
     const patch = vi.fn();
     const insert = vi.fn();
     const ctx = {
@@ -164,25 +156,106 @@ describe("daily challenge attempt gating", () => {
         insert,
       },
     };
+    return { ctx, patch, insert };
+  }
+
+  it("resumes a live unanswered attempt with its original clock", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-23T12:00:00.000Z"));
+    const now = Date.now();
+    const attempt = makeAttempt({
+      startedAt: now - 5 * 60_000,
+      expiresAt: now + 25 * 60_000,
+      currentQuestionStartedAt: now - 5 * 60_000,
+    });
+    const { ctx, patch, insert } = startCtx(attempt);
 
     const result = await handlerOf(dailyChallenge.startAttempt)(ctx, {
       sport: "football",
       mode: "quiz",
     });
 
-    expect(result).toEqual({ attemptId: "attempt_1" });
+    expect(result).toEqual({ attemptId: "attempt_1", resumeAt: 0, results: [], score: 0 });
     expect(insert).not.toHaveBeenCalled();
+    // Resetting the clock would let a player read question 1, restart, and
+    // answer it on a fresh timer.
+    expect(patch).not.toHaveBeenCalled();
+  });
+
+  it("an expired unanswered attempt records question 1 as a timeout and continues at question 2", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-23T12:00:00.000Z"));
+    const now = Date.now();
+    const attempt = makeAttempt({
+      startedAt: now - 40 * 60_000,
+      expiresAt: now - 10 * 60_000,
+      currentQuestionStartedAt: now - 40 * 60_000,
+    });
+    const { ctx, patch } = startCtx(attempt);
+
+    const result = await handlerOf(dailyChallenge.startAttempt)(ctx, {
+      sport: "football",
+      mode: "quiz",
+    });
+
+    const timedOut = { correct: false, timeTaken: 10, score: 0, timedOut: true };
+    // Question 1 was served when the attempt started; a fresh clock on it
+    // would be free thinking time, so it is spent as a timeout.
+    expect(result).toEqual({ attemptId: "attempt_1", resumeAt: 1, results: [timedOut], score: 0 });
     expect(patch).toHaveBeenCalledWith(
       "attempt_1",
       expect.objectContaining({
-        score: 0,
-        completed: false,
-        forfeited: false,
-        results: [],
-        startedAt: now,
+        results: [timedOut],
         currentQuestionStartedAt: now,
+        questionStartedAts: [now - 40 * 60_000, now],
         expiresAt: now + 30 * 60 * 1000,
       }),
     );
+    // The original start is kept, never reset.
+    expect(patch.mock.calls[0][1]).not.toHaveProperty("startedAt");
+  });
+
+  it("resumes (never restarts) today's expired attempt that has answers", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-23T12:00:00.000Z"));
+    const now = Date.now();
+    const attempt = makeAttempt({
+      startedAt: now - 40 * 60_000,
+      expiresAt: now - 10 * 60_000,
+      score: 100,
+      results: [{ correct: true, score: 100, timeTaken: 1 }],
+    });
+    const { ctx, patch, insert } = startCtx(attempt);
+
+    const result = await handlerOf(dailyChallenge.startAttempt)(ctx, { sport: "football", mode: "quiz" });
+    // Continue at question 2; nothing reset or re-revealed.
+    expect(result).toMatchObject({ attemptId: "attempt_1", resumeAt: 1, score: 100 });
+    expect(patch).not.toHaveBeenCalled();
+    expect(insert).not.toHaveBeenCalled();
+
+    const status = await handlerOf(dailyChallenge.getAttemptStatus)(ctx, {
+      sport: "football",
+      mode: "quiz",
+    });
+    expect(status).toMatchObject({ attemptId: "attempt_1", answeredCount: 1, resumable: true });
+  });
+
+  it("a finished attempt is still refused", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-23T12:00:00.000Z"));
+    const attempt = makeAttempt({
+      completed: true,
+      results: [{ correct: true, score: 100, timeTaken: 1 }],
+    });
+    const { ctx, patch } = startCtx(attempt);
+    await expect(
+      handlerOf(dailyChallenge.startAttempt)(ctx, { sport: "football", mode: "quiz" }),
+    ).rejects.toThrow();
+    expect(patch).not.toHaveBeenCalled();
+    const status = await handlerOf(dailyChallenge.getAttemptStatus)(ctx, {
+      sport: "football",
+      mode: "quiz",
+    });
+    expect(status).toMatchObject({ resumable: false });
   });
 });

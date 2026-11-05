@@ -27,10 +27,11 @@ function rankedSession(userId: string) {
     difficulty: "intermediate",
     completed: false,
     expiresAt: Date.now() + 60_000,
-    totalAnswers: 1,
-    correctCount: 1,
-    sumAnswerTimeMs: 2_000,
-    score: 100,
+    // A full run: ranked ratings settle on all 10 questions (loop round 4).
+    totalAnswers: 10,
+    correctCount: 10,
+    sumAnswerTimeMs: 20_000,
+    score: 1000,
   };
 }
 

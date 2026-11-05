@@ -107,6 +107,10 @@ export default defineSchema({
     currentStreak: v.optional(v.number()),
     bestStreak: v.optional(v.number()),
     approvedQuestionsCount: v.optional(v.number()),
+    // Set once the one-time Quiz Master backfill scan of gameSessions has run
+    // for this user; afterwards only the just-completed quiz is checked
+    // (lib/achievementUnlock.ts).
+    quizMasterBackfilled: v.optional(v.boolean()),
     // User's preferred Daily Challenge subject (a CLIENT_SPORTS value:
     // football/basketball/tennis/knowledge). Optional ⇒ unset means the
     // Daily defaults to football. Set via users.setPreferredDailySport and
@@ -561,7 +565,42 @@ export default defineSchema({
     questionStartedAt: v.optional(v.number()),
     completed: v.optional(v.boolean()),
     abandonedAt: v.optional(v.number()),
-  }).index("by_expiresAt", ["expiresAt"]),
+    // The current question was carried over from a run quit before its first
+    // answer (rankedPendingQuestions). It keeps its ORIGINAL serve time, and if
+    // answered after its time window it counts as a miss — quitting to look it
+    // up buys nothing.
+    carriedOver: v.optional(v.boolean()),
+  })
+    .index("by_expiresAt", ["expiresAt"])
+    // Open runs per player (lib/rankedOpenRuns): starting a ranked run closes
+    // the player's other live ones, so parallel sessions can't be used to pick
+    // the first question or to keep only the good run.
+    .index("by_user_completed_expiresAt", ["userId", "completed", "expiresAt"]),
+
+  // Per-slice catalog of playable quiz question checksums (+ image flag), so
+  // createSession plans a run from ONE small doc instead of collecting the
+  // whole sport+difficulty slice (up to ~2k full question docs). Rebuilt hourly
+  // and on demand (questionCatalog.ts); a missing/oversized catalog falls back
+  // to the full collect, so correctness never depends on it being fresh.
+  quizQuestionCatalogs: defineTable({
+    sport: v.string(),
+    mode: v.string(), // "quiz" | "came_first"
+    difficulty: v.string(),
+    entries: v.array(v.object({ c: v.string(), i: v.boolean() })),
+    builtAt: v.number(),
+  }).index("by_slice", ["sport", "mode", "difficulty"]),
+
+  // A ranked question that was served but never answered because the run was
+  // quit / left / expired before its first answer. The next ranked run for the
+  // same sport+mode+difficulty serves it first with its original clock, so
+  // quitting cannot reroll a question the player doesn't know. One row per
+  // (user, key); consumed by the next createSession.
+  rankedPendingQuestions: defineTable({
+    userId: v.id("users"),
+    key: v.string(), // `${sport}|${mode}|${difficulty ?? "intermediate"}`
+    checksum: v.string(),
+    servedAt: v.number(),
+  }).index("by_user_key", ["userId", "key"]),
 
   learnMastery: defineTable({
     userId: v.id("users"),
@@ -696,7 +735,10 @@ export default defineSchema({
     // finalize into the linked dailyAttempts row, and ELO is never written.
     dailyDate: v.optional(v.string()),
     dailyAttemptId: v.optional(v.id("dailyAttempts")),
-  }).index("by_expiresAt", ["expiresAt"]),
+  })
+    .index("by_expiresAt", ["expiresAt"])
+    // Open runs per player: startGame closes the player's other live ranked runs.
+    .index("by_user_gameOver_expiresAt", ["userId", "gameOver", "expiresAt"]),
 
   // ── Daily Challenge ──
   dailyChallenges: defineTable({
@@ -1173,6 +1215,13 @@ export default defineSchema({
   // A "challenge" row is a friend replaying a PAST date's daily from a
   // challenge link (whosOlderChallenges): the sender's frozen rounds, same
   // ten pairs, scored /10. A challenge for TODAY is just the player's daily.
+  // Per-date score counts for the daily twins' standing (lib/dailyScoreHistogram.ts).
+  dailyScoreHistograms: defineTable({
+    game: v.union(v.literal("older"), v.literal("letters")),
+    dateKey: v.string(),
+    counts: v.array(v.number()),
+  }).index("by_game_date", ["game", "dateKey"]),
+
   whosOlderSessions: defineTable({
     userId: v.id("users"),
     kind: v.union(v.literal("daily"), v.literal("endless"), v.literal("challenge")),

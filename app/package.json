@@ -35,7 +35,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@convex-dev/auth": "^0.0.91",
+    "@auth/core": "^0.41.3",
+    "@convex-dev/auth": "^0.0.96",
     "@radix-ui/react-dialog": "^1.1.14",
     "@resvg/resvg-wasm": "^2.6.2",
     "@sentry/react": "^10.57.0",

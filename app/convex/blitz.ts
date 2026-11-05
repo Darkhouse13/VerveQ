@@ -390,15 +390,16 @@ export const getHighScores = query({
     // otherwise fill several board slots. Walk the index in score order and
     // keep each user's best run — the board lists users, not runs. Like the
     // ELO board, ordering and ranks are decided here; clients never re-sort.
-    const scores: Doc<"blitzScores">[] = await ctx.db
+    // Stream the index and stop at `limit` board rows: a .collect() here read
+    // every run ever recorded for the sport on each (reactive) re-run.
+    const scores = ctx.db
       .query("blitzScores")
       .withIndex("by_sport_score", (q) => q.eq("sport", sport))
-      .order("desc")
-      .collect();
+      .order("desc");
 
     const entries = [];
     const seen = new Set<string>();
-    for (const s of scores) {
+    for await (const s of scores) {
       if (entries.length >= limit) break;
       if (seen.has(s.userId)) continue;
       seen.add(s.userId);

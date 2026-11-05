@@ -6,7 +6,8 @@
     "tabSwitchEnded": "Quiz ended — you switched tabs",
     "tabSwitchWarning": "Don't switch tabs — your quiz will end",
     "checkFailedToast": "Failed to check answer",
-    "cameFirstBadge": "Which Came First"
+    "cameFirstBadge": "Which Came First",
+    "timeUp": "Time's up"
   },
   "dailyQuiz": {
     "title": "Daily Quiz",

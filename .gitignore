@@ -31,6 +31,7 @@ downloads/
 eggs/
 .eggs/
 lib/
+!mobile/src/lib/
 lib64/
 # `lib/` above is meant for Python build output, but it also matches our
 # TypeScript source directories. Re-include those explicitly.

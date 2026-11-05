@@ -768,12 +768,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new AuthError("weak_password", describePasswordReason(pwResult.reason));
       }
       try {
-        await convexSignIn("password", {
+        const res = await convexSignIn("password", {
           email: normalized,
           code: trimmedCode,
           newPassword,
           flow: "reset-verification",
         });
+        // @convex-dev/auth ≥0.0.95 can resolve a failed code check instead of
+        // rejecting; a reset that didn't sign the user in is a bad code.
+        if (res && res.signingIn === false) {
+          throw new AuthError("invalid_code", SAFE_MESSAGE.invalid_code);
+        }
       } catch (err) {
         throw mapAuthError(err, "invalid_code");
       }

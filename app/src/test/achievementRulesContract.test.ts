@@ -20,7 +20,9 @@ describe("achievement rules", () => {
   });
 
   it("checkAndUnlock now checks quiz_master", () => {
-    const src = readFileSync("convex/achievements.ts", "utf8");
+    // The unlock logic moved to a shared helper (used by checkAndUnlock and the
+    // ranked completion mutations); it must still check Quiz Master.
+    const src = readFileSync("convex/lib/achievementUnlock.ts", "utf8");
     expect(src).toContain('["quiz_master", perfectQuiz]');
   });
 

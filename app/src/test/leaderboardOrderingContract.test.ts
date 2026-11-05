@@ -179,6 +179,10 @@ describe("blitz getHighScores — one entry per user", () => {
           withIndex: () => ({
             order: () => ({
               collect: async () => [...scores].sort((a, b) => b.score - a.score),
+              // getHighScores streams the index and stops at `limit`.
+              async *[Symbol.asyncIterator]() {
+                yield* [...scores].sort((a, b) => b.score - a.score);
+              },
             }),
           }),
         }),

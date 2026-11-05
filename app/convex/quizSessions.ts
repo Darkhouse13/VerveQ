@@ -8,10 +8,10 @@ import {
   calculateTimeScore,
   normalizeAnswer,
   QUIZ_SERVE_GRACE_SEC,
+  RANKED_ANSWER_LIMIT_SEC,
 } from "./lib/scoring";
 import { pickQuestionPool, planQuestionSequence } from "./lib/imageQuestions";
 import {
-  peekNextPlannedImageUrl,
   resolveQuestionImageUrl,
 } from "./lib/questionServe";
 import { orderAnswerOptions } from "./lib/answerOptions";
@@ -23,6 +23,20 @@ import {
   assertStandardMcqQuestion,
   isStandardMcqQuestion,
 } from "./lib/mcqEligibility";
+
+import { abandonQuizSession } from "./lib/rankedSettle";
+
+import { carriedAnswerCounts, pendingKey, takeParkedQuestion } from "./lib/rankedPending";
+import { closeOpenRankedQuizRuns } from "./lib/rankedOpenRuns";
+import {
+  CATALOG_MAX_AGE_MS,
+  catalogAsCandidates,
+  isPlayableInMode,
+  readCatalog,
+  toCatalogEntries,
+  writeCatalog,
+} from "./lib/questionCatalog";
+import { internal } from "./_generated/api";
 
 const SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
 const QUESTION_BASE_POINTS = 100;
@@ -94,6 +108,10 @@ async function buildQuestionPayload(
     // Warm-the-cache hint for the NEXT planned question's image (null when the
     // next question is text-only). Purely advisory — never displayed directly.
     nextImageUrl,
+    // The answer window the server enforces (owner ruling 2026-11-05): clients
+    // count down graceMs + answerLimitMs - elapsedMs; past it the answer is wrong.
+    answerLimitMs: RANKED_ANSWER_LIMIT_SEC * 1000,
+    graceMs: QUIZ_SERVE_GRACE_SEC * 1000,
   };
 }
 
@@ -120,24 +138,86 @@ export const createSession = mutation({
     const normalizedDifficulty =
       normalizedMode === "came_first" ? "intermediate" : difficulty;
 
-    const candidates = await collectModeCandidates(
+    // One live ranked run per player: close the others first (settle / park),
+    // so parallel runs can't be used to pick a first question or keep only a
+    // good run. Runs BEFORE taking the parked question so a just-parked one is
+    // the question this run serves.
+    await closeOpenRankedQuizRuns(ctx, userId, Date.now());
+
+    const planDifficulty = sessionDifficulty({ mode: normalizedMode, difficulty: normalizedDifficulty });
+    // Plan from the slice catalog (one small doc) — same eligible set, same
+    // uniform-with-image-rules draw. No catalog yet → the original full
+    // collect, which also writes the catalog from the rows it already read.
+    // A catalog older than CATALOG_MAX_AGE_MS is still used for this run and
+    // refreshed in the background — so rebuild cost tracks real play (≤1 per
+    // slice per hour) instead of an hourly cron re-reading every slice.
+    const catalog = await readCatalog(ctx, sport, normalizedMode, planDifficulty);
+    let plannedChecksums: string[];
+    if (catalog && catalog.entries.length > 0) {
+      plannedChecksums = planQuestionSequence(
+        catalogAsCandidates(catalog.entries),
+        QUIZ_PLANNED_QUESTIONS,
+      );
+      if (Date.now() - catalog.builtAt > CATALOG_MAX_AGE_MS) {
+        await ctx.scheduler.runAfter(0, internal.questionCatalog.rebuildSlice, {
+          sport,
+          mode: normalizedMode,
+          difficulty: planDifficulty,
+        });
+      }
+    } else {
+      const candidates = await collectModeCandidates(ctx, sport, normalizedMode, planDifficulty);
+      plannedChecksums = planQuestionSequence(candidates, QUIZ_PLANNED_QUESTIONS);
+      if (!catalog) {
+        await writeCatalog(ctx, sport, normalizedMode, planDifficulty, toCatalogEntries(candidates));
+      }
+    }
+
+    // A question this player was served but quit before answering comes back
+    // first, on its ORIGINAL clock (lib/rankedPending) — quitting is no reroll.
+    const parked = await takeParkedQuestion(
       ctx,
-      sport,
-      normalizedMode,
-      sessionDifficulty({ mode: normalizedMode, difficulty: normalizedDifficulty }),
+      userId,
+      pendingKey(sport, normalizedMode, normalizedDifficulty),
     );
-    const plannedChecksums = planQuestionSequence(
-      candidates,
-      QUIZ_PLANNED_QUESTIONS,
-    );
+    const parkedRow = parked
+      ? await ctx.db
+          .query("quizQuestions")
+          .withIndex("by_checksum", (q) => q.eq("checksum", parked.checksum))
+          .first()
+      : null;
+    // Same serve-time eligibility re-check as every other serve path: a parked
+    // question edited out of the mode since is dropped, not served.
+    const parkedDoc =
+      parkedRow && isPlayableInMode(parkedRow, normalizedMode) ? parkedRow : null;
+    if (parked && parkedDoc) {
+      plannedChecksums = [
+        parked.checksum,
+        ...plannedChecksums.filter((c) => c !== parked.checksum),
+      ].slice(0, QUIZ_PLANNED_QUESTIONS);
+    }
 
     let firstQuestion = null;
     let usedChecksums: string[] = [];
     let currentChecksum: string | undefined;
-    if (withFirstQuestion && plannedChecksums.length > 0) {
-      const firstPick = candidates.find(
-        (c) => c.checksum === plannedChecksums[0],
-      );
+    const carried = !!(parked && parkedDoc);
+    if (carried) {
+      // Served at once, whatever the client asked: it is already on the clock.
+      usedChecksums = [parkedDoc!.checksum];
+      currentChecksum = parkedDoc!.checksum;
+      if (withFirstQuestion) {
+        firstQuestion = await buildQuestionPayload(ctx, parkedDoc!, locale, null);
+      }
+    } else if (withFirstQuestion && plannedChecksums.length > 0) {
+      // The plan may come from a catalog up to an hour old: fetch the row and
+      // re-check it's still playable; otherwise the client's getQuestion walks
+      // the plan (which skips stale rows).
+      const firstDoc = await ctx.db
+        .query("quizQuestions")
+        .withIndex("by_checksum", (q) => q.eq("checksum", plannedChecksums[0]))
+        .first();
+      const firstPick =
+        firstDoc && isPlayableInMode(firstDoc, normalizedMode) ? firstDoc : null;
       if (firstPick) {
         usedChecksums = [firstPick.checksum];
         currentChecksum = firstPick.checksum;
@@ -145,7 +225,7 @@ export const createSession = mutation({
           ctx,
           firstPick,
           locale,
-          await peekNextPlannedImageUrl(ctx, plannedChecksums, usedChecksums),
+          null /* no next-question preview: it would run under the current clock */,
         );
       }
     }
@@ -161,7 +241,11 @@ export const createSession = mutation({
       plannedChecksums,
       usedChecksums,
       ...(currentChecksum
-        ? { currentChecksum, questionStartedAt: now }
+        ? {
+            currentChecksum,
+            questionStartedAt: carried ? parked!.servedAt : now,
+            ...(carried ? { carriedOver: true } : {}),
+          }
         : {}),
       score: 0,
       correctCount: 0,
@@ -170,7 +254,10 @@ export const createSession = mutation({
       completed: false,
       expiresAt: now + SESSION_TTL_MS,
     });
-    return { sessionId, firstQuestion };
+    // How long this question has already been on the server clock (non-zero
+    // only for a carried-over question), so the visible timer matches grading.
+    const elapsedMs = carried ? Math.max(0, now - parked!.servedAt) : 0;
+    return { sessionId, firstQuestion: firstQuestion ? { ...firstQuestion, elapsedMs } : null };
   },
 });
 
@@ -193,6 +280,35 @@ export const getQuestion = mutation({
     }
     if (session.completed) {
       throw new Error("Session already completed");
+    }
+
+    // An unanswered question stays the question. Re-serving it (a retry after
+    // a dropped response, a remount) returns the same payload and keeps its
+    // original clock; drawing a fresh one here would let a player skip any
+    // question they don't know and reset the timer for free.
+    if (session.currentChecksum) {
+      const current = await ctx.db
+        .query("quizQuestions")
+        .withIndex("by_checksum", (q) => q.eq("checksum", session.currentChecksum!))
+        .first();
+      if (current) {
+        const payload = await buildQuestionPayload(
+          ctx,
+          current,
+          locale,
+          null /* no next-question preview: it would run under the current clock */,
+        );
+        const elapsedMs = Math.max(0, Date.now() - (session.questionStartedAt ?? Date.now()));
+        return { ...payload, elapsedMs };
+      }
+    }
+
+    // A ranked quiz is QUIZ_PLANNED_QUESTIONS long. Serving past that would let
+    // a player extend a bad run until accuracy clears the win line (settlement
+    // divides by max(planned, answered)) and push userRatings.bestScore — the
+    // leaderboard score — above the run length.
+    if (session.usedChecksums.length >= QUIZ_PLANNED_QUESTIONS) {
+      throw new Error("Quiz already has all its questions");
     }
 
     // Serve from the sequence planned at createSession: one indexed read
@@ -242,11 +358,7 @@ export const getQuestion = mutation({
       ctx,
       picked,
       locale,
-      await peekNextPlannedImageUrl(
-        ctx,
-        session.plannedChecksums,
-        usedChecksums,
-      ),
+      null /* no next-question preview: it would run under the current clock */,
     );
 
     // Stamp the serve time AFTER building the payload so the translation and
@@ -257,7 +369,7 @@ export const getQuestion = mutation({
       questionStartedAt: Date.now(),
     });
 
-    return payload;
+    return { ...payload, elapsedMs: 0 };
   },
 });
 
@@ -297,7 +409,7 @@ export const checkAnswer = mutation({
       throw new Error("Question not found");
     }
 
-    const isCorrect =
+    const isCorrectRaw =
       normalizeAnswer(answer) === normalizeAnswer(question.correctAnswer);
     const now = Date.now();
     const timeTakenMs = Math.max(
@@ -308,6 +420,11 @@ export const checkAnswer = mutation({
     // image decode) the server-side stamp unavoidably includes — without it
     // the ≤1s full-score window is unreachable on any real connection.
     const timeTakenSec = Math.max(0, timeTakenMs / 1000 - QUIZ_SERVE_GRACE_SEC);
+    // 15 s ranked window (owner ruling 2026-11-05), for every question —
+    // carried-over ones on their ORIGINAL clock. Past it, even a correct
+    // answer is a miss with 0 points (a late "correct" may well be looked up).
+    const counts = carriedAnswerCounts(timeTakenSec, session.carriedOver);
+    const isCorrect = isCorrectRaw && counts;
     const score = isCorrect
       ? calculateTimeScore(QUESTION_BASE_POINTS, timeTakenSec)
       : 0;
@@ -319,12 +436,13 @@ export const checkAnswer = mutation({
       sumAnswerTimeMs: (session.sumAnswerTimeMs ?? 0) + timeTakenMs,
       currentChecksum: undefined,
       questionStartedAt: undefined,
+      carriedOver: undefined,
     });
 
     await ctx.db.patch(question._id, {
       usageCount: question.usageCount + 1,
       timesAnswered: question.timesAnswered + 1,
-      timesCorrect: question.timesCorrect + (isCorrect ? 1 : 0),
+      timesCorrect: question.timesCorrect + (isCorrectRaw ? 1 : 0),
     });
 
     return {
@@ -348,13 +466,10 @@ export const endSession = mutation({
     if (!session.userId || session.userId !== userId) {
       throw new Error("Not authorized for this session");
     }
+    if (session.completed) return;
     if ((session.totalAnswers ?? 0) > 0 || session.currentChecksum) {
-      await ctx.db.patch(sessionId, {
-        completed: true,
-        currentChecksum: undefined,
-        questionStartedAt: undefined,
-        abandonedAt: Date.now(),
-      });
+      // Quitting after ≥1 answer settles the run as a loss (lib/rankedSettle).
+      await abandonQuizSession(ctx, session);
       return;
     }
     await ctx.db.delete(sessionId);
@@ -376,12 +491,8 @@ export const penalizeTabSwitch = mutation({
       return { penalized: false };
     }
 
-    await ctx.db.patch(sessionId, {
-      completed: true,
-      currentChecksum: undefined,
-      questionStartedAt: undefined,
-      abandonedAt: Date.now(),
-    });
+    // Leaving mid-run abandons it; with ≥1 answer that settles as a loss.
+    await abandonQuizSession(ctx, session);
 
     return { penalized: true };
   },

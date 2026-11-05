@@ -1,4 +1,5 @@
 import { mutation, query, type MutationCtx } from "./_generated/server";
+import { closeOpenRankedSurvivalRuns } from "./lib/rankedOpenRuns";
 import { alreadyAttemptedError } from "./lib/dailyAttemptErrors";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
@@ -1382,6 +1383,11 @@ export const startGame = mutation({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
     await assertFullAccountUser(ctx, userId);
+
+    // One live ranked run per player: close the others first (settled on
+    // their banked score when they had progress), so parallel runs can't be
+    // used to keep only a good one.
+    await closeOpenRankedSurvivalRuns(ctx, userId, Date.now());
 
     const challenge = generateChallenge(sport, 1, []);
     if (!challenge) throw new Error("No survival data available");

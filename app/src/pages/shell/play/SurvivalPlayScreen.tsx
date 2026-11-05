@@ -368,7 +368,26 @@ function SurvivalRun({
   // exits — which navigate, and so unmount — can never be filed as abandons.
   const liveSessionRef = useRef<string | null>(null);
   liveSessionRef.current = sessionId;
-  useEffect(() => () => abandonRun(liveSessionRef.current), []);
+  // Walking away from a ranked run ends it on the server: it settles on the
+  // banked score (convex/lib/rankedSettle.ts), so a bad run can't be dodged.
+  // After a normal finish both calls are harmless no-ops / rejections.
+  const quitMutsRef = useRef({ endRunMut, completeSurvivalMut, daily });
+  quitMutsRef.current = { endRunMut, completeSurvivalMut, daily };
+  useEffect(
+    () => () => {
+      const sid = liveSessionRef.current;
+      abandonRun(sid);
+      const m = quitMutsRef.current;
+      if (sid && !m.daily) {
+        const id = sid as Id<"survivalSessions">;
+        void m
+          .endRunMut({ sessionId: id })
+          .then(() => m.completeSurvivalMut({ sessionId: id }))
+          .catch(() => {});
+      }
+    },
+    [],
+  );
 
   // Anti-cheat: warn first (pot floored), penalize repeats
   useAntiCheat(

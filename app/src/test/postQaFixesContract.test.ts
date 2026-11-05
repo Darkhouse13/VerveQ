@@ -57,7 +57,9 @@ it("keeps used daily attempts from advertising as new or re-calling startAttempt
   expect(daily).toContain("const attemptStatus = useQuery(api.dailyChallenge.getAttemptStatus");
   expect(daily).toContain("const startAttemptInFlight = useRef(false)");
   expect(daily).toContain("const localAttemptSport = useRef<string | null>(null)");
-  expect(daily).toContain("if (attemptStatus) {");
+  // A spent attempt is refused; only a resumable mid-run one (round 6 of the
+  // perf/security loop) goes on to startAttempt, which returns its position.
+  expect(daily).toContain("if (attemptStatus && !attemptStatus.resumable) {");
   expect(daily).toContain("if (startAttemptInFlight.current || hasLocalAttempt) return");
-  expect(daily.indexOf("if (attemptStatus)")).toBeLessThan(daily.indexOf('startAttemptMut({ sport, mode: "quiz" })'));
+  expect(daily.indexOf("if (attemptStatus && !attemptStatus.resumable)")).toBeLessThan(daily.indexOf('startAttemptMut({ sport, mode: "quiz" })'));
 });

@@ -92,12 +92,18 @@ function makeDailyQuery(challenge: Record<string, unknown>) {
 
 function makeUserRatingsQuery(rating: Record<string, unknown> | null = null) {
   return (table: string) => {
+    // Ranked completion also runs the achievement unlock pass (same round
+    // trip since 2026-11-05); it only needs empty reads here.
+    if (table === "userAchievements" || table === "gameSessions") {
+      return { withIndex: () => ({ collect: async () => [], first: async () => null }) };
+    }
     if (table !== "userRatings") {
       throw new Error(`unexpected table query: ${table}`);
     }
     return {
       withIndex: () => ({
         first: async () => rating,
+        collect: async () => (rating ? [rating] : []),
       }),
     };
   };
@@ -320,11 +326,13 @@ describe("BLOCKER-3: ELO finalizers ignore forged score fields", () => {
       difficulty: "hard",
     })) as Record<string, unknown>;
 
+    // Accuracy is judged on the full 10-question run: unanswered = wrong
+    // (loop round 4), still from session state, never the forged client values.
     expect(result).toMatchObject({
       score: 37,
       correctCount: 1,
       totalAnswers: 2,
-      accuracy: 0.5,
+      accuracy: 0.1,
       averageTime: 3,
     });
     const gameSessionInsert = insert.mock.calls.find(
@@ -333,9 +341,9 @@ describe("BLOCKER-3: ELO finalizers ignore forged score fields", () => {
     expect(gameSessionInsert).toMatchObject({
       sport: "football",
       score: 37,
-      totalQuestions: 2,
+      totalQuestions: 10,
       correctAnswers: 1,
-      accuracy: 0.5,
+      accuracy: 0.1,
       avgAnswerTimeSecs: 3,
     });
   });

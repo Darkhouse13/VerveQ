@@ -1,7 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { hasPerfectQuiz } from "./lib/achievementRules";
+import { unlockAchievements } from "./lib/achievementUnlock";
 
 export const list = query({
   args: {},
@@ -49,73 +49,6 @@ export const checkAndUnlock = mutation({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
-
-    const existing = await ctx.db
-      .query("userAchievements")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .collect();
-    const unlockedSet = new Set(existing.map((e) => e.achievementId));
-
-    // Get user stats
-    const ratings = await ctx.db
-      .query("userRatings")
-      .withIndex("by_user_sport_mode", (q) => q.eq("userId", userId))
-      .collect();
-
-    const totalGames = ratings.reduce((s, r) => s + r.gamesPlayed, 0);
-    const quizGames = ratings
-      .filter((r) => r.mode === "quiz")
-      .reduce((s, r) => s + r.gamesPlayed, 0);
-    const survivalGames = ratings
-      .filter((r) => r.mode === "survival")
-      .reduce((s, r) => s + r.gamesPlayed, 0);
-    const maxSurvivalScore = ratings
-      .filter((r) => r.mode === "survival")
-      .reduce((m, r) => Math.max(m, r.bestScore), 0);
-    const maxElo = ratings.reduce((m, r) => Math.max(m, r.eloRating), 0);
-    const sportsPlayed = new Set(ratings.map((r) => r.sport)).size;
-
-    const user = await ctx.db.get(userId);
-    const approvedQuestions = user?.approvedQuestionsCount ?? 0;
-
-    // Quiz Master was defined but never checked (docs/OPEN_BUGS.md #1).
-    // gameSessions keeps every finished ranked game, so earlier perfect
-    // quizzes unlock it too. Skip the read once it's unlocked.
-    const perfectQuiz =
-      !unlockedSet.has("quiz_master") &&
-      hasPerfectQuiz(
-        await ctx.db
-          .query("gameSessions")
-          .withIndex("by_user", (q) => q.eq("userId", userId))
-          .collect(),
-      );
-
-    const checks: [string, boolean][] = [
-      ["first_quiz", quizGames >= 1],
-      ["first_survival", survivalGames >= 1],
-      ["quiz_master", perfectQuiz],
-      ["survival_legend", maxSurvivalScore >= 15],
-      ["multi_sport_athlete", sportsPlayed >= 2],
-      ["dedicated_player", totalGames >= 50],
-      ["elo_champion", maxElo >= 1500],
-      ["the_architect", approvedQuestions >= 1],
-    ];
-
-    const newlyUnlocked: string[] = [];
-    for (const [achId, met] of checks) {
-      if (met && !unlockedSet.has(achId)) {
-        await ctx.db.insert("userAchievements", {
-          userId,
-          achievementId: achId,
-          unlockedAt: Date.now(),
-        });
-        newlyUnlocked.push(achId);
-      }
-    }
-
-    return {
-      newlyUnlocked,
-      totalUnlocked: existing.length + newlyUnlocked.length,
-    };
+    return await unlockAchievements(ctx, userId);
   },
 });
