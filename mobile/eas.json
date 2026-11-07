@@ -1,0 +1,40 @@
+{
+  "cli": {
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_CONVEX_URL": "https://admired-warthog-495.eu-west-1.convex.cloud",
+        "EXPO_PUBLIC_CONVEX_SITE_URL": "https://admired-warthog-495.eu-west-1.convex.site"
+      },
+      "autoIncrement": true
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_CONVEX_URL": "https://admired-warthog-495.eu-west-1.convex.cloud",
+        "EXPO_PUBLIC_CONVEX_SITE_URL": "https://admired-warthog-495.eu-west-1.convex.site"
+      },
+      "autoIncrement": true
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_CONVEX_URL": "https://different-lynx-153.convex.cloud",
+        "EXPO_PUBLIC_CONVEX_SITE_URL": "https://different-lynx-153.convex.site"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
