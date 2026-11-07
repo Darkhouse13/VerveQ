@@ -138,6 +138,9 @@ export const cleanupExpiredSessions = internalMutation({
     for (const session of higherLowerSessions) {
       if (session.expiresAt <= now && session.status === "active") {
         await ctx.db.patch(session._id, { status: "game_over" });
+        if (session.deckId && (await ctx.db.get(session.deckId))) {
+          await ctx.db.delete(session.deckId);
+        }
         closed++;
       }
     }

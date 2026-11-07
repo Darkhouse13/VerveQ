@@ -57,6 +57,19 @@ export async function readCatalog(
     .first();
 }
 
+/**
+ * Claim a stale catalog's refresh before scheduling it: moving builtAt now
+ * means the next runs see a fresh catalog and don't each schedule another
+ * full-slice rebuild while the first one is still queued. The entries stay
+ * valid meanwhile (serving re-checks every question).
+ */
+export async function claimCatalogRefresh(
+  ctx: MutationCtx,
+  catalogId: Doc<"quizQuestionCatalogs">["_id"],
+) {
+  await ctx.db.patch(catalogId, { builtAt: Date.now() });
+}
+
 function sameEntries(a: CatalogEntry[], b: CatalogEntry[]) {
   if (a.length !== b.length) return false;
   for (let k = 0; k < a.length; k++) if (a[k].c !== b[k].c || a[k].i !== b[k].i) return false;

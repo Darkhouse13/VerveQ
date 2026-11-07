@@ -1,4 +1,6 @@
-import { mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query, type MutationCtx } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertSessionUser } from "./lib/authz";
@@ -19,6 +21,69 @@ import {
 
 const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
 const MAX_GUESSES = 9;
+/** A board catalog older than this is rebuilt in the background on next use. */
+const BOARD_CATALOG_MAX_AGE_MS = 60 * 60 * 1000;
+/** Convex arrays hold at most 8192 items; stay well under. */
+const BOARD_CATALOG_MAX_ENTRIES = 8000;
+
+type BoardDoc = Doc<"verveGridBoards">;
+
+function isPlayableBoard(board: BoardDoc): boolean {
+  return (
+    board.cells.length === 9 &&
+    board.cells.every((cell) => cell.validPlayerIds.length > 0)
+  );
+}
+
+function boardTier(board: Pick<BoardDoc, "difficulty">): DifficultyLevel {
+  return (board.difficulty as DifficultyLevel | undefined) ?? "hard";
+}
+
+async function writeBoardCatalog(
+  ctx: MutationCtx,
+  sport: string,
+  boards: BoardDoc[],
+): Promise<void> {
+  const entries = boards
+    .filter(isPlayableBoard)
+    .map((board) => ({ id: board._id, d: boardTier(board) }));
+  // Too many to hold in one doc: no catalog, starts keep the full read.
+  const existing = await ctx.db
+    .query("verveGridBoardCatalogs")
+    .withIndex("by_sport", (q) => q.eq("sport", sport))
+    .collect();
+  for (const row of existing) await ctx.db.delete(row._id);
+  if (entries.length === 0 || entries.length > BOARD_CATALOG_MAX_ENTRIES) return;
+  await ctx.db.insert("verveGridBoardCatalogs", { sport, entries, builtAt: Date.now() });
+}
+
+export const rebuildBoardCatalog = internalMutation({
+  args: { sport: v.string() },
+  handler: async (ctx, { sport }) => {
+    const boards = await ctx.db
+      .query("verveGridBoards")
+      .withIndex("by_sport", (q) => q.eq("sport", sport))
+      .collect();
+    await writeBoardCatalog(ctx, sport, boards);
+  },
+});
+
+/** Same uniform draw as over the full board list: pick the requested tier's
+ *  pool, widening toward "hard" when it is empty. */
+function pickFromPool<T>(
+  items: T[],
+  tierOf: (item: T) => DifficultyLevel,
+  requested: DifficultyLevel,
+): { item: T; served: DifficultyLevel } | null {
+  for (const level of difficultyFallbackChain(requested)) {
+    const accepted = acceptedTiersFor(level);
+    const pool = items.filter((item) => accepted.has(tierOf(item)));
+    if (pool.length > 0) {
+      return { item: pool[Math.floor(Math.random() * pool.length)], served: level };
+    }
+  }
+  return null;
+}
 const MIN_QUERY_LENGTH = 2;
 
 /**
@@ -138,45 +203,54 @@ export const startSession = mutation({
       throw new Error("VerveGrid is currently available for football only");
     }
 
-    const boards = await ctx.db
-      .query("verveGridBoards")
-      .withIndex("by_sport", (q) => q.eq("sport", sport))
-      .collect();
-
-    if (boards.length === 0) {
-      throw new Error("No curated VerveGrid boards are available for this sport");
-    }
-
-    const playableBoards = boards.filter(
-      (board) =>
-        board.cells.length === 9 &&
-        board.cells.every((cell) => cell.validPlayerIds.length > 0),
-    );
-
-    if (playableBoards.length === 0) {
-      throw new Error("No playable VerveGrid boards are available for this sport");
-    }
-
     // Pick the requested difficulty's board pool. Widen toward "hard" if it's
     // empty (e.g. easy/intermediate boards not seeded yet) so a grid always
     // starts. A board with no difficulty tag is treated as "hard".
     const requested: DifficultyLevel = difficulty ?? DEFAULT_DIFFICULTY;
     let servedDifficulty: DifficultyLevel = requested;
-    let difficultyPool = playableBoards;
-    for (const level of difficultyFallbackChain(requested)) {
-      const accepted = acceptedTiersFor(level);
-      const pool = playableBoards.filter((board) =>
-        accepted.has((board.difficulty as DifficultyLevel | undefined) ?? "hard"),
-      );
-      if (pool.length > 0) {
-        servedDifficulty = level;
-        difficultyPool = pool;
-        break;
+    let chosenBoard: BoardDoc | null = null;
+
+    // Fast path: draw from the catalog (one small doc + the chosen board).
+    const catalog = await ctx.db
+      .query("verveGridBoardCatalogs")
+      .withIndex("by_sport", (q) => q.eq("sport", sport))
+      .first();
+    if (catalog) {
+      const picked = pickFromPool(catalog.entries, (e) => e.d as DifficultyLevel, requested);
+      const board = picked ? await ctx.db.get(picked.item.id) : null;
+      if (picked && board && board.sport === sport && isPlayableBoard(board)) {
+        chosenBoard = board;
+        servedDifficulty = picked.served;
+      }
+      if (Date.now() - catalog.builtAt > BOARD_CATALOG_MAX_AGE_MS || !chosenBoard) {
+        // Claim the refresh first so concurrent starts don't each queue one.
+        await ctx.db.patch(catalog._id, { builtAt: Date.now() });
+        await ctx.scheduler.runAfter(0, internal.verveGrid.rebuildBoardCatalog, { sport });
       }
     }
 
-    const chosenBoard =
-      difficultyPool[Math.floor(Math.random() * difficultyPool.length)];
+    // Slow path (no catalog yet, or the drawn board is gone): read every board.
+    if (!chosenBoard) {
+      const boards = await ctx.db
+        .query("verveGridBoards")
+        .withIndex("by_sport", (q) => q.eq("sport", sport))
+        .collect();
+      if (boards.length === 0) {
+        throw new Error("No curated VerveGrid boards are available for this sport");
+      }
+      const playableBoards = boards.filter(isPlayableBoard);
+      if (playableBoards.length === 0) {
+        throw new Error("No playable VerveGrid boards are available for this sport");
+      }
+      // No tier matched at all: any playable board, as before.
+      const picked = pickFromPool<BoardDoc>(playableBoards, boardTier, requested) ?? {
+        item: playableBoards[Math.floor(Math.random() * playableBoards.length)],
+        served: requested,
+      };
+      chosenBoard = picked.item;
+      servedDifficulty = picked.served;
+      if (!catalog) await writeBoardCatalog(ctx, sport, boards);
+    }
 
     const sessionId = await ctx.db.insert("verveGridSessions", {
       userId,

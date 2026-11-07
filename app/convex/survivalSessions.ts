@@ -12,15 +12,42 @@ import { getTodayUTC } from "./lib/daily";
 import { recordPlayForStreak } from "./lib/streaks";
 import type { Doc, Id } from "./_generated/dataModel";
 
+/// <reference path="./textAssets.d.ts" />
 // Survival data loaded inline for Convex (no filesystem access in mutations)
 // These are imported at bundle time.
-import footballData from "./data/survival_initials_map.json";
 import tennisData from "./data/survival_initials_map_tennis.json";
 import nbaData from "./data/nba_survival_data.json";
-import footballSurvivalIndexData from "./data/football_survival_index.json";
-import footballMetadata from "./data/football_player_metadata.json";
 import nbaMetadata from "./data/nba_player_metadata.json";
 import tennisMetadata from "./data/tennis_player_metadata.json";
+// The three big football files (~6.5 MB) are bundled as TEXT and parsed on
+// first use. Convex evaluates this module on every call (and dailyChallenge
+// imports it); as JSON imports they became a 6.5 MB object literal costing
+// ~110 ms per call. A string literal loads in a few ms, and most calls
+// never parse the parts they don't use.
+import footballInitialsText from "./data/survival_initials_map.json.txt";
+import footballSurvivalIndexText from "./data/football_survival_index.json.txt";
+import footballMetadataText from "./data/football_player_metadata.json.txt";
+
+let footballInitialsCache: InitialsMap | null = null;
+function footballInitialsMap(): InitialsMap {
+  footballInitialsCache ??= (
+    JSON.parse(footballInitialsText) as { initials_map: InitialsMap }
+  ).initials_map;
+  return footballInitialsCache;
+}
+let footballSurvivalIndexCache: unknown = null;
+function footballSurvivalIndexData(): unknown {
+  footballSurvivalIndexCache ??= JSON.parse(footballSurvivalIndexText);
+  return footballSurvivalIndexCache;
+}
+let footballMetadataCache: Record<string, PlayerMetadata> | null = null;
+function footballMetadataMap(): Record<string, PlayerMetadata> {
+  footballMetadataCache ??= JSON.parse(footballMetadataText) as Record<
+    string,
+    PlayerMetadata
+  >;
+  return footballMetadataCache;
+}
 
 const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
 const FREE_CLOSE_CALLS_PER_ROUND = 1;
@@ -55,13 +82,11 @@ type PlayerMetadata = {
 type NbaMetadata = { team: string; position: string; nationality: string };
 type TennisMetadata = { nationality: string; handedness: string; highestRank: string };
 
-const footballMetadataMap = footballMetadata as Record<string, PlayerMetadata>;
 const nbaMetadataMap = nbaMetadata as Record<string, NbaMetadata>;
 const tennisMetadataMap = tennisMetadata as Record<string, TennisMetadata>;
 
 const VALID_INITIALS_REGEX = /^[a-zA-Z]+$/;
 const MIN_MEDIUM_ROUND_FAMOUS_POOL = 5;
-const SUPPORTED_SPORTS = ["football", "basketball", "tennis"] as const;
 
 // ── Famous players sets per sport ──
 const FAMOUS_PLAYERS: Record<string, Set<string>> = {
@@ -156,7 +181,7 @@ function getInitialsMap(sport: string): InitialsMap {
     // NBA data is a flat initials map (no wrapper)
     return nbaData as unknown as InitialsMap;
   }
-  return (footballData as { initials_map: InitialsMap }).initials_map;
+  return footballInitialsMap();
 }
 
 interface DifficultyLevel {
@@ -218,7 +243,7 @@ interface FootballRoundPreferences {
 
 function getMetadataMapForSport(sport: string): Record<string, SportMetadata> {
   if (sport === "football") {
-    return footballMetadataMap;
+    return footballMetadataMap();
   }
   if (sport === "basketball") {
     return nbaMetadataMap;
@@ -404,13 +429,21 @@ function normalizeFootballSurvivalIndexBucket(
   };
 }
 
-const FOOTBALL_CURATED_SURVIVAL_INDEX = Array.isArray(footballSurvivalIndexData)
-  ? footballSurvivalIndexData
-      .map(normalizeFootballSurvivalIndexBucket)
-      .filter(
-        (bucket): bucket is FootballSurvivalIndexBucket => bucket !== null,
-      )
-  : [];
+// Built on first use, not at module load: Convex evaluates this module on
+// every call (guesses, help, daily status...), and only challenge generation
+// needs the index.
+let footballCuratedSurvivalIndex: FootballSurvivalIndexBucket[] | null = null;
+function getFootballCuratedSurvivalIndex(): FootballSurvivalIndexBucket[] {
+  const raw = footballSurvivalIndexData();
+  footballCuratedSurvivalIndex ??= Array.isArray(raw)
+    ? raw
+        .map(normalizeFootballSurvivalIndexBucket)
+        .filter(
+          (bucket): bucket is FootballSurvivalIndexBucket => bucket !== null,
+        )
+    : [];
+  return footballCuratedSurvivalIndex;
+}
 
 function getDifficulty(round: number): DifficultyLevel {
   if (round <= 3) return { initialsLen: 2, label: "Easy" };
@@ -597,11 +630,8 @@ function computeBucketStats(sport: string): BucketStats[] {
     );
 }
 
+// Filled per sport on first use (getBucketsForSport), not at module load.
 const CURATED_BUCKETS_BY_SPORT: Record<string, BucketStats[]> = {};
-
-for (const sport of SUPPORTED_SPORTS) {
-  CURATED_BUCKETS_BY_SPORT[sport] = computeBucketStats(sport);
-}
 
 function getBucketsForSport(sport: string): BucketStats[] {
   if (!CURATED_BUCKETS_BY_SPORT[sport]) {
@@ -804,7 +834,7 @@ function buildFamousPlayerHint(
   // unlike "Club: X", which reads as current and goes stale (the metadata is
   // a snapshot; Messi's said PSG in 2026).
   if (sport === "football") {
-    const meta = primaryPlayer ? footballMetadataMap[primaryPlayer] : undefined;
+    const meta = primaryPlayer ? footballMetadataMap()[primaryPlayer] : undefined;
     if (stage === 1 && meta) {
       return `Nationality: ${meta.nationality} | Position: ${meta.position}`;
     }
@@ -883,7 +913,7 @@ function buildFamousPlayerHintI18n(
   stage: number,
 ): HintI18n {
   if (sport === "football") {
-    const meta = primaryPlayer ? footballMetadataMap[primaryPlayer] : undefined;
+    const meta = primaryPlayer ? footballMetadataMap()[primaryPlayer] : undefined;
     if (stage === 1 && meta) {
       return { key: "fmNationalityPosition", vars: { nationality: meta.nationality, position: meta.position } };
     }
@@ -977,7 +1007,7 @@ function generateFootballChallengeFromCuratedIndex(
 ): SurvivalChallenge | null {
   const diff = getDifficulty(round);
   const usedSet = new Set(usedInitials);
-  const validBuckets = FOOTBALL_CURATED_SURVIVAL_INDEX.filter(
+  const validBuckets = getFootballCuratedSurvivalIndex().filter(
     (bucket) =>
       !usedSet.has(bucket.initials) &&
       isAlphabeticInitials(bucket.initials) &&

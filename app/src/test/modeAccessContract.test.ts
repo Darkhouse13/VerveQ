@@ -92,10 +92,11 @@ describe("mode access gates", () => {
     const ctx = {
       db: {
         get: vi.fn(async () => usernameOnlyUser()),
-        // blitz.start now plans the run's question sequence up front, so it
-        // queries the pool; an empty pool still creates the session.
+        // blitz.start plans the run's question sequence up front: it reads
+        // the slice catalog (none here), then the pool; an empty pool still
+        // creates the session.
         query: vi.fn(() => ({
-          withIndex: () => ({ collect: async () => [] }),
+          withIndex: () => ({ collect: async () => [], first: async () => null }),
         })),
         insert,
       },

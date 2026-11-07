@@ -197,3 +197,30 @@ Severity: P1 wrong behavior · P2 broken but low reach · P3 docs/nit.
   needs (a perfect run) on the user / `gameSessions`.
 - **Suggested fix:** a windowed cron that deletes completed sessions older than
   N days only for users with `quizMasterBackfilled = true`.
+
+## 10. P1 — Signing in from a guest session keeps the guest until reload
+
+**Status: FIXED (code, not deployed) — found 2026-11-08 in the Android app;
+reproduced on the web the same night (DEV, Playwright): guest → `/?mode=signin`
+→ sign in → `/quiz` showed "Ranked needs an account" until a reload.**
+
+- **Cause (library behaviour, `@convex-dev/auth` 0.0.96 + `convex` 1.40):**
+  `signIn("password")` while a guest (anonymous) session is active stores the
+  new tokens, but auth stays "signed in" the whole time. `ConvexProviderWithAuth`
+  only calls `client.setAuth` again when auth goes signed-out → signed-in
+  (`convex/dist/esm/react/ConvexAuthState.js`, effect deps), so the live
+  connection keeps the guest's JWT until it expires (~1 h) or the page reloads.
+  `users.me` keeps returning the guest. Server side is correct (checked on DEV:
+  a guest-token `auth:signIn` returns the account's tokens and `me` resolves
+  to the account).
+- **Who hits it on the web:** anonymous-first is live, so every new browser
+  holds a guest session before the player taps "Sign in".
+- **Android fix (mobile/src/lib/auth.tsx):** after a successful password
+  sign-in, remount `ConvexAuthProvider` (a `key` bump) so it reconnects with
+  the stored account token.
+- **Web fix:** `AuthContext.signIn` calls `onAccountSwitch()` after a successful
+  `convexSignIn("password")`; `App.tsx` re-keys `ConvexAuthProvider`
+  (`src/contexts/accountSwitch.ts`). The router reads the URL, so the player
+  stays on the page. Re-run of the same Playwright walk: Ranked opens at once.
+  Test: `src/test/authContract.test.ts` ("restarts the auth layer…"). Ships with
+  the next web deploy (owner go-ahead).

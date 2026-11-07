@@ -19,24 +19,20 @@ import {
   fetchQuestionTranslation,
 } from "./lib/contentI18n";
 import { assertUsernameRequiredUser } from "./lib/authz";
-import {
-  challengeArenaCapitalCityQuestions,
-  challengeArenaEnterpriseLogoQuestions,
-  challengeArenaGeneralKnowledgeQuestions,
-  challengeArenaWhichCameFirstQuestions,
-  type ChallengeArenaQuestionSeed,
-} from "./challengeArenaContent";
-import {
-  ARENA_CIE_SPORT,
-  arenaCieSeedPlan,
-  type ArenaCiePlannedRow,
-} from "./challengeArenaCieContent";
-import { scienceQuestions } from "./scienceQuestionsV1";
-import { worldHistoryQuestions } from "./worldHistoryQuestionsV1";
-import { moviesTvQuestions } from "./moviesTvQuestionsV1";
-import { musicQuestions } from "./musicQuestionsV1";
-import { videoGamesQuestions } from "./videoGamesQuestionsV1";
-import { contentDuplicateKey } from "./lib/contentQa";
+// Type-only: erased at bundle time. This module must not import the question
+// banks / content registries as values — Convex evaluates the whole bundle on
+// every call, and those ~3 MB cost ~125 ms per heartbeat/answer/room read.
+// Everything that needs bundled content lives in challengeArenaSelection.ts
+// and is reached through ctx.runMutation / ctx.runQuery.
+import type { ChallengeArenaQuestionSeed } from "./challengeArenaContent";
+import type {
+  ArenaCieContentPlan,
+  ArenaContentCounts,
+  ArenaSeedCieContentResult,
+  ArenaSeedContentGapsResult,
+} from "./challengeArenaSelection";
+import { ARENA_CIE_SPORT } from "./lib/arenaCieSport";
+import { ARENA_FALLBACK_SEED_COUNTS } from "./lib/arenaContentFloors";
 
 const ARENA_ROUNDS = 5;
 const QUESTIONS_PER_ROUND = 10;
@@ -58,12 +54,12 @@ const FORCE_START_GRACE_MS = 15_000;
 const ARENA_TTL_MS = 3 * 60 * 60 * 1000;
 const EXPIRE_BATCH_SIZE = 50;
 const RANK_BONUS = [50, 30, 20, 10, 10] as const;
-const FOOTBALL_IMAGE_QUESTION_CAP = 2;
+export const FOOTBALL_IMAGE_QUESTION_CAP = 2;
 // Base anti-repeat window (the default 5×10 arena = 2 full arenas). Custom
 // arenas grow the window to 2× their own question count so a single large
 // arena can never overflow it (which would let just-seen questions repeat).
-const RECENTLY_SEEN_WINDOW_COUNT = ARENA_ROUNDS * QUESTIONS_PER_ROUND * 2;
-const RECENTLY_SEEN_WINDOW_AGE_MS = 14 * 24 * 60 * 60 * 1000;
+export const RECENTLY_SEEN_WINDOW_COUNT = ARENA_ROUNDS * QUESTIONS_PER_ROUND * 2;
+export const RECENTLY_SEEN_WINDOW_AGE_MS = 14 * 24 * 60 * 60 * 1000;
 
 function recentlySeenWindowForConfig(config: {
   rounds: number;
@@ -75,11 +71,6 @@ const INDEXED_POOL_PAGE_SIZE = 64;
 const INDEXED_POOL_MAX_READS = 192;
 const FOOTBALL_IMAGE_CANDIDATE_MAX_READS = 16;
 const SEED_BACKED_MAX_READS = 96;
-const SEED_CONTENT_BATCH_SIZE = 250;
-const SEED_CONTENT_MAX_BATCH_SIZE = 500;
-const CONTENT_STATUS_KNOWLEDGE_READ_CAP = 3_000;
-const CONTENT_STATUS_FOOTBALL_READ_CAP = 750;
-const CONTENT_STATUS_CIE_READ_CAP = 3_000;
 const CHECKSUM_CURSOR_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789_";
 const NUMERIC_CURSOR_ALPHABET = "0123456789";
 // Tennis/basketball quiz checksums are 16-char hex hashes (no semantic prefix),
@@ -104,37 +95,6 @@ const DEFAULT_ROUND_CATEGORIES = [
   "capital_cities",
 ] as const;
 
-const SEED_CONTENT_GROUPS: Array<{
-  key: SeedContentCategory;
-  insertedKey:
-    | "insertedCapitalCities"
-    | "insertedGeneralKnowledge"
-    | "insertedWhichCameFirst"
-    | "insertedEnterpriseLogos";
-  seeds: ChallengeArenaQuestionSeed[];
-}> = [
-  {
-    key: "capitalCities",
-    insertedKey: "insertedCapitalCities",
-    seeds: challengeArenaCapitalCityQuestions,
-  },
-  {
-    key: "generalKnowledge",
-    insertedKey: "insertedGeneralKnowledge",
-    seeds: challengeArenaGeneralKnowledgeQuestions,
-  },
-  {
-    key: "whichCameFirst",
-    insertedKey: "insertedWhichCameFirst",
-    seeds: challengeArenaWhichCameFirstQuestions,
-  },
-  {
-    key: "enterpriseLogos",
-    insertedKey: "insertedEnterpriseLogos",
-    seeds: challengeArenaEnterpriseLogoQuestions,
-  },
-];
-
 type Arena = Doc<"arenas">;
 type ArenaAnswer = Doc<"arenaAnswers">;
 type ArenaPlayer = Arena["players"][number];
@@ -142,15 +102,6 @@ type ArenaMode = Arena["mode"];
 type Question = Doc<"quizQuestions">;
 type QuestionKind = "mcq" | "which_came_first" | "logo_text";
 type RecentlySeenMap = Map<string, number>;
-type SeedContentCategory =
-  | "capitalCities"
-  | "generalKnowledge"
-  | "whichCameFirst"
-  | "enterpriseLogos";
-type SeedCursor = {
-  categoryIndex: number;
-  offset: number;
-};
 type IndexedCandidateScope = {
   sport: string;
   category?: string;
@@ -264,18 +215,18 @@ function snapshotName(user: Doc<"users"> | null, fallback: string) {
   return user?.displayName ?? user?.username ?? fallback;
 }
 
-function isAnswerableMcq(question: Question) {
+export function isAnswerableMcq(question: Question) {
   return (
     question.options.length >= 2 &&
     question.options.includes(question.correctAnswer)
   );
 }
 
-function hasQuestionImage(question: Question) {
+export function hasQuestionImage(question: Question) {
   return !!question.imageId || !!question.imageUrl;
 }
 
-function isValidLogoQuestion(question: Question) {
+export function isValidLogoQuestion(question: Question) {
   return (
     question.category === "badge_identification" &&
     !!question.imageId &&
@@ -299,7 +250,7 @@ function questionKind(question: Question): QuestionKind {
   return "mcq";
 }
 
-function isLogoTextQuestion(question: Question) {
+export function isLogoTextQuestion(question: Question) {
   return (
     questionKind(question) === "logo_text" &&
     question.category === "enterprise_logos" &&
@@ -556,7 +507,7 @@ async function collectIndexedCandidates(
   );
 }
 
-async function readQuestionByChecksum(
+export async function readQuestionByChecksum(
   ctx: Pick<QueryCtx | MutationCtx, "db">,
   checksum: string,
 ) {
@@ -610,7 +561,7 @@ async function collectSeedBackedCandidates(
   return questions;
 }
 
-function questionSeedDocument(seed: ChallengeArenaQuestionSeed) {
+export function questionSeedDocument(seed: ChallengeArenaQuestionSeed) {
   return {
     sport: seed.sport,
     category: seed.category,
@@ -627,7 +578,7 @@ function questionSeedDocument(seed: ChallengeArenaQuestionSeed) {
   };
 }
 
-async function upsertQuestionSeed(
+export async function upsertQuestionSeed(
   ctx: Pick<MutationCtx, "db">,
   seed: ChallengeArenaQuestionSeed,
 ) {
@@ -650,79 +601,6 @@ async function upsertQuestionSeed(
     usageCount: 0,
   });
   return true;
-}
-
-function parseSeedCursor(cursor: string | undefined): SeedCursor {
-  if (!cursor) return { categoryIndex: 0, offset: 0 };
-  const [categoryIndexRaw, offsetRaw] = cursor.split(":");
-  const categoryIndex = Number(categoryIndexRaw);
-  const offset = Number(offsetRaw);
-  if (
-    !Number.isInteger(categoryIndex) ||
-    !Number.isInteger(offset) ||
-    categoryIndex < 0 ||
-    categoryIndex > SEED_CONTENT_GROUPS.length ||
-    offset < 0
-  ) {
-    throw new Error("Invalid challenge arena seed cursor");
-  }
-  return { categoryIndex, offset };
-}
-
-function encodeSeedCursor(cursor: SeedCursor) {
-  return `${cursor.categoryIndex}:${cursor.offset}`;
-}
-
-function emptySeedInsertCounts() {
-  return {
-    insertedCapitalCities: 0,
-    insertedGeneralKnowledge: 0,
-    insertedWhichCameFirst: 0,
-    insertedEnterpriseLogos: 0,
-  };
-}
-
-async function ensureQuestionSeedBatch(
-  ctx: Pick<MutationCtx, "db">,
-  startCursor: SeedCursor,
-  batchLimit: number,
-) {
-  const inserted = emptySeedInsertCounts();
-  let processed = 0;
-  let categoryIndex = startCursor.categoryIndex;
-  let offset = startCursor.offset;
-
-  while (categoryIndex < SEED_CONTENT_GROUPS.length && processed < batchLimit) {
-    const group = SEED_CONTENT_GROUPS[categoryIndex];
-    if (offset >= group.seeds.length) {
-      categoryIndex += 1;
-      offset = 0;
-      continue;
-    }
-
-    const remaining = batchLimit - processed;
-    const end = Math.min(group.seeds.length, offset + remaining);
-    for (const seed of group.seeds.slice(offset, end)) {
-      if (await upsertQuestionSeed(ctx, seed)) {
-        inserted[group.insertedKey] += 1;
-      }
-    }
-
-    processed += end - offset;
-    offset = end;
-    if (offset >= group.seeds.length) {
-      categoryIndex += 1;
-      offset = 0;
-    }
-  }
-
-  const isDone = categoryIndex >= SEED_CONTENT_GROUPS.length;
-  return {
-    ...inserted,
-    processed,
-    nextCursor: isDone ? null : encodeSeedCursor({ categoryIndex, offset }),
-    isDone,
-  };
 }
 
 function uniqueStableQuestionCandidates(
@@ -1124,10 +1002,9 @@ type RoundSpec =
       label: string;
       scopes: IndexedCandidateScope[];
       predicate: (question: Question) => boolean;
-      // Bundled questions used as a guaranteed fallback when the indexed pool
-      // can't fill the round; their count is also the static content floor (see
-      // arenaConfig validation + contract test).
-      fallbackSeeds?: ChallengeArenaQuestionSeed[];
+      // Bundled fallback questions (when the indexed pool can't fill the
+      // round) are bound in challengeArenaSelection.ts (ARENA_FALLBACK_SEEDS);
+      // their counts are the static floor in lib/arenaContentFloors.ts.
       // Static floor for pools that have no bundled fallback (e.g. the
       // bulk-imported tennis/basketball quiz pools). Used only for create-time
       // validation; the start-time picker remains the hard backstop.
@@ -1152,7 +1029,6 @@ const ROUND_SPEC_REGISTRY: Record<string, RoundSpec> = {
       question.category !== "enterprise_logos" &&
       question.category !== "capital_cities" &&
       isAnswerableMcq(question),
-    fallbackSeeds: challengeArenaGeneralKnowledgeQuestions,
   },
   which_came_first: {
     kind: "indexed",
@@ -1172,7 +1048,6 @@ const ROUND_SPEC_REGISTRY: Record<string, RoundSpec> = {
     ],
     predicate: (question) =>
       question.category === "which_came_first" && isAnswerableMcq(question),
-    fallbackSeeds: challengeArenaWhichCameFirstQuestions,
   },
   enterprise_logos: {
     kind: "indexed",
@@ -1186,7 +1061,6 @@ const ROUND_SPEC_REGISTRY: Record<string, RoundSpec> = {
       },
     ],
     predicate: isLogoTextQuestion,
-    fallbackSeeds: challengeArenaEnterpriseLogoQuestions,
     noImageCap: true, // the logos round is intentionally all-images
   },
   capital_cities: {
@@ -1207,7 +1081,6 @@ const ROUND_SPEC_REGISTRY: Record<string, RoundSpec> = {
     ],
     predicate: (question) =>
       question.category === "capital_cities" && isAnswerableMcq(question),
-    fallbackSeeds: challengeArenaCapitalCityQuestions,
   },
   // Tennis/basketball are the full bulk-imported quiz pools (all categories, all
   // difficulties, text + image MCQs). No bundled fallback — sampled directly from
@@ -1238,7 +1111,6 @@ const ROUND_SPEC_REGISTRY: Record<string, RoundSpec> = {
     scopes: [{ sport: "knowledge", category: "science", cursorPrefix: "scin1_" }],
     predicate: (question) =>
       question.category === "science" && isAnswerableMcq(question),
-    fallbackSeeds: scienceQuestions,
   },
   world_history: {
     kind: "indexed",
@@ -1246,7 +1118,6 @@ const ROUND_SPEC_REGISTRY: Record<string, RoundSpec> = {
     scopes: [{ sport: "knowledge", category: "history", cursorPrefix: "whist1_" }],
     predicate: (question) =>
       question.category === "history" && isAnswerableMcq(question),
-    fallbackSeeds: worldHistoryQuestions,
   },
   movies_tv: {
     kind: "indexed",
@@ -1256,7 +1127,6 @@ const ROUND_SPEC_REGISTRY: Record<string, RoundSpec> = {
     ],
     predicate: (question) =>
       question.category === "movies_tv" && isAnswerableMcq(question),
-    fallbackSeeds: moviesTvQuestions,
   },
   music: {
     kind: "indexed",
@@ -1264,7 +1134,6 @@ const ROUND_SPEC_REGISTRY: Record<string, RoundSpec> = {
     scopes: [{ sport: "knowledge", category: "music", cursorPrefix: "musq1_" }],
     predicate: (question) =>
       question.category === "music" && isAnswerableMcq(question),
-    fallbackSeeds: musicQuestions,
   },
   video_games: {
     kind: "indexed",
@@ -1274,7 +1143,6 @@ const ROUND_SPEC_REGISTRY: Record<string, RoundSpec> = {
     ],
     predicate: (question) =>
       question.category === "video_games" && isAnswerableMcq(question),
-    fallbackSeeds: videoGamesQuestions,
   },
 };
 
@@ -1292,7 +1160,7 @@ export function categoryRoundCapacityFloor(category: string): number {
   const spec = ROUND_SPEC_REGISTRY[category];
   if (!spec) return 0;
   if (spec.kind === "football") return Number.POSITIVE_INFINITY;
-  return spec.fallbackSeeds?.length ?? spec.contentFloor ?? 0;
+  return ARENA_FALLBACK_SEED_COUNTS[category] ?? spec.contentFloor ?? 0;
 }
 
 // Normalize + validate a (possibly partial) arena config from `create`. Returns
@@ -1360,12 +1228,16 @@ function validateArenaConfig(input: {
   return { rounds, perRound, categories };
 }
 
-async function lockRoundQuestionSets(
+/** Implementation of round locking. Runs inside
+ *  challengeArenaSelection.lockRoundQuestionSets (which supplies the bundled
+ *  fallback seeds), called from `start` via ctx.runMutation. */
+export async function lockRoundQuestionSetsWith(
   ctx: Pick<MutationCtx, "db">,
   seed: string,
   playerIds: Id<"users">[],
   now: number,
   config: { rounds: number; perRound: number; categories: string[] },
+  fallbackSeedsFor: (category: string) => ChallengeArenaQuestionSeed[] | undefined,
 ) {
   const recentlySeen = await loadCrewRecentlySeenChecksums(
     ctx,
@@ -1410,7 +1282,7 @@ async function lockRoundQuestionSets(
           perRound,
           spec.predicate,
           !spec.noImageCap,
-          spec.fallbackSeeds,
+          fallbackSeedsFor(category),
         ),
       );
     }
@@ -2088,82 +1960,6 @@ async function buildArenaSummary(
   };
 }
 
-async function getContentCounts(ctx: Pick<QueryCtx | MutationCtx, "db">) {
-  const footballRows = await ctx.db
-    .query("quizQuestions")
-    .withIndex("by_sport_checksum", (q) => q.eq("sport", "football"))
-    .take(CONTENT_STATUS_FOOTBALL_READ_CAP + 1);
-  const knowledgeRows = await ctx.db
-    .query("quizQuestions")
-    .withIndex("by_sport_checksum", (q) => q.eq("sport", "knowledge"))
-    .take(CONTENT_STATUS_KNOWLEDGE_READ_CAP + 1);
-  const cieRows = await ctx.db
-    .query("quizQuestions")
-    .withIndex("by_sport_checksum", (q) => q.eq("sport", ARENA_CIE_SPORT))
-    .take(CONTENT_STATUS_CIE_READ_CAP + 1);
-  const footballCapped = footballRows.length > CONTENT_STATUS_FOOTBALL_READ_CAP;
-  const knowledgeCapped = knowledgeRows.length > CONTENT_STATUS_KNOWLEDGE_READ_CAP;
-  const cieCapped = cieRows.length > CONTENT_STATUS_CIE_READ_CAP;
-  const football = footballRows.slice(0, CONTENT_STATUS_FOOTBALL_READ_CAP);
-  const knowledge = knowledgeRows.slice(0, CONTENT_STATUS_KNOWLEDGE_READ_CAP);
-  const cie = cieRows.slice(0, CONTENT_STATUS_CIE_READ_CAP);
-  const footballQuiz = football.filter(
-    (q) =>
-      q.category !== "which_came_first" &&
-      q.category !== "badge_identification" &&
-      isAnswerableMcq(q),
-  );
-  const generalKnowledge = knowledge.filter(
-    (q) =>
-      q.category !== "which_came_first" &&
-      q.category !== "enterprise_logos" &&
-      q.category !== "capital_cities" &&
-      isAnswerableMcq(q),
-  );
-  return {
-    footballQuiz: footballQuiz.length,
-    footballQuizText: footballQuiz.filter((q) => !hasQuestionImage(q)).length,
-    footballQuizImages: footballQuiz.filter(hasQuestionImage).length,
-    footballImageQuestionCap: FOOTBALL_IMAGE_QUESTION_CAP,
-    recentlySeenWindowCount: RECENTLY_SEEN_WINDOW_COUNT,
-    recentlySeenWindowAgeMs: RECENTLY_SEEN_WINDOW_AGE_MS,
-    generalKnowledge: generalKnowledge.length,
-    whichCameFirst: knowledge.filter(
-      (q) => q.category === "which_came_first" && isAnswerableMcq(q),
-    ).length,
-    enterpriseLogos: knowledge.filter(isLogoTextQuestion).length,
-    legacyLogoMcqImages: football.filter(isValidLogoQuestion).length,
-    capitalCities: knowledge.filter(
-      (q) => q.category === "capital_cities" && isAnswerableMcq(q),
-    ).length,
-    cieTotal: cie.length,
-    cieCapitalCities: cie.filter(
-      (q) => q.category === "capital_cities" && isAnswerableMcq(q),
-    ).length,
-    cieGeneralKnowledge: cie.filter(
-      (q) =>
-        q.category !== "which_came_first" &&
-        q.category !== "enterprise_logos" &&
-        q.category !== "capital_cities" &&
-        isAnswerableMcq(q),
-    ).length,
-    cieWhichCameFirst: cie.filter(
-      (q) => q.category === "which_came_first" && isAnswerableMcq(q),
-    ).length,
-    countsCapped: footballCapped || knowledgeCapped || cieCapped,
-    contentStatusReadCaps: {
-      football: CONTENT_STATUS_FOOTBALL_READ_CAP,
-      knowledge: CONTENT_STATUS_KNOWLEDGE_READ_CAP,
-      cie: CONTENT_STATUS_CIE_READ_CAP,
-    },
-    bundledCapitalSeeds: challengeArenaCapitalCityQuestions.length,
-    bundledGeneralKnowledgeSeeds: challengeArenaGeneralKnowledgeQuestions.length,
-    bundledWhichCameFirstSeeds: challengeArenaWhichCameFirstQuestions.length,
-    bundledEnterpriseLogoSeeds: challengeArenaEnterpriseLogoQuestions.length,
-    plannedCieSeeds: arenaCieSeedPlan().totals.planned,
-  };
-}
-
 export const create = mutation({
   args: {
     mode: arenaMode,
@@ -2424,13 +2220,20 @@ export const start = mutation({
 
     const seed = hashString(`${arena._id}:${arena.code}:${now}`);
     const starterIds = starters.map((player) => player.userId);
-    const locked = await lockRoundQuestionSets(
-      ctx,
-      seed,
-      starterIds,
-      now,
-      arena.config,
-    );
+    // Selection needs the bundled fallback banks, so it runs in
+    // challengeArenaSelection as a nested mutation: same transaction, and the
+    // banks load only here, once per arena start.
+    const locked: { categories: string[]; rounds: string[][] } =
+      await ctx.runMutation(internal.challengeArenaSelection.lockRoundQuestionSets, {
+        seed,
+        playerIds: starterIds,
+        now,
+        config: {
+          rounds: arena.config.rounds,
+          perRound: arena.config.perRound,
+          categories: arena.config.categories,
+        },
+      });
     await recordRecentlySeenArenaQuestions(
       ctx,
       starterIds,
@@ -2839,10 +2642,12 @@ export const getArenaSummary = query({
   },
 });
 
+// Content ops live in challengeArenaSelection.ts (they need the bundled
+// banks); these keep their public/internal paths and delegate.
 export const contentStatus = query({
   args: {},
-  handler: async (ctx) => {
-    return await getContentCounts(ctx);
+  handler: async (ctx): Promise<ArenaContentCounts> => {
+    return await ctx.runQuery(internal.challengeArenaSelection.contentStatus, {});
   },
 });
 
@@ -2851,154 +2656,27 @@ export const seedContentGaps = internalMutation({
     cursor: v.optional(v.string()),
     limit: v.optional(v.number()),
   },
-  handler: async (ctx, { cursor, limit }) => {
-    const batchLimit = Math.max(
-      1,
-      Math.min(Math.floor(limit ?? SEED_CONTENT_BATCH_SIZE), SEED_CONTENT_MAX_BATCH_SIZE),
-    );
-    const seeded = await ensureQuestionSeedBatch(
-      ctx,
-      parseSeedCursor(cursor),
-      batchLimit,
-    );
-    return {
-      ...seeded,
-      batchLimit,
-      bundledCapitalSeeds: challengeArenaCapitalCityQuestions.length,
-      bundledGeneralKnowledgeSeeds: challengeArenaGeneralKnowledgeQuestions.length,
-      bundledWhichCameFirstSeeds: challengeArenaWhichCameFirstQuestions.length,
-      bundledEnterpriseLogoSeeds: challengeArenaEnterpriseLogoQuestions.length,
-    };
+  handler: async (ctx, args): Promise<ArenaSeedContentGapsResult> => {
+    return await ctx.runMutation(internal.challengeArenaSelection.seedContentGaps, args);
   },
 });
 
-// Live normalized prompt+answer identities across the knowledge quiz pool;
-// CIE rows that collide with one of these are excluded from seeding (the QA
-// harness would flag the pair as an EXACT_DUPLICATE ERROR).
-async function loadLiveKnowledgeDuplicateKeys(
-  ctx: Pick<QueryCtx | MutationCtx, "db">,
-) {
-  const rows = await ctx.db
-    .query("quizQuestions")
-    .withIndex("by_sport_checksum", (q) => q.eq("sport", "knowledge"))
-    .collect();
-  return new Set(rows.map((row) => contentDuplicateKey(row)));
-}
-
-function tallyCieRows(rows: ArenaCiePlannedRow[]) {
-  const bySubject: Record<string, number> = {};
-  const byShape: Record<string, number> = {};
-  const byArenaCategory: Record<string, number> = {};
-  for (const row of rows) {
-    bySubject[row.subject] = (bySubject[row.subject] ?? 0) + 1;
-    byShape[row.shape] = (byShape[row.shape] ?? 0) + 1;
-    byArenaCategory[row.arenaCategory] =
-      (byArenaCategory[row.arenaCategory] ?? 0) + 1;
-  }
-  return { bySubject, byShape, byArenaCategory };
-}
-
-// Dry run for the CIE → Arena seed. Read-only by construction (internalQuery);
-// the returned newChecksums list is the rollback key for the matching
-// seedCieContent execution.
+// Dry run for the CIE → Arena seed (read-only). See challengeArenaSelection.
 export const cieContentPlan = internalQuery({
   args: {},
-  handler: async (ctx) => {
-    const plan = arenaCieSeedPlan();
-    const liveKeys = await loadLiveKnowledgeDuplicateKeys(ctx);
-    const toSeed: ArenaCiePlannedRow[] = [];
-    const liveDuplicateChecksums: string[] = [];
-    const alreadySeededChecksums: string[] = [];
-
-    for (const row of plan.rows) {
-      if (liveKeys.has(contentDuplicateKey(row.seed))) {
-        liveDuplicateChecksums.push(row.seed.checksum);
-        continue;
-      }
-      const existing = await readQuestionByChecksum(ctx, row.seed.checksum);
-      if (existing) {
-        alreadySeededChecksums.push(row.seed.checksum);
-        continue;
-      }
-      toSeed.push(row);
-    }
-
-    return {
-      sport: ARENA_CIE_SPORT,
-      registeredQuestions: plan.totals.registeredQuestions,
-      plannedAfterStaticEligibility: plan.totals.planned,
-      staticExclusionsByReason: plan.totals.excludedByReason,
-      staticExclusions: plan.exclusions,
-      liveDuplicateChecksums,
-      alreadySeededChecksums,
-      toSeedCount: toSeed.length,
-      toSeedBreakdown: tallyCieRows(toSeed),
-      newChecksums: toSeed.map((row) => row.seed.checksum),
-    };
+  handler: async (ctx): Promise<ArenaCieContentPlan> => {
+    return await ctx.runQuery(internal.challengeArenaSelection.cieContentPlan, {});
   },
 });
 
-// Additive-only CIE seed: inserts new rows keyed by checksum under
-// ARENA_CIE_SPORT. Existing quizQuestions rows are never patched or deleted —
-// rows whose checksum already exists are skipped and counted.
+// Additive-only CIE seed. See challengeArenaSelection.
 export const seedCieContent = internalMutation({
   args: {
     cursor: v.optional(v.number()),
     limit: v.optional(v.number()),
   },
-  handler: async (ctx, { cursor, limit }) => {
-    const batchLimit = Math.max(
-      1,
-      Math.min(Math.floor(limit ?? SEED_CONTENT_BATCH_SIZE), SEED_CONTENT_MAX_BATCH_SIZE),
-    );
-    const plan = arenaCieSeedPlan();
-    const start = Math.max(0, Math.floor(cursor ?? 0));
-    if (start > plan.rows.length) {
-      throw new Error("Invalid CIE seed cursor");
-    }
-    const page = plan.rows.slice(start, start + batchLimit);
-    const liveKeys = await loadLiveKnowledgeDuplicateKeys(ctx);
-
-    let inserted = 0;
-    let skippedExisting = 0;
-    let skippedLiveDuplicates = 0;
-    const insertedChecksums: string[] = [];
-    for (const row of page) {
-      if (liveKeys.has(contentDuplicateKey(row.seed))) {
-        skippedLiveDuplicates += 1;
-        continue;
-      }
-      const existing = await readQuestionByChecksum(ctx, row.seed.checksum);
-      if (existing) {
-        skippedExisting += 1;
-        continue;
-      }
-      await ctx.db.insert("quizQuestions", {
-        ...questionSeedDocument(row.seed),
-        provenance: row.seed.provenance,
-        difficultyVotes: 0,
-        difficultyScore: 0,
-        timesAnswered: 0,
-        timesCorrect: 0,
-        usageCount: 0,
-      });
-      inserted += 1;
-      insertedChecksums.push(row.seed.checksum);
-    }
-
-    const nextOffset = start + page.length;
-    const isDone = nextOffset >= plan.rows.length;
-    return {
-      inserted,
-      skippedExisting,
-      skippedLiveDuplicates,
-      insertedChecksums,
-      processed: page.length,
-      plannedTotal: plan.rows.length,
-      nextCursor: isDone ? null : nextOffset,
-      isDone,
-      batchLimit,
-    };
+  handler: async (ctx, args): Promise<ArenaSeedCieContentResult> => {
+    return await ctx.runMutation(internal.challengeArenaSelection.seedCieContent, args);
   },
 });
 

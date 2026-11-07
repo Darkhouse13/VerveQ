@@ -16,6 +16,7 @@ vi.mock("@convex-dev/auth/server", () => ({
 }));
 
 import * as challengeArenas from "../../convex/challengeArenas";
+import { withArenaNestedCalls } from "./arenaNestedCalls";
 import {
   challengeArenaCapitalCityQuestions,
   challengeArenaEnterpriseLogoQuestions,
@@ -464,13 +465,13 @@ function setAuth(userId: string | null) {
 }
 
 function makeCtx(db: FakeDb, scheduler = new FakeScheduler()) {
-  return {
+  return withArenaNestedCalls({
     db,
     scheduler,
     storage: {
       getUrl: async (id: string) => `https://assets.test/${id}.png`,
     },
-  };
+  });
 }
 
 function seedUsers(db: FakeDb, ids = ["user_a", "user_b", "user_c", "user_d"]) {

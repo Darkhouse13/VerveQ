@@ -1,4 +1,6 @@
-import { mutation, query, type MutationCtx } from "./_generated/server";
+import { internalMutation, mutation, query, type MutationCtx } from "./_generated/server";
+import { internal } from "./_generated/api";
+import type { Doc } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { incrementTotalGames } from "./lib/playCount";
 import { getAuthUserId } from "@convex-dev/auth/server";
@@ -143,6 +145,68 @@ function buildSeenEntityIds(
   return seenEntityIds;
 }
 
+// Facts a single guess may read from the deck before falling back to the
+// full pool scan (which also decides "pool exhausted" exactly).
+const DECK_MAX_READS = 12;
+// Convex arrays hold at most 8192 values; pools are far smaller.
+const DECK_MAX_SIZE = 8000;
+
+function buildDeck(facts: HigherLowerFactDoc[], exclude: string[]): string[] {
+  return shuffle(
+    facts.filter((f) => !exclude.includes(f.externalId)).map((f) => f.externalId),
+  ).slice(0, DECK_MAX_SIZE);
+}
+
+/** Next valid card from the session's deck, or null → caller scans the pool. */
+async function drawFromDeck(
+  ctx: MutationCtx,
+  session: Doc<"higherLowerSessions">,
+  poolKey: string,
+  seenFactIds: Set<string>,
+  seenEntityIds: Set<string>,
+): Promise<{ fact: HigherLowerFactDoc | null; nextPos: number } | null> {
+  if (!session.deckId) return null;
+  const deck = await ctx.db.get(session.deckId);
+  if (!deck) return null;
+  let pos = session.deckPos ?? 0;
+  let reads = 0;
+  for (; pos < deck.factIds.length && reads < DECK_MAX_READS; pos += 1) {
+    const id = deck.factIds[pos];
+    if (
+      id === session.currentFactAId ||
+      id === session.currentFactBId ||
+      seenFactIds.has(id)
+    ) {
+      continue;
+    }
+    reads += 1;
+    const fact = await ctx.db
+      .query("higherLowerFacts")
+      .withIndex("by_external_id", (q) => q.eq("externalId", id))
+      .first();
+    if (
+      !fact ||
+      fact.poolKey !== poolKey ||
+      seenEntityIds.has(fact.entityId) ||
+      // A tie with the current card is skipped here but stays unseen, so the
+      // full-scan fallback can still serve it later.
+      fact.value === session.playerBValue
+    ) {
+      continue;
+    }
+    return { fact, nextPos: pos + 1 };
+  }
+  return { fact: null, nextPos: pos };
+}
+
+async function dropDeck(
+  ctx: MutationCtx,
+  session: Pick<Doc<"higherLowerSessions">, "deckId">,
+): Promise<void> {
+  if (!session.deckId) return;
+  if (await ctx.db.get(session.deckId)) await ctx.db.delete(session.deckId);
+}
+
 async function getEntityImage(
   ctx: MutationCtx,
   fact: { entityType: string; entityId: string },
@@ -166,6 +230,38 @@ async function getEntityImage(
   return undefined;
 }
 
+const POOL_CATALOG_MAX_AGE_MS = 60 * 60 * 1000;
+const POOL_CATALOG_MAX_ENTRIES = 8000;
+
+async function writePoolCatalog(
+  ctx: MutationCtx,
+  sport: string,
+  pools: Array<{ externalId: string; contextKey: string }>,
+): Promise<void> {
+  const existing = await ctx.db
+    .query("higherLowerPoolCatalogs")
+    .withIndex("by_sport", (q) => q.eq("sport", sport))
+    .collect();
+  for (const row of existing) await ctx.db.delete(row._id);
+  if (pools.length === 0 || pools.length > POOL_CATALOG_MAX_ENTRIES) return;
+  await ctx.db.insert("higherLowerPoolCatalogs", {
+    sport,
+    entries: pools.map((p) => ({ k: p.externalId, c: p.contextKey })),
+    builtAt: Date.now(),
+  });
+}
+
+export const rebuildPoolCatalog = internalMutation({
+  args: { sport: v.string() },
+  handler: async (ctx, { sport }) => {
+    const pools = await ctx.db
+      .query("higherLowerPools")
+      .withIndex("by_sport", (q) => q.eq("sport", sport))
+      .collect();
+    await writePoolCatalog(ctx, sport, pools);
+  },
+});
+
 export const startSession = mutation({
   args: { sport: v.string(), difficulty: difficultyArg },
   handler: async (ctx, { sport, difficulty }) => {
@@ -177,10 +273,29 @@ export const startSession = mutation({
       throw new Error("Higher or Lower is currently available for football only");
     }
 
-    const approvedPools = await ctx.db
-      .query("higherLowerPools")
+    // Pool keys from the catalog (one small doc) when there is one; the
+    // pool doc itself is read only for the pool that gets picked. No catalog
+    // → read every pool (and write the catalog from them).
+    const catalog = await ctx.db
+      .query("higherLowerPoolCatalogs")
       .withIndex("by_sport", (q) => q.eq("sport", sport))
-      .collect();
+      .first();
+    let approvedPools: Array<{ externalId: string; contextKey: string; doc?: HigherLowerPoolDoc }>;
+    if (catalog && catalog.entries.length > 0) {
+      approvedPools = catalog.entries.map((e) => ({ externalId: e.k, contextKey: e.c }));
+      if (Date.now() - catalog.builtAt > POOL_CATALOG_MAX_AGE_MS) {
+        // Claim the refresh first so concurrent starts don't each queue one.
+        await ctx.db.patch(catalog._id, { builtAt: Date.now() });
+        await ctx.scheduler.runAfter(0, internal.higherLower.rebuildPoolCatalog, { sport });
+      }
+    } else {
+      const pools = await ctx.db
+        .query("higherLowerPools")
+        .withIndex("by_sport", (q) => q.eq("sport", sport))
+        .collect();
+      if (!catalog) await writePoolCatalog(ctx, sport, pools);
+      approvedPools = pools.map((doc) => ({ externalId: doc.externalId, contextKey: doc.contextKey, doc }));
+    }
 
     if (approvedPools.length === 0) {
       throw new Error("No approved Higher or Lower pools available");
@@ -194,6 +309,7 @@ export const startSession = mutation({
     let selectedPool: HigherLowerPoolDoc | null = null;
     let factA: HigherLowerFactDoc | null = null;
     let factB: HigherLowerFactDoc | null = null;
+    let poolFacts: HigherLowerFactDoc[] = [];
 
     for (const level of difficultyFallbackChain(requested)) {
       const allowed = allowedContextsFor(level);
@@ -208,8 +324,17 @@ export const startSession = mutation({
           .collect();
         const pair = pickDifferentValuePair(facts);
         if (!pair) continue;
+        const poolDoc =
+          pool.doc ??
+          (await ctx.db
+            .query("higherLowerPools")
+            .withIndex("by_external_id", (q) => q.eq("externalId", pool.externalId))
+            .first());
+        // Gone since the catalog was built: try the next pool.
+        if (!poolDoc || poolDoc.sport !== sport) continue;
 
-        selectedPool = pool;
+        selectedPool = poolDoc;
+        poolFacts = facts;
         [factA, factB] = pair;
         servedDifficulty = level;
         break;
@@ -223,6 +348,10 @@ export const startSession = mutation({
 
     const playerAPhoto = await getEntityImage(ctx, factA);
     const playerBPhoto = await getEntityImage(ctx, factB);
+
+    const deckId = await ctx.db.insert("higherLowerDecks", {
+      factIds: buildDeck(poolFacts, [factA.externalId, factB.externalId]),
+    });
 
     const sessionId = await ctx.db.insert("higherLowerSessions", {
       userId,
@@ -247,6 +376,8 @@ export const startSession = mutation({
       playerBPhoto,
       status: "active",
       expiresAt: Date.now() + SESSION_TTL_MS,
+      deckId,
+      deckPos: 0,
     });
 
     return {
@@ -287,6 +418,7 @@ export const makeGuess = mutation({
     if (session.status === "game_over") throw new Error("Game is over");
     if (Date.now() > session.expiresAt) {
       await ctx.db.patch(sessionId, { status: "game_over" });
+      await dropDeck(ctx, session);
       throw new Error("Session expired");
     }
 
@@ -297,6 +429,7 @@ export const makeGuess = mutation({
     if (!correct) {
       await incrementTotalGames(ctx, userId);
       await ctx.db.patch(sessionId, { status: "game_over" });
+      await dropDeck(ctx, session);
       return {
         correct: false,
         playerBValue,
@@ -323,24 +456,45 @@ export const makeGuess = mutation({
       throw new Error("Approved Higher or Lower pool not found");
     }
 
-    const candidates = await ctx.db
-      .query("higherLowerFacts")
-      .withIndex("by_pool_key", (q) => q.eq("poolKey", poolKey))
-      .collect();
-
     const seenFactIds = buildSeenFactIds(session);
-    const seenEntityIds = buildSeenEntityIds(session, candidates);
 
-    const unseenValidCandidates = candidates.filter(
-      (fact) =>
-        fact.externalId !== session.currentFactBId &&
-        fact.externalId !== session.currentFactAId &&
-        !seenFactIds.has(fact.externalId) &&
-        !seenEntityIds.has(fact.entityId) &&
-        fact.value !== session.playerBValue,
+    // Fast path: the next card of the run's shuffled deck (a few reads).
+    // Deck sessions record every served entity in seenEntityIds.
+    const drawn = await drawFromDeck(
+      ctx,
+      session,
+      poolKey,
+      seenFactIds,
+      new Set(session.seenEntityIds ?? []),
     );
+    let newFactB: HigherLowerFactDoc | null = drawn?.fact ?? null;
+    let seenEntityIds = new Set(session.seenEntityIds ?? []);
 
-    if (unseenValidCandidates.length === 0) {
+    if (!newFactB) {
+      // Slow path (pre-deck sessions, or deck used up): scan the whole pool.
+      // This is also what decides "pool exhausted", exactly as before.
+      const candidates = await ctx.db
+        .query("higherLowerFacts")
+        .withIndex("by_pool_key", (q) => q.eq("poolKey", poolKey))
+        .collect();
+      seenEntityIds = buildSeenEntityIds(session, candidates);
+      const unseenValidCandidates = candidates.filter(
+        (fact) =>
+          fact.externalId !== session.currentFactBId &&
+          fact.externalId !== session.currentFactAId &&
+          !seenFactIds.has(fact.externalId) &&
+          !seenEntityIds.has(fact.entityId) &&
+          fact.value !== session.playerBValue,
+      );
+      if (unseenValidCandidates.length > 0) {
+        newFactB =
+          unseenValidCandidates[
+            Math.floor(Math.random() * unseenValidCandidates.length)
+          ];
+      }
+    }
+
+    if (!newFactB) {
       // Pool exhausted without a valid unseen non-tie candidate.
       await incrementTotalGames(ctx, userId);
       await ctx.db.patch(sessionId, {
@@ -348,6 +502,7 @@ export const makeGuess = mutation({
         streak: newStreak,
         status: "game_over",
       });
+      await dropDeck(ctx, session);
       return {
         correct: true,
         playerBValue,
@@ -358,10 +513,6 @@ export const makeGuess = mutation({
       };
     }
 
-    const newFactB =
-      unseenValidCandidates[
-        Math.floor(Math.random() * unseenValidCandidates.length)
-      ];
     const newBPhoto = await getEntityImage(ctx, newFactB);
 
     await ctx.db.patch(sessionId, {
@@ -378,6 +529,7 @@ export const makeGuess = mutation({
       playerAPhoto: session.playerBPhoto,
       playerBPhoto: newBPhoto,
       currentContext: newFactB.contextKey,
+      ...(drawn ? { deckPos: drawn.nextPos } : {}),
     });
 
     return {
@@ -419,6 +571,7 @@ export const penalizeTabSwitch = mutation({
 
     await incrementTotalGames(ctx, userId);
     await ctx.db.patch(sessionId, { status: "game_over" });
+    await dropDeck(ctx, session);
     return { penalized: true, gameOver: true, score: session.score };
   },
 });

@@ -31,6 +31,7 @@ import { closeOpenRankedQuizRuns } from "./lib/rankedOpenRuns";
 import {
   CATALOG_MAX_AGE_MS,
   catalogAsCandidates,
+  claimCatalogRefresh,
   isPlayableInMode,
   readCatalog,
   toCatalogEntries,
@@ -159,6 +160,7 @@ export const createSession = mutation({
         QUIZ_PLANNED_QUESTIONS,
       );
       if (Date.now() - catalog.builtAt > CATALOG_MAX_AGE_MS) {
+        await claimCatalogRefresh(ctx, catalog._id);
         await ctx.scheduler.runAfter(0, internal.questionCatalog.rebuildSlice, {
           sport,
           mode: normalizedMode,

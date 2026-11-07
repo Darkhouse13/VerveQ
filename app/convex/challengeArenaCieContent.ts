@@ -24,7 +24,8 @@ import { contentDuplicateKey } from "./lib/contentQa";
 // quizQuestions by an exact product sport: football/basketball/tennis/
 // knowledge). Challenge Arena round selection explicitly adds an
 // ARENA_CIE_SPORT scope, which is the ONLY read path for these rows.
-export const ARENA_CIE_SPORT = "arena_knowledge";
+import { ARENA_CIE_SPORT } from "./lib/arenaCieSport";
+export { ARENA_CIE_SPORT };
 
 export type ArenaCieQuestionSeed = ChallengeArenaQuestionSeed & {
   provenance: CieScoreProvenance;

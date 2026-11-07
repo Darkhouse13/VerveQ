@@ -26,7 +26,7 @@ import { CHECK, CLUBS, DATA, POS_RE, WD, assertClubs, cardOf, dataClubs, fmtWd, 
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(dir, "..", "src", "lab", "xi", "facts.json");
-const meta = JSON.parse(readFileSync(path.join(DATA, "football_player_metadata.json"), "utf8"));
+const meta = JSON.parse(readFileSync(path.join(DATA, "football_player_metadata.json.txt"), "utf8"));
 
 export const CLUB_KEY = "chelsea";
 export const CLUB_SHOW = "CHELSEA";

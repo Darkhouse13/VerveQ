@@ -126,11 +126,11 @@ Live Convex backend surface. Session-based server-authoritative game logic.
 | `lib/fuzzy.ts` | Levenshtein distance + `findBestMatch` for answer validation. |
 | `lib/scoring.ts` | Time-based scoring helpers and `normalizeAnswer`. |
 | `data/football_career_paths.json` | Career Path club-history dataset (bundled with the Convex functions). |
-| `data/football_player_metadata.json` | Football hint metadata (club/position/nationality/era). |
-| `data/football_survival_index.json` | Curated Survival index (football slice). |
+| `data/football_player_metadata.json.txt` | Football hint metadata (club/position/nationality/era). |
+| `data/football_survival_index.json.txt` | Curated Survival index (football slice). |
 | `data/nba_player_metadata.json` | NBA hint metadata. |
 | `data/nba_survival_data.json` | NBA initials → players map. |
-| `data/survival_initials_map.json` | Football initials → players map. |
+| `data/survival_initials_map.json.txt` | Football initials → players map. |
 | `data/survival_initials_map_tennis.json` | Tennis initials → players map. |
 | `data/tennis_player_metadata.json` | Tennis hint metadata. |
 

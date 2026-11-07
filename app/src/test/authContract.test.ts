@@ -62,6 +62,7 @@ vi.mock("../../convex/_generated/api", () => ({
   },
 }));
 
+import { AccountSwitchContext } from "@/contexts/accountSwitch";
 import {
   AuthProvider,
   AuthError,
@@ -299,6 +300,26 @@ describe("AuthContext.signIn", () => {
     const params = authMock.signIn.mock.calls[0][1] as Record<string, unknown>;
     expect(params.flow).toBe("signIn");
     expect(params.email).toBe("alice@example.com");
+  });
+
+  // docs/OPEN_BUGS.md #10: a guest → account sign-in must restart the auth
+  // layer, or the live connection keeps the guest's token until a reload.
+  it("restarts the auth layer after a successful sign-in, and only then", async () => {
+    const onAccountSwitch = vi.fn();
+    const switchWrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(
+        AccountSwitchContext.Provider,
+        { value: onAccountSwitch },
+        React.createElement(AuthProvider, null, children),
+      );
+    const { result } = renderHook(() => useAuth(), { wrapper: switchWrapper });
+    authMock.signIn.mockRejectedValueOnce(new Error("Invalid credentials"));
+    await expect(result.current.signIn("alice@example.com", "Zq7$mnPkL9#r")).rejects.toBeTruthy();
+    expect(onAccountSwitch).not.toHaveBeenCalled();
+    await act(async () => {
+      await result.current.signIn("alice@example.com", "Zq7$mnPkL9#r");
+    });
+    expect(onAccountSwitch).toHaveBeenCalledTimes(1);
   });
 
   it("maps Convex 'Invalid credentials' into AuthError(invalid_credentials)", async () => {

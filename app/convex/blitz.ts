@@ -8,6 +8,15 @@ import {
 } from "./lib/authz";
 import { assertClientSport } from "./lib/sports";
 import { pickQuestionPool, planQuestionSequence } from "./lib/imageQuestions";
+import { internal } from "./_generated/api";
+import {
+  CATALOG_MAX_AGE_MS,
+  catalogAsCandidates,
+  claimCatalogRefresh,
+  readCatalog,
+  toCatalogEntries,
+  writeCatalog,
+} from "./lib/questionCatalog";
 import {
   peekNextPlannedImageUrl,
   resolveQuestionImageUrl,
@@ -100,19 +109,60 @@ export const start = mutation({
     await assertSessionUser(ctx, userId);
     assertClientSport(sport);
 
-    const candidates = await collectBlitzCandidates(ctx, sport);
-    const plannedChecksums = planQuestionSequence(
-      candidates,
-      BLITZ_PLANNED_QUESTIONS,
-    );
+    // Blitz plays the ranked quiz's "intermediate" slice (standard MCQs), so
+    // it plans from that slice's catalog: one small doc instead of every
+    // question. Same eligible set, same draw. No catalog yet → full collect,
+    // which also writes it; a stale one is refreshed in the background.
+    // Serving re-checks every question (getQuestion / below), so a question
+    // removed since the catalog was built is skipped, never served.
+    const catalog = await readCatalog(ctx, sport, "quiz", "intermediate");
+    let candidates: Doc<"quizQuestions">[] | null = null;
+    let plannedChecksums: string[];
+    if (catalog && catalog.entries.length > 0) {
+      plannedChecksums = planQuestionSequence(
+        catalogAsCandidates(catalog.entries),
+        BLITZ_PLANNED_QUESTIONS,
+      );
+      if (Date.now() - catalog.builtAt > CATALOG_MAX_AGE_MS) {
+        await claimCatalogRefresh(ctx, catalog._id);
+        await ctx.scheduler.runAfter(0, internal.questionCatalog.rebuildSlice, {
+          sport,
+          mode: "quiz",
+          difficulty: "intermediate",
+        });
+      }
+    } else {
+      candidates = await collectBlitzCandidates(ctx, sport);
+      plannedChecksums = planQuestionSequence(candidates, BLITZ_PLANNED_QUESTIONS);
+      if (!catalog) {
+        await writeCatalog(ctx, sport, "quiz", "intermediate", toCatalogEntries(candidates));
+      }
+    }
 
     let firstQuestion = null;
     let usedChecksums: string[] = [];
     let currentChecksum: string | undefined;
     if (withFirstQuestion && plannedChecksums.length > 0) {
-      const firstPick = candidates.find(
-        (c) => c.checksum === plannedChecksums[0],
-      );
+      let firstPick: Doc<"quizQuestions"> | null = null;
+      if (candidates) {
+        firstPick = candidates.find((c) => c.checksum === plannedChecksums[0]) ?? null;
+      } else {
+        for (const checksum of plannedChecksums.slice(0, 5)) {
+          const doc = await ctx.db
+            .query("quizQuestions")
+            .withIndex("by_checksum", (q) => q.eq("checksum", checksum))
+            .first();
+          if (
+            doc &&
+            doc.sport === sport &&
+            doc.difficulty === "intermediate" &&
+            isStandardMcqQuestion(doc)
+          ) {
+            firstPick = doc;
+            break;
+          }
+        }
+      }
       if (firstPick) {
         assertStandardMcqQuestion(firstPick);
         usedChecksums = [firstPick.checksum];

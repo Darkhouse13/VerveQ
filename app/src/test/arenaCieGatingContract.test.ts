@@ -21,6 +21,7 @@ import * as duels from "../../convex/duels";
 import * as quizSessions from "../../convex/quizSessions";
 import * as blitz from "../../convex/blitz";
 import * as challengeArenas from "../../convex/challengeArenas";
+import { withArenaNestedCalls } from "./arenaNestedCalls";
 import {
   ARENA_CIE_SPORT,
   arenaCieSeedPlan,
@@ -189,7 +190,7 @@ function setAuth(userId: string | null) {
 }
 
 function makeCtx(db: FakeDb) {
-  return {
+  return withArenaNestedCalls({
     db,
     storage: {
       getUrl: async () => null,
@@ -197,7 +198,7 @@ function makeCtx(db: FakeDb) {
     scheduler: {
       runAfter: async () => {},
     },
-  };
+  });
 }
 
 function seedAccounts(db: FakeDb) {

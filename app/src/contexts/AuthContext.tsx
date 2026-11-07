@@ -10,6 +10,7 @@ import {
 } from "react";
 import { useQuery, useMutation, useConvexAuth } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { useAccountSwitch } from "./accountSwitch";
 import { api } from "../../convex/_generated/api";
 import {
   validatePassword,
@@ -394,6 +395,7 @@ function mapAuthError(err: unknown, fallbackCode: AuthErrorCode): AuthError {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { signIn: convexSignIn, signOut: convexSignOut } = useAuthActions();
+  const onAccountSwitch = useAccountSwitch();
   const user = useQuery(api.users.me);
   // Live mirror of the reactive `users.me` doc so async flows (claimUsername)
   // can await auth propagation without capturing a stale closure value.
@@ -712,13 +714,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (err) {
         throw mapAuthError(err, "invalid_credentials");
       }
+      // A guest session was just swapped for the account's: reconnect with
+      // the new token (docs/OPEN_BUGS.md #10).
+      onAccountSwitch();
       // The real return-intent signal: fires on a SUCCEEDED sign-in only, not
       // on the identify effect above (which re-runs on every app load for an
       // already-signed-in user and would read as a login every reload).
       // identify() follows from that effect once `me` resolves the account id.
       track("account_login", { method: "password" });
     },
-    [convexSignIn],
+    [convexSignIn, onAccountSwitch],
   );
 
   const requestPasswordReset = useCallback(

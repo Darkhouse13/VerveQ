@@ -705,11 +705,11 @@ describe("weekend stabilization blitz", () => {
 describe("weekend stabilization deploy assets", () => {
   it("tracks Convex runtime assets required by a clean checkout", () => {
     const requiredFiles = [
-      "app/convex/data/football_player_metadata.json",
-      "app/convex/data/football_survival_index.json",
+      "app/convex/data/football_player_metadata.json.txt",
+      "app/convex/data/football_survival_index.json.txt",
       "app/convex/data/nba_player_metadata.json",
       "app/convex/data/nba_survival_data.json",
-      "app/convex/data/survival_initials_map.json",
+      "app/convex/data/survival_initials_map.json.txt",
       "app/convex/data/survival_initials_map_tennis.json",
       "app/convex/data/tennis_player_metadata.json",
       "app/convex/lib/daily.ts",

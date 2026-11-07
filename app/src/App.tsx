@@ -2,10 +2,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ConvexReactClient } from "convex/react";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
-import { Suspense, type ReactNode } from "react";
+import { Suspense, useCallback, useState, type ReactNode } from "react";
 import { InkLoader } from "./components/shell/InkLoader";
 import { lazyWithRetry } from "./lib/lazyWithRetry";
 import { AuthProvider } from "./contexts/AuthContext";
+import { AccountSwitchContext } from "./contexts/accountSwitch";
 import { ProtectedRoute, UsernameRequiredRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AnalyticsPageviews } from "./components/AnalyticsPageviews";
@@ -128,8 +129,14 @@ function AppFrame({ children }: { children: ReactNode }) {
   );
 }
 
-const AppRoutes = () => (
-  <ConvexAuthProvider client={convex}>
+const AppRoutes = () => {
+  // Bumped after a guest → account sign-in so ConvexAuthProvider remounts and
+  // reconnects with the account's token (see contexts/accountSwitch.ts).
+  const [authEpoch, setAuthEpoch] = useState(0);
+  const onAccountSwitch = useCallback(() => setAuthEpoch((n) => n + 1), []);
+  return (
+  <AccountSwitchContext.Provider value={onAccountSwitch}>
+  <ConvexAuthProvider key={authEpoch} client={convex}>
     <AuthProvider>
       <Sonner />
       <BrowserRouter
@@ -457,7 +464,9 @@ const AppRoutes = () => (
       </BrowserRouter>
     </AuthProvider>
   </ConvexAuthProvider>
-);
+  </AccountSwitchContext.Provider>
+  );
+};
 
 const App = () => (
   <ErrorBoundary>

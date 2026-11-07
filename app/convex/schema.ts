@@ -1071,6 +1071,16 @@ export default defineSchema({
   // whoAmIApprovedClues / whoAmIClueTranslations / whoAmISessions tables) was
   // removed 2026-07 in favor of Career Path, whose content ships in-bundle.
 
+  // Pool keys per sport, so starting a run reads one small doc plus the
+  // chosen pool's facts instead of every pool (~1k docs). Rebuilt lazily
+  // (higherLower.rebuildPoolCatalog) when older than an hour.
+  higherLowerPoolCatalogs: defineTable({
+    sport: v.string(),
+    // k = pool externalId, c = its contextKey (difficulty tiers filter on it).
+    entries: v.array(v.object({ k: v.string(), c: v.string() })),
+    builtAt: v.number(),
+  }).index("by_sport", ["sport"]),
+
   higherLowerPools: defineTable({
     externalId: v.string(),
     seedVersion: v.optional(v.string()),
@@ -1122,6 +1132,17 @@ export default defineSchema({
   })
     .index("by_external_id", ["externalId"])
     .index("by_sport", ["sport"]),
+
+  // Playable board ids per sport, so starting a grid reads one small doc and
+  // one board instead of every board (~1.6k docs, ~2.6 MB). Rebuilt lazily
+  // (verveGrid.rebuildBoardCatalog) when older than an hour; a board that is
+  // gone or unplayable at serve time falls back to the full read.
+  verveGridBoardCatalogs: defineTable({
+    sport: v.string(),
+    // d = the board's difficulty tier ("hard" when untagged).
+    entries: v.array(v.object({ id: v.id("verveGridBoards"), d: v.string() })),
+    builtAt: v.number(),
+  }).index("by_sport", ["sport"]),
 
   verveGridBoards: defineTable({
     externalId: v.string(),
@@ -1201,9 +1222,20 @@ export default defineSchema({
     playerBPhoto: v.optional(v.string()),
     status: v.union(v.literal("active"), v.literal("game_over")),
     expiresAt: v.number(),
+    // Server-only shuffled order of the pool's remaining facts, dealt at
+    // start so a guess reads the next card instead of the whole pool.
+    // Never returned to clients. Absent on sessions from before decks.
+    deckId: v.optional(v.id("higherLowerDecks")),
+    deckPos: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
     .index("by_expiresAt", ["expiresAt"]),
+
+  // One per active Higher or Lower run (see higherLowerSessions.deckId);
+  // deleted when the run ends.
+  higherLowerDecks: defineTable({
+    factIds: v.array(v.string()),
+  }),
 
   // WHO'S OLDER? (convex/whosOlder.ts). One row per run. A "daily" row is the
   // player's one attempt at that UTC date's shared ten pairs (unique per

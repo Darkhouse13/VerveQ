@@ -101,7 +101,7 @@ function sampleGrid(players) {
 }
 
 function initialsExamples() {
-  const file = path.resolve(HERE, "../convex/data/survival_initials_map.json");
+  const file = path.resolve(HERE, "../convex/data/survival_initials_map.json.txt");
   const map = JSON.parse(readFileSync(file, "utf8")).initials_map;
   const famous = { TH: ["Thierry Henry"], MS: ["Mohamed Salah"], KD: ["Kevin De Bruyne"], DS: [], JM: [] };
   return Object.keys(famous)
