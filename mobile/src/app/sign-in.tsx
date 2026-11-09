@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { EMAIL_RE, Field, FormError, humanError, normalizeEmail } from "@/components/account/forms";
 import { markWelcomeSeen } from "@/components/account/welcomeFlag";
-import { GoogleButton, OrDivider } from "@/components/account/social";
+import { GOOGLE_SIGN_IN_ENABLED, GoogleButton, OrDivider } from "@/components/account/social";
 import { AppBar, Button, Txt } from "@/components/ui";
 import { useSession } from "@/lib/auth";
 import { color, font, space } from "@/theme/tokens";
@@ -52,8 +52,12 @@ export default function SignInScreen() {
           <Txt v="h1Game">Welcome back</Txt>
           <Txt c={color.muted}>Sign in to pick up your streak, ranks and rivals.</Txt>
         </View>
-        <GoogleButton />
-        <OrDivider label="Or with email" />
+        {GOOGLE_SIGN_IN_ENABLED ? (
+          <>
+            <GoogleButton />
+            <OrDivider label="Or with email" />
+          </>
+        ) : null}
         <View style={{ gap: space.l }}>
           <Field
             label="Email"

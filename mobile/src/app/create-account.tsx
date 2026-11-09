@@ -9,7 +9,7 @@ import { KeyboardAvoidingView, Pressable, ScrollView, Text, View } from "react-n
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { EMAIL_RE, Field, FormError, USERNAME_RE, humanError, normalizeEmail, normalizeUsername, passwordProblem } from "@/components/account/forms";
-import { GoogleButton, OrDivider } from "@/components/account/social";
+import { GOOGLE_SIGN_IN_ENABLED, GoogleButton, OrDivider } from "@/components/account/social";
 import { AppBar, Button, Card, Mono, Txt } from "@/components/ui";
 import { useSession } from "@/lib/auth";
 import { api } from "@/lib/convex";
@@ -131,8 +131,12 @@ export default function CreateAccountScreen() {
           ))}
         </View>
 
-        <GoogleButton />
-        <OrDivider label="Or with email" />
+        {GOOGLE_SIGN_IN_ENABLED ? (
+          <>
+            <GoogleButton />
+            <OrDivider label="Or with email" />
+          </>
+        ) : null}
 
         <View style={{ gap: space.l }}>
           {!existingName ? (

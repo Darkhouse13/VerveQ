@@ -4,6 +4,10 @@ import { Text, View } from "react-native";
 import { Eyebrow, Txt } from "@/components/ui";
 import { color, font, size, space } from "@/theme/tokens";
 
+// Hidden until Google sign-in ships (owner ruling 2026-11-09: keep it off
+// until the owner says so after launch). Flip to true to show it again.
+export const GOOGLE_SIGN_IN_ENABLED = false;
+
 export function GoogleButton() {
   // Google sign-in needs a Convex Auth provider that isn't deployed yet.
   return (
