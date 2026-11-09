@@ -4,10 +4,12 @@ import { ArrowClockwise } from "phosphor-react-native/src/icons/ArrowClockwise";
 import { ArrowDown } from "phosphor-react-native/src/icons/ArrowDown";
 import { ArrowUp } from "phosphor-react-native/src/icons/ArrowUp";
 import { CheckCircle } from "phosphor-react-native/src/icons/CheckCircle";
+import { Export } from "phosphor-react-native/src/icons/Export";
 import { Info } from "phosphor-react-native/src/icons/Info";
 import { XCircle } from "phosphor-react-native/src/icons/XCircle";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, AppState, Text, View } from "react-native";
+import * as SecureStore from "expo-secure-store";
+import { ActivityIndicator, AppState, ScrollView, Share, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppBar, Button, Eyebrow, Mono, Tag, Txt, haptic } from "@/components/ui";
@@ -44,7 +46,17 @@ const seasonText = (season: number | undefined, context: string) =>
 type Pair = { aName: string; aValue: number; bName: string };
 type Ctx = { statKey: string; context: string; contextLabel: string; season?: number };
 type Outcome = { correct: boolean; bValue: number } | null;
-type Ended = { score: number; reason: "wrong" | "exhausted" | "left" };
+type Ended = {
+  score: number;
+  reason: "wrong" | "exhausted" | "left";
+  /** The last pair played, both values already revealed by then. */
+  last?: { aName: string; aValue: number; bName: string; bValue: number };
+  ctx?: Ctx;
+};
+
+// Best run on this phone (the server keeps no Higher or Lower best).
+const BEST_KEY = "verveq_hl_best_football";
+const SHARE_URL = "https://verveq.com/games/higher-or-lower/?ref=higher_lower_share";
 
 export function HigherLowerGame() {
   const insets = useSafeAreaInsets();
@@ -64,6 +76,30 @@ export function HigherLowerGame() {
   const [ended, setEnded] = useState<Ended | null>(null);
   const [failed, setFailed] = useState(false);
   const [run, setRun] = useState(0);
+  const [best, setBest] = useState<number | null>(null);
+  const [newBest, setNewBest] = useState(false);
+
+  useEffect(() => {
+    SecureStore.getItemAsync(BEST_KEY)
+      .then((v) => setBest(v ? Number(v) || 0 : 0))
+      .catch(() => setBest(0));
+  }, []);
+
+  // Ends the run and records a new best on this phone.
+  const bestRef = useRef<number | null>(null);
+  useEffect(() => {
+    bestRef.current = best;
+  }, [best]);
+  const finish = useCallback((e: Ended) => {
+    const prev = bestRef.current ?? 0;
+    const isNew = e.score > prev;
+    setNewBest(isNew);
+    if (isNew) {
+      setBest(e.score);
+      void SecureStore.setItemAsync(BEST_KEY, String(e.score)).catch(() => undefined);
+    }
+    setEnded(e);
+  }, []);
 
   useEffect(() => {
     if (!ready) return;
@@ -97,7 +133,12 @@ export function HigherLowerGame() {
         setTimeout(() => {
           setOutcome(null);
           if (res.gameOver) {
-            setEnded({ score: res.score, reason: res.correct ? "exhausted" : "wrong" });
+            finish({
+              score: res.score,
+              reason: res.correct ? "exhausted" : "wrong",
+              last: { aName: pair.aName, aValue: pair.aValue, bName: pair.bName, bValue: res.playerBValue },
+              ctx: ctx ?? undefined,
+            });
             return;
           }
           if ("nextPlayerAName" in res && res.nextPlayerAName != null && res.nextPlayerAValue != null && res.nextPlayerBName != null) {
@@ -114,7 +155,7 @@ export function HigherLowerGame() {
         setPicked(null);
       }
     },
-    [sessionId, pair, busy, outcome, makeGuess],
+    [sessionId, pair, ctx, busy, outcome, makeGuess, finish],
   );
 
   // Back / X mid-run: confirm, then the same penalty as leaving the app.
@@ -123,31 +164,43 @@ export function HigherLowerGame() {
   });
 
   // Leaving the app ends the run, like the web's tab switch.
-  const live = useRef({ sessionId, ended });
+  const live = useRef({ sessionId, ended, ctx });
   useEffect(() => {
-    live.current = { sessionId, ended };
-  }, [sessionId, ended]);
+    live.current = { sessionId, ended, ctx };
+  }, [sessionId, ended, ctx]);
   useEffect(() => {
     const sub = AppState.addEventListener("change", async (st) => {
       const cur = live.current;
       if (st !== "background" || !cur.sessionId || cur.ended) return;
       try {
         const res = await penalize({ sessionId: cur.sessionId as never });
-        if (res.penalized) setEnded({ score: res.score, reason: "left" });
+        if (res.penalized) finish({ score: res.score, reason: "left", ctx: cur.ctx ?? undefined });
       } catch {
         /* offline */
       }
     });
     return () => sub.remove();
-  }, [penalize]);
+  }, [penalize, finish]);
 
   const label = ctx ? statLabel(ctx.statKey) : "";
 
   if (ended) {
+    const endCtx = ended.ctx;
+    const endLabel = endCtx ? statLabel(endCtx.statKey) : "";
+    const endSeason = endCtx ? seasonText(endCtx.season, endCtx.context) : null;
+    const playAgain = () => {
+      setEnded(null);
+      setNewBest(false);
+      setPair(null);
+      setCtx(null);
+      setSessionId(null);
+      setFailed(false);
+      setRun((n) => n + 1);
+    };
     return (
       <View style={{ flex: 1, backgroundColor: color.ink }}>
         <AppBar title="Higher or Lower" eyebrow="Game over" onBack={() => router.back()} close />
-        <View style={{ flex: 1, alignItems: "center", paddingTop: space.x4, paddingHorizontal: space.gutter, gap: space.m }}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, alignItems: "center", paddingTop: space.xxl, paddingHorizontal: space.gutter, gap: space.m }}>
           <Tag
             label={ended.reason === "exhausted" ? "Perfect run" : ended.reason === "left" ? "Run ended" : "Game over"}
             tone="solid"
@@ -160,23 +213,46 @@ export function HigherLowerGame() {
               ? "Perfect run: this stat pool is exhausted."
               : ended.reason === "left"
                 ? "Run ended — you left the app"
-                : `${ended.score} in a row`}
+                : ended.score === 1
+                  ? "1 right in a row"
+                  : `${ended.score} right in a row`}
           </Txt>
-        </View>
+          {newBest && ended.score > 0 ? (
+            <Tag label="New best" c={color.lime} />
+          ) : best != null && best > 0 ? (
+            <Mono s={13} c={color.dim}>{`YOUR BEST · ${best}`}</Mono>
+          ) : null}
+
+          {endCtx ? (
+            <View style={{ alignSelf: "stretch", marginTop: space.l, backgroundColor: color.surface, borderRadius: radius.card, borderWidth: 1, borderColor: color.lineSoft, padding: space.l, gap: space.m }}>
+              <View style={{ gap: space.xs }}>
+                <Eyebrow>{ended.reason === "wrong" ? "The card that ended it" : "Your last call"}</Eyebrow>
+                <Txt v="rowTitle">{[endCtx.contextLabel, endSeason].filter(Boolean).join(" · ")}</Txt>
+                <Txt v="caption" c={color.muted}>
+                  {endLabel}
+                </Txt>
+              </View>
+              {ended.last ? (
+                <View style={{ gap: space.s }}>
+                  <RecapRow name={ended.last.aName} value={ended.last.aValue} />
+                  <RecapRow name={ended.last.bName} value={ended.last.bValue} tone={ended.reason === "wrong" ? color.wrong : color.right} />
+                </View>
+              ) : null}
+            </View>
+          ) : null}
+        </ScrollView>
         <View style={{ paddingHorizontal: space.gutter, paddingTop: space.l, paddingBottom: insets.bottom + space.xxl, gap: space.m }}>
+          <Button label="Play again" icon={ArrowClockwise} onPress={playAgain} />
           <Button
-            label="Play again"
-            icon={ArrowClockwise}
-            onPress={() => {
-              setEnded(null);
-              setPair(null);
-              setCtx(null);
-              setSessionId(null);
-              setFailed(false);
-              setRun((n) => n + 1);
-            }}
+            variant="secondary"
+            label="Share result"
+            icon={Export}
+            onPress={() =>
+              void Share.share({
+                message: `I scored ${ended.score} in VerveQ's Higher or Lower ⚽\nCan you beat me?\n${SHARE_URL}`,
+              })
+            }
           />
-          <Button variant="secondary" label="Home" onPress={() => router.back()} />
         </View>
       </View>
     );
@@ -307,6 +383,24 @@ function StatCard({ name, value, caption, state }: { name: string; value: string
           {caption}
         </Txt>
       </View>
+    </View>
+  );
+}
+
+function RecapRow({ name, value, tone }: { name: string; value: number; tone?: string }) {
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: space.m }}>
+      {tone ? (
+        tone === color.wrong ? <XCircle size={18} weight="fill" color={tone} /> : <CheckCircle size={18} weight="fill" color={tone} />
+      ) : (
+        <View style={{ width: 18 }} />
+      )}
+      <Txt v="body" numberOfLines={1} style={{ flex: 1 }}>
+        {name}
+      </Txt>
+      <Mono s={17} c={tone ?? color.cream}>
+        {String(value)}
+      </Mono>
     </View>
   );
 }

@@ -232,14 +232,73 @@ function Ladder({ isFull, elo, rank }: { isFull: boolean; elo: number | null; ra
   );
 }
 
-function Board({ userId, rank }: { userId: string | undefined; rank: { rank: number; total: number } | null | undefined }) {
-  const board = useQuery(api.leaderboards.getLeaderboard, { ...BOARD, limit: 50 });
-  const blitz = useQuery(api.blitz.getHighScores, { sport: "football", limit: 3 });
-  const entries = board?.entries ?? [];
-  const mineInTop = entries.some((e) => e.userId === userId);
+// The web's Leaderboard segment (ShellLeaderboardScreen.tsx): two ranked
+// ladders (seasonal rating, current or past season) and the all-time Blitz
+// high-score table, 50 deep. Same server queries; nothing is ranked here.
+type BoardMode = "quiz" | "survival" | "blitz";
+const BOARD_LIMIT = 50;
+
+function FilterChip({ label, on, onPress }: { label: string; on: boolean; onPress: () => void }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected: on }}
+      onPress={() => {
+        if (on) return;
+        haptic.tap();
+        onPress();
+      }}
+      style={{
+        height: 40,
+        paddingHorizontal: space.l,
+        borderRadius: 20,
+        justifyContent: "center",
+        borderWidth: 1.5,
+        borderColor: on ? color.cream : color.line,
+        backgroundColor: on ? color.cream : "transparent",
+      }}
+    >
+      <Txt v="body" c={on ? color.ink : color.cream} style={{ fontFamily: font.bold }}>
+        {label}
+      </Txt>
+    </Pressable>
+  );
+}
+
+type BoardRow = { rank: number; userId: string; username: string; value: number; tier?: string };
+
+function Board({ userId, isFull }: { userId: string | undefined; isFull: boolean }) {
+  const [mode, setMode] = useState<BoardMode>("quiz");
+  const [season, setSeason] = useState<"current" | number>("current");
+  const isBlitz = mode === "blitz";
+  // Blitz is all-time; seasons only apply to the ranked ladders.
+  const isPast = !isBlitz && season !== "current";
+
+  const currentSeason = useQuery(api.seasonManager.getCurrentSeason, {});
+  const pastSeasons = useQuery(api.seasonManager.getPastSeasons, {});
+  const live = useQuery(api.leaderboards.getLeaderboard, !isBlitz && !isPast ? { sport: "football", mode, limit: BOARD_LIMIT } : "skip");
+  const blitz = useQuery(api.blitz.getHighScores, isBlitz ? { sport: "football", limit: BOARD_LIMIT } : "skip");
+  const past = useQuery(
+    api.seasonManager.getSeasonHistory,
+    isPast ? { seasonNumber: season as number, sport: "football", mode, limit: BOARD_LIMIT } : "skip",
+  );
+  // My true place on the live ladder, for when I'm below the top 50.
+  const myRank = useQuery(
+    api.leaderboards.getGlobalRank,
+    isFull && userId && !isBlitz && !isPast ? { userId: userId as never, sport: "football", mode } : "skip",
+  );
+
+  const loading = isPast ? past === undefined : isBlitz ? blitz === undefined : live === undefined;
+  const rows: BoardRow[] = isPast
+    ? (past ?? []).map((e, i) => ({ rank: e.rank ?? i + 1, userId: String(e.userId), username: e.username, value: e.finalElo, tier: e.tier }))
+    : isBlitz
+      ? (blitz?.entries ?? []).map((e) => ({ rank: e.rank, userId: String(e.userId), username: e.username, value: e.score }))
+      : (live?.entries ?? []).map((e) => ({ rank: e.rank, userId: String(e.userId), username: e.username, value: e.elo_rating }));
+  const mineInList = !!userId && rows.some((r) => r.userId === String(userId));
+  const pinMe = !isBlitz && !isPast && !mineInList && !!myRank;
   const medal = (r: number) => (r === 1 ? tierInk.gold : r === 2 ? tierInk.silver : r === 3 ? tierInk.bronze : color.muted);
 
-  const row = (e: { rank: number; username: string; elo?: number; score?: string }, me: boolean, last: boolean) => (
+  const row = (e: { rank: number; username: string; value?: number }, me: boolean, last: boolean) => (
     <View
       key={`${e.rank}-${e.username}`}
       style={{
@@ -263,42 +322,72 @@ function Board({ userId, rank }: { userId: string | undefined; rank: { rank: num
       <Txt v="rowTitle" numberOfLines={1} style={{ flex: 1 }}>
         {me ? "You" : e.username}
       </Txt>
-      {e.elo != null ? <RankBadge tier={tierFromElo(e.elo)} size={28} /> : null}
-      <Mono s={15}>{e.score ?? fmt(Math.round(e.elo ?? 0))}</Mono>
+      {!isBlitz && e.value != null ? <RankBadge tier={tierFromElo(e.value)} size={28} /> : null}
+      {e.value != null ? <Mono s={15}>{isBlitz ? `${fmt(e.value)} pts` : fmt(Math.round(e.value))}</Mono> : null}
     </View>
   );
 
   return (
     <>
       <Section style={{ marginTop: space.xl }}>
+        <View style={{ flexDirection: "row", alignItems: "flex-end", gap: space.l }}>
+          <View style={{ gap: space.s }}>
+            <Eyebrow>Ranked · rating</Eyebrow>
+            <View style={{ flexDirection: "row", gap: space.s }}>
+              <FilterChip label="Quiz" on={mode === "quiz"} onPress={() => setMode("quiz")} />
+              <FilterChip label="Survival" on={mode === "survival"} onPress={() => setMode("survival")} />
+            </View>
+          </View>
+          <View style={{ gap: space.s }}>
+            <Eyebrow>High score</Eyebrow>
+            <FilterChip label="Blitz" on={isBlitz} onPress={() => setMode("blitz")} />
+          </View>
+        </View>
+        {!isBlitz && (pastSeasons ?? []).length > 0 ? (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.s }}>
+            <FilterChip
+              label={currentSeason ? `S${currentSeason.seasonNumber} · Live` : "Live"}
+              on={season === "current"}
+              onPress={() => setSeason("current")}
+            />
+            {(pastSeasons ?? []).map((s) => (
+              <FilterChip key={s.seasonNumber} label={`Season ${s.seasonNumber}`} on={season === s.seasonNumber} onPress={() => setSeason(s.seasonNumber)} />
+            ))}
+          </ScrollView>
+        ) : null}
+        <Txt v="caption" c={color.dim}>
+          {isBlitz
+            ? "Each player's best 60-second Blitz run, all-time, not seasonal."
+            : `Rating from ranked ${mode === "quiz" ? "Quiz" : "Survival"} games. Win to climb, Bronze to Platinum.`}
+        </Txt>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-          <Eyebrow>{rank ? `Rating · ${fmt(rank.total)} ranked` : "Rating"}</Eyebrow>
-          <Txt v="micro" c={color.dim} style={{ fontFamily: font.medium }}>
-            Ranked Quiz
-          </Txt>
+          <Eyebrow>{isBlitz ? "Blitz · all time" : isPast ? `Season ${season} · final` : "The chase"}</Eyebrow>
+          {rows.length > 0 ? (
+            <Txt v="micro" c={color.dim} style={{ fontFamily: font.medium }}>
+              {isBlitz ? `Top ${rows.length}` : myRank && !isPast ? `${fmt(myRank.total)} ranked` : `Top ${rows.length}`}
+            </Txt>
+          ) : null}
         </View>
         <View style={{ backgroundColor: color.surface, borderRadius: radius.card, borderWidth: 1, borderColor: color.lineSoft, overflow: "hidden" }}>
-          {board === undefined ? (
+          {loading ? (
             <View style={{ padding: space.xxl, alignItems: "center" }}>
               <ActivityIndicator color={color.lime} />
             </View>
-          ) : entries.length === 0 ? (
+          ) : rows.length === 0 ? (
             <View style={{ padding: space.gutter }}>
-              <Txt c={color.muted}>No ranked players yet this season.</Txt>
+              <Txt c={color.muted}>{isBlitz ? "No Blitz runs yet." : "No ranked players here yet."}</Txt>
             </View>
           ) : (
             <>
-              {entries.slice(0, 10).map((e, i, arr) =>
-                row({ rank: e.rank, username: e.username, elo: e.elo_rating }, e.userId === userId, i === arr.length - 1 && (mineInTop || !rank)),
-              )}
-              {!mineInTop && rank ? (
+              {rows.map((r, i) => row(r, r.userId === String(userId), i === rows.length - 1 && !pinMe))}
+              {pinMe && myRank ? (
                 <>
                   <View style={{ alignItems: "center", paddingVertical: space.s, borderBottomWidth: 1, borderBottomColor: color.lineSoft }}>
                     <Mono s={13} c={color.dim}>
                       · · ·
                     </Mono>
                   </View>
-                  {row({ rank: rank.rank, username: "you" }, true, true)}
+                  {row({ rank: myRank.rank, username: "you" }, true, true)}
                 </>
               ) : null}
             </>
@@ -307,21 +396,6 @@ function Board({ userId, rank }: { userId: string | undefined; rank: { rank: num
       </Section>
 
       <Section style={{ marginTop: space.xxl }}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-          <Eyebrow>Blitz · all time</Eyebrow>
-          <Txt v="micro" c={color.dim} style={{ fontFamily: font.medium }}>
-            Best 60-second run
-          </Txt>
-        </View>
-        <View style={{ backgroundColor: color.surface, borderRadius: radius.card, borderWidth: 1, borderColor: color.lineSoft, overflow: "hidden" }}>
-          {(blitz?.entries ?? []).length === 0 ? (
-            <View style={{ padding: space.gutter }}>
-              <Txt c={color.muted}>{blitz === undefined ? "Loading…" : "No Blitz runs yet."}</Txt>
-            </View>
-          ) : (
-            (blitz?.entries ?? []).map((e, i, arr) => row({ rank: e.rank, username: e.username, score: `${fmt(e.score)} pts` }, false, i === arr.length - 1))
-          )}
-        </View>
         <Pressable
           onPress={() => router.navigate("/weekend")}
           style={({ pressed }) => ({
@@ -375,7 +449,7 @@ export default function RanksScreen() {
         </View>
         <Segmented value={view} onChange={setView} />
       </View>
-      {view === "ladder" ? <Ladder isFull={isFull} elo={elo} rank={rank} /> : <Board userId={user?._id} rank={rank} />}
+      {view === "ladder" ? <Ladder isFull={isFull} elo={elo} rank={rank} /> : <Board userId={user?._id} isFull={isFull} />}
     </ScrollView>
   );
 }
