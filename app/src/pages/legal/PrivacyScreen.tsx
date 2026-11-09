@@ -10,7 +10,7 @@ import { LegalLayout } from "./LegalLayout";
  */
 export default function PrivacyScreen() {
   return (
-    <LegalLayout title="Privacy Policy" lastUpdated="July 7, 2026">
+    <LegalLayout title="Privacy Policy" lastUpdated="November 9, 2026">
       <p>
         VerveQ (&quot;we&quot;, &quot;us&quot;) is a competitive sports trivia
         platform available at verveq.com. This policy explains what information
@@ -103,9 +103,10 @@ export default function PrivacyScreen() {
       <p>
         Game sessions expire automatically (minutes to hours). Account data is
         kept while your account exists. Anonymous (username-only) accounts that
-        never upgrade may be removed after extended inactivity. You can request
-        deletion of your account and associated personal data at any time by
-        emailing us; we will action it within 30 days.
+        never upgrade may be removed after extended inactivity. You can delete your account and associated personal data at any
+        time: in the Android app under Profile → Settings → Delete account
+        (immediate), or by emailing us (actioned within 30 days). Details:{" "}
+        <a href="/delete-account">verveq.com/delete-account</a>.
       </p>
 
       <h2>Your rights</h2>

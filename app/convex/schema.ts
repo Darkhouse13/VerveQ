@@ -141,6 +141,10 @@ export default defineSchema({
     // Convex Auth fields
     email: v.optional(v.string()),
     emailVerificationTime: v.optional(v.number()),
+    // Set when the player deleted their account (accountDeletion.ts): the doc
+    // stays as an empty tombstone so shared records (duels, crews, votes)
+    // keep a valid id, but holds no name, email or progress.
+    deletedAt: v.optional(v.number()),
   }).index("by_username", ["username"]),
 
   // ── Drop-Test funnel instrumentation (insert-only, no PII) ──

@@ -197,20 +197,32 @@ export default function SettingsScreen() {
       },
     ]);
 
-  // No self-serve delete exists on the backend yet, so deletion goes through
-  // support (Play's data-deletion requirement is met by a working request path).
+  // Deletes the account on the server at once (accountDeletion.ts): login,
+  // name, email and game history. Then signs out locally.
+  const deleteAccount = useMutation(api.accountDeletion.deleteMyAccount);
   const requestDelete = () =>
     Alert.alert(
       "Delete your account?",
-      "We'll delete your account and everything tied to it within 30 days. Send the request from the email app that opens next.",
+      "This permanently deletes your account, your name and email, your ratings, streaks and game history. It can't be undone.",
       [
         { text: "Cancel", style: "cancel" },
         {
-          text: "Request deletion",
+          text: "Delete account",
           style: "destructive",
           onPress: () => {
-            const body = `Please delete my VerveQ account.\n\nUsername: ${username ?? "(none)"}\nAccount id: ${user?._id ?? "(unknown)"}`;
-            void Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("Delete my VerveQ account")}&body=${encodeURIComponent(body)}`);
+            haptic.wrong();
+            void deleteAccount({ confirm: "DELETE" })
+              .then(async () => {
+                await runAuth(() => signOut()).catch(() => undefined);
+                router.replace("/");
+                Alert.alert("Account deleted", "Your VerveQ account and its data have been deleted.");
+              })
+              .catch(() => {
+                Alert.alert(
+                  "Couldn't delete your account",
+                  `Check your connection and try again. If it keeps failing, email ${SUPPORT_EMAIL}.`,
+                );
+              });
           },
         },
       ],
