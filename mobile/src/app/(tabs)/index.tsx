@@ -48,7 +48,7 @@ function TodayRow({
   last?: boolean;
 }) {
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={() => {
         haptic.tap();
         router.push(href);
@@ -69,9 +69,9 @@ function TodayRow({
         <Ico size={24} weight="fill" color={color.ink} />
       </View>
       <View style={{ flex: 1, gap: space.xs }}>
-        <Text style={{ fontFamily: font.bold, fontSize: size.rowTitle, color: color.cream }}>
+        <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.bold, fontSize: size.rowTitle, color: color.cream }}>
           {title}
-          {edition ? <Text style={{ fontFamily: font.mono, fontSize: 12, color: color.muted }}>{`  #${edition}`}</Text> : null}
+          {edition ? <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.mono, fontSize: 12, color: color.muted }}>{`  #${edition}`}</Text> : null}
         </Text>
         <Txt v="caption" c={color.muted}>
           {state.kind === "resume" && state.line ? state.line : line}
@@ -100,7 +100,7 @@ function dailyGameState(today: { daily: { status: string; score: number; totalRo
 
 function MoreTile({ title, line, icon: Ico, ranked, href, wide }: { title: string; line: string; icon: Icon; ranked?: boolean; href: Href; wide?: boolean }) {
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={() => {
         haptic.tap();
         router.push(href);
@@ -140,7 +140,7 @@ function MoreTile({ title, line, icon: Ico, ranked, href, wide }: { title: strin
 
 function FriendsCard({ top, title, line, href }: { top: ReactNode; title: string; line: string; href: Href }) {
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={() => {
         haptic.tap();
         router.push(href);
@@ -204,12 +204,12 @@ export default function PlayScreen() {
             <Fire size={20} weight="fill" color={color.yellow} />
             <Mono s={15}>{streak}</Mono>
           </View>
-          <Pressable
+          <Pressable accessibilityRole="button"
             accessibilityLabel="Profile"
             onPress={() => router.navigate("/profile")}
             style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: color.lime, alignItems: "center", justifyContent: "center" }}
           >
-            <Text style={{ fontFamily: font.bold, fontSize: 17, color: color.ink }}>{initial}</Text>
+            <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.bold, fontSize: 17, color: color.ink }}>{initial}</Text>
           </Pressable>
         </View>
       </View>

@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import { ArrowClockwise } from "phosphor-react-native/src/icons/ArrowClockwise";
 import { SkipForward } from "phosphor-react-native/src/icons/SkipForward";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Circle } from "react-native-svg";
 
@@ -258,9 +258,9 @@ export default function CareerPathLadder() {
         onBack={() => router.back()}
         close
         right={
-          <Text style={{ fontFamily: font.mono, fontSize: 15, color: color.cream, paddingHorizontal: space.s }}>
+          <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.mono, fontSize: 15, color: color.cream, paddingHorizontal: space.s }}>
             {fmt(total)}
-            <Text style={{ fontSize: 12, color: color.dim }}> pts</Text>
+            <Text maxFontSizeMultiplier={1.3} style={{ fontSize: 12, color: color.dim }}> pts</Text>
           </Text>
         }
       />
@@ -272,9 +272,9 @@ export default function CareerPathLadder() {
         <View style={{ flex: 1, paddingHorizontal: space.gutter, paddingBottom: insets.bottom + space.xxl }}>
           <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: space.m }}>
             <Eyebrow>Paths solved</Eyebrow>
-            <Text style={{ fontFamily: font.mono, fontSize: 88, lineHeight: 96, color: color.cream }}>
+            <Text maxFontSizeMultiplier={1} style={{ fontFamily: font.mono, fontSize: 88, lineHeight: 96, color: color.cream }}>
               {solved}
-              <Text style={{ fontSize: 48, color: color.dim }}>/{ROUNDS}</Text>
+              <Text maxFontSizeMultiplier={1} style={{ fontSize: 48, color: color.dim }}>/{ROUNDS}</Text>
             </Text>
             <Txt c={color.muted}>{`${fmt(total)} total points`}</Txt>
           </View>
@@ -297,7 +297,7 @@ export default function CareerPathLadder() {
           )}
         </View>
       ) : (
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
           <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: space.l }}>
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: space.gutter, paddingTop: space.xl }}>
               <View style={{ gap: space.s }}>

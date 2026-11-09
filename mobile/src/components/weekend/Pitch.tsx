@@ -58,7 +58,7 @@ function Chip({ slot, onPress }: { slot: PitchSlot; onPress: () => void }) {
           </View>
         ) : null}
       </View>
-      <View style={{ backgroundColor: color.ink, borderRadius: radius.chip, paddingHorizontal: space.s, paddingVertical: 2, maxWidth: 84 }}>
+      <View style={{ backgroundColor: color.ink, borderRadius: radius.chip, paddingHorizontal: space.s, paddingVertical: space.xs, maxWidth: 84 }}>
         <Txt v="micro" numberOfLines={1} c={empty ? color.muted : color.cream}>
           {empty ? slot.slotRole : slot.name}
         </Txt>
@@ -91,14 +91,14 @@ export function Pitch({ rows, slots, onPressSlot }: { rows: FormationRow[]; slot
   return (
     <View
       onLayout={(e: LayoutChangeEvent) => setW(e.nativeEvent.layout.width)}
-      style={{ height: PITCH_H, borderRadius: radius.hero, backgroundColor: "#13241A", overflow: "hidden" }}
+      style={{ height: PITCH_H, borderRadius: radius.hero, backgroundColor: color.pitch, overflow: "hidden" }}
     >
       <Svg width={w} height={PITCH_H} style={{ position: "absolute" }}>
-        <Rect x={12} y={12} width={w - 24} height={PITCH_H - 24} rx={6} stroke="#FFF7F0" strokeOpacity={0.13} strokeWidth={2} fill="none" />
-        <Line x1={12} y1={PITCH_H / 2} x2={w - 12} y2={PITCH_H / 2} stroke="#FFF7F0" strokeOpacity={0.13} strokeWidth={2} />
-        <Circle cx={w / 2} cy={PITCH_H / 2} r={40} stroke="#FFF7F0" strokeOpacity={0.13} strokeWidth={2} fill="none" />
-        <Rect x={w / 2 - 84} y={12} width={168} height={64} stroke="#FFF7F0" strokeOpacity={0.13} strokeWidth={2} fill="none" />
-        <Rect x={w / 2 - 84} y={PITCH_H - 76} width={168} height={64} stroke="#FFF7F0" strokeOpacity={0.13} strokeWidth={2} fill="none" />
+        <Rect x={12} y={12} width={w - 24} height={PITCH_H - 24} rx={6} stroke={color.cream} strokeOpacity={0.13} strokeWidth={2} fill="none" />
+        <Line x1={12} y1={PITCH_H / 2} x2={w - 12} y2={PITCH_H / 2} stroke={color.cream} strokeOpacity={0.13} strokeWidth={2} />
+        <Circle cx={w / 2} cy={PITCH_H / 2} r={40} stroke={color.cream} strokeOpacity={0.13} strokeWidth={2} fill="none" />
+        <Rect x={w / 2 - 84} y={12} width={168} height={64} stroke={color.cream} strokeOpacity={0.13} strokeWidth={2} fill="none" />
+        <Rect x={w / 2 - 84} y={PITCH_H - 76} width={168} height={64} stroke={color.cream} strokeOpacity={0.13} strokeWidth={2} fill="none" />
       </Svg>
       <View style={{ flex: 1, justifyContent: "space-around", paddingVertical: space.s }}>
         {top.map((line, i) => (

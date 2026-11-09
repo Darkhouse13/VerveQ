@@ -133,7 +133,12 @@ export const cleanupExpiredSessions = internalMutation({
 
     const higherLowerSessions = await ctx.db
       .query("higherLowerSessions")
-      .withIndex("by_expiresAt", (q) => q.lte("expiresAt", now))
+      // Windowed like the scans above: these rows are never deleted, so an
+      // oldest-first scan stalls on old closed runs and never reaches fresh
+      // expiries (or their decks).
+      .withIndex("by_expiresAt", (q) =>
+        q.gt("expiresAt", now - SETTLE_LOOKBACK_MS).lte("expiresAt", now),
+      )
       .take(batchLimit);
     for (const session of higherLowerSessions) {
       if (session.expiresAt <= now && session.status === "active") {
@@ -147,7 +152,9 @@ export const cleanupExpiredSessions = internalMutation({
 
     const verveGridSessions = await ctx.db
       .query("verveGridSessions")
-      .withIndex("by_expiresAt", (q) => q.lte("expiresAt", now))
+      .withIndex("by_expiresAt", (q) =>
+        q.gt("expiresAt", now - SETTLE_LOOKBACK_MS).lte("expiresAt", now),
+      )
       .take(batchLimit);
     for (const session of verveGridSessions) {
       if (session.expiresAt <= now && session.status === "active") {
@@ -158,7 +165,9 @@ export const cleanupExpiredSessions = internalMutation({
 
     const careerPathSessions = await ctx.db
       .query("careerPathSessions")
-      .withIndex("by_expiresAt", (q) => q.lte("expiresAt", now))
+      .withIndex("by_expiresAt", (q) =>
+        q.gt("expiresAt", now - SETTLE_LOOKBACK_MS).lte("expiresAt", now),
+      )
       .take(batchLimit);
     for (const session of careerPathSessions) {
       if (session.expiresAt <= now && session.status === "active") {

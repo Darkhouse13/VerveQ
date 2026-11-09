@@ -119,7 +119,7 @@ export function AnswerButton({
           )}
         </View>
       ) : null}
-      <Text style={{ flex: 1, fontFamily: font.bold, fontSize: 17, lineHeight: 22, color: dim ? color.dim : color.cream }}>{label}</Text>
+      <Text maxFontSizeMultiplier={1.3} style={{ flex: 1, fontFamily: font.bold, fontSize: 17, lineHeight: 22, color: dim ? color.dim : color.cream }}>{label}</Text>
       {wrong ? (
         <Mono s={11} c={color.wrong}>
           YOU

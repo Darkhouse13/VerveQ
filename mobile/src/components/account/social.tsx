@@ -24,7 +24,7 @@ export function GoogleButton() {
         }}
       >
         <GoogleLogo size={20} weight="bold" color={color.ink} />
-        <Text style={{ fontFamily: font.bold, fontSize: 17, color: color.ink }}>Continue with Google</Text>
+        <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.bold, fontSize: 17, color: color.ink }}>Continue with Google</Text>
       </View>
       <Txt v="micro" c={color.dim} center style={{ fontFamily: font.medium }}>
         Google sign-in is coming soon

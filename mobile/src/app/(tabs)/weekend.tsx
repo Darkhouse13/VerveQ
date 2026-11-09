@@ -47,7 +47,7 @@ function Tile({ title, line, icon: Ico, href }: { title: string; line: string; i
 
 function LinkRow({ label, href }: { label: string; href: Href }) {
   return (
-    <Pressable onPress={() => router.push(href)} hitSlop={8} style={{ flexDirection: "row", alignItems: "center", gap: space.xs }}>
+    <Pressable accessibilityRole="button" onPress={() => router.push(href)} hitSlop={8} style={{ flexDirection: "row", alignItems: "center", gap: space.xs }}>
       <Txt v="caption" c={color.lime} style={{ fontFamily: font.bold }}>
         {label}
       </Txt>
@@ -160,7 +160,7 @@ export default function WeekendHub() {
             )}
           </Card>
           {latest && receipt ? (
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => router.push({ pathname: "/weekend/receipt/[gameweekId]", params: { gameweekId: latest.gameweekId } })}
               style={({ pressed }) => ({ flexDirection: "row", alignItems: "center", gap: space.m, padding: space.l, borderRadius: radius.card, borderWidth: 1.5, borderColor: color.lime, opacity: pressed ? 0.8 : 1 })}
             >
@@ -226,7 +226,7 @@ export default function WeekendHub() {
 
       {/* Favorite club */}
       <Section style={{ marginTop: space.xxl }}>
-        <Pressable
+        <Pressable accessibilityRole="button"
           disabled={!!favId}
           onPress={() => setFavOpen(true)}
           style={({ pressed }) => ({ flexDirection: "row", alignItems: "center", gap: space.m, padding: space.l, borderRadius: radius.card, backgroundColor: color.surface, opacity: pressed ? 0.8 : 1 })}

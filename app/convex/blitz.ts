@@ -1,3 +1,4 @@
+import { clampBoardLimit } from "./lib/boardLimit";
 import { mutation, query, type MutationCtx } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import { v } from "convex/values";
@@ -431,7 +432,8 @@ export const getHighScores = query({
     sport: v.optional(v.string()),
     limit: v.optional(v.number()),
   },
-  handler: async (ctx, { sport, limit = 20 }) => {
+  handler: async (ctx, { sport, limit: rawLimit = 20 }) => {
+    const limit = clampBoardLimit(rawLimit);
     if (!sport) {
       throw new Error("Sport is required for Blitz leaderboards");
     }

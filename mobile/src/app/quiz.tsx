@@ -33,7 +33,7 @@ function TopicButton({ label, icon: Ico, on, onPress }: { label: string; icon: I
       }}
       style={{
         flex: 1,
-        height: 56,
+        minHeight: 56,
         borderRadius: radius.input,
         borderWidth: on ? 2 : 1.5,
         borderColor: on ? color.lime : color.line,

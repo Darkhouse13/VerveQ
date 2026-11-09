@@ -137,7 +137,7 @@ export function Badge({ label, tone = "muted" }: { label: string; tone?: "muted"
   const c = { muted: color.muted, lime: color.lime, good: color.right, bad: color.wrong, warn: color.yellow }[tone];
   return (
     <View style={{ paddingHorizontal: space.s, paddingVertical: space.xs, borderRadius: radius.chip, borderWidth: 1, borderColor: c }}>
-      <Text style={{ fontFamily: font.mono, fontSize: size.eyebrow, letterSpacing: 1, color: c }}>{label.toUpperCase()}</Text>
+      <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.mono, fontSize: size.eyebrow, letterSpacing: 1, color: c }}>{label.toUpperCase()}</Text>
     </View>
   );
 }
@@ -151,7 +151,7 @@ export function Field(props: TextInputProps & { label?: string; mono?: boolean }
           {label}
         </Txt>
       ) : null}
-      <TextInput
+      <TextInput maxFontSizeMultiplier={1.3}
         placeholderTextColor={color.dim}
         selectionColor={color.lime}
         {...rest}
@@ -194,7 +194,7 @@ export function Segmented<T extends string>({ value, options, onChange }: { valu
             }}
             style={{ flex: 1, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", backgroundColor: on ? color.cream : "transparent" }}
           >
-            <Text style={{ fontFamily: font.bold, fontSize: 15, color: on ? color.ink : color.muted }}>{o.label}</Text>
+            <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.bold, fontSize: 15, color: on ? color.ink : color.muted }}>{o.label}</Text>
           </Pressable>
         );
       })}
@@ -219,7 +219,7 @@ export function Row({
   style?: StyleProp<ViewStyle>;
 }) {
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       disabled={!onPress}
       onPress={() => {
         haptic.tap();
@@ -270,7 +270,7 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
   const insets = useSafeAreaInsets();
   return (
     <Modal visible={open} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)" }} onPress={onClose} accessibilityLabel="Close" />
+      <Pressable accessibilityRole="button" style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)" }} onPress={onClose} accessibilityLabel="Close" />
       <View
         style={{
           maxHeight: "85%",

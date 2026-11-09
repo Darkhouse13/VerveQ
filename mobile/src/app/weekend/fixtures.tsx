@@ -90,7 +90,8 @@ export default function FixturesScreen() {
             {[null, ...leagues].map((id) => {
               const on = league === id;
               return (
-                <Pressable
+                <Pressable accessibilityRole="button"
+                  hitSlop={8}
                   key={id ?? "all"}
                   onPress={() => {
                     haptic.tap();

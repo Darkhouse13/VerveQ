@@ -43,7 +43,7 @@ function SearchBox({ value, onChange, placeholder }: { value: string; onChange: 
       }}
     >
       <MagnifyingGlass size={20} weight="bold" color={color.muted} />
-      <TextInput
+      <TextInput maxFontSizeMultiplier={1.3}
         value={value}
         onChangeText={onChange}
         placeholder={placeholder}
@@ -53,7 +53,7 @@ function SearchBox({ value, onChange, placeholder }: { value: string; onChange: 
         style={{ flex: 1, color: color.cream, fontFamily: font.bold, fontSize: 17, height: "100%" }}
       />
       {value.length > 0 ? (
-        <Pressable accessibilityLabel="Clear search" onPress={() => onChange("")} hitSlop={12}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Clear search" onPress={() => onChange("")} hitSlop={12}>
           <X size={20} weight="bold" color={color.muted} />
         </Pressable>
       ) : null}
@@ -78,6 +78,7 @@ const TIMES = [18, 19, 20, 21];
 function Chip({ label, on, onPress }: { label: string; on: boolean; onPress: () => void }) {
   return (
     <Pressable
+      hitSlop={8}
       accessibilityRole="button"
       accessibilityState={{ selected: on }}
       onPress={() => {
@@ -86,7 +87,7 @@ function Chip({ label, on, onPress }: { label: string; on: boolean; onPress: () 
       }}
       style={{ height: 36, paddingHorizontal: space.m, borderRadius: radius.pill, borderWidth: 1.5, borderColor: on ? color.lime : color.line, justifyContent: "center" }}
     >
-      <Text style={{ fontFamily: font.bold, fontSize: 13, color: on ? color.lime : color.muted }}>{label}</Text>
+      <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.bold, fontSize: 13, color: on ? color.lime : color.muted }}>{label}</Text>
     </Pressable>
   );
 }
@@ -230,7 +231,7 @@ export function LobbyView({
       <Sheet open={replaceFor !== null} onClose={() => setReplaceFor(null)} title={`Replace ${replaceFor?.name ?? ""}`}>
         <List>
           {available.map((m, i) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={m.userId}
               onPress={() => {
                 if (replaceFor) onReplace(replaceFor.userId, m.userId);
@@ -337,7 +338,7 @@ export function ShortlistPanel({ pool, queuedIds, onChange, compact }: { pool: D
       ))}
       <SearchBox value={search} onChange={setSearch} placeholder="Search to add players…" />
       {candidates.map((p) => (
-        <Pressable
+        <Pressable accessibilityRole="button"
           key={p.playerId}
           onPress={() => {
             haptic.tap();

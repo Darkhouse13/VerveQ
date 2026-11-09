@@ -79,6 +79,16 @@ function makeDb(tables: Record<string, Row[]>) {
           filtered = rows().filter((r) => r[field] === value);
           return api;
         },
+        order(dir: "asc" | "desc") {
+          const list = [...(filtered ?? rows())];
+          filtered = dir === "desc" ? list.reverse() : list;
+          return api;
+        },
+        async take(n: number) {
+          const list = (filtered ?? rows()).slice(0, n);
+          reads.docs += list.length;
+          return list;
+        },
         async first() {
           const list = filtered ?? rows();
           if (list[0]) reads.docs += 1;
@@ -238,6 +248,17 @@ describe("Higher or Lower deck", () => {
     const { served, last } = await playPerfect(db, session._id);
     expect(new Set(served).size).toBe(served.length);
     expect(last.endReason).toBe("pool_exhausted");
+  });
+
+  it("a new start closes the player's open run and drops its deck", async () => {
+    const db = makeDb(seed(20));
+    await start({ db }, { sport: "football" });
+    await start({ db }, { sport: "football" });
+    const [first, second] = db.tables.higherLowerSessions;
+    expect(first.status).toBe("game_over");
+    expect(second.status).toBe("active");
+    expect(db.tables.higherLowerDecks).toHaveLength(1);
+    expect(db.tables.higherLowerDecks[0]._id).toBe(second.deckId);
   });
 
   it("drops the deck on a wrong guess and on leaving", async () => {

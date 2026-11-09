@@ -33,6 +33,7 @@ function Segmented({ value, onChange }: { value: "ladder" | "board"; onChange: (
     const on = value === key;
     return (
       <Pressable
+        hitSlop={8}
         accessibilityRole="tab"
         accessibilityState={{ selected: on }}
         onPress={() => {
@@ -43,7 +44,7 @@ function Segmented({ value, onChange }: { value: "ladder" | "board"; onChange: (
         }}
         style={{ flex: 1, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", backgroundColor: on ? color.cream : "transparent" }}
       >
-        <Text style={{ fontFamily: font.bold, fontSize: 15, color: on ? color.ink : color.muted }}>{label}</Text>
+        <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.bold, fontSize: 15, color: on ? color.ink : color.muted }}>{label}</Text>
       </Pressable>
     );
   };
@@ -140,7 +141,7 @@ function Ladder({ isFull, elo, rank }: { isFull: boolean; elo: number | null; ra
             { title: "Quiz", line: "10 questions, 3 levels", href: "/quiz" as const },
             { title: "Survival", line: "Name players from initials", href: "/survival" as const },
           ].map((m) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={m.title}
               onPress={() => {
                 haptic.tap();
@@ -241,6 +242,7 @@ const BOARD_LIMIT = 50;
 function FilterChip({ label, on, onPress }: { label: string; on: boolean; onPress: () => void }) {
   return (
     <Pressable
+      hitSlop={8}
       accessibilityRole="button"
       accessibilityState={{ selected: on }}
       onPress={() => {
@@ -317,7 +319,7 @@ function Board({ userId, isFull }: { userId: string | undefined; isFull: boolean
         {e.rank}
       </Mono>
       <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: me ? color.lime : color.line, alignItems: "center", justifyContent: "center" }}>
-        <Text style={{ fontFamily: font.bold, fontSize: 15, color: me ? color.ink : color.cream }}>{e.username.slice(0, 2).toUpperCase()}</Text>
+        <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.bold, fontSize: 15, color: me ? color.ink : color.cream }}>{e.username.slice(0, 2).toUpperCase()}</Text>
       </View>
       <Txt v="rowTitle" numberOfLines={1} style={{ flex: 1 }}>
         {me ? "You" : e.username}
@@ -396,10 +398,10 @@ function Board({ userId, isFull }: { userId: string | undefined; isFull: boolean
       </Section>
 
       <Section style={{ marginTop: space.xxl }}>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => router.navigate("/weekend")}
           style={({ pressed }) => ({
-            height: size.buttonPrimary,
+            minHeight: size.buttonPrimary,
             borderRadius: radius.input,
             borderWidth: 1,
             borderColor: color.lime,

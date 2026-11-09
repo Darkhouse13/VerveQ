@@ -18,13 +18,13 @@ import { guardParams, isConvexId } from "@/lib/params";
 const INK = color.ink;
 const Line = ({ left, right, dim, bold }: { left: string; right: string; dim?: boolean; bold?: boolean }) => (
   <View style={{ flexDirection: "row", justifyContent: "space-between", gap: space.m }}>
-    <Text style={{ flex: 1, fontFamily: bold ? font.bold : font.medium, fontSize: 15, color: dim ? "#6B625A" : INK }} numberOfLines={2}>
+    <Text maxFontSizeMultiplier={1.3} style={{ flex: 1, fontFamily: bold ? font.bold : font.medium, fontSize: 15, color: dim ? color.paperDim : INK }} numberOfLines={2}>
       {left}
     </Text>
-    <Text style={{ fontFamily: font.mono, fontSize: 15, color: dim ? "#6B625A" : INK }}>{right}</Text>
+    <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.mono, fontSize: 15, color: dim ? color.paperDim : INK }}>{right}</Text>
   </View>
 );
-const Rule = () => <View style={{ height: 1, borderTopWidth: 1, borderStyle: "dashed", borderColor: "#BDB3A8" }} />;
+const Rule = () => <View style={{ height: 1, borderTopWidth: 1, borderStyle: "dashed", borderColor: color.paperRule }} />;
 
 function ReceiptScreen() {
   const insets = useSafeAreaInsets();
@@ -67,9 +67,9 @@ function ReceiptScreen() {
       <ScrollView contentContainerStyle={{ paddingHorizontal: space.gutter, paddingTop: space.xl, paddingBottom: insets.bottom + space.xxl, gap: space.xl }}>
         <View style={{ backgroundColor: color.cream, borderRadius: radius.card, padding: space.gutter, gap: space.l }}>
           <View style={{ gap: space.xs }}>
-            <Text style={{ fontFamily: font.mono, fontSize: 11, letterSpacing: 1.5, color: "#6B625A" }}>THE WEEKEND — SETTLED</Text>
-            <Text style={{ fontFamily: font.bold, fontSize: 24, color: INK }}>{`Gameweek ${receipt.gwNumber} receipt`}</Text>
-            <Text style={{ fontFamily: font.medium, fontSize: 13, color: "#6B625A" }}>{`${receipt.season} · settled ${settled}`}</Text>
+            <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.mono, fontSize: 11, letterSpacing: 1.5, color: color.paperDim }}>THE WEEKEND — SETTLED</Text>
+            <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.bold, fontSize: 24, color: INK }}>{`Gameweek ${receipt.gwNumber} receipt`}</Text>
+            <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.medium, fontSize: 13, color: color.paperDim }}>{`${receipt.season} · settled ${settled}`}</Text>
           </View>
           <Rule />
           <View style={{ gap: space.s }}>
@@ -82,14 +82,14 @@ function ReceiptScreen() {
           <Line bold left="Total" right={`${points(receipt.total)} pts`} />
           {pct !== null && pct >= 50 ? (
             <View style={{ alignSelf: "flex-start", borderWidth: 2, borderColor: color.orange, borderRadius: radius.chip, paddingHorizontal: space.m, paddingVertical: space.s, transform: [{ rotate: "-4deg" }] }}>
-              <Text style={{ fontFamily: font.mono, fontSize: 15, color: color.orange }}>{`BEAT ${pct}% OF SQUADS`}</Text>
+              <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.mono, fontSize: 15, color: color.orange }}>{`BEAT ${pct}% OF SQUADS`}</Text>
             </View>
           ) : null}
           {receipt.best || receipt.worst ? <Rule /> : null}
           {receipt.best ? <Line left={`Best call · ${receipt.best.playerName}`} right={points(receipt.best.points)} /> : null}
           {receipt.worst ? <Line left={`Worst call · ${receipt.worst.playerName}`} right={points(receipt.worst.points)} /> : null}
           {receipt.crewRank ? <Line left="Crew table" right={`#${receipt.crewRank.rank} of ${receipt.crewRank.of}`} /> : null}
-          <Text style={{ fontFamily: font.medium, fontSize: 12, color: "#6B625A", textAlign: "center" }}>Every line traces to a stored fact.</Text>
+          <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.medium, fontSize: 12, color: color.paperDim, textAlign: "center" }}>Every line traces to a stored fact.</Text>
         </View>
         <Button label="Share receipt" icon={Export} onPress={share} />
         <Button variant="secondary" label={ledger ? "Hide the ledger" : "See the full ledger"} onPress={() => setLedger((v) => !v)} />

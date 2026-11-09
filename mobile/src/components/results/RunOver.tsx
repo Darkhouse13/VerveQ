@@ -37,7 +37,7 @@ export function RunOver({
             <Eyebrow>Run over</Eyebrow>
           </View>
           <Eyebrow c={color.dim}>Streak</Eyebrow>
-          <Text style={{ fontFamily: font.mono, fontSize: 88, lineHeight: 96, color: color.cream }}>{streak}</Text>
+          <Text maxFontSizeMultiplier={1} style={{ fontFamily: font.mono, fontSize: 88, lineHeight: 96, color: color.cream }}>{streak}</Text>
           {newBest && streak > 0 ? (
             <View style={{ flexDirection: "row", alignItems: "center", gap: space.s }}>
               <Trophy size={16} weight="fill" color={color.yellow} />

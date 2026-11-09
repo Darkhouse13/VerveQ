@@ -137,7 +137,7 @@ export function Avatar({ name, index, sizePx = 40, dim }: { name: string; index:
         justifyContent: "center",
       }}
     >
-      <Text style={{ fontFamily: font.bold, fontSize: sizePx * 0.38, color: dim ? color.muted : color.ink }}>{initialsOf(name)}</Text>
+      <Text maxFontSizeMultiplier={1} style={{ fontFamily: font.bold, fontSize: sizePx * 0.38, color: dim ? color.muted : color.ink }}>{initialsOf(name)}</Text>
     </View>
   );
 }

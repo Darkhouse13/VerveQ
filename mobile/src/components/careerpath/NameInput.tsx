@@ -5,7 +5,7 @@ import { color, font, radius, size, space } from "@/theme/tokens";
 /** 56px name field from the design spec (inputs: radius 16, padding 0 16). */
 export function NameInput({ active, style, ...props }: TextInputProps & { active?: boolean }) {
   return (
-    <TextInput
+    <TextInput maxFontSizeMultiplier={1.3}
       placeholderTextColor={color.dim}
       autoCapitalize="words"
       autoCorrect={false}

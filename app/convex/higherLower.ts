@@ -273,6 +273,19 @@ export const startSession = mutation({
       throw new Error("Higher or Lower is currently available for football only");
     }
 
+    // One open run per player: a new start closes the last ones and drops
+    // their decks, so repeated starts can't pile up server-side state.
+    const recent = await ctx.db
+      .query("higherLowerSessions")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .order("desc")
+      .take(3);
+    for (const prev of recent) {
+      if (prev.status !== "active") continue;
+      await ctx.db.patch(prev._id, { status: "game_over" });
+      await dropDeck(ctx, prev);
+    }
+
     // Pool keys from the catalog (one small doc) when there is one; the
     // pool doc itself is read only for the pool that gets picked. No catalog
     // → read every pool (and write the catalog from them).

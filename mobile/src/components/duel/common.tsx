@@ -35,7 +35,7 @@ export function Avatar({ name, sz = 40, bg }: { name: string; sz?: number; bg?: 
     .join("") || "?";
   return (
     <View style={{ width: sz, height: sz, borderRadius: sz / 2, backgroundColor: bg ?? avatarColor(name), alignItems: "center", justifyContent: "center" }}>
-      <Text style={{ fontFamily: font.bold, fontSize: sz * 0.38, color: color.ink }}>{initials}</Text>
+      <Text maxFontSizeMultiplier={1} style={{ fontFamily: font.bold, fontSize: sz * 0.38, color: color.ink }}>{initials}</Text>
     </View>
   );
 }
@@ -97,7 +97,7 @@ export function ListRow({
   last?: boolean;
 }) {
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       disabled={!onPress}
       onPress={() => {
         haptic.tap();

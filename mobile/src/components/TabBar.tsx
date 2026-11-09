@@ -64,7 +64,7 @@ export function TabBar({ state, navigateToTab }: BottomTabBarProps) {
             >
               <Ico size={24} weight={active ? "fill" : "regular"} color={active ? color.ink : color.muted} />
             </View>
-            <Text style={{ fontFamily: font.bold, fontSize: 12, lineHeight: 16, color: active ? color.cream : color.muted }}>
+            <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.bold, fontSize: 12, lineHeight: 16, color: active ? color.cream : color.muted }}>
               {tab.label}
             </Text>
           </Pressable>

@@ -211,7 +211,7 @@ export default function VerveGridScreen() {
             <View style={{ width: 80 }} />
             {board.cols.map((c) => (
               <View key={c.key} style={{ flex: 1, height: 48, alignItems: "center", justifyContent: "center" }}>
-                <Text numberOfLines={2} style={{ fontFamily: font.bold, fontSize: 13, lineHeight: 16, color: color.cream, textAlign: "center" }}>
+                <Text maxFontSizeMultiplier={1.3} numberOfLines={2} style={{ fontFamily: font.bold, fontSize: 13, lineHeight: 16, color: color.cream, textAlign: "center" }}>
                   {c.label}
                 </Text>
               </View>
@@ -220,7 +220,7 @@ export default function VerveGridScreen() {
           {board.rows.map((row, r) => (
             <View key={row.key} style={{ flexDirection: "row", gap: space.s }}>
               <View style={{ width: 80, height: 88, justifyContent: "center" }}>
-                <Text numberOfLines={3} style={{ fontFamily: font.bold, fontSize: 13, lineHeight: 16, color: color.cream }}>
+                <Text maxFontSizeMultiplier={1.3} numberOfLines={3} style={{ fontFamily: font.bold, fontSize: 13, lineHeight: 16, color: color.cream }}>
                   {row.label}
                 </Text>
               </View>
@@ -264,7 +264,7 @@ export default function VerveGridScreen() {
                       cell.correct ? (
                         <>
                           <CheckCircle size={20} weight="fill" color={color.right} />
-                          <Text numberOfLines={2} style={{ fontFamily: font.bold, fontSize: 13, lineHeight: 16, color: color.cream, textAlign: "center" }}>
+                          <Text maxFontSizeMultiplier={1.3} numberOfLines={2} style={{ fontFamily: font.bold, fontSize: 13, lineHeight: 16, color: color.cream, textAlign: "center" }}>
                             {cell.guessedPlayerName}
                           </Text>
                           <Mono s={9} c={color.muted} style={{ letterSpacing: 1 }}>
@@ -303,7 +303,7 @@ export default function VerveGridScreen() {
                     borderRadius: 6,
                     backgroundColor: g === undefined ? "transparent" : g ? color.right : color.wrong,
                     borderWidth: g === undefined ? 2 : 0,
-                    borderColor: "#5A524C",
+                    borderColor: color.hiddenLine,
                   }}
                 />
               );
@@ -326,9 +326,9 @@ export default function VerveGridScreen() {
           <View style={{ paddingHorizontal: space.gutter, paddingTop: space.xl, gap: space.m }}>
             <View style={{ alignItems: "center", gap: space.s, paddingBottom: space.s }}>
               <Eyebrow>{board.left ? "Grid ended — you left the app" : board.correctCount === 9 ? "Full grid" : "Grid over"}</Eyebrow>
-              <Text style={{ fontFamily: font.mono, fontSize: 56, lineHeight: 64, color: color.cream }}>
+              <Text maxFontSizeMultiplier={1} style={{ fontFamily: font.mono, fontSize: 56, lineHeight: 64, color: color.cream }}>
                 {board.correctCount}
-                <Text style={{ fontSize: 32, color: color.dim }}>/9</Text>
+                <Text maxFontSizeMultiplier={1.3} style={{ fontSize: 32, color: color.dim }}>/9</Text>
               </Text>
               <Txt c={color.muted}>{`${points} point${points === 1 ? "" : "s"} · rarer squares score more`}</Txt>
             </View>

@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, View } from "react-native";
+import { KeyboardAvoidingView, Linking, Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { EMAIL_RE, Field, FormError, humanError, normalizeEmail } from "@/components/account/forms";
@@ -45,7 +45,7 @@ export default function SignInScreen() {
   }
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: color.ink }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: color.ink }} behavior="padding">
       <AppBar title="" onBack={() => router.back()} />
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: space.gutter, paddingTop: space.xl, paddingBottom: insets.bottom + space.xxl, gap: space.xl }}>
         <View style={{ gap: space.s }}>

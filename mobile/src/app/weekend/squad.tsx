@@ -42,6 +42,7 @@ const formationKey = (squadId: string) => `wk_formation_${squadId.replace(/[^A-Z
 function Chip({ label, on, onPress }: { label: string; on: boolean; onPress: () => void }) {
   return (
     <Pressable
+      hitSlop={8}
       accessibilityRole="button"
       accessibilityState={{ selected: on }}
       onPress={() => {
@@ -269,6 +270,7 @@ export default function SquadScreen() {
               </View>
               <View style={{ flexDirection: "row", gap: space.s, flexWrap: "wrap" }}>
                 <Pressable
+                  hitSlop={8}
                   accessibilityRole="button"
                   accessibilityLabel={`Change shape, currently ${formation?.name ?? "custom"}`}
                   onPress={() => setShapeOpen(true)}
@@ -278,6 +280,7 @@ export default function SquadScreen() {
                   <CaretDown size={16} weight="bold" color={color.lime} />
                 </Pressable>
                 <Pressable
+                  hitSlop={8}
                   accessibilityRole="button"
                   onPress={() => (favClub ? undefined : setFavOpen(true))}
                   style={{ height: 40, paddingHorizontal: space.m, borderRadius: 20, backgroundColor: color.surface, flexDirection: "row", alignItems: "center", gap: space.s }}

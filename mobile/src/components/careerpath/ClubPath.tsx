@@ -76,7 +76,7 @@ export function ClubPath({ clubs, rowHeight = 48, fontSize = 20 }: { clubs: Care
                 </View>
               </>
             ) : null}
-            <Text numberOfLines={1} style={{ flexShrink: 1, fontFamily: font.bold, fontSize, color: color.cream }}>
+            <Text maxFontSizeMultiplier={1.3} numberOfLines={1} style={{ flexShrink: 1, fontFamily: font.bold, fontSize, color: color.cream }}>
               {clubName(club)}
             </Text>
             {clubIsLoan(club) ? (
@@ -109,7 +109,7 @@ export function GuessDots({ used, max }: { used: number; max: number }) {
             borderRadius: 6,
             backgroundColor: i < used ? color.wrong : "transparent",
             borderWidth: i < used ? 0 : 2,
-            borderColor: "#5A5A5A",
+            borderColor: color.lineStrong,
           }}
         />
       ))}
@@ -123,7 +123,7 @@ export const tierLabel = (d: string) => TIER_LABEL[d] ?? d;
 /** Difficulty tag: grey outline, cream mono label (mockup CareerPath / CareerPathLadder). */
 export function TierTag({ difficulty }: { difficulty: string }) {
   return (
-    <View style={{ alignSelf: "flex-start", borderWidth: 1.5, borderColor: "#5A5A5A", borderRadius: radius.chip, paddingHorizontal: space.s, paddingVertical: space.xs }}>
+    <View style={{ alignSelf: "flex-start", borderWidth: 1.5, borderColor: color.lineStrong, borderRadius: radius.chip, paddingHorizontal: space.s, paddingVertical: space.xs }}>
       <Mono s={11} style={{ letterSpacing: 1.5 }}>
         {tierLabel(difficulty).toUpperCase()}
       </Mono>
@@ -134,11 +134,11 @@ export function TierTag({ difficulty }: { difficulty: string }) {
 /** One-line verdict under the path: wrong (red), close call (yellow), right (green). */
 export function VerdictBar({ tone, text }: { tone: "wrong" | "close" | "right"; text: string }) {
   const c = tone === "wrong" ? color.wrong : tone === "right" ? color.right : color.yellow;
-  const bg = tone === "wrong" ? color.wrongBg : tone === "right" ? color.rightBg : "#2A2410";
+  const bg = tone === "wrong" ? color.wrongBg : tone === "right" ? color.rightBg : color.yellowBg;
   return (
     <View accessibilityRole="alert" style={{ minHeight: 48, flexDirection: "row", alignItems: "center", gap: space.m, paddingHorizontal: space.l, paddingVertical: space.m, borderRadius: radius.input, borderWidth: 1.5, borderColor: c, backgroundColor: bg }}>
       {tone === "wrong" ? <XCircle size={20} weight="fill" color={c} /> : tone === "right" ? <CheckCircle size={20} weight="fill" color={c} /> : <WarningCircle size={20} weight="fill" color={c} />}
-      <Text style={{ flex: 1, fontFamily: font.bold, fontSize: 15, color: color.cream }}>{text}</Text>
+      <Text maxFontSizeMultiplier={1.3} style={{ flex: 1, fontFamily: font.bold, fontSize: 15, color: color.cream }}>{text}</Text>
     </View>
   );
 }

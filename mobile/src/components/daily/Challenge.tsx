@@ -60,9 +60,9 @@ export function ChallengeLanding({
         </View>
         <Card hero style={{ alignItems: "center", gap: space.s }}>
           <Eyebrow>Score to beat</Eyebrow>
-          <Text style={{ fontFamily: font.mono, fontSize: 64, lineHeight: 72, color: color.cream }}>
+          <Text maxFontSizeMultiplier={1} style={{ fontFamily: font.mono, fontSize: 64, lineHeight: 72, color: color.cream }}>
             {score}
-            <Text style={{ fontSize: 32, color: color.dim }}>{`/${total}`}</Text>
+            <Text maxFontSizeMultiplier={1.3} style={{ fontSize: 32, color: color.dim }}>{`/${total}`}</Text>
           </Text>
         </Card>
         <View style={{ flex: 1 }} />
@@ -123,7 +123,7 @@ export function ChallengeResult({
       <Txt v="rowTitle" numberOfLines={1}>
         {name}
       </Txt>
-      <Text style={{ fontFamily: font.mono, fontSize: 40, lineHeight: 48, color: color.cream }}>{score}</Text>
+      <Text maxFontSizeMultiplier={1} style={{ fontFamily: font.mono, fontSize: 40, lineHeight: 48, color: color.cream }}>{score}</Text>
     </View>
   );
   return (

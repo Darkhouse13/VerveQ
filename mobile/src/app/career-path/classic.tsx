@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import { ArrowClockwise } from "phosphor-react-native/src/icons/ArrowClockwise";
 import { Check } from "phosphor-react-native/src/icons/Check";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, AppState, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, AppState, KeyboardAvoidingView, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ClubPath, GuessDots, TierTag, VerdictBar, type CareerPathClub } from "@/components/careerpath/ClubPath";
@@ -140,13 +140,13 @@ export default function CareerPathClassic() {
         onBack={() => router.back()}
         close
         right={
-          <Text style={{ fontFamily: font.mono, fontSize: 15, color: color.cream, paddingHorizontal: space.s }}>
+          <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.mono, fontSize: 15, color: color.cream, paddingHorizontal: space.s }}>
             {headerScore}
-            <Text style={{ fontSize: 12, color: color.dim }}> pts</Text>
+            <Text maxFontSizeMultiplier={1.3} style={{ fontSize: 12, color: color.dim }}> pts</Text>
           </Text>
         }
       />
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         {!round ? (
           <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: space.l, paddingHorizontal: space.gutter }}>
             {error ? (

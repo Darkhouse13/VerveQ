@@ -12,6 +12,8 @@ crons.interval("expired-session-cleanup", { hours: 1 }, internal.maintenance.cle
 // Quiz slice catalogs (lib/questionCatalog) refresh on demand from
 // createSession — no cron; questionCatalog.rebuildAll stays for manual runs.
 crons.interval("async-duel-expiry", { hours: 1 }, internal.duels.expireStaleDuels, {});
+// Favorite-club picker list (fantasySquads.getFavoriteClub reads this doc).
+crons.interval("fantasy-club-catalog", { hours: 1 }, internal.fantasySquads.rebuildClubCatalog, {});
 crons.interval("challenge-arena-expiry", { hours: 1 }, internal.challengeArenas.expireStaleArenas);
 // Founder ops: emails the prior UTC day's unique-player count (incl. guests).
 crons.daily("daily-active-users-email", { hourUTC: 0, minuteUTC: 30 }, internal.opsActiveUsers.emailDailyReport, {});

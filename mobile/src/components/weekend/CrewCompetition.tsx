@@ -144,6 +144,7 @@ function WeeklyResults({ scope }: { scope: Scope }) {
         return (
           <Card key={week.roomId} style={{ gap: space.m }}>
             <Pressable
+              hitSlop={8}
               accessibilityRole="button"
               accessibilityState={{ expanded }}
               onPress={() => setOpen(expanded ? null : week.roomId)}
@@ -233,6 +234,7 @@ export function CrewCompetition({ dashboard }: { dashboard: Dashboard | null | u
             const on = tab === key;
             return (
               <Pressable
+                hitSlop={8}
                 key={key}
                 onPress={() => setTab(key)}
                 accessibilityRole="button"

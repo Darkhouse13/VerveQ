@@ -22,6 +22,20 @@ export const color = {
   wrong: "#FF3633",
   rightBg: "#14241B",
   wrongBg: "#2A1615",
+  yellowBg: "#2A2410",
+  // Outlines of not-yet-revealed slots (decorative, dashed).
+  hiddenLine: "#5A524C",
+  // A hidden value ("?") — kept quiet but ≥3:1 on surfaceLow.
+  hiddenInk: "#746B63",
+  lineStrong: "#5A5A5A",
+  handle: "#3A3A3A",
+  sheet: "#1A1A1A",
+  sheetRow: "#222222",
+  sheetIcon: "#262626",
+  pitch: "#13241A",
+  // The receipt is printed on cream paper.
+  paperDim: "#6B625A",
+  paperRule: "#BDB3A8",
 } as const;
 
 // Only these values are allowed for padding, margin and gap.

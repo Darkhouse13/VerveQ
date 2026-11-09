@@ -209,7 +209,7 @@ export function DailyTwinShell<S extends TwinSession>(p: {
         standing={pct != null ? { pct, players: p.today?.standing?.finishers ?? 0 } : null}
         shareText={shareText}
         onChallenge={view.kind === "daily" ? () => void shareChallenge(view) : undefined}
-        reminderHref="/notify"
+        // reminderHref="/notify" — hidden until push ships
         next={p.next}
         extra={
           <View style={{ paddingHorizontal: space.gutter, paddingTop: space.xxl }}>

@@ -3,7 +3,7 @@ import { MagnifyingGlass } from "phosphor-react-native/src/icons/MagnifyingGlass
 import { Star } from "phosphor-react-native/src/icons/Star";
 import { X } from "phosphor-react-native/src/icons/X";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Alert, FlatList, Modal, Pressable, TextInput, View } from "react-native";
+import { Alert, FlatList, KeyboardAvoidingView, Modal, Pressable, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button, Mono, Txt, haptic } from "@/components/ui";
@@ -17,7 +17,9 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
   const insets = useSafeAreaInsets();
   return (
     <Modal visible={open} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent>
-      <Pressable accessibilityLabel="Close" onPress={onClose} style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)" }} />
+      {/* Lifts the sheet over the keyboard (search inputs live in sheets). */}
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+      <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={onClose} style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)" }} />
       <View
         style={{
           maxHeight: "88%",
@@ -32,13 +34,14 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
         {title ? (
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: space.gutter, paddingTop: space.l, paddingBottom: space.m }}>
             <Txt v="cardTitle">{title}</Txt>
-            <Pressable accessibilityLabel="Close" onPress={onClose} hitSlop={12}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={onClose} hitSlop={12}>
               <X size={24} weight="regular" color={color.muted} />
             </Pressable>
           </View>
         ) : null}
         {children}
       </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -75,7 +78,7 @@ export function Segmented<T extends string>({ value, options, onChange }: { valu
 export function AvailabilityTag({ status }: { status: "out" | "doubtful" }) {
   const c = status === "out" ? color.wrong : color.yellow;
   return (
-    <View style={{ paddingHorizontal: space.s, paddingVertical: 2, borderRadius: radius.chip, borderWidth: 1, borderColor: c }}>
+    <View style={{ paddingHorizontal: space.s, paddingVertical: space.xs, borderRadius: radius.chip, borderWidth: 1, borderColor: c }}>
       <Mono s={10} c={c}>
         {status === "out" ? "OUT" : "DOUBT"}
       </Mono>
@@ -142,7 +145,7 @@ export function FavoriteClubSheet({ open, onClose }: { open: boolean; onClose: (
         </Txt>
         <View style={{ height: size.input, borderRadius: radius.input, backgroundColor: color.ink, borderWidth: 1.5, borderColor: color.line, flexDirection: "row", alignItems: "center", gap: space.m, paddingHorizontal: space.l }}>
           <MagnifyingGlass size={20} weight="bold" color={color.muted} />
-          <TextInput
+          <TextInput maxFontSizeMultiplier={1.3}
             value={q}
             onChangeText={setQ}
             placeholder="Search clubs"
@@ -157,7 +160,7 @@ export function FavoriteClubSheet({ open, onClose }: { open: boolean; onClose: (
         keyExtractor={(c) => c.clubId}
         style={{ maxHeight: 420 }}
         renderItem={({ item }) => (
-          <Pressable
+          <Pressable accessibilityRole="button"
             disabled={busy}
             onPress={() => choose(item.clubId, item.name)}
             style={({ pressed }) => ({ minHeight: size.listRow, paddingHorizontal: space.gutter, flexDirection: "row", alignItems: "center", gap: space.m, opacity: pressed ? 0.7 : 1 })}

@@ -57,7 +57,7 @@ export function RankedResult({ title, eyebrow, finish, total, onPlayAgain }: { t
 
         <View style={{ alignItems: "center", gap: space.s, paddingTop: space.xxl, paddingHorizontal: space.gutter }}>
           <Eyebrow>Points</Eyebrow>
-          <Text style={{ fontFamily: font.mono, fontSize: 72, lineHeight: 80, color: color.cream, letterSpacing: -2 }}>{finish.score.toLocaleString("en-US")}</Text>
+          <Text maxFontSizeMultiplier={1} style={{ fontFamily: font.mono, fontSize: 72, lineHeight: 80, color: color.cream, letterSpacing: -2 }}>{finish.score.toLocaleString("en-US")}</Text>
           <Txt c={color.muted}>{`${finish.correctCount} of ${total} right`}</Txt>
         </View>
 

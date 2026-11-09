@@ -10,6 +10,11 @@ import { color, font, radius, size, space } from "@/theme/tokens";
 
 // ── Text ────────────────────────────────────────────────────────────────
 
+// Large system font: body text grows up to 1.3×, display numbers (40px+)
+// stay put so fixed cards and score heroes keep their shape.
+export const MAX_TEXT_SCALE = 1.3;
+const scaleFor = (px: number) => (px >= 40 ? 1 : MAX_TEXT_SCALE);
+
 type TxtVariant = "h1Tab" | "h1Game" | "cardTitle" | "rowTitle" | "body" | "caption" | "micro";
 const txt: Record<TxtVariant, TextStyle> = {
   h1Tab: { fontFamily: font.bold, fontSize: size.h1Tab, lineHeight: 35, letterSpacing: -0.6 },
@@ -28,7 +33,9 @@ export function Txt({
   children,
   numberOfLines,
   center,
+  maxScale = MAX_TEXT_SCALE,
 }: {
+  maxScale?: number;
   v?: TxtVariant;
   c?: string;
   style?: StyleProp<TextStyle>;
@@ -37,19 +44,19 @@ export function Txt({
   center?: boolean;
 }) {
   return (
-    <Text numberOfLines={numberOfLines} style={[txt[v], { color: c }, center && { textAlign: "center" }, style]}>
+    <Text maxFontSizeMultiplier={maxScale} numberOfLines={numberOfLines} style={[txt[v], { color: c }, center && { textAlign: "center" }, style]}>
       {children}
     </Text>
   );
 }
 
-export function Mono({ s = 15, c = color.cream, style, children }: { s?: number; c?: string; style?: StyleProp<TextStyle>; children: ReactNode }) {
-  return <Text style={[{ fontFamily: font.mono, fontSize: s, color: c }, style]}>{children}</Text>;
+export function Mono({ s = 15, c = color.cream, style, children, maxScale }: { s?: number; c?: string; style?: StyleProp<TextStyle>; children: ReactNode; maxScale?: number }) {
+  return <Text maxFontSizeMultiplier={maxScale ?? scaleFor(s)} style={[{ fontFamily: font.mono, fontSize: s, color: c }, style]}>{children}</Text>;
 }
 
 export function Eyebrow({ c = color.muted, children }: { c?: string; children: ReactNode }) {
   return (
-    <Text style={{ fontFamily: font.mono, fontSize: size.eyebrow, letterSpacing: 1.5, color: c }}>
+    <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.mono, fontSize: size.eyebrow, letterSpacing: 1.5, color: c }}>
       {typeof children === "string" ? children.toUpperCase() : children}
     </Text>
   );
@@ -96,7 +103,8 @@ export function Button({
       }}
       style={({ pressed }) => [
         {
-          height: h,
+          minHeight: h,
+          paddingVertical: space.s,
           borderRadius: h / 2,
           flexDirection: "row",
           alignItems: "center",
@@ -113,7 +121,7 @@ export function Button({
       ]}
     >
       {!iconRight && ic}
-      <Text style={{ fontFamily: font.bold, fontSize: primary ? 17 : 15, color: fg }}>{label}</Text>
+      <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.bold, fontSize: primary ? 17 : 15, color: fg }}>{label}</Text>
       {iconRight && ic}
     </Pressable>
   );
@@ -129,7 +137,7 @@ export function PillButton({ label, onPress, outline }: { label: string; onPress
       }}
       hitSlop={6}
       style={({ pressed }) => ({
-        height: size.pill,
+        minHeight: size.pill,
         paddingHorizontal: space.l,
         borderRadius: size.pill / 2,
         justifyContent: "center",
@@ -139,7 +147,7 @@ export function PillButton({ label, onPress, outline }: { label: string; onPress
         opacity: pressed ? 0.85 : 1,
       })}
     >
-      <Text style={{ fontFamily: font.bold, fontSize: 15, color: outline ? color.lime : color.ink }}>{label}</Text>
+      <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.bold, fontSize: 15, color: outline ? color.lime : color.ink }}>{label}</Text>
     </Pressable>
   );
 }
@@ -197,7 +205,7 @@ export function AppBar({
   const insets = useSafeAreaInsets();
   return (
     <View style={{ paddingTop: insets.top, paddingHorizontal: space.s, backgroundColor: color.ink }}>
-      <View style={{ height: 56, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+      <View style={{ minHeight: 56, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
         {onBack ? (
           <IconButton icon={close ? X : CaretLeft} label={close ? "Quit" : "Back"} onPress={onBack} />
         ) : (
@@ -267,7 +275,7 @@ export function Tag({ label, tone = "outline", c = color.cream }: { label: strin
         backgroundColor: tone === "solid" ? c : "transparent",
       }}
     >
-      <Text style={{ fontFamily: font.mono, fontSize: size.eyebrow, letterSpacing: 1.5, color: tone === "solid" ? color.ink : c }}>
+      <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.mono, fontSize: size.eyebrow, letterSpacing: 1.5, color: tone === "solid" ? color.ink : c }}>
         {label.toUpperCase()}
       </Text>
     </View>

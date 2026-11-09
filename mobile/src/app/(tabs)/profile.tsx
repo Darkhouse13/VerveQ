@@ -116,7 +116,7 @@ export default function ProfileScreen() {
       <View style={{ paddingHorizontal: space.gutter, marginTop: space.xl, flexDirection: "row", alignItems: "center", gap: space.l }}>
         <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: username ? color.lime : color.surfaceHigh, alignItems: "center", justifyContent: "center" }}>
           {username ? (
-            <Text style={{ fontFamily: font.bold, fontSize: 28, color: color.ink }}>{username.slice(0, 1).toUpperCase()}</Text>
+            <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.bold, fontSize: 28, color: color.ink }}>{username.slice(0, 1).toUpperCase()}</Text>
           ) : (
             <User size={32} weight="regular" color={color.muted} />
           )}
@@ -171,7 +171,7 @@ export default function ProfileScreen() {
       {/* Ranked */}
       {isFull ? (
         <Section eyebrow={currentSeason ? `Ranked · Season ${currentSeason.seasonNumber}` : "Ranked"} style={{ marginTop: space.xxl }}>
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => router.navigate("/ranks")}
             style={({ pressed }) => ({
               flexDirection: "row",

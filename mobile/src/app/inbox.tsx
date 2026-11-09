@@ -7,7 +7,7 @@ import { Sword } from "phosphor-react-native/src/icons/Sword";
 import { Trophy } from "phosphor-react-native/src/icons/Trophy";
 import { XCircle } from "phosphor-react-native/src/icons/XCircle";
 import { useEffect, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ListCard, ListRow, hoursLeft, type DuelSummary } from "@/components/duel/common";
@@ -86,7 +86,11 @@ export default function InboxScreen() {
       <AppBar title="Notifications" eyebrow={unread && unread.count > 0 ? `${unread.count} unread` : undefined} onBack={() => router.back()} />
       <ScrollView contentContainerStyle={{ paddingTop: space.xl, paddingBottom: insets.bottom + space.xxl }}>
         <Section>
-          {duels && items.length === 0 ? (
+          {duels === undefined ? (
+            <View style={{ paddingVertical: space.xxl, alignItems: "center" }}>
+              <ActivityIndicator color={color.lime} />
+            </View>
+          ) : items.length === 0 ? (
             <Card style={{ alignItems: "center", gap: space.m, paddingVertical: space.xxl }}>
               <BellSimpleSlash size={32} weight="regular" color={color.dim} />
               <Txt c={color.muted} center>

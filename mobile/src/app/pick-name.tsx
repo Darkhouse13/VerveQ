@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import { CheckCircle } from "phosphor-react-native/src/icons/CheckCircle";
 import { XCircle } from "phosphor-react-native/src/icons/XCircle";
 import { useEffect, useMemo, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { FormError, USERNAME_RE, humanError, normalizeUsername } from "@/components/account/forms";
@@ -84,7 +84,7 @@ export default function PickNameScreen() {
     ) : null;
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: color.ink }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: color.ink }} behavior="padding">
       <AppBar title="" onBack={() => router.back()} close />
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: space.gutter, paddingTop: space.xl, paddingBottom: insets.bottom + space.xxl, gap: space.xl }}>
         <View style={{ gap: space.s }}>
@@ -94,7 +94,7 @@ export default function PickNameScreen() {
 
         <View style={{ gap: space.s }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-            <Text style={{ fontFamily: font.bold, fontSize: 15, color: color.cream }}>Username</Text>
+            <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.bold, fontSize: 15, color: color.cream }}>Username</Text>
             {status}
           </View>
           <View
@@ -110,8 +110,8 @@ export default function PickNameScreen() {
               gap: space.xs,
             }}
           >
-            <Text style={{ fontFamily: font.mono, fontSize: 17, color: color.dim }}>@</Text>
-            <TextInput
+            <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.mono, fontSize: 17, color: color.dim }}>@</Text>
+            <TextInput maxFontSizeMultiplier={1.3}
               accessibilityLabel="Username"
               value={raw}
               onChangeText={(v) => setRaw(v.toLowerCase().replace(/\s/g, ""))}
@@ -145,7 +145,7 @@ export default function PickNameScreen() {
                 }}
                 style={{ height: size.pill, paddingHorizontal: space.l, borderRadius: size.pill / 2, backgroundColor: color.surfaceHigh, justifyContent: "center" }}
               >
-                <Text style={{ fontFamily: font.mono, fontSize: 13, color: color.cream }}>{`@${sug}`}</Text>
+                <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.mono, fontSize: 13, color: color.cream }}>{`@${sug}`}</Text>
               </Pressable>
             ))}
           </View>

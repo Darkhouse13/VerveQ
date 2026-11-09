@@ -1,3 +1,4 @@
+import { clampBoardLimit } from "./lib/boardLimit";
 import { internalMutation, query, type MutationCtx } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import { v } from "convex/values";
@@ -228,7 +229,8 @@ export const getSeasonHistory = query({
     mode: v.optional(v.string()),
     limit: v.optional(v.number()),
   },
-  handler: async (ctx, { seasonNumber, sport, mode, limit = 20 }) => {
+  handler: async (ctx, { seasonNumber, sport, mode, limit: rawLimit = 20 }) => {
+    const limit = clampBoardLimit(rawLimit);
     let entries: Doc<"seasonHistory">[];
     if (sport && mode) {
       entries = await ctx.db

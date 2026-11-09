@@ -177,7 +177,7 @@ export default function FriendsScreen() {
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.m }}>
               {rivals.rivalries.map((r) => (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={r.opponent.userId}
                   onPress={() => {
                     haptic.tap();

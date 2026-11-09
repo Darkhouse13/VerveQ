@@ -14,7 +14,6 @@ import {
   Alert,
   AppState,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -374,7 +373,7 @@ export function SurvivalGame({ daily }: { daily: boolean }) {
         <ScrollView contentContainerStyle={{ paddingHorizontal: space.gutter, paddingTop: space.x4, gap: space.m, alignItems: "center" }}>
           <Tag label={ended.forfeited ? "Run forfeited" : "Run over"} tone="solid" c={ended.forfeited ? color.wrong : color.orange} />
           <Eyebrow>Points</Eyebrow>
-          <Text style={{ fontFamily: font.mono, fontSize: 88, lineHeight: 96, color: color.cream }}>{ended.score}</Text>
+          <Text maxFontSizeMultiplier={1} style={{ fontFamily: font.mono, fontSize: 88, lineHeight: 96, color: color.cream }}>{ended.score}</Text>
           <Txt c={color.muted}>{ended.forfeited ? "You left the app during today's run" : `${right} right · reached round ${ended.rounds}`}</Txt>
           {ended.eloChange != null && ended.newElo != null ? (
             <Card hero style={{ alignSelf: "stretch", marginTop: space.xl, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
@@ -471,7 +470,7 @@ export function SurvivalGame({ daily }: { daily: boolean }) {
   const verdictColor = verdict?.kind === "right" ? color.right : verdict?.kind === "info" ? color.muted : color.wrong;
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: color.ink }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: color.ink }} behavior="padding">
       <AppBar title={title} eyebrow={eyebrow} onBack={() => router.back()} close right={<Lives lives={lives} />} />
       <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: space.gutter, paddingTop: space.s }}>
         <Mono s={13} c={color.muted}>
@@ -491,7 +490,7 @@ export function SurvivalGame({ daily }: { daily: boolean }) {
           <View accessibilityLabel={`Initials ${initials.join(" ")}`} style={{ flexDirection: "row", gap: space.m }}>
             {initials.map((ch, i) => (
               <View key={i} style={{ width: initials.length > 3 ? 64 : 80, height: 96, borderRadius: radius.card, backgroundColor: color.orange, alignItems: "center", justifyContent: "center" }}>
-                <Text style={{ fontFamily: font.bold, fontSize: 56, color: color.ink }}>{ch}</Text>
+                <Text maxFontSizeMultiplier={1} style={{ fontFamily: font.bold, fontSize: 56, color: color.ink }}>{ch}</Text>
               </View>
             ))}
           </View>
@@ -556,7 +555,7 @@ export function SurvivalGame({ daily }: { daily: boolean }) {
           />
           <ActionChip flex={1} disabled={busy} onPress={onCashOut} label="Cash out" muted />
         </View>
-        <TextInput
+        <TextInput maxFontSizeMultiplier={1.3}
           accessibilityLabel="Your guess"
           value={guess}
           onChangeText={(t) => {
@@ -577,7 +576,7 @@ export function SurvivalGame({ daily }: { daily: boolean }) {
             height: size.input,
             borderRadius: radius.input,
             borderWidth: 1.5,
-            borderColor: verdict?.kind === "close" ? color.yellow : "#3A3A3A",
+            borderColor: verdict?.kind === "close" ? color.yellow : color.handle,
             backgroundColor: color.surface,
             color: color.cream,
             paddingHorizontal: space.l,
@@ -619,7 +618,7 @@ function ActionChip({
       style={({ pressed }) => ({
         flex,
         minWidth: 0,
-        height: size.buttonSecondary,
+        minHeight: size.buttonSecondary,
         borderRadius: size.buttonSecondary / 2,
         borderWidth: 1.5,
         borderColor: color.line,
@@ -632,9 +631,9 @@ function ActionChip({
       })}
     >
       {icon}
-      <Text numberOfLines={1} style={{ fontFamily: font.bold, fontSize: 15, color: muted ? color.muted : color.cream }}>
+      <Text maxFontSizeMultiplier={1.3} numberOfLines={1} style={{ fontFamily: font.bold, fontSize: 15, color: muted ? color.muted : color.cream }}>
         {label}
-        {meta ? <Text style={{ fontFamily: font.mono, fontSize: 12, color: color.muted }}>{` ${meta}`}</Text> : null}
+        {meta ? <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.mono, fontSize: 12, color: color.muted }}>{` ${meta}`}</Text> : null}
       </Text>
     </Pressable>
   );

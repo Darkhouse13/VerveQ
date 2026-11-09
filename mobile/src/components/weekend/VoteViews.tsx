@@ -179,7 +179,7 @@ function Ghost({ label, icon, onPress, disabled }: { label: string; icon: ReactN
       }}
       style={({ pressed }) => ({
         flex: 1,
-        height: size.buttonSecondary,
+        minHeight: size.buttonSecondary,
         borderRadius: size.buttonSecondary / 2,
         borderWidth: 1.5,
         borderColor: color.line,
@@ -192,7 +192,7 @@ function Ghost({ label, icon, onPress, disabled }: { label: string; icon: ReactN
       })}
     >
       {icon}
-      <Text numberOfLines={1} style={{ fontFamily: font.bold, fontSize: 15, color: color.cream }}>
+      <Text maxFontSizeMultiplier={1.3} numberOfLines={1} style={{ fontFamily: font.bold, fontSize: 15, color: color.cream }}>
         {label}
       </Text>
     </Pressable>

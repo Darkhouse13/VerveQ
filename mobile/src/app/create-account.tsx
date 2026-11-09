@@ -5,7 +5,7 @@ import { Ranking } from "phosphor-react-native/src/icons/Ranking";
 import { Sword } from "phosphor-react-native/src/icons/Sword";
 import { UserCircle } from "phosphor-react-native/src/icons/UserCircle";
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
+import { KeyboardAvoidingView, Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { EMAIL_RE, Field, FormError, USERNAME_RE, humanError, normalizeEmail, normalizeUsername, passwordProblem } from "@/components/account/forms";
@@ -85,14 +85,14 @@ export default function CreateAccountScreen() {
   const games = profile?.totalPlays ?? 0;
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: color.ink }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: color.ink }} behavior="padding">
       <AppBar
         title=""
         onBack={() => router.back()}
         close
         right={
           <Pressable accessibilityRole="link" hitSlop={8} onPress={() => router.replace("/sign-in")}>
-            <Text style={{ fontFamily: font.bold, fontSize: 15, color: color.lime }}>Sign in</Text>
+            <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.bold, fontSize: 15, color: color.lime }}>Sign in</Text>
           </Pressable>
         }
       />
@@ -105,7 +105,7 @@ export default function CreateAccountScreen() {
         {existingName || games > 0 ? (
           <Card style={{ flexDirection: "row", alignItems: "center", gap: space.l }}>
             <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: color.lime, alignItems: "center", justifyContent: "center" }}>
-              <Text style={{ fontFamily: font.bold, fontSize: 20, color: color.ink }}>{(existingName ?? "?").slice(0, 1).toUpperCase()}</Text>
+              <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.bold, fontSize: 20, color: color.ink }}>{(existingName ?? "?").slice(0, 1).toUpperCase()}</Text>
             </View>
             <View style={{ flex: 1, gap: space.xs }}>
               <Txt v="rowTitle">{existingName ? `@${existingName}` : "Your guest progress"}</Txt>

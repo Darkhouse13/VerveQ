@@ -4,7 +4,7 @@ import { Info } from "phosphor-react-native/src/icons/Info";
 import { MagnifyingGlass } from "phosphor-react-native/src/icons/MagnifyingGlass";
 import { X } from "phosphor-react-native/src/icons/X";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, FlatList, KeyboardAvoidingView, Modal, Pressable, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Mono, Txt, haptic } from "@/components/ui";
@@ -61,13 +61,13 @@ export function SearchSheet({
 
   return (
     <Modal visible={open} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent navigationBarTranslucent>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-        <Pressable accessibilityLabel="Close" onPress={onClose} style={{ height: insets.top + space.x4 + space.x4, backgroundColor: "rgba(0,0,0,0.6)" }} />
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+        <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={onClose} style={{ height: insets.top + space.x4 + space.x4, backgroundColor: "rgba(0,0,0,0.6)" }} />
         <View
           accessibilityViewIsModal
           style={{
             flex: 1,
-            backgroundColor: "#1A1A1A",
+            backgroundColor: color.sheet,
             borderTopLeftRadius: radius.hero,
             borderTopRightRadius: radius.hero,
             borderTopWidth: 1,
@@ -76,14 +76,14 @@ export function SearchSheet({
             paddingHorizontal: space.gutter,
           }}
         >
-          <View style={{ alignSelf: "center", width: 40, height: 4, borderRadius: 2, backgroundColor: "#3A3A3A" }} />
+          <View style={{ alignSelf: "center", width: 40, height: 4, borderRadius: 2, backgroundColor: color.handle }} />
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingTop: space.l }}>
             <Txt v="cardTitle">Fill this square</Txt>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Close"
               onPress={onClose}
-              style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: "#262626", alignItems: "center", justifyContent: "center" }}
+              style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: color.sheetIcon, alignItems: "center", justifyContent: "center" }}
             >
               <X size={24} weight="regular" color={color.cream} />
             </Pressable>
@@ -119,7 +119,7 @@ export function SearchSheet({
             }}
           >
             <MagnifyingGlass size={20} weight="bold" color={color.muted} />
-            <TextInput
+            <TextInput maxFontSizeMultiplier={1.3}
               accessibilityLabel="Search any player"
               autoFocus
               value={text}
@@ -169,7 +169,7 @@ export function SearchSheet({
                 })}
               >
                 <View style={{ flex: 1, gap: space.xs }}>
-                  <Text numberOfLines={1} style={{ fontFamily: font.bold, fontSize: 17, color: color.cream }}>
+                  <Text maxFontSizeMultiplier={1.3} numberOfLines={1} style={{ fontFamily: font.bold, fontSize: 17, color: color.cream }}>
                     {item.name}
                   </Text>
                   {item.nationality || item.position ? (
@@ -192,13 +192,13 @@ export function SearchSheet({
               padding: space.l,
               marginBottom: insets.bottom + space.xxl,
               borderRadius: radius.input,
-              backgroundColor: "#222222",
+              backgroundColor: color.sheetRow,
             }}
           >
             <Info size={20} weight="fill" color={color.yellow} />
             <Txt v="caption" c={color.muted} style={{ flex: 1 }}>
               Pick any player who fits both. You only learn if it counts — and how rare it is —{" "}
-              <Text style={{ fontFamily: font.bold, color: color.cream }}>after you lock it in.</Text>
+              <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.bold, color: color.cream }}>after you lock it in.</Text>
             </Txt>
           </View>
         </View>

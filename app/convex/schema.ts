@@ -2105,6 +2105,14 @@ export default defineSchema({
   // ladder), proxy is the pricing proxy score (null for the flagged cohort,
   // which never had one). One row per player; players missing a row sort
   // last, which fails safe: auto-pick prefers known quantities.
+  // The favorite-club picker's club list, precomputed from fantasyPlayers +
+  // fantasyDraftPoolMeta (one doc). getFavoriteClub reads this instead of
+  // ~11k player rows per call; rebuilt hourly, written only when it changes.
+  fantasyClubCatalogs: defineTable({
+    clubs: v.array(v.object({ clubId: v.string(), name: v.string(), leagueId: v.number() })),
+    builtAt: v.number(),
+  }),
+
   fantasyDraftPoolMeta: defineTable({
     playerId: v.id("fantasyPlayers"),
     pool: v.union(

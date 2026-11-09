@@ -24,7 +24,7 @@ function BlitzResult({ final, topic, onAgain }: { final: Final; topic: string; o
       <AppBar title="Blitz" eyebrow={`60 seconds · ${topic}`} onBack={() => router.back()} close />
       <ScrollView contentContainerStyle={{ flexGrow: 1, alignItems: "center", justifyContent: "center", gap: space.l, paddingHorizontal: space.gutter }}>
         <Tag label="Time's up" c={color.yellow} />
-        <Text style={{ fontFamily: font.mono, fontSize: 72, lineHeight: 80, color: color.cream, letterSpacing: -2 }}>{final.score.toLocaleString("en-US")}</Text>
+        <Text maxFontSizeMultiplier={1} style={{ fontFamily: font.mono, fontSize: 72, lineHeight: 80, color: color.cream, letterSpacing: -2 }}>{final.score.toLocaleString("en-US")}</Text>
         <Eyebrow>Points</Eyebrow>
         <View style={{ flexDirection: "row", gap: space.xl }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: space.s }}>
@@ -75,7 +75,7 @@ function BlitzHeader({ endTimeMs, onExpire, score, right, wrong }: { endTimeMs: 
   return (
     <View style={{ paddingHorizontal: space.gutter, paddingTop: space.s, gap: space.m }}>
       <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between" }}>
-        <Text style={{ fontFamily: font.mono, fontSize: 56, lineHeight: 60, color: urgent ? color.wrong : color.cream }} accessibilityRole="timer">
+        <Text maxFontSizeMultiplier={1} style={{ fontFamily: font.mono, fontSize: 56, lineHeight: 60, color: urgent ? color.wrong : color.cream }} accessibilityRole="timer">
           {fmtClock(Math.ceil(leftMs / 1000))}
         </Text>
         <View style={{ alignItems: "flex-end", gap: space.xs }}>

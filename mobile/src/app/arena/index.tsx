@@ -7,7 +7,7 @@ import { Minus } from "phosphor-react-native/src/icons/Minus";
 import { Plus } from "phosphor-react-native/src/icons/Plus";
 import { UserCircle } from "phosphor-react-native/src/icons/UserCircle";
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
@@ -56,6 +56,7 @@ function Stepper({ value, min, max, onChange, label }: { value: number; min: num
 function Chip({ label, on, onPress }: { label: string; on: boolean; onPress: () => void }) {
   return (
     <Pressable
+      hitSlop={8}
       accessibilityRole="checkbox"
       accessibilityState={{ checked: on }}
       onPress={() => {
@@ -75,7 +76,7 @@ function Chip({ label, on, onPress }: { label: string; on: boolean; onPress: () 
       }}
     >
       {on ? <Check size={16} weight="bold" color={color.ink} /> : null}
-      <Text style={{ fontFamily: font.bold, fontSize: 15, color: on ? color.ink : color.cream }}>{label}</Text>
+      <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.bold, fontSize: 15, color: on ? color.ink : color.cream }}>{label}</Text>
     </Pressable>
   );
 }
@@ -146,7 +147,7 @@ export default function ArenaCreateScreen() {
   }
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: color.ink }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: color.ink }} behavior="padding">
       <AppBar title="Live room" eyebrow="Create or join" onBack={() => router.back()} />
       {!hasName && ready ? (
         <View style={{ flex: 1, paddingHorizontal: space.gutter, paddingTop: space.xl, gap: space.xl }}>
@@ -165,7 +166,7 @@ export default function ArenaCreateScreen() {
           <View style={{ paddingHorizontal: space.gutter, gap: space.m }}>
             <Txt v="cardTitle">Got a code?</Txt>
             <View style={{ flexDirection: "row", gap: space.m }}>
-              <TextInput
+              <TextInput maxFontSizeMultiplier={1.3}
                 accessibilityLabel="Room code"
                 value={code}
                 onChangeText={(t) => setCode(normalizeCode(t))}
@@ -226,7 +227,7 @@ export default function ArenaCreateScreen() {
                         borderColor: on ? color.lime : color.line,
                       }}
                     >
-                      <Text style={{ fontFamily: font.mono, fontSize: 15, color: on ? color.ink : color.cream }}>{m.label}</Text>
+                      <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.mono, fontSize: 15, color: on ? color.ink : color.cream }}>{m.label}</Text>
                     </Pressable>
                   );
                 })}
@@ -251,12 +252,13 @@ export default function ArenaCreateScreen() {
                   <Chip key={sub.key} label={sub.label} on={subjects.includes(sub.key)} onPress={() => toggleSubject(sub.key)} />
                 ))}
                 <Pressable
+                  hitSlop={8}
                   accessibilityRole="button"
                   onPress={() => setAllSubjects((v) => !v)}
                   style={{ height: 40, paddingHorizontal: space.m, borderRadius: 20, flexDirection: "row", alignItems: "center", gap: space.xs, borderWidth: 1, borderColor: color.line, borderStyle: "dashed" }}
                 >
                   {allSubjects ? <CaretUp size={16} weight="bold" color={color.muted} /> : <CaretDown size={16} weight="bold" color={color.muted} />}
-                  <Text style={{ fontFamily: font.bold, fontSize: 15, color: color.muted }}>{allSubjects ? "Fewer" : `${ARENA_SUBJECTS.length - 5} more`}</Text>
+                  <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.bold, fontSize: 15, color: color.muted }}>{allSubjects ? "Fewer" : `${ARENA_SUBJECTS.length - 5} more`}</Text>
                 </Pressable>
               </View>
               {subjects.length < rounds && subjects.length > 0 ? (

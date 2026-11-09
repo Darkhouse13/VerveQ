@@ -314,7 +314,7 @@ function DuelScreen() {
             <AnswerStrip perQuestion={view.myResult.perQuestion} total={total} />
           </View>
           {them.id ? (
-            <Pressable onPress={() => router.push(`/rivals/${them.id}`)}>
+            <Pressable accessibilityRole="button" onPress={() => router.push(`/rivals/${them.id}`)}>
               <Card style={{ flexDirection: "row", alignItems: "center", gap: space.l }}>
                 <Avatar name={themName} />
                 <View style={{ flex: 1, gap: space.xs }}>

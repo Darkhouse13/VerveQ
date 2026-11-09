@@ -17,7 +17,7 @@ import { Target } from "phosphor-react-native/src/icons/Target";
 import { Trophy } from "phosphor-react-native/src/icons/Trophy";
 import { XCircle } from "phosphor-react-native/src/icons/XCircle";
 import { useEffect, useRef, useState } from "react";
-import { Pressable, Share, Text, TextInput, View } from "react-native";
+import { KeyboardAvoidingView, Pressable, Share, Text, TextInput, View } from "react-native";
 
 import { AppBar, Button, Card, Eyebrow, Mono, Tag, Txt, haptic } from "@/components/ui";
 import { api } from "@/lib/convex";
@@ -114,7 +114,7 @@ export function LobbyView({ room, me, bottomInset }: { room: Room; me: string; b
       <View style={{ flex: 1, paddingTop: space.xl, gap: space.xxl }}>
         <View style={{ paddingHorizontal: space.gutter, alignItems: "center", gap: space.s }}>
           <Eyebrow>Room code</Eyebrow>
-          <Text selectable style={{ fontFamily: font.mono, fontSize: 48, letterSpacing: 8, color: color.cream }}>
+          <Text maxFontSizeMultiplier={1} selectable style={{ fontFamily: font.mono, fontSize: 48, letterSpacing: 8, color: color.cream }}>
             {room.code}
           </Text>
           <Txt v="caption" c={color.muted}>
@@ -217,7 +217,7 @@ export function CountdownView({ room }: { room: Room }) {
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: space.l, paddingHorizontal: space.gutter }}>
       <Eyebrow>{`Round 1 · ${subjectLabel(first)}`}</Eyebrow>
-      <Text style={{ fontFamily: font.mono, fontSize: 96, color: color.lime }}>{n}</Text>
+      <Text maxFontSizeMultiplier={1} style={{ fontFamily: font.mono, fontSize: 96, color: color.lime }}>{n}</Text>
       <Txt c={color.muted}>Get ready</Txt>
     </View>
   );
@@ -344,7 +344,8 @@ export function QuestionView({ room, me, bottomInset }: { room: Room; me: string
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    // Edge-to-edge Android doesn't resize the window for the keyboard; this keeps the logo input in view.
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
       <View style={{ gap: space.l, paddingTop: space.s }}>
         <Countdown room={room} />
         <Scoreboard room={room} me={me} />
@@ -368,7 +369,7 @@ export function QuestionView({ room, me, bottomInset }: { room: Room; me: string
 
       {q?.kind === "logo_text" ? (
         <View style={{ paddingHorizontal: space.gutter, paddingTop: space.xl, gap: space.m }}>
-          <TextInput
+          <TextInput maxFontSizeMultiplier={1.3}
             accessibilityLabel="Company name"
             value={typed}
             editable={!reveal && logoState !== "correct"}
@@ -467,7 +468,7 @@ export function QuestionView({ room, me, bottomInset }: { room: Room; me: string
           </View>
         )}
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

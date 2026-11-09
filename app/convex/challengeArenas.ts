@@ -2644,7 +2644,7 @@ export const getArenaSummary = query({
 
 // Content ops live in challengeArenaSelection.ts (they need the bundled
 // banks); these keep their public/internal paths and delegate.
-export const contentStatus = query({
+export const contentStatus = internalQuery({
   args: {},
   handler: async (ctx): Promise<ArenaContentCounts> => {
     return await ctx.runQuery(internal.challengeArenaSelection.contentStatus, {});

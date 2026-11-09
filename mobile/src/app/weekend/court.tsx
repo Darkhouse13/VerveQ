@@ -96,7 +96,7 @@ function FileClaimSheet({ open, market, busy, onFile, onClose }: { open: boolean
           {market === undefined ? <Txt c={color.muted}>Loading players…</Txt> : null}
           <List>
             {results.map((p, i) => (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={p.playerId}
                 onPress={() => {
                   haptic.tap();

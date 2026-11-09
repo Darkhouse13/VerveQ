@@ -236,8 +236,9 @@ export default function VoteScreen() {
             gap: space.m,
           }}
         >
-          <Text numberOfLines={2} style={{ flex: 1, fontFamily: font.medium, fontSize: 15, color: color.ink }}>{`Retired ${undo.label}`}</Text>
+          <Text maxFontSizeMultiplier={1.3} numberOfLines={2} style={{ flex: 1, fontFamily: font.medium, fontSize: 15, color: color.ink }}>{`Retired ${undo.label}`}</Text>
           <Pressable
+            hitSlop={8}
             accessibilityRole="button"
             onPress={() => {
               const pairId = undo.pairId;
@@ -247,7 +248,7 @@ export default function VoteScreen() {
             }}
             style={{ height: 40, paddingHorizontal: space.l, justifyContent: "center" }}
           >
-            <Text style={{ fontFamily: font.bold, fontSize: 15, color: color.ink }}>Undo</Text>
+            <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.bold, fontSize: 15, color: color.ink }}>Undo</Text>
           </Pressable>
         </View>
       ) : null}

@@ -60,6 +60,7 @@ const LEVELS: { key: Difficulty; label: string }[] = [
 function Chip({ label, on, onPress }: { label: string; on: boolean; onPress: () => void }) {
   return (
     <Pressable
+      hitSlop={8}
       accessibilityRole="button"
       accessibilityState={{ selected: on }}
       onPress={() => {

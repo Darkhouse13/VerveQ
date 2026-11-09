@@ -20,6 +20,7 @@ const CAP = 130; // rows rendered at once (web MARKET_RESULT_CAP)
 function FilterChip({ label, on, onPress }: { label: string; on: boolean; onPress: () => void }) {
   return (
     <Pressable
+      hitSlop={8}
       accessibilityRole="button"
       accessibilityState={{ selected: on }}
       onPress={() => {
@@ -101,7 +102,7 @@ export default function PickScreen() {
     <View style={{ paddingHorizontal: space.gutter, gap: space.m, paddingBottom: space.m }}>
       <View style={{ height: size.input, borderRadius: radius.input, backgroundColor: color.surface, borderWidth: 1.5, borderColor: color.line, flexDirection: "row", alignItems: "center", gap: space.m, paddingHorizontal: space.l }}>
         <MagnifyingGlass size={20} weight="bold" color={color.muted} />
-        <TextInput
+        <TextInput maxFontSizeMultiplier={1.3}
           value={q}
           onChangeText={setQ}
           placeholder="Search players or clubs"
@@ -111,7 +112,7 @@ export default function PickScreen() {
           style={{ flex: 1, color: color.cream, fontFamily: font.bold, fontSize: 17 }}
         />
         {q ? (
-          <Pressable accessibilityLabel="Clear search" onPress={() => setQ("")} hitSlop={12}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Clear search" onPress={() => setQ("")} hitSlop={12}>
             <X size={20} weight="bold" color={color.muted} />
           </Pressable>
         ) : null}
@@ -173,7 +174,7 @@ export default function PickScreen() {
                     </Txt>
                     {p.availability ? <AvailabilityTag status={p.availability.status} /> : null}
                     {mine ? (
-                      <View style={{ paddingHorizontal: space.s, paddingVertical: 2, borderRadius: radius.chip, backgroundColor: color.surfaceHigh }}>
+                      <View style={{ paddingHorizontal: space.s, paddingVertical: space.xs, borderRadius: radius.chip, backgroundColor: color.surfaceHigh }}>
                         <Mono s={10} c={color.muted}>
                           IN SQUAD
                         </Mono>
@@ -188,7 +189,7 @@ export default function PickScreen() {
                 </View>
                 {p.started ? <Lock size={16} weight="fill" color={color.muted} /> : null}
                 <Mono s={15}>{price(p.price)}</Mono>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   accessibilityLabel={`About ${p.name}`}
                   hitSlop={8}
                   onPress={() => router.push({ pathname: "/weekend/player/[id]", params: { id: p.playerId, pickFor: String(slotIndex) } })}

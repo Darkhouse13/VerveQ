@@ -1,3 +1,4 @@
+import { clampBoardLimit } from "./lib/boardLimit";
 import { query, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { v } from "convex/values";
@@ -68,7 +69,8 @@ export const getLeaderboard = query({
     mode: v.optional(v.string()),
     limit: v.optional(v.number()),
   },
-  handler: async (ctx, { sport, mode, limit = 20 }) => {
+  handler: async (ctx, { sport, mode, limit: rawLimit = 20 }) => {
+    const limit = clampBoardLimit(rawLimit);
     const candidates = await rankedCandidates(ctx, sport, mode);
 
     // One parallel batch instead of an awaited get per candidate — the user

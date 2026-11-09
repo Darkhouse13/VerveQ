@@ -29,6 +29,8 @@ import { color, font, radius, size, space } from "@/theme/tokens";
 
 const SUPPORT_EMAIL = "support@verveq.com";
 const VERSION = "1.0.0";
+// Notifications, language and Daily Quiz subject: hidden until push ships.
+const SHOW_UNSHIPPED_SETTINGS = false as boolean;
 
 // Local-only for now: push reminders aren't wired to the backend yet, and the
 // app follows the phone's language until i18n lands. Kept in SecureStore (no extra native dep).
@@ -163,7 +165,7 @@ function Chips<T extends string>({ options, value, onChange }: { options: { key:
             }}
             style={{ height: size.pill, paddingHorizontal: space.l, borderRadius: size.pill / 2, justifyContent: "center", backgroundColor: on ? color.cream : color.surfaceHigh }}
           >
-            <Text style={{ fontFamily: font.bold, fontSize: 15, color: on ? color.ink : color.cream }}>{o.label}</Text>
+            <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.bold, fontSize: 15, color: on ? color.ink : color.cream }}>{o.label}</Text>
           </Pressable>
         );
       })}
@@ -237,6 +239,8 @@ export default function SettingsScreen() {
           )}
         </Group>
 
+        {/* Notification and preference rows: hidden until push ships (nothing reads them yet). */}
+        {SHOW_UNSHIPPED_SETTINGS ? (
         <Group title="Notifications">
           <Row icon={Bell} title="Daily games are ready" line="Once a day, only if you haven't played" right={<Switch label="Daily games are ready" on={prefs.dailyOn} onChange={(v) => update({ dailyOn: v })} />} />
           {prefs.dailyOn ? (
@@ -262,7 +266,8 @@ export default function SettingsScreen() {
           <Row icon={Sword} title="Duels and rivals" line="New duels, results, beaten scores" right={<Switch label="Duels and rivals" on={prefs.duelsOn} onChange={(v) => update({ duelsOn: v })} />} />
           <Row icon={Users} title="Live room invites" line="When a friend opens a room for you" right={<Switch label="Live room invites" on={prefs.roomsOn} onChange={(v) => update({ roomsOn: v })} />} last />
         </Group>
-
+        ) : null}
+        {SHOW_UNSHIPPED_SETTINGS ? (
         <Group title="Preferences">
           <Row icon={Globe} title="Language" />
           <Chips options={LANGS} value={prefs.language} onChange={(v) => update({ language: v })} />
@@ -276,6 +281,7 @@ export default function SettingsScreen() {
             }}
           />
         </Group>
+        ) : null}
 
         <Group title="Support">
           <Row icon={EnvelopeSimple} title="Contact support" line={SUPPORT_EMAIL} onPress={() => void Linking.openURL(`mailto:${SUPPORT_EMAIL}`)} />

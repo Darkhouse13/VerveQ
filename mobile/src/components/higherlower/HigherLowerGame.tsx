@@ -207,7 +207,7 @@ export function HigherLowerGame() {
             c={ended.reason === "exhausted" ? color.right : color.wrong}
           />
           <Eyebrow>Final score</Eyebrow>
-          <Text style={{ fontFamily: font.mono, fontSize: 104, lineHeight: 112, color: color.cream }}>{ended.score}</Text>
+          <Text maxFontSizeMultiplier={1} style={{ fontFamily: font.mono, fontSize: 104, lineHeight: 112, color: color.cream }}>{ended.score}</Text>
           <Txt c={color.muted} center>
             {ended.reason === "exhausted"
               ? "Perfect run: this stat pool is exhausted."
@@ -365,7 +365,7 @@ function StatCard({ name, value, caption, state }: { name: string; value: string
         borderRadius: radius.hero,
         borderWidth: tone || pending ? 2 : 1.5,
         borderStyle: hidden && !pending ? "dashed" : "solid",
-        borderColor: tone ?? (pending ? color.lime : hidden ? "#5A524C" : color.line),
+        borderColor: tone ?? (pending ? color.lime : hidden ? color.hiddenLine : color.line),
         backgroundColor: state === "right" ? color.rightBg : state === "wrong" ? color.wrongBg : hidden ? color.surfaceLow : color.surface,
         alignItems: "center",
         justifyContent: "center",
@@ -376,7 +376,7 @@ function StatCard({ name, value, caption, state }: { name: string; value: string
       <Txt v="cardTitle" center numberOfLines={1}>
         {name}
       </Txt>
-      <Text style={{ fontFamily: font.mono, fontSize: 56, lineHeight: 64, color: hidden ? "#5A524C" : color.cream }}>{value}</Text>
+      <Text maxFontSizeMultiplier={1} style={{ fontFamily: font.mono, fontSize: 56, lineHeight: 64, color: hidden ? color.hiddenInk : color.cream }}>{value}</Text>
       <View style={{ flexDirection: "row", alignItems: "center", gap: space.xs }}>
         {state === "right" ? <CheckCircle size={16} weight="fill" color={color.right} /> : state === "wrong" ? <XCircle size={16} weight="fill" color={color.wrong} /> : null}
         <Txt v="caption" c={tone ?? color.muted}>

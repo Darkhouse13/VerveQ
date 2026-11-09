@@ -45,7 +45,7 @@ export function Field({
   const [focused, setFocused] = useState(false);
   return (
     <View style={{ gap: space.s }}>
-      <Text style={{ fontFamily: font.bold, fontSize: 15, color: color.cream }}>{label}</Text>
+      <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.bold, fontSize: 15, color: color.cream }}>{label}</Text>
       <View
         style={{
           height: size.input,
@@ -59,7 +59,7 @@ export function Field({
           gap: space.s,
         }}
       >
-        <TextInput
+        <TextInput maxFontSizeMultiplier={1.3}
           {...input}
           accessibilityLabel={label}
           secureTextEntry={secure ? hidden : false}

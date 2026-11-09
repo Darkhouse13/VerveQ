@@ -73,9 +73,9 @@ export function DailyQuizResultView(p: DailyQuizResultProps) {
         {/* Hero */}
         <View style={{ alignItems: "center", gap: space.l, paddingHorizontal: space.gutter, paddingTop: space.xl }}>
           <Tag label="Done for today" c={p.accent} />
-          <Text style={{ fontFamily: font.mono, fontSize: 88, lineHeight: 96, color: color.cream, letterSpacing: -3 }}>
+          <Text maxFontSizeMultiplier={1} style={{ fontFamily: font.mono, fontSize: 88, lineHeight: 96, color: color.cream, letterSpacing: -3 }}>
             {p.correct}
-            <Text style={{ fontSize: 48, color: color.dim }}>{`/${p.total}`}</Text>
+            <Text maxFontSizeMultiplier={1} style={{ fontSize: 48, color: color.dim }}>{`/${p.total}`}</Text>
           </Text>
           <View style={{ flexDirection: "row", gap: space.xs, width: 300 }} accessibilityLabel={`Your answers: ${p.correct} right of ${p.total}`}>
             {Array.from({ length: p.total }, (_, i) => (
@@ -178,7 +178,7 @@ export function DailyQuizResultView(p: DailyQuizResultProps) {
                 <View style={{ flex: 1, gap: space.xs }}>
                   <Txt v="rowTitle">
                     {p.next.title}
-                    {p.next.edition ? <Text style={{ fontFamily: font.mono, fontSize: 12, color: color.muted }}>{`  #${p.next.edition}`}</Text> : null}
+                    {p.next.edition ? <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.mono, fontSize: 12, color: color.muted }}>{`  #${p.next.edition}`}</Text> : null}
                   </Txt>
                   <Txt v="caption" c={color.muted}>
                     {p.next.line}

@@ -15,7 +15,7 @@
  */
 
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
@@ -570,9 +570,10 @@ export async function setFormationFor(
  * names, grouped per league. Names fall back to the provider club id so a
  * club missing its meta row is still pickable rather than invisible.
  */
-export const getFavoriteClub = query({
-  args: {},
-  handler: async (ctx) => {
+type FavoriteClubOption = { clubId: string; name: string; leagueId: number };
+
+/** Every active club, named, sorted by league then name (full table read). */
+async function buildClubList(ctx: QueryCtx): Promise<FavoriteClubOption[]> {
     const players = await ctx.db.query("fantasyPlayers").collect();
     const metaRows = await ctx.db.query("fantasyDraftPoolMeta").collect();
     const clubNameByPlayer = new Map<string, string>();
@@ -594,9 +595,35 @@ export const getFavoriteClub = query({
         seen.name = name;
       }
     }
-    const clubs = [...byClub.values()].sort(
+    return [...byClub.values()].sort(
       (a, b) => a.leagueId - b.leagueId || a.name.localeCompare(b.name),
     );
+}
+
+/** Hourly: refresh the club list doc, writing only when it changed. */
+export const rebuildClubCatalog = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const clubs = await buildClubList(ctx);
+    const existing = await ctx.db.query("fantasyClubCatalogs").first();
+    if (existing === null) {
+      await ctx.db.insert("fantasyClubCatalogs", { clubs, builtAt: Date.now() });
+      return { changed: true, clubs: clubs.length };
+    }
+    if (JSON.stringify(existing.clubs) === JSON.stringify(clubs)) {
+      return { changed: false, clubs: clubs.length };
+    }
+    await ctx.db.patch(existing._id, { clubs, builtAt: Date.now() });
+    return { changed: true, clubs: clubs.length };
+  },
+});
+
+export const getFavoriteClub = query({
+  args: {},
+  handler: async (ctx) => {
+    // One small doc; the full read only runs before the first rebuild.
+    const catalog = await ctx.db.query("fantasyClubCatalogs").first();
+    const clubs = catalog?.clubs ?? (await buildClubList(ctx));
 
     const userId = await getAuthUserId(ctx);
     const user = userId === null ? null : await ctx.db.get(userId);

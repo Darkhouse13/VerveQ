@@ -61,7 +61,7 @@ function Board({
             const border = t.kind === "focus" ? color.pink : t.kind === "blank" || t.kind === "typed" ? color.line : bg;
             const fg = t.kind === "fixed" || t.kind === "right" || t.kind === "wrong" ? color.ink : color.cream;
             return (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={index}
                 disabled={!onTilePress || t.kind === "fixed"}
                 onPress={() => onTilePress?.(index)}
@@ -76,7 +76,7 @@ function Board({
                   justifyContent: "center",
                 }}
               >
-                <Text style={{ fontFamily: font.mono, fontSize: Math.round(tile * 0.55), color: fg }}>{t.letter}</Text>
+                <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.mono, fontSize: Math.round(tile * 0.55), color: fg }}>{t.letter}</Text>
               </Pressable>
             );
           })}
@@ -107,7 +107,7 @@ function Keyboard({ onKey, onBack }: { onKey: (k: string) => void; onBack: () =>
         justifyContent: "center",
       })}
     >
-      {label === "⌫" ? <Backspace size={20} weight="bold" color={color.cream} /> : <Text style={{ fontFamily: font.mono, fontSize: 17, color: color.cream }}>{label}</Text>}
+      {label === "⌫" ? <Backspace size={20} weight="bold" color={color.cream} /> : <Text maxFontSizeMultiplier={1.3} style={{ fontFamily: font.mono, fontSize: 17, color: color.cream }}>{label}</Text>}
     </Pressable>
   );
   return (

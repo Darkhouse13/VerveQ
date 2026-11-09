@@ -1,3 +1,4 @@
+// Unreachable: hidden until push ships (no entry points link here).
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { Bell } from "phosphor-react-native/src/icons/Bell";
